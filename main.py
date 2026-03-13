@@ -703,13 +703,28 @@ async def api_review(attempt_id: int, request: Request, db: Session = Depends(ge
     ]
 
 
+# ─── Debug ─────────────────────────────────────────────────────────────────────
+
+@app.get("/api/debug-env")
+async def debug_env():
+    key = os.environ.get("ANTHROPIC_API_KEY", "")
+    key = key.strip()
+    db_url = os.environ.get("DATABASE_URL", "")
+    return {
+        "anthropic_key_set": bool(key),
+        "anthropic_key_preview": (key[:12] + "...") if key else "NOT SET",
+        "anthropic_key_length": len(key),
+        "database_url_set": bool(db_url),
+    }
+
+
 # ─── Translation ───────────────────────────────────────────────────────────────
 
 @app.post("/api/translate")
 async def api_translate(request: Request):
     try:
         import anthropic
-        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+        api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
         if not api_key:
             return JSONResponse({"error": "ANTHROPIC_API_KEY not set"}, status_code=503)
 
