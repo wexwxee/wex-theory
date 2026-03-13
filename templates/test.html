@@ -187,6 +187,7 @@ function renderQuestion() {
   const trans = questionTransCache[q.id];
   const qTextEl = document.getElementById('questionText');
   qTextEl.textContent = q.question_text;
+  delete qTextEl.dataset.wrapped;
 
   // Russian translation below
   const qRuEl = document.getElementById('questionTextRu');
@@ -452,7 +453,7 @@ async function _mmTranslate(text) {
   if (cached) return cached;
   try {
     const res = await fetch(
-      'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text.slice(0, 500)) + '&langpair=en|ru'
+      'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text.slice(0, 500)) + '&langpair=en|ru&de=contact@wextheory.com'
     );
     const data = await res.json();
     if (data.responseStatus === 200 && data.responseData?.translatedText) {
@@ -472,7 +473,7 @@ async function _mmTranslateWord(word) {
   try {
     const res = await fetch(
       'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(word) +
-      '&langpair=en|ru&de=wextheory'
+      '&langpair=en|ru&de=contact@wextheory.com'
     );
     const data = await res.json();
     const rawMain = data.responseData?.translatedText || '';
@@ -565,12 +566,11 @@ function _popupPos(popup, rect) {
   popup.style.top = top + 'px';
 }
 
-document.addEventListener('click', async (e) => {
-  if (!e.target.classList.contains('tw')) {
-    if (_wordPopup) { _wordPopup.remove(); _wordPopup = null; }
-    return;
-  }
-  e.stopPropagation();
+let _popupHideTimer = null;
+
+document.addEventListener('mouseover', (e) => {
+  if (!e.target.classList.contains('tw')) return;
+  clearTimeout(_popupHideTimer);
   const word = e.target.textContent.trim();
   if (!word || _STOP.has(word.toLowerCase()) || word.length < 3) return;
   if (_wordPopup) { _wordPopup.remove(); _wordPopup = null; }
@@ -584,14 +584,21 @@ document.addEventListener('click', async (e) => {
   const rect = e.target.getBoundingClientRect();
   _popupPos(popup, rect);
 
-  const result = await _mmTranslateWord(word);
-  if (_wordPopup !== popup) return;
+  _mmTranslateWord(word).then(result => {
+    if (_wordPopup !== popup) return;
+    const varHtml = result.variants.length
+      ? `<div class="wp-variants">${result.variants.map(v => `<span class="wp-v">${v}</span>`).join('')}</div>`
+      : '';
+    popup.innerHTML = `<div class="wp-orig">${word}</div><div class="wp-tr">${result.main}</div>${varHtml}`;
+    _popupPos(popup, rect);
+  });
+});
 
-  const varHtml = result.variants.length
-    ? `<div class="wp-variants">${result.variants.map(v => `<span class="wp-v">${v}</span>`).join('')}</div>`
-    : '';
-  popup.innerHTML = `<div class="wp-orig">${word}</div><div class="wp-tr">${result.main}</div>${varHtml}`;
-  _popupPos(popup, rect);
+document.addEventListener('mouseout', (e) => {
+  if (!e.target.classList.contains('tw')) return;
+  _popupHideTimer = setTimeout(() => {
+    if (_wordPopup) { _wordPopup.remove(); _wordPopup = null; }
+  }, 120);
 });
 </script>
 {% endblock %}
