@@ -78,7 +78,9 @@
       "Bash(py migrate_stripe.py)",
       "Bash(py -m pip install stripe -q && echo \"stripe installed\")",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/pricing && echo \"\" && curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/test/1)",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "Bash(gh auth:*)",
+      "Bash(git config:*)"
     ]
   }
 }
