@@ -444,6 +444,7 @@ async function toggleBookmark() {
 let translateMode = false;
 const questionTransCache = {};
 
+// Returns plain string for sentence translation
 async function _mmTranslate(text) {
   if (!text || !text.trim()) return null;
   const key = 'mm_' + btoa(unescape(encodeURIComponent(text.trim().slice(0, 60)))).slice(0, 36);
@@ -461,6 +462,28 @@ async function _mmTranslate(text) {
     }
   } catch(e) {}
   return null;
+}
+
+// Returns { main, variants[] } for word popup
+async function _mmTranslateWord(word) {
+  const key = 'wt_' + word.toLowerCase();
+  const cached = sessionStorage.getItem(key);
+  if (cached) { try { return JSON.parse(cached); } catch(e) {} }
+  try {
+    const res = await fetch(
+      'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(word) + '&langpair=en|ru'
+    );
+    const data = await res.json();
+    const main = data.responseData?.translatedText || '—';
+    const variants = (data.matches || [])
+      .map(m => m.translation)
+      .filter(v => v && v !== main && v.length < 40)
+      .filter((v, i, arr) => arr.indexOf(v) === i)
+      .slice(0, 3);
+    const result = { main, variants };
+    try { sessionStorage.setItem(key, JSON.stringify(result)); } catch(e) {}
+    return result;
+  } catch(e) { return { main: '—', variants: [] }; }
 }
 
 async function toggleTranslate() {
@@ -501,6 +524,11 @@ async function _prefetchNext() {
 }
 
 // ── Word-click popup (Duolingo-style) ─────────────────────────────
+const _STOP = new Set(['the','a','an','in','to','of','and','or','is','are','you','at','on','for',
+  'it','be','as','by','with','from','this','that','not','but','if','up','do','so','we','he',
+  'she','they','my','your','all','have','has','had','was','were','will','can','i','its','our',
+  'their','into','also','when','then','than','there','about','been','which','who','what']);
+
 let _wordPopup = null;
 
 function _wrapWords(el) {
@@ -510,11 +538,11 @@ function _wrapWords(el) {
   let n;
   while ((n = walker.nextNode())) nodes.push(n);
   nodes.forEach(tn => {
-    const parts = tn.textContent.split(/(\b[a-zA-Z]{2,}\b)/);
+    const parts = tn.textContent.split(/(\b[a-zA-Z]{3,}\b)/);
     if (parts.length <= 1) return;
     const frag = document.createDocumentFragment();
     parts.forEach(p => {
-      if (/^[a-zA-Z]{2,}$/.test(p)) {
+      if (/^[a-zA-Z]{3,}$/.test(p) && !_STOP.has(p.toLowerCase())) {
         const s = document.createElement('span');
         s.className = 'tw';
         s.textContent = p;
@@ -527,6 +555,15 @@ function _wrapWords(el) {
   });
 }
 
+function _popupPos(popup, rect) {
+  const pw = popup.offsetWidth;
+  const ph = popup.offsetHeight;
+  const left = Math.max(4, Math.min(rect.left + rect.width / 2 - pw / 2, window.innerWidth - pw - 4));
+  const top = rect.top + window.scrollY - ph - 10;
+  popup.style.left = left + 'px';
+  popup.style.top = top + 'px';
+}
+
 document.addEventListener('click', async (e) => {
   if (!e.target.classList.contains('tw')) {
     if (_wordPopup) { _wordPopup.remove(); _wordPopup = null; }
@@ -534,7 +571,7 @@ document.addEventListener('click', async (e) => {
   }
   e.stopPropagation();
   const word = e.target.textContent.trim();
-  if (!word) return;
+  if (!word || _STOP.has(word.toLowerCase()) || word.length < 3) return;
   if (_wordPopup) { _wordPopup.remove(); _wordPopup = null; }
 
   const popup = document.createElement('div');
@@ -544,14 +581,16 @@ document.addEventListener('click', async (e) => {
   _wordPopup = popup;
 
   const rect = e.target.getBoundingClientRect();
-  popup.style.left = Math.max(4, Math.min(rect.left + rect.width / 2 - popup.offsetWidth / 2, window.innerWidth - popup.offsetWidth - 4)) + 'px';
-  popup.style.top = (rect.top + window.scrollY - popup.offsetHeight - 10) + 'px';
+  _popupPos(popup, rect);
 
-  const t = await _mmTranslate(word);
+  const result = await _mmTranslateWord(word);
   if (_wordPopup !== popup) return;
-  popup.innerHTML = `<div class="wp-orig">${word}</div><div class="wp-tr">${t || '—'}</div>`;
-  popup.style.left = Math.max(4, Math.min(rect.left + rect.width / 2 - popup.offsetWidth / 2, window.innerWidth - popup.offsetWidth - 4)) + 'px';
-  popup.style.top = (rect.top + window.scrollY - popup.offsetHeight - 10) + 'px';
+
+  const varHtml = result.variants.length
+    ? `<div class="wp-variants">${result.variants.map(v => `<span class="wp-v">${v}</span>`).join('')}</div>`
+    : '';
+  popup.innerHTML = `<div class="wp-orig">${word}</div><div class="wp-tr">${result.main}</div>${varHtml}`;
+  _popupPos(popup, rect);
 });
 </script>
 {% endblock %}
@@ -566,6 +605,7 @@ document.addEventListener('click', async (e) => {
 })();
 </script>
 <style>
+/* Word click */
 .tw {
   cursor: pointer;
   border-bottom: 1px dotted #9ca3af;
@@ -573,21 +613,23 @@ document.addEventListener('click', async (e) => {
   padding: 0 1px;
   transition: background 0.1s ease;
 }
-.tw:hover { background: rgba(254,249,195,0.35); }
+.tw:hover { background: rgba(254,249,195,0.3); }
 [data-theme="light"] .tw:hover { background: #fef9c3; }
 
+/* Popup */
 .word-popup {
   position: absolute;
   background: #1f2937;
   color: #fff;
-  padding: 8px 14px;
-  border-radius: 10px;
+  padding: 10px 16px;
+  border-radius: 12px;
   font-size: 14px;
   z-index: 9999;
   pointer-events: none;
-  max-width: 220px;
+  min-width: 120px;
+  max-width: 240px;
   text-align: center;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
   line-height: 1.4;
 }
 .word-popup::after {
@@ -600,8 +642,17 @@ document.addEventListener('click', async (e) => {
   border-bottom: none;
   border-top-color: #1f2937;
 }
-.wp-orig { font-size: 11px; color: #9ca3af; margin-bottom: 3px; }
-.wp-tr   { font-size: 15px; font-weight: 600; }
-.wp-load { font-size: 12px; color: #9ca3af; }
+.wp-orig     { font-size: 11px; color: #9ca3af; margin-bottom: 4px; }
+.wp-tr       { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+.wp-load     { font-size: 12px; color: #9ca3af; }
+.wp-variants {
+  border-top: 1px solid #374151;
+  padding-top: 6px;
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.wp-v { font-size: 13px; color: #d1d5db; }
 </style>
 {% endblock %}
