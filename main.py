@@ -22,9 +22,44 @@ app = FastAPI(title="WEX Theory")
 
 
 @app.on_event("startup")
-async def create_default_admin():
+async def startup_init():
     db = next(get_db())
     try:
+        # 1. Import test data if DB is empty
+        test_count = db.query(models.Test).count()
+        if test_count == 0:
+            print("[STARTUP] No tests found — running import_data...")
+            try:
+                from import_data import import_data
+                import_data()
+                print("[STARTUP] Data import complete")
+            except Exception as ie:
+                print(f"[STARTUP] Data import error: {ie}")
+                traceback.print_exc()
+        else:
+            print(f"[STARTUP] Tests already in DB: {test_count}")
+
+        # 2. Run Stripe column migration (safe to re-run)
+        try:
+            import sqlite3
+            conn = sqlite3.connect("wex_theory.db")
+            cur = conn.cursor()
+            for sql in [
+                "ALTER TABLE users ADD COLUMN stripe_customer_id TEXT",
+                "ALTER TABLE users ADD COLUMN stripe_subscription_id TEXT",
+                "ALTER TABLE users ADD COLUMN subscription_status TEXT DEFAULT 'free'",
+                "ALTER TABLE users ADD COLUMN current_period_end DATETIME",
+            ]:
+                try:
+                    cur.execute(sql)
+                except Exception:
+                    pass
+            conn.commit()
+            conn.close()
+        except Exception as me:
+            print(f"[STARTUP] Migration error: {me}")
+
+        # 3. Create default admin if not exists
         existing = db.query(models.User).filter(models.User.email == "admin@wex.com").first()
         if not existing:
             u = models.User(
@@ -37,11 +72,13 @@ async def create_default_admin():
             )
             db.add(u)
             db.commit()
-            print("[STARTUP] Default admin created: admin@wex.com")
+            print("[STARTUP] Admin created: admin@wex.com")
         else:
             print(f"[STARTUP] Admin exists: id={existing.id}")
+
     except Exception as e:
-        print(f"[STARTUP] Admin creation error: {e}")
+        print(f"[STARTUP] Error: {e}")
+        traceback.print_exc()
     finally:
         db.close()
 
