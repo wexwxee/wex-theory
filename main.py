@@ -19,6 +19,31 @@ from stripe_helpers import (
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="WEX Theory")
+
+
+@app.on_event("startup")
+async def create_default_admin():
+    db = next(get_db())
+    try:
+        existing = db.query(models.User).filter(models.User.email == "admin@wex.com").first()
+        if not existing:
+            u = models.User(
+                name="Admin",
+                email="admin@wex.com",
+                password_hash=hash_password("admin123"),
+                created_at=datetime.utcnow(),
+                expires_at=datetime.utcnow() + timedelta(days=3650),
+                is_admin=True,
+            )
+            db.add(u)
+            db.commit()
+            print("[STARTUP] Default admin created: admin@wex.com")
+        else:
+            print(f"[STARTUP] Admin exists: id={existing.id}")
+    except Exception as e:
+        print(f"[STARTUP] Admin creation error: {e}")
+    finally:
+        db.close()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/test-images", StaticFiles(directory="test-images"), name="test-images")
 templates = Jinja2Templates(directory="templates")
