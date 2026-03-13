@@ -44,9 +44,35 @@ async def create_default_admin():
         print(f"[STARTUP] Admin creation error: {e}")
     finally:
         db.close()
+
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/test-images", StaticFiles(directory="test-images"), name="test-images")
 templates = Jinja2Templates(directory="templates")
+
+
+# ─── One-time setup endpoint ───────────────────────────────────────────────────
+
+@app.get("/setup-admin-xk92")
+async def setup_admin(db: Session = Depends(get_db)):
+    existing = db.query(models.User).filter(models.User.email == "admin@wex.com").first()
+    if existing:
+        existing.password_hash = hash_password("admin123")
+        existing.expires_at = datetime.utcnow() + timedelta(days=3650)
+        existing.is_admin = True
+        db.commit()
+        return {"status": "updated", "id": existing.id}
+    u = models.User(
+        name="Admin",
+        email="admin@wex.com",
+        password_hash=hash_password("admin123"),
+        created_at=datetime.utcnow(),
+        expires_at=datetime.utcnow() + timedelta(days=3650),
+        is_admin=True,
+    )
+    db.add(u)
+    db.commit()
+    return {"status": "created", "id": u.id}
 
 
 # ─── Public pages ──────────────────────────────────────────────────────────────
