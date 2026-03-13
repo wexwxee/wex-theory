@@ -59,8 +59,8 @@
       <a href="/profile" class="btn-ghost btn-sm">History</a>
       {% if user.subscription_status == 'active' %}
         <button id="portalBtn" onclick="openBillingPortal()" class="btn-ghost btn-sm">Manage Plan</button>
-      {% elif not user.is_admin %}
-        <a href="/pricing" class="btn-primary btn-sm">Upgrade</a>
+      {% elif not user.is_admin and not has_access %}
+        <a href="https://t.me/wexwxeee" target="_blank" rel="noopener" class="btn-primary btn-sm">Get Premium</a>
       {% endif %}
     </div>
   </div>
@@ -133,7 +133,7 @@
   <div class="card" style="padding:32px;text-align:center;margin-top:24px;border:1px solid var(--border);">
     <div style="font-size:1.3rem;font-weight:800;margin-bottom:8px;">Unlock All 13 Tests</div>
     <p style="color:var(--text-muted);margin-bottom:20px;max-width:400px;margin-left:auto;margin-right:auto;">Get access to all practice tests and maximize your chances of passing the Danish driving theory exam.</p>
-    <a href="/pricing" class="btn-primary">View Plans</a>
+    <a href="https://t.me/wexwxeee" target="_blank" rel="noopener" class="btn-primary">Get Access via Telegram</a>
   </div>
   {% endif %}
 </div>
@@ -161,7 +161,7 @@
       This test is available to subscribers. Unlock all 13 tests and maximize your chances of passing.
     </p>
     <div style="display:flex;flex-direction:column;gap:10px;max-width:240px;margin:0 auto;">
-      <a href="/pricing" class="btn-primary">See Plans</a>
+      <a href="https://t.me/wexwxeee" target="_blank" rel="noopener" class="btn-primary">Get Access via Telegram</a>
       <button onclick="document.getElementById('paywallModal').classList.remove('open')" class="btn-ghost">Maybe later</button>
     </div>
   </div>

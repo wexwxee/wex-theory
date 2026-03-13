@@ -58,26 +58,6 @@ async def startup_init():
         else:
             print("[STARTUP] Image paths OK (already .jpg)")
 
-        # 3. Run Stripe column migration (safe to re-run)
-        try:
-            import sqlite3
-            conn = sqlite3.connect("wex_theory.db")
-            cur = conn.cursor()
-            for sql in [
-                "ALTER TABLE users ADD COLUMN stripe_customer_id TEXT",
-                "ALTER TABLE users ADD COLUMN stripe_subscription_id TEXT",
-                "ALTER TABLE users ADD COLUMN subscription_status TEXT DEFAULT 'free'",
-                "ALTER TABLE users ADD COLUMN current_period_end DATETIME",
-            ]:
-                try:
-                    cur.execute(sql)
-                except Exception:
-                    pass
-            conn.commit()
-            conn.close()
-        except Exception as me:
-            print(f"[STARTUP] Migration error: {me}")
-
         # 3. Create default admin if not exists
         existing = db.query(models.User).filter(models.User.email == "admin@wex.com").first()
         if not existing:
@@ -843,7 +823,7 @@ async def api_admin_mark_read(msg_id: int, request: Request, db: Session = Depen
 @app.get("/pricing", response_class=HTMLResponse)
 async def pricing_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
-    return templates.TemplateResponse("pricing.html", {"request": request, "user": user})
+    return templates.TemplateResponse("pricing.html", {"request": request, "user": user, "now": datetime.utcnow()})
 
 
 @app.get("/success", response_class=HTMLResponse)
