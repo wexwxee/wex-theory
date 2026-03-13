@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Contact — WEX Theory{% endblock %}
+
+{% block body %}
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" onclick="sbOpen()">☰</button>
+      <a href="/" class="logo">WEXTheory</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" onclick="toggleTheme()" id="navThemeBtn">☀️</button>
+      {% if user %}
+      <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
+      {% else %}
+      <a href="/login" class="btn-ghost btn-sm">Sign In</a>
+      <a href="/register" class="btn-primary btn-sm">Get Access</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="page" style="max-width:640px;">
+  <p style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Contact</p>
+  <h1 style="font-size:2.2rem;font-weight:800;letter-spacing:-0.04em;margin-bottom:12px;">Get in touch</h1>
+  <p style="color:var(--text-muted);margin-bottom:40px;line-height:1.7;">
+    Have a question, found an issue, or want to get access? Fill in the form and we'll get back to you.
+  </p>
+
+  <!-- Success state -->
+  <div id="successState" style="display:none;text-align:center;padding:48px 0;">
+    <div style="font-size:2rem;margin-bottom:16px;">✓</div>
+    <div style="font-size:1.3rem;font-weight:700;margin-bottom:8px;">Message sent!</div>
+    <p style="color:var(--text-muted);margin-bottom:24px;">We'll get back to you as soon as possible.</p>
+    <a href="/" class="btn-ghost">Back to home</a>
+  </div>
+
+  <!-- Form -->
+  <div id="formWrap">
+    <div class="card">
+      <div id="formMsg" style="display:none;padding:12px 14px;border-radius:8px;font-size:0.85rem;margin-bottom:16px;"></div>
+      <div class="form-group">
+        <label class="form-label" for="cName">Your name</label>
+        <input type="text" id="cName" placeholder="Jane Doe" {% if user %}value="{{ user.name }}"{% endif %}>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="cEmail">Email address</label>
+        <input type="email" id="cEmail" placeholder="you@example.com" {% if user %}value="{{ user.email }}"{% endif %}>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="cSubject">Subject</label>
+        <select id="cSubject">
+          <option value="General">General question</option>
+          <option value="Access">Get access / pricing</option>
+          <option value="Technical">Technical issue</option>
+          <option value="Content">Question error / content</option>
+          <option value="Extend">Extend subscription</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="cMsg">Message</label>
+        <textarea id="cMsg" rows="5" placeholder="Write your message here..."></textarea>
+      </div>
+      <button class="btn-primary" id="sendBtn" onclick="sendMessage()" style="width:100%;justify-content:center;">Send Message</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/about">About</a>
+      <a href="/faq">FAQ</a>
+      <a href="/privacy">Privacy</a>
+    </div>
+    <div>© 2026 WEXTheory</div>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  const t = localStorage.getItem('wex-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  const nb = document.getElementById('navThemeBtn');
+  if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
+})();
+
+function showFormMsg(msg, type) {
+  const el = document.getElementById('formMsg');
+  el.style.display = 'block';
+  el.style.background = type === 'error' ? 'var(--wrong-bg)' : 'var(--correct-bg)';
+  el.style.color = type === 'error' ? 'var(--wrong)' : 'var(--correct)';
+  el.style.border = `1px solid ${type === 'error' ? 'var(--wrong)' : 'var(--correct)'}`;
+  el.textContent = msg;
+}
+
+async function sendMessage() {
+  const name = document.getElementById('cName').value.trim();
+  const email = document.getElementById('cEmail').value.trim();
+  const subject = document.getElementById('cSubject').value;
+  const message = document.getElementById('cMsg').value.trim();
+  const btn = document.getElementById('sendBtn');
+
+  if (!name || !email || !message) { showFormMsg('Please fill all required fields', 'error'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  try {
+    const res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, subject, message })
+    });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('formWrap').style.display = 'none';
+      document.getElementById('successState').style.display = 'block';
+    } else {
+      showFormMsg(data.error || 'Failed to send', 'error');
+      btn.disabled = false;
+      btn.textContent = 'Send Message';
+    }
+  } catch(e) {
+    showFormMsg('Connection error. Please try again.', 'error');
+    btn.disabled = false;
+    btn.textContent = 'Send Message';
+  }
+}
+</script>
+{% endblock %}

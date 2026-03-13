@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}WEX Theory — Danish Driving Theory Practice Tests{% endblock %}
+
+{% block body %}
+<!-- Navbar -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" onclick="sbOpen()">☰</button>
+      <a href="/" class="logo">WEXTheory</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" onclick="toggleTheme()" id="navThemeBtn">☀️</button>
+      <a href="/login" class="btn-ghost btn-sm">Sign In</a>
+      <a href="/register" class="btn-primary btn-sm">Get Access</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <h1 class="hero-title">Pass your Danish driving theory test</h1>
+  <p class="hero-sub">13 official practice tests with real photos. Instant feedback. Track your progress.</p>
+  <div class="hero-btns">
+    <a href="/test/1" class="btn-primary">Try Test 1 Free</a>
+    <a href="/register" class="btn-ghost">Get Access →</a>
+  </div>
+  <div class="stats-strip" style="margin-top:48px;">
+    <div class="stat-item">
+      <div class="stat-num">13</div>
+      <div class="stat-label">Practice Tests</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">325</div>
+      <div class="stat-label">Questions</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">80%</div>
+      <div class="stat-label">Pass Rate</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">∞</div>
+      <div class="stat-label">Attempts</div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section style="border-top:1px solid var(--border);padding:64px 0;">
+  <div class="page" style="padding-top:0;padding-bottom:0;">
+    <p style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">How it works</p>
+    <h2 class="section-title">Three steps to your licence</h2>
+    <div class="steps-grid" style="margin-top:32px;">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-title">Choose a test</div>
+        <p class="step-desc">Pick any of the 13 official theory tests. Test 1 is completely free — no account needed.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-title">Answer 25 questions with real photos</div>
+        <p class="step-desc">Each test has 25 questions with actual photos from Danish roads. Just like the official exam.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-title">See your results instantly</div>
+        <p class="step-desc">Get your score immediately. Review each answer and understand why you got it right or wrong.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- What's included -->
+<section style="border-top:1px solid var(--border);padding:64px 0;">
+  <div class="page" style="padding-top:0;padding-bottom:0;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;">
+      <div>
+        <p style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">What's included</p>
+        <h2 class="section-title">Everything you need to pass</h2>
+        <p style="color:var(--text-muted);margin:16px 0 32px;line-height:1.7;">
+          Access all 13 official theory tests with the same questions used in real Danish driving exams.
+        </p>
+        <ul class="feature-list">
+          <li>13 official theory tests</li>
+          <li>325 questions with real road photos</li>
+          <li>Instant explanations for each answer</li>
+          <li>Progress tracking across all tests</li>
+          <li>Unlimited attempts — practice until you're confident</li>
+          <li>Pass/Fail feedback (need 20/25 to pass)</li>
+          <li>Works on all devices</li>
+        </ul>
+        <div style="margin-top:32px;">
+          <a href="/register" class="btn-primary">Get started today</a>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="padding:32px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            {% for n in range(1, 14) %}
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:0.88rem;font-weight:500;">Test {{ n }}</span>
+              {% if n == 1 %}<span style="font-size:0.7rem;color:var(--correct);border:1px solid var(--correct);padding:2px 6px;border-radius:999px;">FREE</span>{% else %}<span style="width:8px;height:8px;border-radius:50%;background:var(--border);display:block;"></span>{% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section style="border-top:1px solid var(--border);padding:64px 0;" id="pricing">
+  <div class="page" style="padding-top:0;padding-bottom:0;text-align:center;">
+    <p style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Pricing</p>
+    <h2 class="section-title">Simple, one-time access</h2>
+    <p style="color:var(--text-muted);margin:12px 0 40px;">No subscriptions. No hidden fees.</p>
+    <div class="pricing-card">
+      <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);">Full Access</div>
+      <div class="pricing-price">Contact us</div>
+      <div class="pricing-period">for pricing details</div>
+      <ul class="feature-list" style="text-align:left;margin-bottom:28px;">
+        <li>All 13 official tests</li>
+        <li>325 questions with real photos</li>
+        <li>Instant explanations</li>
+        <li>Unlimited attempts</li>
+        <li>Progress tracking</li>
+      </ul>
+      <a href="/register" class="btn-primary" style="width:100%;justify-content:center;">Get started</a>
+      <p style="color:var(--text-muted);font-size:0.8rem;margin-top:16px;">Test 1 is always free — no sign-up needed</p>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/test/1">Free Test</a>
+      <a href="/register">Register</a>
+      <a href="/login">Sign In</a>
+      <a href="/about">About</a>
+      <a href="/faq">FAQ</a>
+      <a href="/contact">Contact</a>
+      <a href="/privacy">Privacy</a>
+    </div>
+    <div>© 2026 WEXTheory. All rights reserved.</div>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  const t = localStorage.getItem('wex-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  const nb = document.getElementById('navThemeBtn');
+  if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
+})();
+</script>
+{% endblock %}

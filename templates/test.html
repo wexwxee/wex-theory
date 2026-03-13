@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+
+{% block title %}{{ test.title }} — WEX Theory{% endblock %}
+
+{% block body %}
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" onclick="sbOpen()">☰</button>
+      <span style="font-size:0.95rem;font-weight:600;color:var(--text);" id="navTestTitle">{{ test.title }}</span>
+    </div>
+    <div class="nav-right" style="gap:10px;">
+      <div class="timer" id="timerDisplay">45:00</div>
+      <button class="theme-btn" onclick="toggleTheme()" id="navThemeBtn">☀️</button>
+      <button class="btn-primary btn-sm" onclick="finishTest()" id="finishBtn">Finish</button>
+    </div>
+  </div>
+</nav>
+
+<!-- Progress bar -->
+<div class="progress-bar" style="border-radius:0;height:3px;">
+  <div class="progress-fill" id="progressBar" style="width:0%;"></div>
+</div>
+
+<div class="page" style="padding-top:28px;padding-bottom:90px;" id="testContainer">
+  <!-- Loading state -->
+  <div id="loadingState" style="text-align:center;padding:80px 0;">
+    <div style="color:var(--text-muted);font-size:0.9rem;">Loading questions...</div>
+  </div>
+
+  <!-- Error state -->
+  <div id="errorState" style="display:none;text-align:center;padding:80px 0;">
+    <div style="font-size:1.2rem;font-weight:700;margin-bottom:12px;">Unable to load test</div>
+    <div style="color:var(--text-muted);margin-bottom:24px;" id="errorMsg">Please try again.</div>
+    <a href="/dashboard" class="btn-ghost">Back to Dashboard</a>
+  </div>
+
+  <!-- Question area -->
+  <div id="questionArea" style="display:none;">
+    <!-- Question header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+      <span style="font-size:0.85rem;color:var(--text-muted);" id="questionCounter">Question 1 of 25</span>
+      <div style="display:flex;gap:6px;" id="dotNav">
+        <!-- dots rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Main layout -->
+    <div class="test-layout">
+      <!-- Left: image -->
+      <div class="test-image-wrap" id="imageWrap">
+        <img id="questionImg" src="" alt="" style="display:none;min-height:400px;object-fit:cover;">
+        <div class="test-image-placeholder" id="imgPlaceholder" style="min-height:400px;">No image</div>
+      </div>
+
+      <!-- Right: question + answers -->
+      <div>
+        <div style="font-size:1.3rem;font-weight:600;line-height:1.5;margin-bottom:24px;" id="questionText">
+          Loading...
+        </div>
+        <div id="answersContainer"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Fixed nav buttons -->
+<div class="nav-buttons" id="navButtons" style="display:none;">
+  <button class="btn-ghost" onclick="prevQuestion()" id="prevBtn" disabled>← Previous</button>
+  <span style="font-size:0.85rem;color:var(--text-muted);" id="navCounter">1 / 25</span>
+  <button class="btn-primary" onclick="nextQuestion()" id="nextBtn">Next →</button>
+</div>
+
+<!-- Confirm finish modal -->
+<div class="modal-overlay" id="finishModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 style="font-weight:700;font-size:1.1rem;">Submit Test?</h3>
+      <button class="modal-close" onclick="closeFinishModal()">✕</button>
+    </div>
+    <div id="finishSummary" style="color:var(--text-muted);font-size:0.9rem;margin-bottom:24px;line-height:1.6;"></div>
+    <div style="display:flex;gap:12px;justify-content:flex-end;">
+      <button class="btn-ghost" onclick="closeFinishModal()">Keep going</button>
+      <button class="btn-primary" onclick="submitTest()" id="submitBtn">Submit answers</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TEST_ID = {{ test.id }};
+{% if user %}
+const IS_AUTHENTICATED = true;
+{% else %}
+const IS_AUTHENTICATED = false;
+{% endif %}
+
+let questions = [];
+let currentIndex = 0;
+let selectedAnswers = {}; // { questionId: [answerId, ...] }
+let attemptId = null;
+let timerSeconds = 45 * 60;
+let timerInterval = null;
+let isSubmitting = false;
+
+// ── Init ──────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  if (TEST_ID !== 1 && !IS_AUTHENTICATED) {
+    window.location.href = '/login';
+    return;
+  }
+  await loadQuestions();
+  startTimer();
+});
+
+// ── Load questions ────────────────────────────────────────────────
+async function loadQuestions() {
+  try {
+    const res = await fetch(`/api/tests/${TEST_ID}/questions`);
+    if (res.status === 401) {
+      window.location.href = '/login';
+      return;
+    }
+    if (res.status === 403) {
+      window.location.href = '/pricing';
+      return;
+    }
+    if (!res.ok) throw new Error('Failed to load');
+    questions = await res.json();
+    if (!questions.length) throw new Error('No questions found');
+
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('questionArea').style.display = 'block';
+    renderDots();
+    renderQuestion();
+  } catch(e) {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('errorState').style.display = 'block';
+    document.getElementById('errorMsg').textContent = e.message || 'Failed to load questions.';
+  }
+}
+
+// ── Timer ─────────────────────────────────────────────────────────
+function startTimer() {
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timerSeconds--;
+    updateTimerDisplay();
+    if (timerSeconds <= 0) {
+      clearInterval(timerInterval);
+      submitTest(true);
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerSeconds / 60);
+  const s = timerSeconds % 60;
+  const el = document.getElementById('timerDisplay');
+  el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  el.className = 'timer' + (timerSeconds <= 120 ? ' warning' : '');
+}
+
+// ── Render ────────────────────────────────────────────────────────
+function renderQuestion() {
+  if (!questions.length) return;
+  const q = questions[currentIndex];
+
+  document.getElementById('questionCounter').textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+  document.getElementById('questionText').textContent = q.question_text;
+
+  // Image
+  const img = document.getElementById('questionImg');
+  const placeholder = document.getElementById('imgPlaceholder');
+  if (q.image_path) {
+    img.src = '/test-images/' + q.image_path;
+    img.style.display = 'block';
+    placeholder.style.display = 'none';
+  } else {
+    img.style.display = 'none';
+    placeholder.style.display = 'flex';
+  }
+
+  // Answers — checkboxes, full card clickable
+  const container = document.getElementById('answersContainer');
+  container.innerHTML = '';
+  const selected = selectedAnswers[q.id] || [];
+  q.answers.forEach(a => {
+    const div = document.createElement('div');
+    div.className = 'answer-option' + (selected.includes(a.id) ? ' selected' : '');
+    div.style.cssText = 'padding:16px;font-size:1.1rem;';
+    div.innerHTML = `<input type="checkbox" name="q${q.id}" value="${a.id}" ${selected.includes(a.id) ? 'checked' : ''}>
+      <span class="answer-option-label">${a.text}</span>`;
+    div.addEventListener('click', (e) => {
+      e.preventDefault();
+      toggleAnswer(q.id, a.id, div);
+    });
+    container.appendChild(div);
+  });
+
+  // Fixed nav
+  document.getElementById('navButtons').style.display = 'flex';
+  document.getElementById('prevBtn').disabled = currentIndex === 0;
+  document.getElementById('nextBtn').textContent = currentIndex === questions.length - 1 ? 'Review →' : 'Next →';
+  document.getElementById('navCounter').textContent = `${currentIndex + 1} / ${questions.length}`;
+
+  // Progress
+  document.getElementById('progressBar').style.width = `${((currentIndex + 1) / questions.length) * 100}%`;
+
+  // Dots
+  updateDots();
+}
+
+function toggleAnswer(questionId, answerId, clickedDiv) {
+  const current = selectedAnswers[questionId] || [];
+  const idx = current.indexOf(answerId);
+  if (idx === -1) {
+    current.push(answerId);
+  } else {
+    current.splice(idx, 1);
+  }
+  selectedAnswers[questionId] = current;
+  const cb = clickedDiv.querySelector('input[type="checkbox"]');
+  cb.checked = current.includes(answerId);
+  clickedDiv.classList.toggle('selected', current.includes(answerId));
+  updateDots();
+}
+
+function renderDots() {
+  const nav = document.getElementById('dotNav');
+  nav.innerHTML = '';
+  const max = Math.min(questions.length, 13);
+  for (let i = 0; i < max; i++) {
+    const dot = document.createElement('button');
+    dot.style.cssText = 'width:8px;height:8px;border-radius:50%;border:1px solid var(--border);background:var(--border);cursor:pointer;padding:0;transition:background 0.15s;';
+    dot.onclick = () => { currentIndex = i; renderQuestion(); };
+    dot.id = `dot-${i}`;
+    nav.appendChild(dot);
+  }
+  if (questions.length > 13) {
+    const more = document.createElement('span');
+    more.style.cssText = 'font-size:0.75rem;color:var(--text-muted);';
+    more.textContent = `+${questions.length - 13}`;
+    nav.appendChild(more);
+  }
+}
+
+function updateDots() {
+  for (let i = 0; i < Math.min(questions.length, 13); i++) {
+    const dot = document.getElementById(`dot-${i}`);
+    if (!dot) continue;
+    const q = questions[i];
+    const answered = (selectedAnswers[q.id] || []).length > 0;
+    if (i === currentIndex) {
+      dot.style.background = 'var(--text)';
+      dot.style.borderColor = 'var(--text)';
+    } else if (answered) {
+      dot.style.background = 'var(--text-muted)';
+      dot.style.borderColor = 'var(--text-muted)';
+    } else {
+      dot.style.background = 'var(--border)';
+      dot.style.borderColor = 'var(--border)';
+    }
+  }
+}
+
+function prevQuestion() {
+  if (currentIndex > 0) { currentIndex--; renderQuestion(); }
+}
+
+function nextQuestion() {
+  if (currentIndex < questions.length - 1) {
+    currentIndex++;
+    renderQuestion();
+  } else {
+    finishTest();
+  }
+}
+
+// ── Finish modal ──────────────────────────────────────────────────
+function finishTest() {
+  const answered = Object.keys(selectedAnswers).length;
+  const total = questions.length;
+  const unanswered = total - answered;
+  let summary = `You've answered ${answered} of ${total} questions.`;
+  if (unanswered > 0) summary += ` ${unanswered} question${unanswered > 1 ? 's' : ''} unanswered.`;
+  document.getElementById('finishSummary').textContent = summary;
+  document.getElementById('finishModal').classList.add('open');
+}
+
+function closeFinishModal() {
+  document.getElementById('finishModal').classList.remove('open');
+}
+
+// ── Submit ────────────────────────────────────────────────────────
+async function submitTest(auto = false) {
+  if (isSubmitting) return;
+  isSubmitting = true;
+  clearInterval(timerInterval);
+  closeFinishModal();
+
+  const btn = document.getElementById('submitBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
+
+  try {
+    // For unauthenticated test 1, use free check
+    if (!IS_AUTHENTICATED && TEST_ID === 1) {
+      const answers = {};
+      questions.forEach(q => { answers[q.id] = selectedAnswers[q.id] || []; });
+      const res = await fetch('/api/tests/1/check/free', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers })
+      });
+      const data = await res.json();
+      sessionStorage.setItem('freeResult', JSON.stringify({ data, questions, selectedAnswers }));
+      window.location.href = '/results/free';
+      return;
+    }
+
+    // 1. Start attempt
+    const startRes = await fetch(`/api/tests/${TEST_ID}/start`, { method: 'POST' });
+    if (startRes.status === 403) { window.location.href = '/pricing'; return; }
+    if (!startRes.ok) throw new Error('Failed to start attempt');
+    const { attempt_id } = await startRes.json();
+    attemptId = attempt_id;
+
+    // 2. Save answers
+    for (const q of questions) {
+      const answerIds = selectedAnswers[q.id] || [];
+      await fetch(`/api/attempts/${attemptId}/answer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question_id: q.id, answer_ids: answerIds })
+      });
+    }
+
+    // 3. Finish
+    const finRes = await fetch(`/api/attempts/${attemptId}/finish`, { method: 'POST' });
+    if (!finRes.ok) throw new Error('Failed to finish attempt');
+
+    // 4. Redirect to results
+    window.location.href = `/test/${TEST_ID}/results/${attemptId}`;
+
+  } catch(e) {
+    isSubmitting = false;
+    if (btn) { btn.disabled = false; btn.textContent = 'Submit answers'; }
+    showToast('Failed to submit: ' + e.message, 'error');
+  }
+}
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  const t = localStorage.getItem('wex-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  const nb = document.getElementById('navThemeBtn');
+  if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
+})();
+</script>
+{% endblock %}

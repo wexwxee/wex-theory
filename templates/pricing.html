@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Pricing — WEX Theory{% endblock %}
+
+{% block body %}
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" onclick="sbOpen()">☰</button>
+      <a href="/" class="logo">WEXTheory</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" onclick="toggleTheme()" id="navThemeBtn">☀️</button>
+      {% if user %}
+      <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
+      {% else %}
+      <a href="/login" class="btn-ghost btn-sm">Sign In</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="page" style="max-width:800px;margin:0 auto;">
+  <div style="text-align:center;padding:60px 0 48px;">
+    <div style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px;">Pricing</div>
+    <h1 style="font-size:clamp(1.8rem,5vw,2.8rem);font-weight:800;letter-spacing:-0.03em;margin-bottom:14px;">Pass your theory test</h1>
+    <p style="color:var(--text-muted);font-size:1rem;max-width:480px;margin:0 auto;">Full access to all 13 official practice tests. Cancel anytime.</p>
+  </div>
+
+  <!-- Pricing cards -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:48px;">
+    <!-- Free card -->
+    <div class="card" style="padding:32px;">
+      <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:16px;">Free</div>
+      <div style="font-size:2.5rem;font-weight:800;margin-bottom:4px;">0 kr</div>
+      <div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:28px;">Forever free</div>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;">
+          <span style="color:var(--correct);">✓</span> Test 1 — full access
+        </li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;color:var(--text-muted);">
+          <span>✗</span> Tests 2–13
+        </li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;color:var(--text-muted);">
+          <span>✗</span> Progress tracking
+        </li>
+      </ul>
+      {% if user %}
+      <a href="/dashboard" class="btn-ghost" style="width:100%;text-align:center;">Current Plan</a>
+      {% else %}
+      <a href="/register" class="btn-ghost" style="width:100%;text-align:center;">Get Started Free</a>
+      {% endif %}
+    </div>
+
+    <!-- Premium card -->
+    <div class="card" style="padding:32px;border:2px solid var(--text);position:relative;">
+      <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);font-size:0.72rem;font-weight:700;padding:4px 14px;border-radius:999px;text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap;">Most Popular</div>
+      <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:16px;">Premium</div>
+      <div style="font-size:2.5rem;font-weight:800;margin-bottom:4px;">99 kr</div>
+      <div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:28px;">per month · cancel anytime</div>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;">
+          <span style="color:var(--correct);">✓</span> All 13 official tests
+        </li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;">
+          <span style="color:var(--correct);">✓</span> 325 practice questions
+        </li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;">
+          <span style="color:var(--correct);">✓</span> Detailed explanations
+        </li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;">
+          <span style="color:var(--correct);">✓</span> Progress tracking
+        </li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;">
+          <span style="color:var(--correct);">✓</span> Cancel anytime
+        </li>
+      </ul>
+      {% if user %}
+        {% if user.subscription_status == 'active' %}
+        <button onclick="openBillingPortal()" class="btn-primary" style="width:100%;">Manage Plan</button>
+        {% else %}
+        <button onclick="startCheckout()" class="btn-primary" style="width:100%;" id="checkoutBtn">Subscribe Now</button>
+        {% endif %}
+      {% else %}
+      <a href="/register?next=pricing" class="btn-primary" style="width:100%;text-align:center;">Get Started</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div style="margin-bottom:60px;">
+    <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:20px;text-align:center;">Common Questions</h2>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card" style="padding:20px 24px;">
+        <div style="font-weight:600;margin-bottom:6px;">Can I cancel at any time?</div>
+        <div style="color:var(--text-muted);font-size:0.9rem;">Yes. Cancel anytime from your billing portal — no questions asked. Access continues until the end of your billing period.</div>
+      </div>
+      <div class="card" style="padding:20px 24px;">
+        <div style="font-weight:600;margin-bottom:6px;">What payment methods are accepted?</div>
+        <div style="color:var(--text-muted);font-size:0.9rem;">All major credit and debit cards via Stripe. Your payment information is never stored on our servers.</div>
+      </div>
+      <div class="card" style="padding:20px 24px;">
+        <div style="font-weight:600;margin-bottom:6px;">Are these real exam questions?</div>
+        <div style="color:var(--text-muted);font-size:0.9rem;">Yes. All 325 questions are from the official Danish driving theory test pool (Færdselsstyrelsen).</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+      <a href="/privacy">Privacy</a>
+    </div>
+    <div>© 2026 WEXTheory</div>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  const t = localStorage.getItem('wex-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  const nb = document.getElementById('navThemeBtn');
+  if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
+})();
+
+async function startCheckout() {
+  const btn = document.getElementById('checkoutBtn');
+  if (!btn) return;
+  btn.disabled = true;
+  btn.textContent = 'Loading...';
+  try {
+    const res = await fetch('/api/create-checkout-session', { method: 'POST' });
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      showToast(data.error || 'Failed to start checkout', 'error');
+      btn.disabled = false;
+      btn.textContent = 'Subscribe Now';
+    }
+  } catch (e) {
+    showToast('Network error. Please try again.', 'error');
+    btn.disabled = false;
+    btn.textContent = 'Subscribe Now';
+  }
+}
+
+async function openBillingPortal() {
+  const res = await fetch('/api/billing-portal', { method: 'POST' });
+  const data = await res.json();
+  if (data.url) window.location.href = data.url;
+  else showToast(data.error || 'Failed to open billing portal', 'error');
+}
+</script>
+{% endblock %}

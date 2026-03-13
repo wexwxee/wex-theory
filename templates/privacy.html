@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy — WEX Theory{% endblock %}
+
+{% block body %}
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" onclick="sbOpen()">☰</button>
+      <a href="/" class="logo">WEXTheory</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" onclick="toggleTheme()" id="navThemeBtn">☀️</button>
+      {% if user %}
+      <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
+      {% else %}
+      <a href="/login" class="btn-ghost btn-sm">Sign In</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="page" style="max-width:760px;">
+  <p style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Legal</p>
+  <h1 style="font-size:2.2rem;font-weight:800;letter-spacing:-0.04em;margin-bottom:8px;">Privacy Policy</h1>
+  <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:40px;">Last updated: January 2026</p>
+
+  <div style="display:flex;flex-direction:column;gap:32px;color:var(--text-muted);line-height:1.8;font-size:0.95rem;">
+    <section>
+      <h2 style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:10px;">1. Information We Collect</h2>
+      <p>When you create an account, we collect your name, email address, and password (stored as a secure hash). When you take tests, we store your answers and scores. If you send a contact message, we store your name, email, and message content.</p>
+    </section>
+
+    <section>
+      <h2 style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:10px;">2. How We Use Your Information</h2>
+      <p>We use your information to provide the service — authenticating you, saving your progress, and displaying your results. We do not sell your data to third parties. We do not use your data for advertising.</p>
+    </section>
+
+    <section>
+      <h2 style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:10px;">3. Cookies</h2>
+      <p>We use a single authentication cookie ("token") to keep you signed in. This is a secure, HTTP-only cookie and contains only a reference to your session. No tracking or advertising cookies are used. Your theme preference is stored in your browser's localStorage.</p>
+    </section>
+
+    <section>
+      <h2 style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:10px;">4. Data Retention</h2>
+      <p>Your account data and test history are retained while your account is active. You can request deletion of your account and all associated data by contacting us.</p>
+    </section>
+
+    <section>
+      <h2 style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:10px;">5. Security</h2>
+      <p>Passwords are stored as bcrypt hashes — we never store plaintext passwords. Session tokens are signed JWTs. We use HTTPS for all connections.</p>
+    </section>
+
+    <section>
+      <h2 style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:10px;">6. Third-Party Services</h2>
+      <p>We use Google Fonts (Inter) for typography. Google may log requests made to their CDN according to their own privacy policy. No other third-party services are used.</p>
+    </section>
+
+    <section>
+      <h2 style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:10px;">7. Your Rights</h2>
+      <p>You have the right to access your personal data, request corrections, and request deletion. To exercise these rights, please contact us through the contact form.</p>
+    </section>
+
+    <section>
+      <h2 style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:10px;">8. Contact</h2>
+      <p>For any privacy-related questions or requests, please use our <a href="/contact" style="color:var(--text);text-decoration:underline;">contact form</a>.</p>
+    </section>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/about">About</a>
+      <a href="/faq">FAQ</a>
+      <a href="/contact">Contact</a>
+    </div>
+    <div>© 2026 WEXTheory</div>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  const t = localStorage.getItem('wex-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  const nb = document.getElementById('navThemeBtn');
+  if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
+})();
+</script>
+{% endblock %}

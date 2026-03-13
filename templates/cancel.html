@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Cancelled — WEX Theory{% endblock %}
+
+{% block body %}
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" onclick="sbOpen()">☰</button>
+      <a href="/" class="logo">WEXTheory</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" onclick="toggleTheme()" id="navThemeBtn">☀️</button>
+    </div>
+  </div>
+</nav>
+
+<div class="page" style="max-width:520px;margin:0 auto;text-align:center;padding-top:80px;">
+  <div style="font-size:3rem;margin-bottom:20px;">↩</div>
+  <h1 style="font-size:1.8rem;font-weight:800;margin-bottom:12px;">No worries!</h1>
+  <p style="color:var(--text-muted);margin-bottom:36px;line-height:1.6;">
+    You were not charged. You can subscribe anytime when you're ready.
+  </p>
+  <div style="display:flex;flex-direction:column;gap:10px;max-width:240px;margin:0 auto;">
+    <a href="/pricing" class="btn-primary">See Plans</a>
+    {% if user %}
+    <a href="/dashboard" class="btn-ghost">Back to Dashboard</a>
+    {% else %}
+    <a href="/" class="btn-ghost">Back to Home</a>
+    {% endif %}
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/contact">Contact</a>
+    </div>
+    <div>© 2026 WEXTheory</div>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  const t = localStorage.getItem('wex-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  const nb = document.getElementById('navThemeBtn');
+  if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
+})();
+</script>
+{% endblock %}

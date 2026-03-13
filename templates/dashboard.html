@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — WEX Theory{% endblock %}
+
+{% block body %}
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" onclick="sbOpen()">☰</button>
+      <a href="/" class="logo">WEXTheory</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" onclick="toggleTheme()" id="navThemeBtn">☀️</button>
+      <a href="/profile" class="btn-ghost btn-sm">{{ user.name }}</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+  <!-- Header row -->
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:36px;">
+    <div>
+      <h1 style="font-size:1.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:6px;">My Tests</h1>
+      {% if user.subscription_status == 'active' %}
+        <span style="font-size:0.75rem;color:var(--correct);border:1px solid var(--correct);padding:2px 10px;border-radius:999px;display:inline-block;">Active Subscription</span>
+      {% elif user.subscription_status == 'past_due' %}
+        <span style="font-size:0.75rem;color:#f97316;border:1px solid #f97316;padding:2px 10px;border-radius:999px;display:inline-block;">Payment Past Due — <a href="/pricing" style="color:#f97316;">Update</a></span>
+      {% else %}
+        <span style="font-size:0.75rem;color:var(--text-muted);border:1px solid var(--border);padding:2px 10px;border-radius:999px;display:inline-block;">Free Plan</span>
+      {% endif %}
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <a href="/profile" class="btn-ghost btn-sm">History</a>
+      {% if has_access %}
+        <button onclick="openBillingPortal()" class="btn-ghost btn-sm">Manage Plan</button>
+      {% else %}
+        <a href="/pricing" class="btn-primary btn-sm">Upgrade</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Stats strip -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:36px;">
+    <div class="card" style="padding:20px;text-align:center;">
+      <div style="font-size:2rem;font-weight:800;line-height:1;">{{ completed }}</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">Completed</div>
+    </div>
+    <div class="card" style="padding:20px;text-align:center;">
+      <div style="font-size:2rem;font-weight:800;line-height:1;">{{ 13 - completed }}</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">Remaining</div>
+    </div>
+    <div class="card" style="padding:20px;text-align:center;">
+      <div style="font-size:2rem;font-weight:800;line-height:1;">{{ best_scores.values() | list | sum if best_scores else 0 }}</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">Total Score</div>
+    </div>
+    <div class="card" style="padding:20px;text-align:center;">
+      {% if has_access %}
+        <div style="font-size:1.4rem;font-weight:800;line-height:1;color:var(--correct);">Premium</div>
+      {% else %}
+        <div style="font-size:1.4rem;font-weight:800;line-height:1;color:var(--text-muted);">Free</div>
+      {% endif %}
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">Plan</div>
+    </div>
+  </div>
+
+  <!-- Tests grid -->
+  <div class="tests-grid">
+    {% for t in tests %}
+    {% set is_locked = (t.id != 1 and not has_access) %}
+    <div class="test-card {% if is_locked %}test-card-locked{% endif %}"
+         onclick="{% if is_locked %}showPaywall(){% else %}location.href='/test/{{ t.id }}'{% endif %}">
+      {% if images[t.id] %}
+      <img src="/test-images/{{ images[t.id] }}" alt="Test {{ t.id }}">
+      {% else %}
+      <div style="aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center;color:#333;font-size:0.8rem;">No image</div>
+      {% endif %}
+      {% if is_locked %}
+      <div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);border-radius:6px;padding:4px 8px;font-size:0.8rem;">🔒</div>
+      {% endif %}
+      <div class="test-card-body">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-weight:600;font-size:0.95rem;">{{ t.title }}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          {% if t.id == 1 %}
+          <span style="font-size:0.7rem;color:var(--correct);border:1px solid var(--correct);padding:2px 8px;border-radius:999px;">FREE</span>
+          {% elif is_locked %}
+          <span style="font-size:0.7rem;color:var(--text-muted);border:1px solid var(--border);padding:2px 8px;border-radius:999px;">Premium</span>
+          {% endif %}
+          {% if t.id in best_scores %}
+            {% if best_scores[t.id] >= 20 %}
+              <span class="badge-green">✓ {{ best_scores[t.id] }}/25</span>
+            {% else %}
+              <span class="badge-red">✗ {{ best_scores[t.id] }}/25</span>
+            {% endif %}
+          {% elif not is_locked %}
+            <span style="color:var(--text-muted);font-size:0.82rem;">Not started</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if not has_access %}
+  <!-- Upgrade CTA -->
+  <div class="card" style="padding:32px;text-align:center;margin-top:24px;border:1px solid var(--border);">
+    <div style="font-size:1.3rem;font-weight:800;margin-bottom:8px;">Unlock All 13 Tests</div>
+    <p style="color:var(--text-muted);margin-bottom:20px;max-width:400px;margin-left:auto;margin-right:auto;">Get access to all practice tests and maximize your chances of passing the Danish driving theory exam.</p>
+    <a href="/pricing" class="btn-primary">View Plans</a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/profile">Profile</a>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+      <a href="/privacy">Privacy</a>
+    </div>
+    <div>© 2026 WEXTheory</div>
+  </div>
+</footer>
+
+<!-- Paywall modal -->
+<div class="modal-overlay" id="paywallModal">
+  <div class="modal" style="max-width:420px;text-align:center;padding:40px 32px;">
+    <div style="font-size:2.5rem;margin-bottom:16px;">🔒</div>
+    <h2 style="font-weight:800;font-size:1.3rem;margin-bottom:10px;">Premium Test</h2>
+    <p style="color:var(--text-muted);margin-bottom:28px;line-height:1.6;">
+      This test is available to subscribers. Unlock all 13 tests and maximize your chances of passing.
+    </p>
+    <div style="display:flex;flex-direction:column;gap:10px;max-width:240px;margin:0 auto;">
+      <a href="/pricing" class="btn-primary">See Plans</a>
+      <button onclick="document.getElementById('paywallModal').classList.remove('open')" class="btn-ghost">Maybe later</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  const t = localStorage.getItem('wex-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  const nb = document.getElementById('navThemeBtn');
+  if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
+})();
+
+function showPaywall() {
+  document.getElementById('paywallModal').classList.add('open');
+}
+
+async function openBillingPortal() {
+  const res = await fetch('/api/billing-portal', { method: 'POST' });
+  const data = await res.json();
+  if (data.url) window.location.href = data.url;
+  else showToast(data.error || 'Failed to open billing portal', 'error');
+}
+</script>
+{% endblock %}

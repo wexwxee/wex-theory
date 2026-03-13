@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}WEX Theory{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <!-- Sidebar overlay -->
+  <div class="sidebar-overlay" id="sbOverlay" onclick="sbClose()"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div style="padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <a href="/" class="logo">WEXTheory</a>
+      <button onclick="sbClose()" style="background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+    </div>
+    {% if user is defined and user %}
+    <div style="padding:20px;border-bottom:1px solid var(--border);">
+      <div style="font-weight:600;font-size:0.95rem;">{{ user.name }}</div>
+      <div style="color:var(--text-muted);font-size:0.82rem;margin-top:4px;">{{ user.email }}</div>
+      <div style="color:var(--text-muted);font-size:0.78rem;margin-top:6px;">
+        {% if user.subscription_status == 'active' %}
+          ⭐ Active Subscription
+        {% else %}
+          Free Plan · <a href="/pricing" style="color:var(--text-muted);text-decoration:underline;">Upgrade</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+    <nav style="flex:1;padding:10px 0;overflow-y:auto;flex-direction:column;">
+      <a href="/" class="sidebar-link">🏠 Home</a>
+      {% if user is defined and user %}
+      <a href="/dashboard" class="sidebar-link">📚 Dashboard</a>
+      <a href="/profile" class="sidebar-link">👤 Profile</a>
+      <a href="/pricing" class="sidebar-link">⭐ Pricing</a>
+      {% if user.is_admin %}
+      <a href="/admin" class="sidebar-link">⚙️ Admin Panel</a>
+      {% endif %}
+      {% endif %}
+      <a href="/about" class="sidebar-link">ℹ️ About</a>
+      <a href="/faq" class="sidebar-link">❓ FAQ</a>
+      <a href="/contact" class="sidebar-link">✉️ Contact</a>
+      <a href="/privacy" class="sidebar-link">🔒 Privacy</a>
+    </nav>
+    <div style="padding:16px;border-top:1px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <span style="font-size:0.85rem;color:var(--text-muted);">Theme</span>
+        <button class="theme-btn" onclick="toggleTheme()" id="sbThemeBtn">☀️</button>
+      </div>
+      {% if user is defined and user %}
+      <button onclick="doLogout()" class="sidebar-link" style="color:var(--wrong);width:100%;">↩ Sign Out</button>
+      {% else %}
+      <a href="/login" class="sidebar-link">→ Sign In</a>
+      <a href="/register" class="sidebar-link">✦ Register</a>
+      {% endif %}
+    </div>
+  </aside>
+
+  {% block body %}{% endblock %}
+
+  <div id="toast-container"></div>
+
+  <script>
+  // Theme init
+  (function(){
+    const t = localStorage.getItem('wex-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', t);
+    const btn = document.getElementById('sbThemeBtn');
+    if (btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
+    const nb = document.getElementById('navThemeBtn');
+    if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
+  })();
+
+  function toggleTheme() {
+    const h = document.documentElement;
+    const cur = h.getAttribute('data-theme');
+    const next = cur === 'dark' ? 'light' : 'dark';
+    h.setAttribute('data-theme', next);
+    localStorage.setItem('wex-theme', next);
+    const sb = document.getElementById('sbThemeBtn');
+    if (sb) sb.textContent = next === 'dark' ? '☀️' : '🌙';
+    const nb = document.getElementById('navThemeBtn');
+    if (nb) nb.textContent = next === 'dark' ? '☀️' : '🌙';
+  }
+
+  // Sidebar
+  function sbOpen() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sbOverlay').classList.add('open');
+  }
+  function sbClose() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sbOverlay').classList.remove('open');
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') sbClose(); });
+
+  // Toast
+  function showToast(msg, type = 'info') {
+    const colors = { success: 'var(--correct)', error: 'var(--wrong)', info: 'var(--text)' };
+    const bgs = { success: 'var(--correct-bg)', error: 'var(--wrong-bg)', info: 'var(--bg-card)' };
+    const borders = { success: 'var(--correct)', error: 'var(--wrong)', info: 'var(--border)' };
+    const t = document.createElement('div');
+    t.style.cssText = `background:${bgs[type]};color:${colors[type]};padding:12px 16px;border-radius:8px;font-size:0.85rem;box-shadow:0 4px 20px rgba(0,0,0,0.4);opacity:0;transition:opacity .25s,transform .25s;transform:translateX(20px);border:1px solid ${borders[type]};max-width:300px;`;
+    t.textContent = msg;
+    document.getElementById('toast-container').appendChild(t);
+    requestAnimationFrame(() => { t.style.opacity = '1'; t.style.transform = 'translateX(0)'; });
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 280); }, 3500);
+  }
+  window.showToast = showToast;
+
+  // Logout
+  async function doLogout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/login';
+  }
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

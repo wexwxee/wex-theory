@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+
+{% block title %}Results — {{ test.title }} — WEX Theory{% endblock %}
+
+{% block head %}
+<style>
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 40px;
+}
+.result-card {
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.15s;
+  background: var(--bg-card);
+  position: relative;
+}
+.result-card:hover { transform: translateY(-2px); opacity: 0.9; }
+.result-card.correct { border: 3px solid #22c55e; }
+.result-card.wrong { border: 3px solid #ef4444; }
+.result-card img {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  display: block;
+  background: #000;
+}
+.result-card .rc-num {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+.result-card.correct .rc-num { background: #22c55e; color: #fff; }
+.result-card.wrong .rc-num { background: #ef4444; color: #fff; }
+.result-card .rc-icon {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 1rem;
+  line-height: 1;
+}
+/* Modal answer rows */
+.answer-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+.answer-row.user-correct   { background: #14532d; border: 2px solid #22c55e; color: #fff; }
+.answer-row.user-wrong     { background: #7f1d1d; border: 2px solid #ef4444; color: #fff; }
+.answer-row.missed-correct { background: transparent; border: 2px solid #22c55e; color: inherit; }
+.answer-row.neutral        { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+.badge-user    { background: #3b82f6; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; white-space: nowrap; flex-shrink: 0; }
+.badge-correct { background: #22c55e; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; white-space: nowrap; flex-shrink: 0; }
+.badge-wrong   { background: #ef4444; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; white-space: nowrap; flex-shrink: 0; }
+@media (max-width: 768px) {
+  .result-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+}
+@media (max-width: 480px) {
+  .result-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" onclick="sbOpen()">☰</button>
+      <a href="/" class="logo">WEXTheory</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" onclick="toggleTheme()" id="navThemeBtn">☀️</button>
+      {% if user %}
+      <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+  <!-- Header result -->
+  <div style="text-align:center;padding:40px 0 36px;">
+    <div style="font-size:0.82rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;">{{ test.title }}</div>
+    {% if attempt.passed %}
+    <div style="font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;color:#22c55e;line-height:1.2;margin-bottom:8px;">
+      ✓ Congratulations! You passed!
+    </div>
+    <div style="font-size:1.1rem;color:#22c55e;font-weight:600;">{{ attempt.score }}/25 correct</div>
+    {% else %}
+    <div style="font-size:clamp(1.4rem,4vw,2.2rem);font-weight:800;color:#ef4444;line-height:1.2;margin-bottom:8px;">
+      ✗ Unfortunately! You did not pass.
+    </div>
+    <div style="font-size:1.1rem;color:#ef4444;font-weight:600;">{{ attempt.score }}/25 — {{ 25 - attempt.score }} errors</div>
+    {% endif %}
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-top:10px;">You need at least 20 correct answers to pass.</p>
+
+    <!-- Stats row -->
+    <div style="display:inline-grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:24px;text-align:center;">
+      <div>
+        <div style="font-size:2rem;font-weight:800;color:#22c55e;">{{ attempt.score }}</div>
+        <div style="font-size:0.78rem;color:var(--text-muted);">Correct</div>
+      </div>
+      <div>
+        <div style="font-size:2rem;font-weight:800;color:#ef4444;">{{ 25 - attempt.score }}</div>
+        <div style="font-size:0.78rem;color:var(--text-muted);">Wrong</div>
+      </div>
+      <div>
+        <div style="font-size:2rem;font-weight:800;">{{ ((attempt.score / 25) * 100) | round | int }}%</div>
+        <div style="font-size:0.78rem;color:var(--text-muted);">Score</div>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap;">
+      <a href="/test/{{ test.id }}" class="btn-primary">Try Again</a>
+      {% if user %}
+      <a href="/dashboard" class="btn-ghost">Back to Dashboard</a>
+      {% else %}
+      <a href="/register" class="btn-ghost">Create Account</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- 5-column grid of all 25 questions -->
+  <h2 style="font-size:1rem;font-weight:700;margin-bottom:16px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Question Breakdown</h2>
+  <div class="result-grid">
+    {% for qr in question_results %}
+    <div class="result-card {% if qr.is_correct %}correct{% else %}wrong{% endif %}"
+         onclick="openModal({{ loop.index0 }})">
+      {% if qr.question.image_path %}
+      <img src="/test-images/{{ qr.question.image_path }}" alt="" loading="lazy">
+      {% else %}
+      <div style="aspect-ratio:16/9;background:#111;display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#444;">No image</div>
+      {% endif %}
+      <span class="rc-num">{{ qr.question.question_index }}</span>
+      <span class="rc-icon">{% if qr.is_correct %}✓{% else %}✗{% endif %}</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Bottom CTAs -->
+  <div style="display:flex;gap:12px;justify-content:center;margin-bottom:40px;flex-wrap:wrap;">
+    <a href="/test/{{ test.id }}" class="btn-primary">Try Again</a>
+    {% if user %}
+    <a href="/dashboard" class="btn-ghost">Back to Dashboard</a>
+    {% else %}
+    <a href="/register" class="btn-ghost">Create Account — Get All Tests</a>
+    {% endif %}
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+      <a href="/privacy">Privacy</a>
+    </div>
+    <div>© 2026 WEXTheory</div>
+  </div>
+</footer>
+
+<!-- Question detail modal -->
+<div class="modal-overlay" id="qModal">
+  <div class="modal" style="max-width:640px;">
+    <div class="modal-header">
+      <span style="font-size:0.82rem;color:var(--text-muted);" id="modalMeta">Question 1 of 25</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <!-- Image -->
+    <div id="modalImgWrap" style="margin-bottom:16px;display:none;">
+      <img id="modalImg" src="" alt="" style="width:100%;border-radius:8px;border:1px solid var(--border);max-height:300px;object-fit:cover;">
+    </div>
+    <!-- Question text -->
+    <div id="modalQuestion" style="font-size:1rem;font-weight:600;line-height:1.5;margin-bottom:16px;"></div>
+    <!-- Answers -->
+    <div id="modalAnswers" style="margin-bottom:16px;"></div>
+    <!-- Explanation -->
+    <div id="modalExplanation" style="display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:0.88rem;color:var(--text-muted);line-height:1.6;"></div>
+    <!-- Prev/Next -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
+      <button class="btn-ghost btn-sm" onclick="modalNav(-1)" id="modalPrev">← Prev</button>
+      <span id="modalStatus" style="font-size:0.85rem;"></span>
+      <button class="btn-ghost btn-sm" onclick="modalNav(1)" id="modalNext">Next →</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  const t = localStorage.getItem('wex-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  const nb = document.getElementById('navThemeBtn');
+  if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
+})();
+
+// Build a serialisable array (Jinja2 objects → plain JS)
+const DATA = [
+  {% for qr in question_results %}
+  {
+    index: {{ qr.question.question_index }},
+    text: {{ qr.question.question_text | tojson }},
+    image: {{ (qr.question.image_path or '') | tojson }},
+    explanation: {{ (qr.question.explanation or '') | tojson }},
+    is_correct: {{ 'true' if qr.is_correct else 'false' }},
+    selected_ids: {{ qr.selected_ids | tojson }},
+    correct_ids: {{ qr.correct_ids | tojson }},
+    answers: [
+      {% for a in qr.answers %}
+      { id: {{ a.id }}, text: {{ a.text | tojson }} }{% if not loop.last %},{% endif %}
+      {% endfor %}
+    ]
+  }{% if not loop.last %},{% endif %}
+  {% endfor %}
+];
+
+let currentModal = 0;
+
+function openModal(i) {
+  currentModal = i;
+  renderModal();
+  document.getElementById('qModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('qModal').classList.remove('open');
+}
+
+function modalNav(dir) {
+  currentModal = Math.max(0, Math.min(DATA.length - 1, currentModal + dir));
+  renderModal();
+}
+
+function renderModal() {
+  const d = DATA[currentModal];
+
+  document.getElementById('modalMeta').textContent = `Question ${d.index} of ${DATA.length}`;
+  document.getElementById('modalQuestion').textContent = d.text;
+
+  // Image
+  const imgWrap = document.getElementById('modalImgWrap');
+  const img = document.getElementById('modalImg');
+  if (d.image) {
+    img.src = '/test-images/' + d.image;
+    imgWrap.style.display = 'block';
+  } else {
+    imgWrap.style.display = 'none';
+  }
+
+  // Answers
+  const answersEl = document.getElementById('modalAnswers');
+  answersEl.innerHTML = '';
+  d.answers.forEach(a => {
+    const wasSelected = d.selected_ids.includes(a.id);
+    const isCorrect = d.correct_ids.includes(a.id);
+
+    let cls, badges = '';
+    if (wasSelected && isCorrect) {
+      cls = 'answer-row user-correct';
+      badges = '<span class="badge-user">✓ Your answer</span><span class="badge-correct">Correct</span>';
+    } else if (wasSelected && !isCorrect) {
+      cls = 'answer-row user-wrong';
+      badges = '<span class="badge-user">✗ Your answer</span><span class="badge-wrong">Wrong</span>';
+    } else if (!wasSelected && isCorrect) {
+      cls = 'answer-row missed-correct';
+      badges = '<span class="badge-correct">Correct (missed)</span>';
+    } else {
+      cls = 'answer-row neutral';
+    }
+
+    const row = document.createElement('div');
+    row.className = cls;
+    row.innerHTML = `<span style="flex:1;">${a.text}</span><span style="display:flex;gap:6px;flex-shrink:0;">${badges}</span>`;
+    answersEl.appendChild(row);
+  });
+
+  // Explanation
+  const expl = document.getElementById('modalExplanation');
+  if (d.explanation) {
+    expl.style.display = 'block';
+    expl.innerHTML = `<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:6px;">Explanation</div>${d.explanation}`;
+  } else {
+    expl.style.display = 'none';
+  }
+
+  // Status
+  document.getElementById('modalStatus').innerHTML = d.is_correct
+    ? '<span style="color:#22c55e;font-weight:600;">✓ Correct</span>'
+    : '<span style="color:#ef4444;font-weight:600;">✗ Wrong</span>';
+
+  // Prev/Next buttons
+  document.getElementById('modalPrev').disabled = currentModal === 0;
+  document.getElementById('modalNext').disabled = currentModal === DATA.length - 1;
+}
+
+// Close on overlay click
+document.getElementById('qModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('qModal')) closeModal();
+});
+// Close on Escape is handled by base.html sbClose, but we override for modal
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft') { if(document.getElementById('qModal').classList.contains('open')) modalNav(-1); }
+  if (e.key === 'ArrowRight') { if(document.getElementById('qModal').classList.contains('open')) modalNav(1); }
+});
+</script>
+{% endblock %}

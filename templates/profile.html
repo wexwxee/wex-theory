@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Profile — WEX Theory{% endblock %}
+
+{% block body %}
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" onclick="sbOpen()">☰</button>
+      <a href="/" class="logo">WEXTheory</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" onclick="toggleTheme()" id="navThemeBtn">☀️</button>
+      <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+  <h1 style="font-size:1.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:32px;">Profile</h1>
+
+  <div style="display:grid;grid-template-columns:300px 1fr;gap:28px;align-items:start;">
+    <!-- Left: user info -->
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <div style="font-size:2.5rem;font-weight:800;line-height:1;width:56px;height:56px;background:var(--bg);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:16px;">
+          {{ user.name[0].upper() }}
+        </div>
+        <div style="font-weight:700;font-size:1.1rem;margin-bottom:4px;">{{ user.name }}</div>
+        <div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:16px;">{{ user.email }}</div>
+        <hr class="divider" style="margin:16px 0;">
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:0.82rem;color:var(--text-muted);">Member since</span>
+            <span style="font-size:0.82rem;">{{ user.created_at.strftime('%b %Y') }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:0.82rem;color:var(--text-muted);">Access expires</span>
+            <span style="font-size:0.82rem;">{{ user.expires_at.strftime('%d %b %Y') }}</span>
+          </div>
+          {% set days_left = (user.expires_at - now).days %}
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:0.82rem;color:var(--text-muted);">Days remaining</span>
+            <span style="font-size:0.82rem;{% if days_left > 7 %}color:var(--correct){% elif days_left > 0 %}color:var(--wrong){% else %}color:var(--wrong){% endif %};">
+              {{ days_left if days_left > 0 else 'Expired' }}
+            </span>
+          </div>
+          {% if user.is_admin %}
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:0.82rem;color:var(--text-muted);">Role</span>
+            <span class="badge-gray" style="font-size:0.7rem;">Admin</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% if user.is_admin %}
+      <a href="/admin" class="btn-ghost" style="width:100%;justify-content:center;display:flex;">Admin Panel</a>
+      {% else %}
+      <a href="/contact" class="btn-ghost" style="width:100%;justify-content:center;display:flex;">Extend Access</a>
+      {% endif %}
+    </div>
+
+    <!-- Right: history -->
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <h2 style="font-size:1.1rem;font-weight:700;">Attempt History</h2>
+        <span style="font-size:0.82rem;color:var(--text-muted);">{{ attempts|length }} attempt{{ 's' if attempts|length != 1 else '' }}</span>
+      </div>
+      {% if attempts %}
+      <div class="card" style="padding:0;overflow:hidden;">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Test</th>
+              <th>Score</th>
+              <th>Result</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in attempts %}
+            <tr style="cursor:pointer;" onclick="location.href='/test/{{ a.test_id }}/results/{{ a.id }}'">
+              <td style="font-weight:500;">{{ a.test.title }}</td>
+              <td>{{ a.score }}/25</td>
+              <td>
+                {% if a.passed %}
+                <span class="badge-green">Passed</span>
+                {% else %}
+                <span class="badge-red">Failed</span>
+                {% endif %}
+              </td>
+              <td style="color:var(--text-muted);">{{ a.finished_at.strftime('%d %b %Y') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="card" style="text-align:center;padding:40px;">
+        <div style="font-size:1.5rem;margin-bottom:12px;">📋</div>
+        <div style="font-weight:600;margin-bottom:8px;">No attempts yet</div>
+        <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;">Take a test to see your history here.</p>
+        <a href="/dashboard" class="btn-primary">Go to tests</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+      <a href="/privacy">Privacy</a>
+    </div>
+    <div>© 2026 WEXTheory</div>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  const t = localStorage.getItem('wex-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  const nb = document.getElementById('navThemeBtn');
+  if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
+})();
+</script>
+{% endblock %}
