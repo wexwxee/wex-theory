@@ -21,10 +21,14 @@
   <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:36px;">
     <div>
       <h1 style="font-size:1.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:6px;">My Tests</h1>
-      {% if user.subscription_status == 'active' %}
+      {% if user.is_admin %}
+        <span style="font-size:0.75rem;color:var(--correct);border:1px solid var(--correct);padding:2px 10px;border-radius:999px;display:inline-block;">Admin</span>
+      {% elif user.subscription_status == 'active' %}
         <span style="font-size:0.75rem;color:var(--correct);border:1px solid var(--correct);padding:2px 10px;border-radius:999px;display:inline-block;">Active Subscription</span>
       {% elif user.subscription_status == 'past_due' %}
         <span style="font-size:0.75rem;color:#f97316;border:1px solid #f97316;padding:2px 10px;border-radius:999px;display:inline-block;">Payment Past Due — <a href="/pricing" style="color:#f97316;">Update</a></span>
+      {% elif has_access %}
+        <span style="font-size:0.75rem;color:var(--correct);border:1px solid var(--correct);padding:2px 10px;border-radius:999px;display:inline-block;">Active</span>
       {% else %}
         <span style="font-size:0.75rem;color:var(--text-muted);border:1px solid var(--border);padding:2px 10px;border-radius:999px;display:inline-block;">Free Plan</span>
       {% endif %}
