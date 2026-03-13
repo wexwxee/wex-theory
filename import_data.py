@@ -11,7 +11,8 @@ import models
 
 models.Base.metadata.create_all(bind=engine)
 
-TEORI_PATH = r"C:\Teori"
+import os as _os
+TEORI_PATH = _os.environ.get("TEORI_PATH", _os.path.join(_os.path.dirname(__file__), "data"))
 
 TEST_TITLES = {
     1: "Theory Test 1",

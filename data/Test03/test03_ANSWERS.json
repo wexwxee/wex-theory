@@ -1,0 +1,702 @@
+﻿[
+  {
+    "question_text": "What is the highest blood alcohol level permitted when you drive a vehicle?",
+    "answers": [
+      {
+        "text": "A blood alcohol level of 0.2.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "A blood alcohol level of 0.5.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "A blood alcohol level of 1.2.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "A blood alcohol level of 2.0.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The highest blood alcohol level permitted when you drive a car is 0.50.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=656&question=1",
+    "question_index": 1,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=656&question=1"
+  },
+  {
+    "question_text": "The car in front is moving at approximately 40 km/h. There is no traffic behind you. How will you continue?",
+    "answers": [
+      {
+        "text": "I pay particular attention to the stripes on the traffic lane.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I stay behind the car.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I flash my headlights.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I overtake the car immediately.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "You must pay particular attention to the warning line which tells you that that there is a demarcation line within a short distance. Therefore, you reduce your speed and stay behind the driver in front.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=653&question=2",
+    "question_index": 2,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=653&question=2"
+  },
+  {
+    "question_text": "You are driving at 50 km/h when you come to a heavily built-up area and are getting close to a bus. How will you continue?",
+    "answers": [
+      {
+        "text": "I will continue driving at the same speed, i.e. 50 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I reduce my speed and hold back for the bus.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I warn the bus driver with a short horn signal.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I increase my speed and drive around the bus.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "You are driving in a heavily built-up area and are getting close to a bus that is indicating it is about to drive away from a bus stop. You must reduce your speed and, if necessary, stop. Therefore, move your foot on to the brake, reduce your speed and hold back for the city bus.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=657&question=3",
+    "question_index": 3,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=657&question=3"
+  },
+  {
+    "question_text": "You are driving at approximately 40 km/h, and there is no traffic behind you. What do you do here?",
+    "answers": [
+      {
+        "text": "I give a signal with the horn.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I will continue driving at the same speed, i.e. approximately 40 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I move my foot over to the brake.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I pull in to the centre of the traffic lane.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "You must pay particular attention to the children on the pavement. Children, who are walking on their own, must always be regarded as a clear sign of danger that requires increased awareness, reduced speed and preparedness to use the brakes. Therefore, you must move your foot on to the brake, reduce your speed and pull in towards the centre of the traffic lane to increase the safe distance.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=654&question=4",
+    "question_index": 4,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=654&question=4"
+  },
+  {
+    "question_text": "You want to continue straight out the road. What do you do now?",
+    "answers": [
+      {
+        "text": "I continue driving slowly.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I turn around as the road is too narrow for cars.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I pay particular attention to whether any oncoming traffic appears.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I am particularly mindful of the course of the road.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The warning sign A 43.1 indicates that the road ahead becomes narrow, and the information plate shows a free width of only 3.5 metres. On such a limited carriageway, you must reduce your speed and be alert to any oncoming traffic, as passing space may be very restricted. You should also pay close attention to the alignment of the road, since the narrowing continues further ahead. Turning around is unnecessary; instead, continue carefully with increased awareness.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=658&question=5",
+    "question_index": 5,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=658&question=5"
+  },
+  {
+    "question_text": "What should you pay particular attention to here?",
+    "answers": [
+      {
+        "text": "Cyclists in the traffic lane.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Pedestrians crossing ahead.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Oncoming traffic.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The road sign (A 17: Pedestrian Crossing) indicates that you are approaching a pedestrian crossing. The flashing amber light above the crossing reinforces this and serves as a direct warning to be alert to pedestrians.Your primary focus must therefore be on pedestrians crossing ahead, as they represent the immediate hazard. You must be ready to reduce your speed or stop to give way to anyone stepping onto the crossing.Oncoming traffic is visible, but it is not the relevant hazard in this situation, because nothing suggests that oncoming vehicles will affect your ability to proceed safely. The only danger you must pay particular attention to here is the pedestrian crossing.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=659&question=6",
+    "question_index": 6,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=659&question=6"
+  },
+  {
+    "question_text": "You are driving at approximately 50 km/h. There is no traffic behind you. How will you continue?",
+    "answers": [
+      {
+        "text": "I will continue driving at the same speed, approximately 50 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I reduce my speed.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I pull in towards the centre of the traffic lane.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I pay particular attention to the pedestrian.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "You are approaching a bend with limited visibility, and a pedestrian is walking along the edge of the road because there is no pavement. This combination of hazards requires defensive driving.You must reduce your speed and pull in towards the centre of the traffic lane to create a greater safety margin between your vehicle and the pedestrian. Lowering your speed prepares you to stop immediately if the pedestrian steps into the roadway or if an oncoming vehicle suddenly appears in the bend.Your primary focus must therefore be on the pedestrian, and on adjusting both your speed and your road position to ensure a safe passage through the bend.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=660&question=7",
+    "question_index": 7,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=660&question=7"
+  },
+  {
+    "question_text": "You have reduced your speed to approximately 20 km/h and moved your foot onto the brake before the difficult turn. There is no traffic behind you. How will you continue?",
+    "answers": [
+      {
+        "text": "I pay particular attention to the oncoming lorry.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I increase my speed.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I brake in order to give the lorry that is turning space.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I pull over as far as possible to the right of the traffic lane.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "You are approaching a difficult turn, and the oncoming lorry needs a very large turning radius. This means the lorry will come a long way into your lane. Large vehicles have limited manoeuvrability, and you must show increased caution to avoid creating danger or obstruction.Since you have already reduced your speed and prepared to brake, the correct action is to pull over as far as possible to the right side of your traffic lane. This gives the lorry the necessary space to complete its turn safely.Your main focus must therefore be on the oncoming lorry and adjusting your road position to ensure safe passing.Increasing your speed would be dangerous, and braking alone “to give space” is not the right reasoning — the essential action is to move to the right to create maximum clearance.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=661&question=8",
+    "question_index": 8,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=661&question=8"
+  },
+  {
+    "question_text": "You are driving at approximately 50 km/h. How will you continue?",
+    "answers": [
+      {
+        "text": "I flash my headlights.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I will continue driving at the same speed, approximately 50 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I pull right out to the kerb on the right-hand side.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I apply my brakes.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The car coming from the left has moved too far into the junction, forcing the oncoming driver to steer around it. As a result, the oncoming vehicle is now drifting towards your lane, creating an immediate risk of a head-on collision.You must therefore apply your brakes (or move your foot onto the brake) without delay to reduce speed and be ready to stop. At the same time, you should pull as far as possible towards the kerb on the right-hand side to create the greatest possible safety distance from the oncoming vehicle.Because this is a developing danger, you may also flash your headlights to warn the other driver. Warning signals are only permitted when necessary to prevent or avert danger — and in this situation, a brief flash is appropriate.Continuing at the same speed would be unsafe.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=662&question=9",
+    "question_index": 9,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=662&question=9"
+  },
+  {
+    "question_text": "You are driving at 40 km/h and the road is very slippery. How will you continue?",
+    "answers": [
+      {
+        "text": "I pay particular attention to oncoming traffic.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I am particularly mindful of the course of the road.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I pull over as far as possible to the right of the traffic lane.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I move my foot over to the brake.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The road is very slippery due to snow or ice, which means the road grip is severely reduced. This requires defensive driving and immediate adjustment of your speed.You must pay particular attention to oncoming traffic, because both you and the oncoming drivers will have a much longer braking distance and reduced control of your vehicles.You must also be particularly mindful of the course of the road, especially when approaching a bend, as steering becomes more uncertain in slippery conditions.To increase safety, you should pull over as far as possible to the right of the traffic lane. This creates a larger safety margin between you and oncoming vehicles, reducing the risk of a collision if either vehicle begins to skid.Finally, you must move your foot over to the brake so you are prepared to reduce speed gently and progressively. Hard braking must be avoided, as this can cause an immediate loss of control on slippery roads.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=663&question=10",
+    "question_index": 10,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=663&question=10"
+  },
+  {
+    "question_text": "You are driving at 50 km/h and have caught up with the car that is moving very slowly. How will you continue?",
+    "answers": [
+      {
+        "text": "I continue driving at the same or almost the same speed, approximately 50 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I overtake it.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I am particularly mindful of the side road.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I move my foot over to the brake.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "You are catching up with a very slow-moving vehicle just before a side road with poor visibility. Because your view of possible oncoming traffic is limited, you cannot know whether another road user may suddenly appear from ahead or from the side road.Even though traffic from the side road has an unconditional duty to give way to you, overtaking in this situation is very dangerous. Limited visibility, the slow vehicle in front of you, and the presence of a side road create a significant collision risk.You must therefore move your foot over to the brake to be prepared to stop immediately if the car in front slows down further or if another vehicle unexpectedly enters the road from the side road.You must also be particularly mindful of the side road, as vehicles may emerge with little warning.Overtaking must be postponed until you have passed the side road and have a clear, unobstructed view of the road ahead.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=664&question=11",
+    "question_index": 11,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=664&question=11"
+  },
+  {
+    "question_text": "You have caught up with the cyclists and there is no traffic behind you. How will you continue?",
+    "answers": [
+      {
+        "text": "I give a signal with the horn.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I cross the centre line and start to overtake the first cyclist.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I overtake immediately without crossing the centre line.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I reduce my speed and stay behind the cyclists in the meantime.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "You must not attempt to overtake the cyclists here. Overtaking would be dangerous because you cannot see whether oncoming traffic may suddenly appear, and safe overtaking requires a long, clear view ahead.You must not overtake if it requires crossing a solid centre line (demarcation line). Even if the centre line were broken or not present at all, overtaking would still be unsafe because the narrow road gives you insufficient lateral safety distance to the cyclists, and the limited visibility prevents you from seeing potential oncoming vehicles.Using the horn is also inappropriate, as it may startle the cyclists and cause them to swerve unpredictably.Therefore, the only safe and lawful action is to reduce your speed and stay behind the cyclists until the road layout allows a safe and clearly visible overtaking opportunity.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=665&question=12",
+    "question_index": 12,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=665&question=12"
+  },
+  {
+    "question_text": "You are driving at approximately 40 km/h and need to continue straight ahead. There is no traffic behind you. How will you continue?",
+    "answers": [
+      {
+        "text": "I continue driving at the same speed, approximately 40 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I overtake the car on the right immediately.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I pull out towards the kerb on the right-hand side.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I brake and stay behind the car.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "You are allowed to overtake a vehicle on the right when it is signalling and waiting to turn left. However, the car in front of you may hide pedestrians who are crossing in front of it.You must therefore brake and stay behind the car at first, so that you can check whether any pedestrians are crossing in front of the left-turning vehicle. You should also pull out towards the kerb on the right-hand side. This gives you a good lateral safety distance to the car in front and places you in the correct position to continue straight ahead past it when it is safe.When you have clearly confirmed that no pedestrians are crossing in front of the car, you may carefully pass it on the right at low speed and continue straight ahead. You must not simply continue at the same speed, and you must not overtake immediately without first checking for pedestrians.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=666&question=13",
+    "question_index": 13,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=666&question=13"
+  },
+  {
+    "question_text": "You want to turn to the left as soon as possible. What do you do here?",
+    "answers": [
+      {
+        "text": "I activate my left indicator immediately.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I wait a while before giving a sign with the indicator.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I turn to the left at the first side street when there is a free lane.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I wait at the next side street before turning.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The arrow marking on the carriageway clearly shows that turning left at the first junction is forbidden. You must therefore follow the arrow and continue straight ahead.Although you want to turn left as soon as possible, you should first position yourself correctly in the left-turning lane. However, you must not activate your indicator immediately, because signalling too early could mislead other road users into believing you intend to turn at the first junction where left turns are prohibited.You should instead wait until you are approaching the centre of the first junction before indicating, so that your signalling is clear and cannot be misunderstood.Therefore, the correct action is to continue straight ahead and wait at the next side street before turning left.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=667&question=14",
+    "question_index": 14,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=667&question=14"
+  },
+  {
+    "question_text": "You are driving at 30 to 40 km/h and need to continue straight on the road. There is no traffic behind you. How will you continue?",
+    "answers": [
+      {
+        "text": "I continue driving at the same speed, 30 to 40 km/h.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I keep my foot ready on the brake.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I pay particular attention to pedestrians.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I apply my brakes.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "You must pay particular attention to the pedestrian who is in or near your lane.Since you have already reduced your speed significantly to 30–40 km/h and the pedestrian is now stepping away from your lane, you should not brake further. Additional braking would be unnecessary and could even create a hazard.The correct action is to continue at your current slow speed, while keeping your foot ready on the brake so you can react immediately if the pedestrian unexpectedly steps back towards the roadway.Your main focus must therefore be the pedestrian and maintaining full control of your speed and braking readiness.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=668&question=15",
+    "question_index": 15,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=668&question=15"
+  },
+  {
+    "question_text": "You have reduced your speed to 30 km/h in order to turn to the right. How will you continue?",
+    "answers": [
+      {
+        "text": "I will continue driving at the same speed, approximately 30 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I reduce my speed.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I turn to the right immediately.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I hold back for the cyclist and check my blind spot before turning.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "When turning right, you must give way to any cyclist who is continuing straight ahead or riding alongside you in the cycle lane.Since the cyclist is clearly in motion (their foot is not on the ground), you must hold back and let the cyclist pass first.Even after the cyclist has passed, the turn is not yet safe: before completing the right turn, you must always perform a right-shoulder blind-spot check to ensure that no other cyclist, moped rider, or road user is approaching from behind on the cycle lane.You must not turn immediately, nor continue at the same speed, because doing so would cut across the cyclist’s path.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=671&question=16",
+    "question_index": 16,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=671&question=16"
+  },
+  {
+    "question_text": "What should you pay particular attention to a bit further ahead?",
+    "answers": [
+      {
+        "text": "A dangerous bend in the road.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "The rule on merging where the traffic lanes run together.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "The rule on changing traffic lanes.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "The motorway is coming to an end.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "You must pay particular attention to the rule on merging where the traffic lanes run together, as indicated by the information sign B15 (Lane Merge). This sign warns that two lanes will merge into one further ahead, and drivers should merge cooperatively using the zipper-merge method exactly where the lane markings end.This differs from the warning for a dangerous bend, which would be shown by A41.1 (Curve to the right), and it also differs from the sign for the end of a motorway, which would be E44 (End of Motorway). The rule on changing lanes does not apply here, because merging is a coordinated movement where both lanes join together rather than one vehicle crossing broken lane markings.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=672&question=17",
+    "question_index": 17,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=672&question=17"
+  },
+  {
+    "question_text": "You are driving on a motorway, what should you pay particular attention to a bit further ahead?",
+    "answers": [
+      {
+        "text": "Drivers who want to enter the motorway have an unconditional duty to give way.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I have an unconditional duty to give way.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Drivers have difficulty coming on to the motorway.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I can help by changing to the left traffic lane.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "You must pay particular attention to drivers who are trying to enter the motorway ahead. They have an unconditional duty to give way to you and to the rest of the motorway traffic. However, although they legally have to hold back, they may still find it difficult to merge due to differences in speed or the amount of traffic. As a defensive and cooperative motorway driver, you can help them by changing to the left-hand lane if it is safe to do so, so they have more space to enter the motorway smoothly.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=673&question=18",
+    "question_index": 18,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=673&question=18"
+  },
+  {
+    "question_text": "What should you pay particular attention to here?",
+    "answers": [
+      {
+        "text": "Areas with speed bumps.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Play and residential area.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Children have right of way to play in the traffic lane.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The sign E 51: Play and Residential Area indicates that you are entering an area where children may play on or close to the carriageway, and they have priority. You must therefore reduce your speed significantly (max. about 15 km/h) and be ready to stop immediately.This is not a speed bump zone. Speed bumps would be indicated by sign A 36 (Speed bump), not by E 51.It is also correct that children have right of way to play in the traffic lane in this area, because all vehicle drivers are required to adapt completely to pedestrians and playing children.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=675&question=19",
+    "question_index": 19,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=675&question=19"
+  },
+  {
+    "question_text": "You are driving at approximately 60 km/h and need to enter the motorway. How will you continue?",
+    "answers": [
+      {
+        "text": "I increase my speed.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I merge in immediately after the black car.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I move my foot over to the brake.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I wait until it is clear behind me before driving into the motorway.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "You must pay particular attention to the road sign indicating that you have an unconditional duty to give way before you enter the motorway. Therefore, you should not increase your speed but look back to see what is happening and only drive in to the motorway when there is no danger or inconvenience to those driving on the motorway.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=676&question=20",
+    "question_index": 20,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=676&question=20"
+  },
+  {
+    "question_text": "You have gotten out of the red car.",
+    "answers": [
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Is it forbidden to stop the car here?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "It is forbidden to stop (and therefore park) on a motorway. This prohibition also applies to entry and exit lanes, grass reservations etc.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=674&question=21",
+    "question_index": 21,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=674&question=21"
+  },
+  {
+    "question_text": "You stop and want to set off from the kerb. What do you do?",
+    "answers": [
+      {
+        "text": "I drive off immediately.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I turn my head and see if the road is clear behind me.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "When the lane behind me is clear, I drive out from the kerb slowly.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I pay particular attention to oncoming traffic.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "At the beginning there was no indication whether there were any drivers in the blind spots. Therefore, you can't set off immediately, even though there is no oncoming traffic or traffic coming behind you in the mirror. Only once you have checked the blind spots and established that the lane is clear can you set off. therefore, you should move over onto the oncoming lane and should pay particular attention to any oncoming drivers.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=680&question=22",
+    "question_index": 22,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=680&question=22"
+  },
+  {
+    "question_text": "You are driving at approximately 20 to 30 km/h, the same as the motorcyclist in front. You have to drive straight out the road in which there is a bend. How will you continue?",
+    "answers": [
+      {
+        "text": "I will continue driving at the same speed, 20 to 30 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I increase my speed.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I brake gently.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I am particularly mindful of the condition of the road.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The motorcyclist will possibly reduce his speed at the bend. Always brake gently when the road is slippery. You should also be particularly mindful of the reduced road grip and should adapt your speed with regard to oncoming traffic, bends in the road and road grip.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=682&question=23",
+    "question_index": 23,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=682&question=23"
+  },
+  {
+    "question_text": "You have gotten out of the red car.",
+    "answers": [
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Is it forbidden to stop and park here?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The yellow unbroken edge line indicates that both stopping and parking are forbidden.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=677&question=24",
+    "question_index": 24,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=677&question=24"
+  },
+  {
+    "question_text": "You have gotten out of the red car to run an errand. Which rules for stopping and parking apply here?",
+    "answers": [
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "It is forbidden to stop here?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The sign indicates that it is forbidden to stop here.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=678&question=25",
+    "question_index": 25,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=85&teoriproeve_billederIDX=678&question=25"
+  }
+]

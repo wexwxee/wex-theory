@@ -1,0 +1,702 @@
+﻿[
+  {
+    "question_text": "You are driving at 50 km/h, the same as the driver in front. How will you continue?",
+    "answers": [
+      {
+        "text": "I pay particular attention to the surface of the traffic lane.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I continue driving at the same or almost the same speed, approximately 50 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I reduce my speed.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I am particularly mindful of the risk of thrown-up pebbles.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The warning sign warns of thrown-up pebbles, therefore you should reduce your speed.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=879&question=1",
+    "question_index": 1,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=879&question=1"
+  },
+  {
+    "question_text": "You are approaching the intersection where you need to turn left. There is no traffic behind you. How will you continue?",
+    "answers": [
+      {
+        "text": "I pay particular attention to the steering ability of the lorry.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I keep to my lane up to the intersection.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I pull over to the right of the traffic lane slightly.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I apply my brakes.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "As the lorry requires a large amount of space to turn and therefore comes over into your lane, you have to pull over to the right a bit whilst you brake to give the lorry the required space.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=862&question=2",
+    "question_index": 2,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=862&question=2"
+  },
+  {
+    "question_text": "You are driving at approximately 40 km/h and need to continue straight out the road. How will you continue?",
+    "answers": [
+      {
+        "text": "I am particularly mindful of the course of the road.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I continue driving at the same or almost the same speed, approximately 40 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I move my foot over to the brake.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I warn the children with a short horn signal.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "Right at this moment the children and not the course of the road are the most important thing. You should pay particular attention to children. They often act impulsively, and therefore you should move your foot on to the brake and keep a good distance to the side. If you use the horn you can cause a panic reaction in the children.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=864&question=3",
+    "question_index": 3,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=864&question=3"
+  },
+  {
+    "question_text": "You are driving at 40 km/h. What should you pay particular attention to here?",
+    "answers": [
+      {
+        "text": "The course of the road.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Railway crossing with barrier.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Railway crossing without barrier.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Any crossing traffic.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "You should pay particular attention to the road sign warning of risky conditions on the road ahead, namely the railway crossing without a barrier where you have to stop for any crossing trains.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=865&question=4",
+    "question_index": 4,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=865&question=4"
+  },
+  {
+    "question_text": "You are driving at 50 km/h and need to continue straight ahead. How will you continue?",
+    "answers": [
+      {
+        "text": "I pay particular attention to the road sign.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I am particularly mindful of the course of the road.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I will continue driving at the same speed, i.e. 50 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I brake and look to see what is happening on both sides.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "A railway crossing is part of the course of the road and you should always reduce your speed so you are able to stop if a signal is given, or if you can see or hear that a train is coming.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=866&question=5",
+    "question_index": 5,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=866&question=5"
+  },
+  {
+    "question_text": "You have stopped by the roadside and want to set off. There are no drivers in the blind spots. What do you do?",
+    "answers": [
+      {
+        "text": "I pay particular attention to oncoming traffic.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I pay particular attention to traffic coming from behind.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I drive off immediately.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I wait a while before setting off.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "You should only be particularly aware of visible signs of danger and conditions that are relevant to the manoeuvre you intend to make. Therefore, you don't need to pay particular attention to oncoming traffic. On the other hand, you should pay particular attention to cars coming from behind that are so close that you wait a while before setting off.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=867&question=6",
+    "question_index": 6,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=867&question=6"
+  },
+  {
+    "question_text": "You are driving at approximately 80 km/h. How will you continue?",
+    "answers": [
+      {
+        "text": "I am particularly mindful of the course of the road.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I am particularly aware that any crossing traffic has an unconditional duty to give way at the intersection further ahead.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I should hold back for traffic from the side streets.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "You should pay particular attention to the sign \"Dangerous intersection\", which warns that there are risky conditions on the road ahead. The sign indicates that the crossing traffic has an unconditional duty to give way but it is sited where the crossing traffic has poor visibility. Therefore, you should pay particular attention to any crossing traffic, which you may possibly have to brak.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=870&question=7",
+    "question_index": 7,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=870&question=7"
+  },
+  {
+    "question_text": "You want to turn right at the intersection. There is no traffic behind you. What do you do?",
+    "answers": [
+      {
+        "text": "I pay particular attention to the regulation of the lights.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I continue in the lane I'm in all the way up to the intersection.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "If the lane is clear, I move over to the lane to my right.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I continue in my own traffic lane a while longer.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "Before a traffic signal, you should always pay particular attention to the traffic lights. Pull over to the traffic lane to your right.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=873&question=8",
+    "question_index": 8,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=873&question=8"
+  },
+  {
+    "question_text": "Which rules apply to the use of crawler lanes?",
+    "answers": [
+      {
+        "text": "You must drive in the crawler lane if you are driving slower than the speed stated on the road sign.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "If you are driving faster than the stated speed you must leave the crawler lane.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "When you drive into or out of the crawler lane, you must follow the rule on changing lanes.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "When you drive into or out of the crawler lane, you must follow the rule on merging.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "You should drive into the crawler lane if you are driving slower than the speed stated on the road sign. The maximum permitted speed in the crawler lane is the speed stated on the road sign. When someone drives into or out of the crawler lane, they must follow the rule on changing lanes.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=875&question=9",
+    "question_index": 9,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=875&question=9"
+  },
+  {
+    "question_text": "You are driving at approximately 60 km/h and need to continue straight out the road. What do you do?",
+    "answers": [
+      {
+        "text": "I pay particular attention to the road signs.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I am particularly mindful of the course of the road.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "It is forbidden to drive more than 30 km/h through the bend.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "The maximum recommended speed limit at the bend is 30 km/h.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "You should pay particular attention to the warning sign \"Hazardous bend\" and the information sign, which recommends a speed of 30 km/h.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=878&question=10",
+    "question_index": 10,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=878&question=10"
+  },
+  {
+    "question_text": "You are driving at 40 km/h in a heavily built-up area. What should you pay particular attention to here?",
+    "answers": [
+      {
+        "text": "Oncoming traffic.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I hold back for the oncoming traffic.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Oncoming traffic should hold back for me.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I reduce my speed and continue carefully further along the road.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The warning sign indicates that you should be particularly aware that there may be oncoming traffic. The sign does not show who, in the event that you come up against another driver, should hold back. Therefore, the general laws of driving apply.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=877&question=11",
+    "question_index": 11,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=877&question=11"
+  },
+  {
+    "question_text": "You are driving at 70 km/h and have caught up with the grey car, which is moving slowly. How will you continue?",
+    "answers": [
+      {
+        "text": "I am particularly mindful of the course of the road.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I increase my speed and merge in front of the car.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I reduce my speed slightly.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I merge in behind the car.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The sign tells you that 2 traffic lanes will become 1 traffic lane further ahead. Since there are no traffic lane lines, the rule on merging applies.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=880&question=12",
+    "question_index": 12,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=880&question=12"
+  },
+  {
+    "question_text": "You want to continue straight out the road. What should you pay particular attention to further ahead?",
+    "answers": [
+      {
+        "text": "I pay particular attention to the tilting bridge further ahead.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I am particularly mindful of the risk of strong side winds further ahead.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I am particularly mindful of the risk of aquaplaning.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The road sign warns of strong side winds that can knock your car off course, especially if you are driving at a high speed.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=881&question=13",
+    "question_index": 13,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=881&question=13"
+  },
+  {
+    "question_text": "You are driving at 20-30 km/h. How will you continue?",
+    "answers": [
+      {
+        "text": "I pay particular attention to the road sign.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I pay particular attention to whether the oncoming traffic is waiting.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I stop and wait for the oncoming traffic.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I continue at the same speed or a slightly higher speed.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The information sign shows that oncoming traffic has the prohibition sign \"Wait for oncoming traffic\". Therefore, if possible, you should increase your speed so as not to tempt the oncoming traffic to move off and to get past the narrowing of the road as quickly as possible, so that you don't delay the flow of traffic unnecessarily. However, you should pay particular attention to whether the oncoming driver should now also wait, as he should, according to the sign.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=876&question=14",
+    "question_index": 14,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=876&question=14"
+  },
+  {
+    "question_text": "How fast may you drive after the road sign?",
+    "answers": [
+      {
+        "text": "The maximum speed I can drive at is 80 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "The maximum speed I can drive at is 70 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "The maximum speed I can drive at is 60 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "The maximum speed I can drive at is 50 km/h.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The main sign indicates that a local speed limit of 60 km/h is ending. The sub-sign shows that you are driving in a heavily built-up area in which the maximum speed limit is 50 km/h.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=883&question=15",
+    "question_index": 15,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=883&question=15"
+  },
+  {
+    "question_text": "You are driving at 80 km/h and want to continue straight out the road. How will you continue?",
+    "answers": [
+      {
+        "text": "I pay particular attention to the road sign.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I am particularly aware that there may be creatures crossing the road.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I am particularly aware that there may be wildlife on the road.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "You should pay particular attention to the road sign, which warns of wildlife on the road.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=884&question=16",
+    "question_index": 16,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=884&question=16"
+  },
+  {
+    "question_text": "You are driving at 80 km/h and there is no traffic behind you. What do you do?",
+    "answers": [
+      {
+        "text": "I continue driving at the same or almost the same speed, 80 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I apply my brakes.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I pull over towards the edge line on the right-hand side.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I pull out and go over the edge line on the right-hand side.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "Due to the narrow road and the oncoming tractor, you must pay particular attention to the types of manoeuvres made by the oncoming traffic. You should brake and pull all the way over to the right edge of the traffic lane in order to create as much space.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=885&question=17",
+    "question_index": 17,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=885&question=17"
+  },
+  {
+    "question_text": "You are driving at 40 km/h. How will you continue?",
+    "answers": [
+      {
+        "text": "I will continue driving at the same speed, i.e. 40 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I am particularly mindful of the children.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I stop at the stop line.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I am particularly attentive to the single track railway crossing sign?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "Before crossing the railway tracks, prioritize vigilance for trains approaching from the sides rather than focusing on children who are on the other side of the tracks. It's important to note that a single cross on the marking sign indicates a single-track railway. Additionally, if the signal lights are not lit, you should not stop at the stop line. Instead, reduce your speed and proceed cautiously, allowing you to remain particularly attentive to trains approaching from the sides. Right now, the priority is not the children. Once safely across the tracks, shift your attention to them.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=887&question=18",
+    "question_index": 18,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=887&question=18"
+  },
+  {
+    "question_text": "When is it time to turn on the lights on your car?",
+    "answers": [
+      {
+        "text": "It is time to turn on your lights all day long.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "From one hour before sunset until an hour after sunrise.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "From sunset to sunrise.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "From an hour after sunset until an hour before sunrise.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "Cars and motorcycles must use dipped headlights (not parking light) at all times. Use daytime running lights even during daylight hours, even in the summer.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=888&question=19",
+    "question_index": 19,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=888&question=19"
+  },
+  {
+    "question_text": "You are driving at 30 km/h and would like to continue straight ahead. What do you do?",
+    "answers": [
+      {
+        "text": "I will continue driving at the same speed, i.e. 30 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "After the road sign it is forbidden to drive at more than 15 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "After the road sign it is recommended that you drive at a maximum of 15 km/h.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Parking outside the marked parking space is forbidden.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "You should be particularly aware of the type of road, a residential and play area, where special rules apply for driving and parking. Since you are only permitted to drive on the pedestrians' terms, you reduce your speed and continue at a maximum of 15 km/h and are ready to stop for any pedestrians.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=889&question=20",
+    "question_index": 20,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=889&question=20"
+  },
+  {
+    "question_text": "You have driven into the intersection in order to turn to the left. What do you do?",
+    "answers": [
+      {
+        "text": "I pay particular attention to the traffic lights on the corner.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I pay particular attention to oncoming traffic.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I set off slowly in order to turn to the left.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I wait in the middle of the intersection for a while longer.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "Since there are no lights on at the traffic lights on the corner, it means that the green light is showing for oncoming traffic. Therefore, you should wait before driving, until you have better visibility or until the lights on the corner change to red.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=894&question=21",
+    "question_index": 21,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=894&question=21"
+  },
+  {
+    "question_text": "You have just gotten out of the white car just outside a heavily built-up area.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "It is forbidden to park on the traffic lane on a main road outside a heavily built-up area, but since the car has stopped outside the traffic lane you are permitted to park here.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=895&question=22",
+    "question_index": 22,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=895&question=22"
+  },
+  {
+    "question_text": "What does the traffic law define as parking?",
+    "answers": [
+      {
+        "text": "Leaving a car stationary without a driver for 2-3 minutes.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Leaving a car stationary for more than 3 minutes while the driver is in the vehicle.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Leaving a car stationary for more than 3 minutes without a driver.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Leaving a car stationary for 10-20 minutes while the driver loads or unloads baggage.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "Parking is defined as any instance where a car is left stationary for more than 3 minutes and where there is no loading/unloading or someone getting in or out.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=897&question=23",
+    "question_index": 23,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=897&question=23"
+  },
+  {
+    "question_text": "You are driving at 50 km/h. What should you pay particular attention to here?",
+    "answers": [
+      {
+        "text": "After the road sign it is forbidden to drive at more than 30 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "After the road sign I should drive at least 30 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "After the road sign it is recommended that you drive at a maximum of 30 km/h.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I am particularly aware that I am driving into an area with speed suppression measures.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The information sign indicates that you are driving into an area in which the traffic lane has speed barriers and chicanes installed and the maximum recommended speed limit is 30 km/h on that stretch of road.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=898&question=24",
+    "question_index": 24,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=898&question=24"
+  },
+  {
+    "question_text": "What should you pay particular attention to here?",
+    "answers": [
+      {
+        "text": "The course of the road.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "I am particularly aware that I may only drive to the right.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I am particularly aware that I may only drive to the left.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I am particularly aware that I have a free choice as to whether I drive to the left or to the right.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The road sign shows that you have a free choice and that you don't need to be particularly mindful of the reduced road grip as the road is dry.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=962&question=25",
+    "question_index": 25,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=92&teoriproeve_billederIDX=962&question=25"
+  }
+]

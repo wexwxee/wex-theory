@@ -1,0 +1,657 @@
+﻿[
+  {
+    "question_text": "What does this traffic sign warn about?",
+    "answers": [
+      {
+        "text": "Warning about a steep hill downwards.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Warning about a road slope on the right side.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Warning about a steep hill upwards.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The \"Steep hill downwards\" (A46.1) sign warns you that the road ahead has a steep downhill slope. You should slow down and be extra careful to keep control of your car. Using a lower gear can help you brake more effectively and avoid losing control. This sign is especially important in hilly or mountainous areas, where it can be dangerous to drive too fast. The number on the sign shows how steep the hill is, so you can prepare for the descent. If the road was going uphill, the sign would say \"A46.2 Steep hill upwards\" instead.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1130&question=1",
+    "question_index": 1,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1130&question=1"
+  },
+  {
+    "question_text": "What applies when driving in the crawler lane?",
+    "answers": [
+      {
+        "text": "The rightmost lane must be used if you are driving slower than the speed indicated on the sign.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "It is allowed to stop or park in the crawler lane if necessary.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Leaving the crawler lane is considered a lane change.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "The merging rule applies when leaving the crawler lane.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "E 37 Crawler Lane: This sign indicates a crawler lane, which is the rightmost lane and must be used by vehicles driving slower than the rest of the traffic. In this case, where the speed limit on the road is 50 km/h or higher, you must use the crawler lane if you are driving slower than 50 km/h. The mandatory speed on the sign can be either higher or lower than 50 km/h, but the rule remains the same: If you are driving below the indicated speed, you must use the crawler lane. Stopping or parking in the crawler lane is not allowed. When leaving the crawler lane, it is considered a lane change. You must ensure the maneuver can be performed safely and without causing unnecessary inconvenience to other road users. Be particularly aware of approaching traffic from behind.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1150&question=2",
+    "question_index": 2,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1150&question=2"
+  },
+  {
+    "question_text": "How would you interpret this sign if you see it on the road?",
+    "answers": [
+      {
+        "text": "You should be aware that you may encounter oncoming traffic.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "You are on a road where traffic is one-way only, and there is no oncoming traffic.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "The sign means that traffic flows in only one direction.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The A18 – Oncoming Traffic sign warns you that there may be traffic coming towards you on the road. The sign is typically placed at entrances from one-way streets, at intersections, or at the beginning of sections with oncoming traffic. The purpose of this sign is to make drivers extra alert and encourage cautious driving in these areas. (In some countries, a similar sign may be labeled “Two-Way Traffic Ahead” or “Oncoming Traffic” to indicate a transition from a one-way street to a two-way road.)",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1144&question=3",
+    "question_index": 3,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1144&question=3"
+  },
+  {
+    "question_text": "What applies when you pass this sign?",
+    "answers": [
+      {
+        "text": "You are entering a motorway.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "You are entering a carriageway.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "The maximum speed limit is 130 km/h for cars and motorcycles.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "The maximum speed limit is 110 km/h for cars and motorcycles.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The **E 42 Motorway** sign marks the entrance to a motorway, where special traffic rules apply. The general speed limit for cars and motorcycles is 130 km/h unless otherwise posted. Vehicles towing trailers or caravans may not exceed 80 km/h unless the trailer is approved for higher speeds. Trucks and buses over 3,500 kg are generally limited to 80 km/h but may be allowed to drive up to 100 km/h with a special permit. Traffic on motorways must follow specific rules, including a ban on stopping, reversing, and making U-turns. (In some English-speaking regions, a \"motorway\" may also be called a \"freeway,\" \"expressway,\" or \"highway.\")",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1147&question=4",
+    "question_index": 4,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1147&question=4"
+  },
+  {
+    "question_text": "What does the main sign with the supplementary sign indicate?",
+    "answers": [
+      {
+        "text": "It is prohibited to stop on the carriageway unless necessary for traffic reasons.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "You are allowed to park on the shoulder.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Parking on the shoulder is prohibited, but stopping is allowed.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "You may park both on the carriageway and on the shoulder.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The main sign C 61 prohibits stopping on the carriageway unless required by traffic conditions, such as waiting at a red light, turning, yielding to a pedestrian, or stopping due to an obstruction. Stopping means the vehicle is stationary for up to three minutes unless actively dropping off passengers or loading/unloading goods. If the vehicle remains longer, it is considered parking. The supplementary sign UC 60,6 prohibits parking on the shoulder, but stopping is allowed. The shoulder is the area outside the main traffic lane, such as next to cycle paths or sidewalks. However, local restrictions may apply to both stopping and parking. In summary, the main sign bans stopping on the carriageway except when necessary, while the supplementary sign clarifies that parking on the shoulder is not allowed, but stopping is permitted. (In some English-speaking regions, the term \"shoulder\" may be used instead of \"verge\" to describe the area beside the road.)",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1146&question=5",
+    "question_index": 5,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1146&question=5"
+  },
+  {
+    "question_text": "What does this railway crossing sign indicate?",
+    "answers": [
+      {
+        "text": "A multi-track railway crossing.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "A single-track railway crossing.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "No stopping allowed.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The A 74.2 Crossbuck for a multi-track railway crossing warns that the road crosses multiple railway tracks, meaning trains may approach from different directions at the same time. The sign consists of a large cross with a smaller cross below it, indicating multiple tracks. You must be extra cautious and wait if a train is approaching. If there is only one track, the sign will instead be A 74.1 Crossbuck for a single-track railway crossing, which only has a single cross. The sign does not indicate a parking or stopping restriction—this is marked by C 61 No Stopping.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1136&question=6",
+    "question_index": 6,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1136&question=6"
+  },
+  {
+    "question_text": "What does this sign indicate?",
+    "answers": [
+      {
+        "text": "Merging of two lanes where drivers must cooperate.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Crossing traffic ahead.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Lanes become wider further ahead.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The B 15 \"Merging traffic\" sign warns that two lanes will merge, requiring drivers to pay attention and cooperate to ensure a smooth transition. This sign is commonly used on motorways or where two major roads join, helping drivers prepare for merging. When merging, the vehicle in front should go first, while the vehicle behind should adjust speed and maintain a safe distance. Merging should generally occur where the lane markings end. If the sign were warning about crossing traffic ahead, it would be A 11 - Hazardous junction (Crossroads).",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1133&question=7",
+    "question_index": 7,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1133&question=7"
+  },
+  {
+    "question_text": "What does this sign indicate?",
+    "answers": [
+      {
+        "text": "Warning about a slow lane ahead.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "The sign indicates that you must pass an obstacle in the direction shown.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Warning about a road narrowing on the right side.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The A 43,3 \"Road narrows on the right side\" sign warns that the road will become narrower on the right side ahead. This means you should drive more carefully and be aware of potential congestion. The sign helps maintain smooth traffic flow despite the reduced road width. If the warning applies only to cyclists, this will be indicated on an additional sign. This sign is important for minimizing the risk of accidents and traffic build-up. If the sign instead warned about a slow lane, it would be E 16 \"Climbing lane\". If it indicated a mandatory direction past an obstacle, the sign would be D 15,2 \"Mandatory direction past obstacle\".",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1134&question=8",
+    "question_index": 8,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1134&question=8"
+  },
+  {
+    "question_text": "What does the main sign with the supplementary sign indicate?",
+    "answers": [
+      {
+        "text": "It means that stopping and parking are prohibited on the road section after the sign.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Stopping is prohibited on the road section before the sign.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "It is allowed to quickly pick up or drop off a friend on the road section before the sign.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The sign C 61 \"No Stopping\" means that you are not allowed to stop or park on the road, as it may create dangerous situations. Stopping means voluntarily bringing the vehicle to a halt, which can be problematic if it obstructs the flow of traffic. The supplementary sign UC 60,3 with a downward-pointing arrow indicates that the prohibition applies before the main sign. This helps drivers understand where the no-stopping rule is in effect. If the arrow pointed upward instead, the prohibition would start after the sign.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1140&question=9",
+    "question_index": 9,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1140&question=9"
+  },
+  {
+    "question_text": "What does this sign indicate?",
+    "answers": [
+      {
+        "text": "The sign means that passenger cars are not allowed to enter.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "The sign shows that you are leaving a motorway.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "The sign shows that you are leaving a carriageway.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "After passing the sign, you will drive on a standard road with normal traffic rules.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The E 43 Carriageway (motortrafikvej) Ends sign indicates that you are leaving a carriageway, also known as an expressway in some countries. This means the special traffic rules for this type of road no longer apply. After passing the sign, you will continue on a regular road, where you may encounter more intersections, traffic lights, and different speed regulations. Drivers should adjust their speed and driving behavior accordingly.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1135&question=10",
+    "question_index": 10,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1135&question=10"
+  },
+  {
+    "question_text": "What does this sign indicate?",
+    "answers": [
+      {
+        "text": "No through traffic.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "End of restriction.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Traffic in both directions prohibited.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The C21 \"Traffic in both directions prohibited\" sign means that no vehicles are allowed to enter or drive on this road from either direction. This applies to all types of vehicles, including cars, motorcycles, bicycles, and mopeds.If an additional sign is present, it may also prohibit pushing a bicycle or moped.The \"No through traffic\" sign is different—it usually appears with additional text and only restricts passing through the area but may still allow access from one side.The \"End of prohibition\" (C59) sign indicates that a previous restriction has been lifted, meaning that driving is now permitted again.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1126&question=11",
+    "question_index": 11,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1126&question=11"
+  },
+  {
+    "question_text": "What does this sign indicate?",
+    "answers": [
+      {
+        "text": "Lane layout with lane change.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Lane layout with merging.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Climbing lane.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "There is an unconditional give way further ahead.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "E16.2.3 Lane Layout with Lane Change: This sign indicates that the road layout changes ahead, where two lanes merge into one. If you are in the ending lane, you must change to the left lane to continue. The lane change must be made safely and without obstructing other drivers. If there is no space, you must yield. It is your responsibility to ensure that drivers in the continuing lane are not forced to slow down or adjust their speed. Dashed road markings indicate the transition between lanes. Use your indicators correctly and adjust your speed to merge safely. If this were a merging lane, the sign would look like E16.1 - \"Lane Layout with Merging.\" If this were a slow lane (crawler lane), the sign would be E37 - \"Slow Lane.\"",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1141&question=12",
+    "question_index": 12,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1141&question=12"
+  },
+  {
+    "question_text": "What does this sign indicate?",
+    "answers": [
+      {
+        "text": "Entry is prohibited for all vehicles.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "You may enter by car, but not by bicycle or moped.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "You may not enter by car, but bicycles and mopeds are allowed.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The C 19 – No Entry sign means that you are not allowed to enter the road or area with any type of vehicle, including cars, bicycles, mopeds, and motorcycles. If an additional sign is placed below, it may also prohibit pushing a bicycle or moped into the area. In short, if you see this sign, you must find another route.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1138&question=13",
+    "question_index": 13,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1138&question=13"
+  },
+  {
+    "question_text": "What does this sign indicate?",
+    "answers": [
+      {
+        "text": "You may only drive in the direction indicated by the arrow.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Turning left is prohibited.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "You may drive in both directions.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The D 11.2 \"Mandatory traffic direction\" sign means that you are only allowed to drive in the direction shown by the arrow on the sign. It is used to ensure that traffic flows correctly, especially at intersections or locations where roads split. If turning left were prohibited, the sign would be C 11.2 \"No Left Turn.\"",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1131&question=14",
+    "question_index": 14,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1131&question=14"
+  },
+  {
+    "question_text": "What does this sign mean if you see it on the road?",
+    "answers": [
+      {
+        "text": "It is prohibited to drive faster than 40 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "You should not exceed the recommended speed.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "You must always drive at the indicated speed.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "You should expect speed bumps or other traffic-calming measures on the road.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The E53 – Speed Reduction Area (Speed Limit) sign indicates an area with measures such as speed bumps, requiring lower speeds. The \"40 km zone\" sign means a speed limit of 40 km/h, but this can vary depending on the area, such as 20 km/h or 30 km/h. The sign serves as a recommendation to drive no faster than 40 km/h. On the back of the sign, a grey background with black diagonal lines indicates that the 40 km/h zone has ended. Signs with or without the word \"max\" mean the same thing.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1143&question=15",
+    "question_index": 15,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1143&question=15"
+  },
+  {
+    "question_text": "What does this sign mean when you see it on the road?",
+    "answers": [
+      {
+        "text": "Dangerous intersection where crossing traffic must give way unconditionally.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "It means I must stop at the intersection ahead.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "You must give way unconditionally when reaching the intersection.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I am on a main road.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The \"A 11 Dangerous Intersection\" sign warns that you are approaching an intersection where crossing traffic must give way. However, you should still be cautious, as other drivers might not yield as expected. A variation of this sign, \"A 11.1 – Dangerous Intersection from the Right (or Left)\", specifically warns about traffic approaching from either the right or left that must give way. If you are driving on a main road, the sign would be different: \"B 16 – Main Road\". This sign is a yellow diamond with a white border, indicating that your road has priority over others at intersections.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1137&question=16",
+    "question_index": 16,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1137&question=16"
+  },
+  {
+    "question_text": "What does this sign mean?",
+    "answers": [
+      {
+        "text": "Only motor vehicles are allowed on this road.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Overtaking is prohibited here.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "You may overtake lorries but not cars.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "I am allowed to overtake a two-wheeled bicycle or a small two-wheeled moped.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The C 51 No Overtaking sign means that overtaking is prohibited at this location. However, you are allowed to overtake a two-wheeled bicycle or a two-wheeled moped. The restriction also does not apply if you are overtaking a vehicle that is turning off the road. This sign is often placed in areas with high traffic, sharp curves, or narrow roads where overtaking could be dangerous. It is also used near school zones to improve safety. If overtaking is only prohibited for lorries (large trucks and other heavy goods vehicles), a different sign is used: C 52 No Overtaking with Lorry.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1149&question=17",
+    "question_index": 17,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1149&question=17"
+  },
+  {
+    "question_text": "What does this traffic sign warn about?",
+    "answers": [
+      {
+        "text": "Loose stones on the road, which may cause damage to your car.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Slippery road when it hails.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Risk of rockslides and falling rocks on the road.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The \"Loose chippings\" (A33) sign warns that small loose stones may be on the road. These stones can damage your car, especially if you drive too fast or too close to other vehicles. This sign is often found in areas with roadworks or on roads where the surface is not fully stable. If you see this sign, slow down and keep a safe distance from the car in front to avoid getting hit by flying stones.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1125&question=18",
+    "question_index": 18,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1125&question=18"
+  },
+  {
+    "question_text": "What does this sign indicate?",
+    "answers": [
+      {
+        "text": "You are not allowed to turn left at the intersection.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "You are allowed to make a U-turn at the intersection.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Turning left is only prohibited if there is oncoming traffic.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "You must go straight unless another direction is allowed.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The \"C 11.2 No Left Turn\" sign means that you are not allowed to turn left at the junction or entrance where the sign is placed. This restriction applies only in this specific area unless an additional sign states otherwise. Since making a U-turn usually involves a left turn, this sign also means that U-turns are not permitted. In short: You must not turn left or make a U-turn where this sign is displayed.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1148&question=19",
+    "question_index": 19,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1148&question=19"
+  },
+  {
+    "question_text": "What does this sign mean?",
+    "answers": [
+      {
+        "text": "You can choose your speed as long as you are not a danger or inconvenience to others.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "You are entering an open area and play area. When leaving the area, you must give way to all other traffic.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "You can park anywhere in the area as long as you are not an inconvenience.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "You must not drive faster than 15 km/h in the area.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "E 51 – Open Area and Play Area In this area, pedestrians and children are allowed to walk and play on the roads, but they must not obstruct vehicles. Drivers must always give way to pedestrians who would otherwise be at risk of being hit and must not drive faster than 15 km/h. Extra caution and care must be taken when driving in the area. Upon leaving, drivers must give way to all other traffic. Cars must be parked in designated parking spaces, while other vehicles follow general parking rules—except bicycles, mopeds, and two-wheeled motorcycles. (In some countries, a similar sign may be referred to as a 'Shared Zone' or 'Home Zone,' indicating an area where pedestrian safety is prioritised, and strict speed limits apply.)",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1145&question=20",
+    "question_index": 20,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1145&question=20"
+  },
+  {
+    "question_text": "What should you be aware of if you see this sign on the road?",
+    "answers": [
+      {
+        "text": "Warning about roadworks that may create dangerous conditions along the verge.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Risk of slippery roads along the verge.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Hazardous verge that may make it difficult to control the car, such as a soft verge or a high drop.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The A35 – Hazardous Verge (Dangerous Shoulder) sign warns you about a dangerous verge on the road. This could mean the verge is soft or has a high drop, making it harder to control your vehicle if you drive too close to the edge. The sign is there to remind you to be cautious and keep a safe distance from the verge. Additional signs may provide more details, such as \"Soft Verge\" or \"High Drop.\" You may see this sign at the start of the hazardous section or in other key locations.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1142&question=21",
+    "question_index": 21,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1142&question=21"
+  },
+  {
+    "question_text": "What does this sign mean?",
+    "answers": [
+      {
+        "text": "It means that previous prohibitions on the road no longer apply, except for stopping or parking restrictions.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "It means that all prohibitions on the preceding road section are lifted.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "It means that traffic calming measures in the area end.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The C 59 End of Prohibition sign means that any prohibitions that were in place on the road you are driving on no longer apply. For example, if there was a speed limit, it will also end, but if a new speed limit applies, it will be shown on another sign further ahead. If there were restrictions on driving in a certain direction or other rules, they also cease to apply. This sign cancels all prohibitory signs from the preceding road section, except for stopping and parking prohibitions. If there was a traffic calming area, a different sign, E 54 End of Traffic Calming Zone, would be used instead. If there was a prohibition on transporting dangerous goods, the sign that lifts this restriction would be C 23.3 End of Dangerous Goods Transport Prohibition.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1151&question=22",
+    "question_index": 22,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1151&question=22"
+  },
+  {
+    "question_text": "What does this traffic sign warn about?",
+    "answers": [
+      {
+        "text": "Railway crossing without barriers.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Railway crossing with barriers.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Railway station ahead.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The A 72 \"Railway crossing without barriers\" sign warns road users about a railway crossing where no barriers are present to stop traffic. This sign is crucial for traffic safety, as drivers and pedestrians must be extra cautious of oncoming trains. Most railway crossings in the country now have barriers, but some still do not. In certain cases, an additional sign \"UB 11.1 Advance warning for Stop\" may be used, alerting drivers that they must stop at the railway crossing. The supplementary sign indicates the distance to the crossing, giving drivers time to react. If the railway crossing has barriers, the sign will be A 73 \"Railway crossing with barriers.\"",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1132&question=23",
+    "question_index": 23,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1132&question=23"
+  },
+  {
+    "question_text": "When you pass this sign, what applies?",
+    "answers": [
+      {
+        "text": "You are entering a carriageway.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "You are entering a motorway.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "You are entering a parking area for passenger cars.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "You are entering a cul-de-sac.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "When you see the **E 43 Carriageway** sign, it indicates that you are entering a carriageway. Special traffic regulations apply on carriageways, and the general speed limit is 80 km/h unless otherwise indicated by road signs. The speed limit may vary depending on road conditions, so you must always pay attention to posted speed limits. If you were entering a **B 16 Main Road**, a different sign would be used. Likewise, if you were entering a **E 18 Cul-de-sac**, meaning a dead-end road (also called a dead-end street or no-through road in some English-speaking regions), a different sign would indicate this.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1152&question=24",
+    "question_index": 24,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1152&question=24"
+  },
+  {
+    "question_text": "What should you be aware of when you see this sign on the road?",
+    "answers": [
+      {
+        "text": "Wild animals may cross the road, so you should be especially cautious.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "The sign warns of livestock on the road, so you should be especially cautious.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "The sign warns of dangerous animals that may cross the road, so you should be especially cautious.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The A 26 – Wild Animals sign warns of the risk of wild animals crossing the road, typically in forested areas and open landscapes. Animals may suddenly appear on the road, increasing the risk of collisions. When you see this sign, reduce your speed and stay extra alert, especially in low-light conditions such as dusk and nighttime. In contrast, the A 27 – Livestock sign warns about farm animals that may be on or near the road.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1139&question=25",
+    "question_index": 25,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=112&teoriproeve_billederIDX=1139&question=25"
+  }
+]

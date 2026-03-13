@@ -80,7 +80,11 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/pricing && echo \"\" && curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/test/1)",
       "Bash(git init:*)",
       "Bash(gh auth:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(du -sh /c/Teori/Test*/test*_ANSWERS.json 2>/dev/null | head -5 && echo \"---\" && find /c/Teori -name \"*_ANSWERS.json\" | wc -l)",
+      "Bash(py import_data.py 2>&1 | tail -5)",
+      "Bash(git rm:*)",
+      "Bash(git add:*)"
     ]
   }
 }

@@ -1,0 +1,587 @@
+﻿[
+  {
+    "question_text": "You have gotten out of the red car.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Is it forbidden to stop the car here?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "It is forbidden to stop closer than 10 metres from an intersection.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=835&question=1",
+    "question_index": 1,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=835&question=1"
+  },
+  {
+    "question_text": "You have just gotten out of the red car.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Is it forbidden to park here where you have left the car?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The sub-sign shows that you are allowed to both stop and park here.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=824&question=2",
+    "question_index": 2,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=824&question=2"
+  },
+  {
+    "question_text": "You have just gotten out of the car here. Which rules for stopping and parking apply here?",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Is stopping prohibited here?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "it is forbidden to stop in a crawler lane.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=836&question=3",
+    "question_index": 3,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=836&question=3"
+  },
+  {
+    "question_text": "You have left the red car here.",
+    "answers": [
+      {
+        "text": "Leaving the car here for 2 to 3 minutes is permitted.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Parking the car here is permitted.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Parking is prohibited here.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "You may stop in front of a driveway or a property entrance to pick up or set down passengers, provided you do not cause an obstruction. Parking is not permitted. This means you must move on as soon as the pick up or drop off is completed. You must not leave the vehicle unattended. If you remain stopped for more than three minutes, it is no longer considered a brief stop and may be treated as parking.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=837&question=4",
+    "question_index": 4,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=837&question=4"
+  },
+  {
+    "question_text": "You have gotten out of the red car.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Is it forbidden to stop and park on a bridge over a motorway?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "It is forbidden to stop and park on a bridge over a motorway.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=838&question=5",
+    "question_index": 5,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=838&question=5"
+  },
+  {
+    "question_text": "You have just gotten out of the car here. Which rules for stopping and parking apply here.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Is it forbidden to stop and park here?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "It is forbidden to stop, and therefore park, on or near a hilltop.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=840&question=6",
+    "question_index": 6,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=840&question=6"
+  },
+  {
+    "question_text": "You have gotten out of the red car.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "It is permitted to both stop and park here. The arrow on the sub-sign shows that the prohibition applies from the point of the sign and backwards.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=841&question=7",
+    "question_index": 7,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=841&question=7"
+  },
+  {
+    "question_text": "You have gotten out of the red car.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Is it forbidden to stop the car here?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "Stopping, and therefore parking, is forbidden on marked-out areas.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=842&question=8",
+    "question_index": 8,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=842&question=8"
+  },
+  {
+    "question_text": "You have just gotten out of the car here. Which rules for stopping and parking apply here?",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Is stopping and parking the car forbidden here?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "Stopping is forbidden beside a demarcation line when the distance between the vehicle and the demarcation line is less than three metres.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=843&question=9",
+    "question_index": 9,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=843&question=9"
+  },
+  {
+    "question_text": "You have gotten out of the red car.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Is it forbidden to stop the car here?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "It is forbidden to stop where you will obscure road signs.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=844&question=10",
+    "question_index": 10,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=844&question=10"
+  },
+  {
+    "question_text": "You have gotten out of the red car.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "It is forbidden to stop here.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The yellow edge line tells you that stopping and parking is forbidden.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=845&question=11",
+    "question_index": 11,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=845&question=11"
+  },
+  {
+    "question_text": "You have gotten out of the red car.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Is it forbidden to stop the car here?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "It is forbidden to stop in a spot marked for hire cars.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=846&question=12",
+    "question_index": 12,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=846&question=12"
+  },
+  {
+    "question_text": "You have gotten out of the red car.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Is it forbidden to stop on train tracks?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "Stopping, and therefore parking, is forbidden on a railway crossing or other crossing.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=847&question=13",
+    "question_index": 13,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=847&question=13"
+  },
+  {
+    "question_text": "You have gotten out of the red car.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Is stopping and parking the car forbidden here?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "Stopping and parking is forbidden closer than 5 metres from the beginning of a demarcation line at an intersection.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=848&question=14",
+    "question_index": 14,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=848&question=14"
+  },
+  {
+    "question_text": "You have gotten out of the red car outside a heavily built-up area.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "Only parking is forbidden on main roads outside a heavily built-up area.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=849&question=15",
+    "question_index": 15,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=849&question=15"
+  },
+  {
+    "question_text": "You have gotten out of the red car.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Is it forbidden to stop the car here?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "Stopping is forbidden at a bus stop 12 metres before and 12 metres after the sign if the yellow kerb marking doesn't indicate otherwise.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=850&question=16",
+    "question_index": 16,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=850&question=16"
+  },
+  {
+    "question_text": "You have gotten out of the black car. Which rules for stopping and parking apply here?",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Is it forbidden to stop and park here?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The sub-sign says that stopping is forbidden in the verge.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=851&question=17",
+    "question_index": 17,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=851&question=17"
+  },
+  {
+    "question_text": "You have gotten out of the red car.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Is stopping prohibited within a distance of five meters before a pedestrian crossing?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "Stopping is forbidden on the pedestrian crossing or within a distance of five metres before a pedestrian crossing, but not after it.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=852&question=18",
+    "question_index": 18,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=852&question=18"
+  },
+  {
+    "question_text": "You have gotten out of the red car.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The yellow dotted edge marking indicates that parking is forbidden. Therefore, it is permitted to stop here for up to three minutes and to load and unload without limitation of time.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=853&question=19",
+    "question_index": 19,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=853&question=19"
+  },
+  {
+    "question_text": "You have gotten out of the red car.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Is stopping prohibited within a distance of five meters before the exit from a cycle path?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "Stopping and parking are forbidden at the exit from a cycle path or closer than 5 metres before the exit.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=854&question=20",
+    "question_index": 20,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=854&question=20"
+  },
+  {
+    "question_text": "You have gotten out of the red car.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Is stopping and parking the car forbidden here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "It is permitted to both stop and park here. The arrow on the sub-sign shows that the prohibition applies from the point of the sign and onwards.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=855&question=21",
+    "question_index": 21,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=855&question=21"
+  },
+  {
+    "question_text": "You have gotten out of the red car.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Is stopping and parking the car forbidden here?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "Stopping and parking on the left-hand side is only permitted on less busy roads and roads with one-way traffic.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=856&question=22",
+    "question_index": 22,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=856&question=22"
+  },
+  {
+    "question_text": "You have just gotten out of the car here. Which rules for stopping and parking apply here.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Is it forbidden to stop the car here?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The prohibition sign and sub-sign forbid stopping before the sign.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=857&question=23",
+    "question_index": 23,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=857&question=23"
+  },
+  {
+    "question_text": "What is the highest blood alcohol level permitted when you drive a vehicle?",
+    "answers": [
+      {
+        "text": "A blood alcohol level of 0.2.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "A blood alcohol level of 0.5.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "A blood alcohol level of 0.8.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The highest blood alcohol level permitted when you drive a car is a blood alcohol level of 0.5.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=861&question=24",
+    "question_index": 24,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=861&question=24"
+  },
+  {
+    "question_text": "You have gotten out of the red car.",
+    "answers": [
+      {
+        "text": "May you leave the car here for 2-3 minutes?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "May you park the car here?",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Is it forbidden to stop and park here?",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "It is forbidden to stop and therefore park on a cycle path.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=858&question=25",
+    "question_index": 25,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=91&teoriproeve_billederIDX=858&question=25"
+  }
+]

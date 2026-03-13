@@ -1,0 +1,682 @@
+﻿[
+  {
+    "question_text": "When is the driver responsible for ensuring that passengers wear a seatbelt?",
+    "answers": [
+      {
+        "text": "The driver is legally responsible for ensuring that all passengers under 15 years old are properly secured with a seatbelt.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "The driver is only responsible for passengers in the front seat.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Failure to wear a seatbelt increases the risk of being ejected from the vehicle in the event of an accident.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "During driving, the car’s airbag can be life-threatening if a seatbelt is not worn.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The driver is responsible for ensuring that all passengers under 15 years old are properly secured with a seatbelt. This applies throughout the entire journey. So always remember to fasten your seatbelt when driving and make sure all passengers do the same. It’s about everyone’s safety on the road! Without a seatbelt, the airbag can deploy with a force that is directly life-threatening to passengers. The priority should always be to fasten the seatbelt to maximize protection in the event of an accident.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1065&question=1",
+    "question_index": 1,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1065&question=1"
+  },
+  {
+    "question_text": "What are you allowed to tow behind a car?",
+    "answers": [
+      {
+        "text": "You can tow a sled.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "You can tow a caravan.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "You can tow a cart.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "You can tow a trailer.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "It is not permitted to attach a sled, cart, or similar objects to a car, nor is it allowed to tow a person on skis, skates, roller skates, or similar while driving. A car may tow only one trailer at a time, and only if the car is approved for towing. A car may be attached to a trailer with a permitted total weight of up to 750 kg. If the trailer’s permitted total weight exceeds 750 kg, the combined permitted total weight of both the car and the trailer must not exceed 3,500 kg.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1066&question=2",
+    "question_index": 2,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1066&question=2"
+  },
+  {
+    "question_text": "What is the legal limit for alcohol concentration in the breath when driving a car?",
+    "answers": [
+      {
+        "text": "0.25 milligrams per liter of breath.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "0.50 milligrams per liter of breath.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "0.75 milligrams per liter of breath.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "1.0 milligrams per liter of breath.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "According to traffic law, it is illegal to drive with an alcohol concentration in the breath exceeding 0.25 mg per liter of breath. This rule is crucial because alcohol impairs reaction time and increases the risk of dangerous situations on the road, potentially leading to accidents. An alcohol concentration in the breath exceeding 0.25 mg per liter, either during or after driving, is considered drunk driving and can lead to legal consequences, regardless of whether a simultaneously taken blood sample shows an alcohol concentration in the blood of 0.50 per mille or below.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1067&question=3",
+    "question_index": 3,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1067&question=3"
+  },
+  {
+    "question_text": "How many penalty points must new drivers accumulate within 3 years to lose their driver's license?",
+    "answers": [
+      {
+        "text": "1 penalty point.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "2 penalty points.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "3 penalty points.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "If you are a new driver and have held your first driving license for less than 3 years, you will receive a driving ban if you get 2 penalty points. You will only be allowed to drive again after passing a new theory and driving test. After the first 3 years, the general rule applies: You will lose your driving license if you receive 3 penalty points within a 3-year period.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1068&question=4",
+    "question_index": 4,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1068&question=4"
+  },
+  {
+    "question_text": "How can you drive more environmentally friendly and reduce CO2 emissions?",
+    "answers": [
+      {
+        "text": "Turn off the air conditioning when it is not necessary.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Start the engine immediately before driving.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Driving with low tire pressure reduces energy consumption.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "Using air conditioning, climate control, and other electrical devices increases energy consumption. Turning off the air conditioning when it is not necessary helps reduce CO2 emissions and saves fuel. Starting the engine only immediately before driving is a more environmentally friendly habit because it reduces CO2 emissions. Long periods of idling waste fuel and increase emissions of harmful gases. Driving with low tire pressure actually increases energy consumption, as it creates more rolling resistance, leading to higher fuel use and more CO2 emissions. Always ensure your tires are properly inflated.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1070&question=5",
+    "question_index": 5,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1070&question=5"
+  },
+  {
+    "question_text": "Why is the car’s exhaust system important?",
+    "answers": [
+      {
+        "text": "To make the car faster.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "To reduce fuel consumption.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "To reduce the pollution from exhaust gases.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Leaks in the exhaust system may let dangerous, odorless carbon monoxide enter the car.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The exhaust system is essential for engine performance. It directs exhaust gases away from the engine and reduces noise. It also helps filter and clean toxic gases, preventing harmful fumes from entering the cabin. This ensures that the released air has the least possible impact on the environment.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1074&question=6",
+    "question_index": 6,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1074&question=6"
+  },
+  {
+    "question_text": "Who must you show special consideration for in traffic?",
+    "answers": [
+      {
+        "text": "Only children, because they have less experience in traffic.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Only elderly and disabled people.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Children, school patrols, elderly people, and disabled individuals.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "You must only show special consideration for cyclists and pedestrians.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "You must show special consideration for children, school patrols, elderly people, and disabled individuals. They are more vulnerable in traffic due to their age, physical condition, or lack of experience. While you should always be aware of all road users, these groups require extra attention to ensure their safety.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1075&question=7",
+    "question_index": 7,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1075&question=7"
+  },
+  {
+    "question_text": "What does the law say if the ABS warning light does not turn off shortly after starting the car?",
+    "answers": [
+      {
+        "text": "There may be a fault in the ABS brakes, and you are only allowed to drive to the nearest workshop.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "The ABS brakes are functioning correctly, and there is no cause for concern.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "The ABS brakes are temporarily deactivated due to low battery voltage.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "If the ABS (Anti-lock Braking System) warning light does not turn off shortly after starting the engine, it indicates a malfunction in the system. ABS helps prevent skidding during braking, improving control and safety. If the system is faulty, it will not function properly, which can be dangerous. According to the law, you are only permitted to drive to the nearest workshop to have it repaired.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1077&question=8",
+    "question_index": 8,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1077&question=8"
+  },
+  {
+    "question_text": "Which of the following statements about legal requirements for car lights are correct?",
+    "answers": [
+      {
+        "text": "The high beams must illuminate the road at a distance of at least 100 meters in front of the car.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "The high beams must illuminate the road at a distance of at least 200 meters in front of the car.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "The low beams must illuminate the road at a distance of at least 30 meters in front of the car without dazzling others.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "The low beams must illuminate the road at a distance of at least 50 meters in front of the car without dazzling others.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The law requires that your car’s headlights provide enough light for safe driving. The high beams must illuminate at least 100 meters ahead so you can see clearly in the dark. The low beams must illuminate at least 30 meters ahead without blinding oncoming drivers. These rules ensure that you can see the road properly while also making sure other road users are not dazzled by your lights.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1079&question=9",
+    "question_index": 9,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1079&question=9"
+  },
+  {
+    "question_text": "Is it mandatory to carry an approved warning triangle while driving?",
+    "answers": [
+      {
+        "text": "It is mandatory to have an approved warning triangle in the car so it can be used when needed.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "A warning triangle is only necessary when driving outside urban areas.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "A warning triangle is only required when driving a truck or bus.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "While driving, an approved warning triangle should be carried for situations where it is mandatory to set it up.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "It is not mandatory to carry a warning triangle while driving, but you must have one available in case you need to warn other road users in an emergency. If your car breaks down in a location where stopping or parking is prohibited, you must move it as soon as possible. If the vehicle poses a danger or obstruction to traffic, you must immediately place an approved warning triangle—at least 50 meters before the car on regular roads and at least 100 meters before the car on motorways. Hazard lights can also be used as a supplement.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1081&question=10",
+    "question_index": 10,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1081&question=10"
+  },
+  {
+    "question_text": "Which general speed limits apply to cars with a trailer up to 3500 kg?",
+    "answers": [
+      {
+        "text": "In built-up areas, the maximum speed is normally 30 km/h.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "In built-up areas, the maximum speed is normally 50 km/h.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Outside built-up areas, the maximum speed is normally 80 km/h.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "With special approval, a car with a trailer can be allowed to drive 100 km/h on the motorway.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "When driving a car with a trailer, there are specific speed limits that must be followed. In built-up areas, the general speed limit is 50 km/h unless road signs indicate otherwise. Outside built-up areas, the maximum speed is 80 km/h unless a lower limit is posted. On motorways, the speed limit is also typically 80 km/h unless otherwise stated. However, if the trailer has a special \"Tempo 100\" approval, it is permitted to drive up to 100 km/h on motorways and up to 80 km/h on other major roads such as expressways.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1084&question=11",
+    "question_index": 11,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1084&question=11"
+  },
+  {
+    "question_text": "Which of the following applies to the total permitted weight of the car and trailer?",
+    "answers": [
+      {
+        "text": "Must not exceed 3500 kg.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Must not exceed 2800 kg.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Must not exceed 4500 kg.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "The total permitted weight of the car and trailer must not exceed 3500 kg to ensure safe braking and driving. If the weight is higher, the car may lose control and create dangerous situations on the road.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1089&question=12",
+    "question_index": 12,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1089&question=12"
+  },
+  {
+    "question_text": "Which of the following statements about legal requirements for eco-friendly driving is correct?",
+    "answers": [
+      {
+        "text": "The car must be operated in a way that avoids unnecessary noise and excessive emissions.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Driving fast in a fuel-consuming car can save fuel.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Letting the car idle while waiting is a good practice.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "Environmentally friendly driving helps protect the environment by reducing pollution from your car. When you drive in a way that uses less fuel, your car emits fewer harmful substances like CO₂ (carbon dioxide) and nitrogen oxides. In some areas, local regulations may prohibit keeping the engine running when the car is stationary for a long time.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1090&question=13",
+    "question_index": 13,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1090&question=13"
+  },
+  {
+    "question_text": "Which of the following statements about the vehicle registration certificate are correct?",
+    "answers": [
+      {
+        "text": "The car's curb weight/ready-to-drive weight is stated.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "The maximum weight the car is allowed to carry is stated.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "The permitted total weight is stated.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "The permitted trailer weight is stated.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The vehicle registration certificate shows the car’s weight when ready to drive (curb weight/ready-to-drive weight), the maximum total weight it is allowed to have (permitted total weight), and how heavy a trailer it may tow (permitted trailer weight).",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1091&question=14",
+    "question_index": 14,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1091&question=14"
+  },
+  {
+    "question_text": "When are you allowed to use rear fog lights?",
+    "answers": [
+      {
+        "text": "You may use them when it is very foggy, and only if it does not cause inconvenience to other road users.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "You may use them in all weather conditions to increase the car’s visibility.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "You may use them when there is heavy rain or snowfall.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "A car may be equipped with fog lights at the front and rear, which may only be used in fog or heavy precipitation and only if they do not inconvenience other road users. The front fog lights help you see the road, while the rear fog lights make your vehicle visible to those behind you. Remember to turn them off when the fog clears or when they are no longer needed to avoid dazzling other drivers.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1092&question=15",
+    "question_index": 15,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1092&question=15"
+  },
+  {
+    "question_text": "Are the following statements about the legal requirements for marking cargo correct?",
+    "answers": [
+      {
+        "text": "Cargo extending more than 1 meter beyond the front or rear of the vehicle must be clearly marked with a cloth or in another visible way.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Cargo extending more than 15 cm beyond the sides must be clearly marked with a cloth or in another visible way.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "During lighting-up time, the cargo must be marked with a white cylinder and lights - red at the rear and white at the front.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "During lighting-up time, the cargo must be marked with lights, but not necessarily with a cylinder.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "According to legal regulations, cargo extending more than 1 meter beyond the front or rear of the vehicle, or more than 15 cm beyond the sides, must always be clearly marked with a cloth or another visible method. For commercial transport, meaning transport carried out as part of a business activity, the cargo must be marked with a white cylinder that is 30 cm high and 10 cm in diameter, fitted with two red reflective bands. During lighting-up time, regardless of whether the transport is private or commercial, the cargo must be marked with this cylinder as well as red light at the rear and white light at the front to ensure adequate visibility.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1093&question=16",
+    "question_index": 16,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1093&question=16"
+  },
+  {
+    "question_text": "Are the following statements about legal regulations for the distance between vehicles during towing correct?",
+    "answers": [
+      {
+        "text": "The maximum distance between vehicles during towing is 4 meters.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "If the distance between the vehicles exceeds 2 meters, the rope must be clearly marked.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "The law allows a distance of up to 5 meters between vehicles during towing.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "The distance between the vehicles must not exceed 3 meters.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "When towing a broken-down car, tractor, or motorized equipment, certain rules must be followed. The distance between the two vehicles must not exceed 4 meters. If the distance is more than 2 meters, the towing rope must be clearly marked so that other road users can see it. Additionally, the towed vehicle must be operated by a person with the appropriate driving license, and the speed must not exceed 30 km/h to avoid dangerous situations. Towing is prohibited if the towed vehicle’s brakes or steering system are not functioning properly, as this poses a serious safety risk.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1105&question=17",
+    "question_index": 17,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1105&question=17"
+  },
+  {
+    "question_text": "Are the following statements about the legal requirements for placing a warning triangle in case of a breakdown or accident correct?",
+    "answers": [
+      {
+        "text": "On motorways, the warning triangle must be placed at least 50 meters before the vehicle in case of a breakdown or accident.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "On motorways, the warning triangle must be placed at least 100 meters before the vehicle in case of a breakdown or accident.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "On ordinary roads, the warning triangle must be placed at least 50 meters before the vehicle if it poses a danger or obstruction.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "On ordinary roads, the warning triangle must be placed at least 100 meters before the vehicle if it poses a danger.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "If your vehicle breaks down or is involved in an accident and poses a danger, you must place a warning triangle at the required distance to alert other road users. On motorways, the warning triangle must be placed at least 100 meters behind the vehicle. On ordinary roads, it must be placed at least 50 meters behind the vehicle if it poses a risk or obstruction. The purpose of the warning triangle is to give approaching traffic enough time to react and ensure road safety.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1106&question=18",
+    "question_index": 18,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1106&question=18"
+  },
+  {
+    "question_text": "Are the following statements about the legal requirements for towing vehicles correct?",
+    "answers": [
+      {
+        "text": "It is allowed to tow a vehicle with a person who does not have a driver's license for the towed vehicle but is at least 18 years old.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "The driver of the towed vehicle must have a valid driver's license for the specific vehicle.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "The maximum speed while towing must not exceed 30 km/h.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "If the towed vehicle has brakes, the speed can be increased to 50 km/h if necessary.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "When towing a vehicle, the driver of the towed vehicle must hold the required driver's license for that specific vehicle. This ensures compliance with traffic regulations and prevents dangerous situations. Additionally, the towing speed must not exceed 30 km/h to maintain safe and controlled movement of both vehicles.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1107&question=19",
+    "question_index": 19,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1107&question=19"
+  },
+  {
+    "question_text": "Which of the following statements is correct regarding the rules on intoxicating substances and drugs?",
+    "answers": [
+      {
+        "text": "It is illegal to let someone drive your car if they have taken intoxicating substances.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Police can only require saliva or sweat tests and an eye examination if they suspect drug influence.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Police can require a driver to take saliva or sweat tests or undergo an eye examination at any time.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "It is illegal to allow someone to drive your car if they have taken intoxicating substances, as this poses a serious risk to road safety. Police have the authority to require a driver to take saliva or sweat tests or undergo an eye examination at any time, even without specific suspicion of drug use. This rule is in place to help prevent drug-impaired driving and ensure that all drivers are in a fit state to operate a vehicle safely.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1108&question=20",
+    "question_index": 20,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1108&question=20"
+  },
+  {
+    "question_text": "Are the following statements about legal requirements in case of an accident correct?",
+    "answers": [
+      {
+        "text": "You must immediately stop and assist the injured if you are involved in a traffic accident, regardless of fault.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "You only need to stop and help if the accident is your fault.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "You must provide your name and address to others involved upon request.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "You only need to give your name and address to the police or authorities if asked.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "It is important to stop and provide assistance in a traffic accident to ensure that any injured persons receive the necessary help as quickly as possible. You are required to give your name and address upon request, not only to the authorities but also to other parties involved in the accident. This ensures that all relevant information is shared with the right people, allowing authorities to properly investigate the accident and ensure that everyone receives the help they need. This contributes to both safety and fairness in the situation.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1109&question=21",
+    "question_index": 21,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1109&question=21"
+  },
+  {
+    "question_text": "What do the legal regulations say about braking distance for motor vehicles?",
+    "answers": [
+      {
+        "text": "The braking distance is the distance the car travels from the moment braking begins until it comes to a complete stop.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "The braking distance depends, among other factors, on how hard you press the brake pedal.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "If the speed is doubled, the braking distance will also double.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "If the speed is doubled, the braking distance will be four times as long.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "Braking distance is the distance a vehicle travels from when the brakes are applied until it comes to a full stop. It increases with higher speed and is affected by factors such as road conditions, tire quality, and braking force. Importantly, if speed is doubled, the braking distance increases fourfold due to the laws of physics. This is why it is crucial to adjust speed according to road and weather conditions to ensure safe stopping.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1110&question=22",
+    "question_index": 22,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1110&question=22"
+  },
+  {
+    "question_text": "Which of the following statements about the use of the horn and light signals are correct?",
+    "answers": [
+      {
+        "text": "You may use the horn or flash your headlights to warn of danger.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "During lighting-up time, you must use light signals instead of the horn unless the danger is immediate.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "You may use the horn to attract attention, even if there is no emergency.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "The use of the horn is only allowed as a warning of danger.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "The horn and light signals are used to warn other road users of danger. During lighting-up time, light signals should be used instead of the horn unless there is an immediate danger where the horn may be necessary. The horn must not be used simply to attract attention without an emergency. In general, the horn should only be used as a warning of danger to avoid unnecessary noise and disturbance in traffic.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1116&question=23",
+    "question_index": 23,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1116&question=23"
+  },
+  {
+    "question_text": "Which of the following statements about alcohol regulations and breath tests is correct?",
+    "answers": [
+      {
+        "text": "It is illegal to let someone drive your car if they have consumed so much alcohol that they cannot drive safely.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "The police can require a breath test from a driver at any time, but only if they suspect alcohol consumption.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "The police can require a breath test from a driver at any time.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      }
+    ],
+    "explanation": "It is illegal to allow someone to drive your car if they are too intoxicated to drive safely, as this poses a serious risk to traffic safety. Even if you are not the driver, you have a responsibility to prevent unsafe driving. The police have the authority to require a breath test from any driver at any time, even without suspicion of alcohol consumption. This rule ensures that all drivers comply with legal alcohol limits and helps prevent accidents caused by impaired driving.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1120&question=24",
+    "question_index": 24,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1120&question=24"
+  },
+  {
+    "question_text": "Which requirement applies to liability insurance for a motor vehicle?",
+    "answers": [
+      {
+        "text": "The owner of the car must have a mandatory liability insurance that covers damages.",
+        "correct": true,
+        "rigtigt_svar": "Yes"
+      },
+      {
+        "text": "Mandatory liability insurance is not required if the car is used for private driving.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      },
+      {
+        "text": "Mandatory liability insurance is only required if the car is used for work, such as a taxi.",
+        "correct": false,
+        "rigtigt_svar": "No"
+      }
+    ],
+    "explanation": "Liability insurance for your car is mandatory and ensures that any damage you unintentionally cause to others, their vehicles, or property in an accident is covered. This means that if you are responsible for a collision, your insurance will pay for the damages to the other party. However, it does not cover damage to your own vehicle. The insurance also applies to all passengers in the car, except for the driver. This requirement exists to protect all road users and ensure that victims of accidents receive compensation for their losses.",
+    "url": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1124&question=25",
+    "question_index": 25,
+    "href": "https://www.teoriklar.eu/digitale-teoriprover/html5_evaluation_details.asp?teoriproeveIDX=111&teoriproeve_billederIDX=1124&question=25"
+  }
+]
