@@ -3,8 +3,8 @@ import stripe
 
 
 def _key() -> str:
-    """Always read API key fresh from env so it works even if env is loaded after import."""
-    key = os.environ.get("STRIPE_SECRET_KEY", "")
+    """Always read API key fresh from env, stripped of whitespace."""
+    key = os.environ.get("STRIPE_SECRET_KEY", "").strip()
     stripe.api_key = key
     return key
 

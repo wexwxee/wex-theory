@@ -50,5 +50,10 @@ def user_has_access(user) -> bool:
     # Admins always have full access
     if user.is_admin:
         return True
-    # Stripe active subscription only
-    return getattr(user, "subscription_status", "free") == "active"
+    # Stripe active subscription
+    if getattr(user, "subscription_status", "free") == "active":
+        return True
+    # Legacy: admin-granted access via expires_at (manual subscriptions)
+    if user.expires_at and user.expires_at > datetime.utcnow():
+        return True
+    return False
