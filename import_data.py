@@ -76,7 +76,7 @@ def import_data():
 
             for q_data in questions_data:
                 q_index = q_data.get("question_index", 1)
-                image_path = f"{folder}/screenshots/q{q_index:02d}.png"
+                image_path = f"{folder}/screenshots/q{q_index:02d}.jpg"
 
                 question = models.Question(
                     test_id=test_num,

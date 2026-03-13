@@ -77,7 +77,7 @@
       </ul>
       {% if user %}
         {% if user.subscription_status == 'active' %}
-        <button onclick="openBillingPortal()" class="btn-primary" style="width:100%;">Manage Plan</button>
+        <button onclick="openBillingPortal()" class="btn-primary" style="width:100%;" id="portalBtn">Manage Plan</button>
         {% else %}
         <button onclick="startCheckout()" class="btn-primary" style="width:100%;" id="checkoutBtn">Subscribe Now</button>
         {% endif %}
@@ -151,11 +151,27 @@ async function startCheckout() {
   }
 }
 
+let _portalLoading = false;
 async function openBillingPortal() {
-  const res = await fetch('/api/billing-portal', { method: 'POST' });
-  const data = await res.json();
-  if (data.url) window.location.href = data.url;
-  else showToast(data.error || 'Failed to open billing portal', 'error');
+  if (_portalLoading) return;
+  _portalLoading = true;
+  const btn = document.getElementById('portalBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Loading...'; }
+  try {
+    const res = await fetch('/api/billing-portal', { method: 'POST' });
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      showToast(data.error || 'Failed to open billing portal', 'error');
+      if (btn) { btn.disabled = false; btn.textContent = 'Manage Plan'; }
+      _portalLoading = false;
+    }
+  } catch (e) {
+    showToast('Network error. Please try again.', 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Manage Plan'; }
+    _portalLoading = false;
+  }
 }
 </script>
 {% endblock %}
