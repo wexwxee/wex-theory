@@ -23,12 +23,8 @@
       <h1 style="font-size:1.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:6px;">My Tests</h1>
       {% if user.is_admin %}
         <span style="font-size:0.75rem;color:var(--correct);border:1px solid var(--correct);padding:2px 10px;border-radius:999px;display:inline-block;">Admin</span>
-      {% elif user.subscription_status == 'active' %}
-        <span style="font-size:0.75rem;color:var(--correct);border:1px solid var(--correct);padding:2px 10px;border-radius:999px;display:inline-block;">Active Subscription</span>
-      {% elif user.subscription_status == 'past_due' %}
-        <span style="font-size:0.75rem;color:#f97316;border:1px solid #f97316;padding:2px 10px;border-radius:999px;display:inline-block;">Payment Past Due — <a href="/pricing" style="color:#f97316;">Update</a></span>
       {% elif has_access %}
-        <span style="font-size:0.75rem;color:var(--correct);border:1px solid var(--correct);padding:2px 10px;border-radius:999px;display:inline-block;">Active</span>
+        <span style="font-size:0.75rem;color:var(--correct);border:1px solid var(--correct);padding:2px 10px;border-radius:999px;display:inline-block;">Premium</span>
       {% else %}
         <span style="font-size:0.75rem;color:var(--text-muted);border:1px solid var(--border);padding:2px 10px;border-radius:999px;display:inline-block;">Free Plan</span>
       {% endif %}
@@ -62,9 +58,7 @@
     <div style="display:flex;gap:10px;align-items:center;">
       <a href="/profile" class="btn-ghost btn-sm">History</a>
       <a href="/saved" class="btn-ghost btn-sm">🔖 Saved</a>
-      {% if user.subscription_status == 'active' %}
-        <button id="portalBtn" onclick="openBillingPortal()" class="btn-ghost btn-sm">Manage Plan</button>
-      {% elif not user.is_admin and not has_access %}
+      {% if not user.is_admin and not has_access %}
         <a href="https://t.me/wexwxeee" target="_blank" rel="noopener" class="btn-primary btn-sm">Get Premium</a>
       {% endif %}
     </div>
@@ -186,27 +180,5 @@ function showPaywall() {
   document.getElementById('paywallModal').classList.add('open');
 }
 
-let _portalLoading = false;
-async function openBillingPortal() {
-  if (_portalLoading) return;
-  _portalLoading = true;
-  const btn = document.getElementById('portalBtn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Loading...'; }
-  try {
-    const res = await fetch('/api/billing-portal', { method: 'POST' });
-    const data = await res.json();
-    if (data.url) {
-      window.location.href = data.url;
-    } else {
-      showToast('Failed to open billing portal. Please try again.', 'error');
-      if (btn) { btn.disabled = false; btn.textContent = 'Manage Plan'; }
-      _portalLoading = false;
-    }
-  } catch (e) {
-    showToast('Network error. Please try again.', 'error');
-    if (btn) { btn.disabled = false; btn.textContent = 'Manage Plan'; }
-    _portalLoading = false;
-  }
-}
 </script>
 {% endblock %}

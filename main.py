@@ -167,7 +167,7 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
                 email=email,
                 password_hash="google_oauth",
                 created_at=datetime.utcnow(),
-                expires_at=datetime.utcnow() + timedelta(days=30),
+                expires_at=datetime.utcnow(),  # no automatic premium — admin grants access
                 is_admin=False,
             )
             db.add(user)
@@ -261,7 +261,8 @@ async def api_register(request: Request, db: Session = Depends(get_db)):
         name     = str(data.get("name", "")).strip()
         email    = str(data.get("email", "")).strip().lower()
         password = str(data.get("password", ""))
-        days     = int(data.get("days", 30))
+        # days only used when admin calls this endpoint directly; public registration gets no premium
+        days     = int(data.get("days", 0))
 
         if not name or not email or not password:
             return JSONResponse({"error": "All fields are required"}, status_code=400)
@@ -930,10 +931,19 @@ async def api_admin_update_user(user_id: int, request: Request, db: Session = De
     if "password" in data and data["password"]:
         u.password_hash = hash_password(data["password"])
     if "days" in data:
-        u.expires_at = datetime.utcnow() + timedelta(days=int(data["days"]))
+        days = int(data["days"])
+        u.expires_at = datetime.utcnow() + timedelta(days=days)
+        # Keep subscription_status in sync so all UI checks are consistent
+        if days > 0:
+            u.subscription_status = "active"
+            u.current_period_end = None   # clear Stripe period end to avoid timer confusion
+        else:
+            u.subscription_status = "free"
+            u.expires_at = datetime.utcnow()
     if "is_admin" in data:
         u.is_admin = data["is_admin"]
     db.commit()
+    print(f"[ADMIN UPDATE] user_id={u.id} days={data.get('days')} status={u.subscription_status} expires={u.expires_at}")
     return JSONResponse({"success": True})
 
 
