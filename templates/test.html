@@ -445,19 +445,30 @@ async function toggleBookmark() {
 let translateMode = false;
 const questionTransCache = {};
 
+function _googleTranslateUrl(text) {
+  return 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&dt=t&q=' + encodeURIComponent(text);
+}
+
+function _extractGoogleTranslation(data) {
+  if (!Array.isArray(data) || !Array.isArray(data[0])) return null;
+  const translated = data[0]
+    .map(part => Array.isArray(part) ? (part[0] || '') : '')
+    .join('')
+    .trim();
+  return translated || null;
+}
+
 // Returns plain string for sentence translation
-async function _mmTranslate(text) {
+async function _translateText(text) {
   if (!text || !text.trim()) return null;
-  const key = 'mm_' + btoa(unescape(encodeURIComponent(text.trim().slice(0, 60)))).slice(0, 36);
+  const key = 'gt_' + btoa(unescape(encodeURIComponent(text.trim().slice(0, 60)))).slice(0, 36);
   const cached = sessionStorage.getItem(key);
   if (cached) return cached;
   try {
-    const res = await fetch(
-      'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text.slice(0, 500)) + '&langpair=en|ru&de=contact@wextheory.com'
-    );
+    const res = await fetch(_googleTranslateUrl(text.slice(0, 500)));
     const data = await res.json();
-    if (data.responseStatus === 200 && data.responseData?.translatedText) {
-      const t = data.responseData.translatedText;
+    const t = _extractGoogleTranslation(data);
+    if (t) {
       try { sessionStorage.setItem(key, t); } catch(e) {}
       return t;
     }
@@ -466,28 +477,19 @@ async function _mmTranslate(text) {
 }
 
 // Returns { main, variants[] } for word popup
-async function _mmTranslateWord(word) {
+async function _translateWord(word) {
   const key = 'wt_' + word.toLowerCase();
   const cached = sessionStorage.getItem(key);
   if (cached) { try { return JSON.parse(cached); } catch(e) {} }
   try {
-    const res = await fetch(
-      'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(word) +
-      '&langpair=en|ru&de=contact@wextheory.com'
-    );
+    const res = await fetch(_googleTranslateUrl(word));
     const data = await res.json();
-    const rawMain = data.responseData?.translatedText || '';
-    const clean = t => t.replace(/МИМИ/gi,'').replace(/\s{2,}/g,' ').trim();
-    const main = clean(rawMain) || '—';
-    const seen = new Set([main.toLowerCase()]);
-    const variants = (data.matches || [])
-      .map(m => clean(m.translation || ''))
-      .filter(t => t && t !== '—' && t.length < 50 && !seen.has(t.toLowerCase()) && seen.add(t.toLowerCase()))
-      .slice(0, 3);
-    const result = { main, variants };
+    const result = { main: _extractGoogleTranslation(data) || '-', variants: [] };
     try { sessionStorage.setItem(key, JSON.stringify(result)); } catch(e) {}
     return result;
-  } catch(e) { return { main: '—', variants: [] }; }
+  } catch(e) {
+    return { main: '-', variants: [] };
+  }
 }
 
 async function toggleTranslate() {
@@ -516,7 +518,7 @@ async function _ensureQuestionTranslated(q) {
   }
   // Translate question + all answers in parallel
   const texts = [q.question_text, ...q.answers.map(a => a.text)];
-  const results = await Promise.all(texts.map(_mmTranslate));
+  const results = await Promise.all(texts.map(_translateText));
   questionTransCache[q.id] = { q: results[0] || q.question_text, a: results.slice(1) };
   try { sessionStorage.setItem(cacheKey, JSON.stringify(questionTransCache[q.id])); } catch(e) {}
 }
@@ -584,7 +586,7 @@ document.addEventListener('mouseover', (e) => {
   const rect = e.target.getBoundingClientRect();
   _popupPos(popup, rect);
 
-  _mmTranslateWord(word).then(result => {
+  _translateWord(word).then(result => {
     if (_wordPopup !== popup) return;
     const varHtml = result.variants.length
       ? `<div class="wp-variants">${result.variants.map(v => `<span class="wp-v">${v}</span>`).join('')}</div>`

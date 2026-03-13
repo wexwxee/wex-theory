@@ -24,7 +24,68 @@ from stripe_helpers import (
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="WEX Theory")
-app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+AUTH_COOKIE_NAME = "token"
+AUTH_COOKIE_MAX_AGE = 86400 * 30
+
+
+def _env_flag(name: str, default: bool = False) -> bool:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _cookie_secure(request: Optional[Request] = None) -> bool:
+    if "COOKIE_SECURE" in os.environ:
+        return _env_flag("COOKIE_SECURE")
+    if request is None:
+        return False
+    forwarded_proto = request.headers.get("x-forwarded-proto", "")
+    if forwarded_proto:
+        return forwarded_proto.split(",")[0].strip().lower() == "https"
+    return request.url.scheme == "https"
+
+
+def set_auth_cookie(response, token: str, request: Optional[Request] = None) -> None:
+    response.set_cookie(
+        key=AUTH_COOKIE_NAME,
+        value=token,
+        httponly=True,
+        max_age=AUTH_COOKIE_MAX_AGE,
+        expires=AUTH_COOKIE_MAX_AGE,
+        samesite="lax",
+        secure=_cookie_secure(request),
+        path="/",
+    )
+
+
+def clear_auth_cookie(response, request: Optional[Request] = None) -> None:
+    response.delete_cookie(
+        key=AUTH_COOKIE_NAME,
+        path="/",
+        samesite="lax",
+        secure=_cookie_secure(request),
+    )
+
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=SECRET_KEY,
+    same_site="lax",
+    https_only=_env_flag("SESSION_COOKIE_SECURE", False),
+    max_age=AUTH_COOKIE_MAX_AGE,
+)
+
+
+@app.middleware("http")
+async def refresh_auth_session(request: Request, call_next):
+    response = await call_next(request)
+    token = request.cookies.get(AUTH_COOKIE_NAME)
+    payload = decode_token(token) if token else None
+    if payload and payload.get("sub") and request.url.path not in {"/api/auth/logout", "/logout"}:
+        refreshed = create_token(int(payload["sub"]))
+        set_auth_cookie(response, refreshed, request)
+    return response
 
 # ─── Google OAuth ──────────────────────────────────────────────────────────────
 oauth = OAuth()
@@ -182,16 +243,8 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
         print(f"[GOOGLE CB] Issuing JWT, redirecting to {redirect}")
 
         # Build redirect response with cookie explicitly
-        from fastapi.responses import Response as FastResponse
         resp = RedirectResponse(url=redirect, status_code=302)
-        resp.set_cookie(
-            key="token",
-            value=jwt_token,
-            httponly=True,
-            max_age=86400 * 30,
-            samesite="lax",
-            secure=False,   # Render uses HTTPS but proxy strips it — let cookie work on both
-        )
+        set_auth_cookie(resp, jwt_token, request)
         return resp
     except Exception as e:
         err_str = str(e)
@@ -288,7 +341,7 @@ async def api_register(request: Request, db: Session = Depends(get_db)):
 
         token = create_token(user.id)
         resp = JSONResponse({"success": True, "redirect": "/dashboard"})
-        resp.set_cookie("token", token, httponly=True, max_age=86400 * 30, samesite="lax")
+        set_auth_cookie(resp, token, request)
         print(f"[REGISTER] success: id={user.id} email={email} admin={user.is_admin}")
         return resp
 
@@ -317,7 +370,7 @@ async def api_login(request: Request, db: Session = Depends(get_db)):
         token = create_token(user.id)
         redirect = "/admin" if user.is_admin else "/dashboard"
         resp = JSONResponse({"success": True, "redirect": redirect, "is_admin": user.is_admin})
-        resp.set_cookie("token", token, httponly=True, max_age=86400 * 30, samesite="lax")
+        set_auth_cookie(resp, token, request)
         print(f"[LOGIN] success: id={user.id} admin={user.is_admin}")
         return resp
 
@@ -328,16 +381,16 @@ async def api_login(request: Request, db: Session = Depends(get_db)):
 
 
 @app.post("/api/auth/logout")
-async def api_logout():
+async def api_logout(request: Request):
     resp = JSONResponse({"success": True})
-    resp.delete_cookie("token")
+    clear_auth_cookie(resp, request)
     return resp
 
 
 @app.get("/logout")
-async def logout_get():
+async def logout_get(request: Request):
     resp = RedirectResponse("/", status_code=302)
-    resp.delete_cookie("token")
+    clear_auth_cookie(resp, request)
     return resp
 
 
