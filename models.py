@@ -39,7 +39,7 @@ class Question(Base):
     __tablename__ = "questions"
 
     id = Column(Integer, primary_key=True, index=True)
-    test_id = Column(Integer, ForeignKey("tests.id"), nullable=False)
+    test_id = Column(Integer, ForeignKey("tests.id"), nullable=False, index=True)
     question_index = Column(Integer, nullable=False)
     question_text = Column(Text, nullable=False)
     explanation = Column(Text, default="")
@@ -54,7 +54,7 @@ class Answer(Base):
     __tablename__ = "answers"
 
     id = Column(Integer, primary_key=True, index=True)
-    question_id = Column(Integer, ForeignKey("questions.id"), nullable=False)
+    question_id = Column(Integer, ForeignKey("questions.id"), nullable=False, index=True)
     text = Column(Text, nullable=False)
     is_correct = Column(Boolean, default=False)
 
@@ -65,8 +65,8 @@ class UserTestAttempt(Base):
     __tablename__ = "user_test_attempts"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    test_id = Column(Integer, ForeignKey("tests.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    test_id = Column(Integer, ForeignKey("tests.id"), nullable=False, index=True)
     started_at = Column(DateTime, default=datetime.utcnow)
     finished_at = Column(DateTime, nullable=True)
     score = Column(Integer, nullable=True)
@@ -81,8 +81,8 @@ class UserAnswer(Base):
     __tablename__ = "user_answers"
 
     id = Column(Integer, primary_key=True, index=True)
-    attempt_id = Column(Integer, ForeignKey("user_test_attempts.id"), nullable=False)
-    question_id = Column(Integer, ForeignKey("questions.id"), nullable=False)
+    attempt_id = Column(Integer, ForeignKey("user_test_attempts.id"), nullable=False, index=True)
+    question_id = Column(Integer, ForeignKey("questions.id"), nullable=False, index=True)
     selected_answer_ids = Column(String, default="[]")  # JSON list
     is_correct = Column(Boolean, default=False)
 

@@ -71,6 +71,12 @@
   <button class="btn-primary" onclick="nextQuestion()" id="nextBtn">Next →</button>
 </div>
 
+<!-- Submit loading overlay -->
+<div id="submitOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+  <div style="width:40px;height:40px;border:3px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+  <div style="color:#fff;font-size:0.95rem;font-weight:500;">Saving results...</div>
+</div>
+
 <!-- Confirm finish modal -->
 <div class="modal-overlay" id="finishModal">
   <div class="modal">
@@ -292,11 +298,22 @@ function closeFinishModal() {
 }
 
 // ── Submit ────────────────────────────────────────────────────────
+function showSubmitOverlay() {
+  const el = document.getElementById('submitOverlay');
+  if (el) el.style.display = 'flex';
+}
+
+function hideSubmitOverlay() {
+  const el = document.getElementById('submitOverlay');
+  if (el) el.style.display = 'none';
+}
+
 async function submitTest(auto = false) {
   if (isSubmitting) return;
   isSubmitting = true;
   clearInterval(timerInterval);
   closeFinishModal();
+  showSubmitOverlay();
 
   const btn = document.getElementById('submitBtn');
   if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
@@ -324,15 +341,17 @@ async function submitTest(auto = false) {
     const { attempt_id } = await startRes.json();
     attemptId = attempt_id;
 
-    // 2. Save answers
-    for (const q of questions) {
-      const answerIds = selectedAnswers[q.id] || [];
-      await fetch(`/api/attempts/${attemptId}/answer`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question_id: q.id, answer_ids: answerIds })
-      });
-    }
+    // 2. Save all answers in a single batch request (was: 25 sequential requests)
+    const answers = questions.map(q => ({
+      question_id: q.id,
+      answer_ids: selectedAnswers[q.id] || []
+    }));
+    const batchRes = await fetch(`/api/attempts/${attemptId}/answers/batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answers })
+    });
+    if (!batchRes.ok) throw new Error('Failed to save answers');
 
     // 3. Finish
     const finRes = await fetch(`/api/attempts/${attemptId}/finish`, { method: 'POST' });
@@ -343,6 +362,7 @@ async function submitTest(auto = false) {
 
   } catch(e) {
     isSubmitting = false;
+    hideSubmitOverlay();
     if (btn) { btn.disabled = false; btn.textContent = 'Submit answers'; }
     showToast('Failed to submit: ' + e.message, 'error');
   }

@@ -6,7 +6,7 @@ from fastapi import FastAPI, Request, Depends, HTTPException, Header
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import func as sql_func
 
 import models
@@ -457,7 +457,9 @@ async def results_page(test_id: int, attempt_id: int, request: Request, db: Sess
     if not attempt:
         raise HTTPException(status_code=404)
 
-    questions = db.query(models.Question).filter(
+    questions = db.query(models.Question).options(
+        selectinload(models.Question.answers)
+    ).filter(
         models.Question.test_id == test_id
     ).order_by(models.Question.question_index).all()
     ua_map = {ua.question_id: ua for ua in attempt.user_answers}
@@ -493,7 +495,9 @@ async def review_page(test_id: int, attempt_id: int, request: Request, db: Sessi
     if not attempt:
         raise HTTPException(status_code=404)
 
-    questions = db.query(models.Question).filter(
+    questions = db.query(models.Question).options(
+        selectinload(models.Question.answers)
+    ).filter(
         models.Question.test_id == test_id
     ).order_by(models.Question.question_index).all()
     ua_map = {ua.question_id: ua for ua in attempt.user_answers}
@@ -600,6 +604,50 @@ async def api_save_answer(attempt_id: int, request: Request, db: Session = Depen
         ))
     db.commit()
     return {"ok": True, "is_correct": is_correct}
+
+
+@app.post("/api/attempts/{attempt_id}/answers/batch")
+async def api_save_answers_batch(attempt_id: int, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+
+    attempt = db.query(models.UserTestAttempt).filter(
+        models.UserTestAttempt.id == attempt_id,
+        models.UserTestAttempt.user_id == user.id,
+    ).first()
+    if not attempt:
+        return JSONResponse({"error": "Not found"}, status_code=404)
+
+    body = await request.json()
+    incoming = body.get("answers", [])  # [{question_id, answer_ids}, ...]
+
+    question_ids = [a["question_id"] for a in incoming]
+    questions = db.query(models.Question).options(
+        selectinload(models.Question.answers)
+    ).filter(models.Question.id.in_(question_ids)).all()
+    q_map = {q.id: q for q in questions}
+
+    # Delete existing answers for this attempt (idempotent re-submit)
+    db.query(models.UserAnswer).filter(
+        models.UserAnswer.attempt_id == attempt_id
+    ).delete(synchronize_session=False)
+
+    for ans in incoming:
+        q = q_map.get(ans["question_id"])
+        if not q:
+            continue
+        correct_ids = {a.id for a in q.answers if a.is_correct}
+        is_correct = set(ans.get("answer_ids", [])) == correct_ids
+        db.add(models.UserAnswer(
+            attempt_id=attempt_id,
+            question_id=ans["question_id"],
+            selected_answer_ids=json.dumps(ans.get("answer_ids", [])),
+            is_correct=is_correct,
+        ))
+
+    db.commit()
+    return {"ok": True}
 
 
 @app.post("/api/attempts/{attempt_id}/finish")

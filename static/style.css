@@ -849,3 +849,8 @@ body, nav, .sidebar, .modal, input, textarea, select {
 .result-card {
   transition: transform 0.15s ease, opacity 0.15s ease;
 }
+
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
