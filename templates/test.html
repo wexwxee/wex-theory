@@ -41,13 +41,8 @@
     <!-- Question header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
       <span style="font-size:0.85rem;color:var(--text-muted);" id="questionCounter">Question 1 of 25</span>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <button id="bookmarkBtn" onclick="toggleBookmark()" class="bookmark-btn" title="Bookmark">
-          <svg id="bookmarkIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-        </button>
-        <div style="display:flex;gap:6px;" id="dotNav">
-          <!-- dots rendered by JS -->
-        </div>
+      <div style="display:flex;gap:6px;" id="dotNav">
+        <!-- dots rendered by JS -->
       </div>
     </div>
 
@@ -55,16 +50,19 @@
     <div class="test-layout">
       <!-- Left: image -->
       <div class="test-image-wrap" id="imageWrap">
-        <img id="questionImg" src="" alt="" style="display:none;min-height:400px;object-fit:cover;">
-        <div class="test-image-placeholder" id="imgPlaceholder" style="min-height:400px;">No image</div>
+        <img id="questionImg" src="" alt="" style="display:none;min-height:360px;object-fit:cover;">
+        <div class="test-image-placeholder" id="imgPlaceholder" style="min-height:360px;">No image</div>
       </div>
 
       <!-- Right: question + answers -->
-      <div>
-        <div style="font-size:1.3rem;font-weight:600;line-height:1.5;margin-bottom:8px;" id="questionText">
+      <div style="position:relative;">
+        <button id="bookmarkBtn" onclick="toggleBookmark()" class="bookmark-btn" title="Bookmark">
+          <svg id="bookmarkIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        </button>
+        <div style="font-size:1.2rem;font-weight:600;line-height:1.5;margin-bottom:8px;padding-right:30px;" id="questionText">
           Loading...
         </div>
-        <div id="questionTextRu" style="display:none;font-size:1rem;color:var(--text-muted);font-style:italic;margin-bottom:20px;animation:fadeIn 0.25s ease both;"></div>
+        <div id="questionTextRu" style="display:none;font-size:0.9rem;color:#6b7280;font-style:italic;margin-bottom:20px;animation:fadeIn 0.25s ease both;"></div>
         <div id="answersContainer"></div>
       </div>
     </div>
@@ -218,17 +216,13 @@ function renderQuestion() {
   q.answers.forEach((a, idx) => {
     const div = document.createElement('div');
     div.className = 'answer-option' + (selected.includes(a.id) ? ' selected' : '');
-    div.style.cssText = 'padding:16px;font-size:1.05rem;';
     const ruText = (translateMode && trans?.a?.[idx]) ? trans.a[idx] : null;
-    const labelHtml = ruText
-      ? `${escapeHtml(a.text)}<br><span style="font-size:0.88rem;color:var(--text-muted);font-style:italic;">${escapeHtml(ruText)}</span>`
-      : escapeHtml(a.text);
-    div.innerHTML = `<input type="checkbox" name="q${q.id}" value="${a.id}" ${selected.includes(a.id) ? 'checked' : ''}>
-      <span class="answer-option-label">${labelHtml}</span>`;
-    div.addEventListener('click', (e) => {
-      e.preventDefault();
-      toggleAnswer(q.id, a.id, div);
-    });
+    const ruSpan = ruText
+      ? `<br><span style="font-size:0.85rem;color:#6b7280;font-style:italic;">${escapeHtml(ruText)}</span>`
+      : '';
+    div.innerHTML = `<div class="answer-checkbox"></div>
+      <span class="answer-option-label">${escapeHtml(a.text)}${ruSpan}</span>`;
+    div.addEventListener('click', () => toggleAnswer(q.id, a.id, div));
     container.appendChild(div);
   });
 
@@ -255,8 +249,6 @@ function toggleAnswer(questionId, answerId, clickedDiv) {
     current.splice(idx, 1);
   }
   selectedAnswers[questionId] = current;
-  const cb = clickedDiv.querySelector('input[type="checkbox"]');
-  cb.checked = current.includes(answerId);
   clickedDiv.classList.toggle('selected', current.includes(answerId));
   updateDots();
 }
@@ -462,7 +454,7 @@ async function toggleTranslate() {
 async function _ensureQuestionTranslated(q) {
   if (questionTransCache[q.id]) return;
   const cacheKey = 'wx_trans_' + q.id;
-  const cached = localStorage.getItem(cacheKey);
+  const cached = sessionStorage.getItem(cacheKey);
   if (cached) { try { questionTransCache[q.id] = JSON.parse(cached); return; } catch(e) {} }
 
   const btn = document.getElementById('translateBtn');
@@ -477,7 +469,7 @@ async function _ensureQuestionTranslated(q) {
       const data = await res.json();
       // data: { q: "...", a: ["...", ...] }
       questionTransCache[q.id] = data;
-      try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch(e) {}
+      try { sessionStorage.setItem(cacheKey, JSON.stringify(data)); } catch(e) {}
     }
   } catch(e) {}
   if (btn) { btn.textContent = '🇬🇧'; btn.disabled = false; }
