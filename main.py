@@ -148,12 +148,16 @@ async def google_login(request: Request):
 
 @app.get("/auth/google/callback")
 async def google_callback(request: Request, db: Session = Depends(get_db)):
+    print(f"[GOOGLE CB] query params: {dict(request.query_params)}")
     try:
         token = await oauth.google.authorize_access_token(request)
+        print(f"[GOOGLE CB] token keys: {list(token.keys())}")
         info = token.get("userinfo") or {}
+        print(f"[GOOGLE CB] userinfo: {info}")
         email = info.get("email", "").lower().strip()
-        name = info.get("name", email.split("@")[0])
+        name = info.get("name", email.split("@")[0] if email else "User")
         if not email:
+            print("[GOOGLE CB] ERROR: no email in userinfo")
             return RedirectResponse("/login?error=no_email", status_code=302)
 
         user = db.query(models.User).filter(models.User.email == email).first()
@@ -169,19 +173,32 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
             db.add(user)
             db.commit()
             db.refresh(user)
-            print(f"[GOOGLE] New user created: {email}")
+            print(f"[GOOGLE CB] New user created: id={user.id} email={email}")
         else:
-            print(f"[GOOGLE] Existing user: {email}")
+            print(f"[GOOGLE CB] Existing user: id={user.id} email={email}")
 
         jwt_token = create_token(user.id)
         redirect = "/admin" if user.is_admin else "/dashboard"
-        resp = RedirectResponse(redirect, status_code=302)
-        resp.set_cookie("token", jwt_token, httponly=True, max_age=86400 * 30, samesite="lax")
+        print(f"[GOOGLE CB] Issuing JWT, redirecting to {redirect}")
+
+        # Build redirect response with cookie explicitly
+        from fastapi.responses import Response as FastResponse
+        resp = RedirectResponse(url=redirect, status_code=302)
+        resp.set_cookie(
+            key="token",
+            value=jwt_token,
+            httponly=True,
+            max_age=86400 * 30,
+            samesite="lax",
+            secure=False,   # Render uses HTTPS but proxy strips it — let cookie work on both
+        )
         return resp
     except Exception as e:
-        print(f"[GOOGLE ERROR] {e}")
+        err_str = str(e)
+        print(f"[GOOGLE CB ERROR] {err_str}")
         traceback.print_exc()
-        return RedirectResponse("/login?error=google_failed", status_code=302)
+        from urllib.parse import quote
+        return RedirectResponse(f"/login?google_error={quote(err_str[:120])}", status_code=302)
 
 
 # ─── Public pages ──────────────────────────────────────────────────────────────
@@ -338,7 +355,10 @@ async def api_me(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request, db: Session = Depends(get_db)):
+    token_cookie = request.cookies.get("token")
+    print(f"[DASHBOARD] token cookie present: {bool(token_cookie)}")
     user = get_current_user(request, db)
+    print(f"[DASHBOARD] user resolved: {user.email if user else None}")
     if not user:
         return RedirectResponse("/login", status_code=302)
 

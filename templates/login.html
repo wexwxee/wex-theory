@@ -172,6 +172,9 @@
       <div class="card-title">Welcome back</div>
       <div class="card-sub">Sign in to your account</div>
       <div class="msg-box" id="msgBox"></div>
+      {% if request.query_params.get('google_error') %}
+      <div class="msg-box error">Google: {{ request.query_params.get('google_error') }}</div>
+      {% endif %}
       <div class="form-group">
         <label for="email">Email address</label>
         <input type="email" id="email" placeholder="you@example.com" autocomplete="email" autofocus>
