@@ -441,21 +441,29 @@ let translateMode = false;
 const questionTransCache = {};
 
 async function toggleTranslate() {
-  translateMode = !translateMode;
   const btn = document.getElementById('translateBtn');
-  if (btn) btn.textContent = translateMode ? '🇬🇧' : '🇷🇺';
-
-  if (translateMode && questions[currentIndex]) {
-    await _ensureQuestionTranslated(questions[currentIndex]);
+  if (translateMode) {
+    translateMode = false;
+    if (btn) btn.textContent = '🇷🇺';
+    renderQuestion();
+    return;
+  }
+  translateMode = true;
+  if (btn) btn.textContent = '🇬🇧';
+  if (questions[currentIndex]) {
+    const ok = await _ensureQuestionTranslated(questions[currentIndex]);
+    if (!ok) { translateMode = false; if (btn) btn.textContent = '🇷🇺'; return; }
   }
   renderQuestion();
 }
 
 async function _ensureQuestionTranslated(q) {
-  if (questionTransCache[q.id]) return;
+  if (questionTransCache[q.id]) return true;
   const cacheKey = 'wx_trans_' + q.id;
   const cached = sessionStorage.getItem(cacheKey);
-  if (cached) { try { questionTransCache[q.id] = JSON.parse(cached); return; } catch(e) {} }
+  if (cached) {
+    try { questionTransCache[q.id] = JSON.parse(cached); return true; } catch(e) {}
+  }
 
   const btn = document.getElementById('translateBtn');
   if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
@@ -465,14 +473,21 @@ async function _ensureQuestionTranslated(q) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question: q.question_text, answers: q.answers.map(a => a.text) })
     });
-    if (res.ok) {
-      const data = await res.json();
-      // data: { q: "...", a: ["...", ...] }
-      questionTransCache[q.id] = data;
-      try { sessionStorage.setItem(cacheKey, JSON.stringify(data)); } catch(e) {}
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      showToast('Перевод: ' + (data.error || 'ошибка сервера'), 'error');
+      if (btn) { btn.textContent = '🇷🇺'; btn.disabled = false; }
+      return false;
     }
-  } catch(e) {}
-  if (btn) { btn.textContent = '🇬🇧'; btn.disabled = false; }
+    questionTransCache[q.id] = data;
+    try { sessionStorage.setItem(cacheKey, JSON.stringify(data)); } catch(e) {}
+    if (btn) { btn.textContent = '🇬🇧'; btn.disabled = false; }
+    return true;
+  } catch(e) {
+    showToast('Перевод недоступен: ' + e.message, 'error');
+    if (btn) { btn.textContent = '🇷🇺'; btn.disabled = false; }
+    return false;
+  }
 }
 
 async function _prefetchNext() {
