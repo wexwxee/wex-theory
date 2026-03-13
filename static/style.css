@@ -857,61 +857,61 @@ body, nav, .sidebar, .modal, input, textarea, select {
 
 /* ── Custom checkboxes in answer options ── */
 .answer-option input[type="checkbox"] {
-  -webkit-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
-  min-width: 20px;
-  border: 2px solid var(--border);
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  border: 2px solid #e5e7eb;
   border-radius: 6px;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-  background: var(--bg);
-  margin-top: 1px;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  background: transparent;
 }
 .answer-option input[type="checkbox"]:checked {
-  background: var(--text);
-  border-color: var(--text);
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M13.485 1.431a1.473 1.473 0 0 0-2.084 0l-6.414 6.414-2.394-2.394A1.473 1.473 0 0 0 .61 7.535l3.436 3.436a1.473 1.473 0 0 0 2.084 0l7.354-7.354a1.473 1.473 0 0 0 0-2.186z'/%3E%3C/svg%3E");
-  background-size: 12px;
+  background-color: #111;
+  border-color: #111;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 14 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 7l4 4 6-6' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-size: 14px;
   background-repeat: no-repeat;
   background-position: center;
 }
-.answer-option.selected input[type="checkbox"] {
-  background: var(--text);
-  border-color: var(--text);
+.answer-option.correct input[type="checkbox"]:checked {
+  background-color: var(--correct);
+  border-color: var(--correct);
+}
+.answer-option.wrong input[type="checkbox"]:checked {
+  background-color: var(--wrong);
+  border-color: var(--wrong);
 }
 
 /* ── Wide modal ── */
 .modal-wide { max-width: 860px !important; }
 @media (max-width: 900px) { .modal-wide { max-width: calc(100vw - 32px) !important; } }
 
-/* ── Word hover translation ── */
-.word-hover {
-  border-bottom: 1px dotted transparent;
-  cursor: help;
-  transition: border-color 0.1s;
+/* ── Bookmark button ── */
+.bookmark-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: color 0.15s;
+  border-radius: 4px;
 }
-.word-hover:hover { border-bottom-color: var(--text-muted); }
-
-.word-tooltip {
-  position: fixed;
-  background: #111;
-  color: #fff;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  z-index: 9000;
-  pointer-events: none;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-  animation: tooltipIn 0.15s ease both;
-  max-width: 240px;
-  line-height: 1.5;
+.bookmark-btn:hover { color: var(--text); }
+.bookmark-btn.active { color: var(--text); }
+@keyframes bookmarkPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.35); }
+  70%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
 }
-@keyframes tooltipIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+.bookmark-btn.pop { animation: bookmarkPop 0.3s ease both; }
 
 /* ── Dashboard test card stagger ── */
 @keyframes cardIn {
