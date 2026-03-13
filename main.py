@@ -7,6 +7,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from sqlalchemy import func as sql_func
 
 import models
 from auth import hash_password, verify_password, create_token, decode_token, get_current_user, user_has_access
@@ -39,7 +40,25 @@ async def startup_init():
         else:
             print(f"[STARTUP] Tests already in DB: {test_count}")
 
-        # 2. Run Stripe column migration (safe to re-run)
+        # 2. Fix image paths: rename .png → .jpg (images were converted to JPEG)
+        png_count = db.query(models.Question).filter(
+            models.Question.image_path.like("%.png")
+        ).count()
+        if png_count > 0:
+            db.query(models.Question).filter(
+                models.Question.image_path.like("%.png")
+            ).update(
+                {models.Question.image_path: sql_func.replace(
+                    models.Question.image_path, ".png", ".jpg"
+                )},
+                synchronize_session=False,
+            )
+            db.commit()
+            print(f"[STARTUP] Fixed {png_count} image paths: .png → .jpg")
+        else:
+            print("[STARTUP] Image paths OK (already .jpg)")
+
+        # 3. Run Stripe column migration (safe to re-run)
         try:
             import sqlite3
             conn = sqlite3.connect("wex_theory.db")
