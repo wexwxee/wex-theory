@@ -8,11 +8,13 @@ from fastapi import FastAPI, Request, Depends, HTTPException, Header
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import func as sql_func
+from authlib.integrations.starlette_client import OAuth
 
 import models
-from auth import hash_password, verify_password, create_token, decode_token, get_current_user, user_has_access
+from auth import hash_password, verify_password, create_token, decode_token, get_current_user, user_has_access, SECRET_KEY
 from database import engine, get_db
 from stripe_helpers import (
     get_or_create_customer, create_checkout_session,
@@ -22,6 +24,20 @@ from stripe_helpers import (
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="WEX Theory")
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+
+# ─── Google OAuth ──────────────────────────────────────────────────────────────
+oauth = OAuth()
+_google_client_id = os.environ.get("GOOGLE_CLIENT_ID", "")
+_google_client_secret = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+if _google_client_id and _google_client_secret:
+    oauth.register(
+        name="google",
+        client_id=_google_client_id,
+        client_secret=_google_client_secret,
+        server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+        client_kwargs={"scope": "openid email profile"},
+    )
 
 
 @app.on_event("startup")
@@ -117,6 +133,55 @@ async def setup_admin(db: Session = Depends(get_db)):
     db.add(u)
     db.commit()
     return {"status": "created", "id": u.id}
+
+
+# ─── Google OAuth pages ────────────────────────────────────────────────────────
+
+@app.get("/auth/google")
+async def google_login(request: Request):
+    if not _google_client_id:
+        return RedirectResponse("/login?error=google_not_configured", status_code=302)
+    base_url = os.environ.get("BASE_URL", str(request.base_url).rstrip("/"))
+    redirect_uri = base_url + "/auth/google/callback"
+    return await oauth.google.authorize_redirect(request, redirect_uri)
+
+
+@app.get("/auth/google/callback")
+async def google_callback(request: Request, db: Session = Depends(get_db)):
+    try:
+        token = await oauth.google.authorize_access_token(request)
+        info = token.get("userinfo") or {}
+        email = info.get("email", "").lower().strip()
+        name = info.get("name", email.split("@")[0])
+        if not email:
+            return RedirectResponse("/login?error=no_email", status_code=302)
+
+        user = db.query(models.User).filter(models.User.email == email).first()
+        if not user:
+            user = models.User(
+                name=name,
+                email=email,
+                password_hash="google_oauth",
+                created_at=datetime.utcnow(),
+                expires_at=datetime.utcnow() + timedelta(days=30),
+                is_admin=False,
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+            print(f"[GOOGLE] New user created: {email}")
+        else:
+            print(f"[GOOGLE] Existing user: {email}")
+
+        jwt_token = create_token(user.id)
+        redirect = "/admin" if user.is_admin else "/dashboard"
+        resp = RedirectResponse(redirect, status_code=302)
+        resp.set_cookie("token", jwt_token, httponly=True, max_age=86400 * 30, samesite="lax")
+        return resp
+    except Exception as e:
+        print(f"[GOOGLE ERROR] {e}")
+        traceback.print_exc()
+        return RedirectResponse("/login?error=google_failed", status_code=302)
 
 
 # ─── Public pages ──────────────────────────────────────────────────────────────

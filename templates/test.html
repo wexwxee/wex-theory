@@ -471,14 +471,17 @@ async function _mmTranslateWord(word) {
   if (cached) { try { return JSON.parse(cached); } catch(e) {} }
   try {
     const res = await fetch(
-      'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(word) + '&langpair=en|ru'
+      'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(word) +
+      '&langpair=en|ru&de=wextheory'
     );
     const data = await res.json();
-    const main = data.responseData?.translatedText || '—';
+    const rawMain = data.responseData?.translatedText || '';
+    const clean = t => t.replace(/МИМИ/gi,'').replace(/\s{2,}/g,' ').trim();
+    const main = clean(rawMain) || '—';
+    const seen = new Set([main.toLowerCase()]);
     const variants = (data.matches || [])
-      .map(m => m.translation)
-      .filter(v => v && v !== main && v.length < 40)
-      .filter((v, i, arr) => arr.indexOf(v) === i)
+      .map(m => clean(m.translation || ''))
+      .filter(t => t && t !== '—' && t.length < 50 && !seen.has(t.toLowerCase()) && seen.add(t.toLowerCase()))
       .slice(0, 3);
     const result = { main, variants };
     try { sessionStorage.setItem(key, JSON.stringify(result)); } catch(e) {}
@@ -532,27 +535,25 @@ const _STOP = new Set(['the','a','an','in','to','of','and','or','is','are','you'
 let _wordPopup = null;
 
 function _wrapWords(el) {
-  if (!el) return;
-  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
-  const nodes = [];
-  let n;
-  while ((n = walker.nextNode())) nodes.push(n);
-  nodes.forEach(tn => {
-    const parts = tn.textContent.split(/(\b[a-zA-Z]{3,}\b)/);
-    if (parts.length <= 1) return;
-    const frag = document.createDocumentFragment();
-    parts.forEach(p => {
-      if (/^[a-zA-Z]{3,}$/.test(p) && !_STOP.has(p.toLowerCase())) {
-        const s = document.createElement('span');
-        s.className = 'tw';
-        s.textContent = p;
-        frag.appendChild(s);
-      } else {
-        frag.appendChild(document.createTextNode(p));
-      }
-    });
-    tn.parentNode.replaceChild(frag, tn);
-  });
+  if (!el || el.dataset.wrapped) return;
+  el.dataset.wrapped = '1';
+
+  function processNode(node) {
+    if (node.nodeType === 3) {
+      const text = node.textContent;
+      if (!/[a-zA-Z]{3,}/.test(text)) return;
+      const wrap = document.createElement('span');
+      wrap.innerHTML = text.replace(/\b([a-zA-Z]{3,})\b/g, (m) =>
+        _STOP.has(m.toLowerCase()) ? m : `<span class="tw">${m}</span>`
+      );
+      node.parentNode.replaceChild(wrap, node);
+    } else if (node.nodeType === 1 &&
+               !['SCRIPT','STYLE','INPUT','TEXTAREA'].includes(node.tagName)) {
+      Array.from(node.childNodes).forEach(processNode);
+    }
+  }
+
+  Array.from(el.childNodes).forEach(processNode);
 }
 
 function _popupPos(popup, rect) {
