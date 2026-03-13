@@ -97,27 +97,33 @@
     <div style="font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;color:#22c55e;line-height:1.2;margin-bottom:8px;">
       ✓ Congratulations! You passed!
     </div>
-    <div style="font-size:1.1rem;color:#22c55e;font-weight:600;">{{ attempt.score }}/25 correct</div>
+    <div style="font-size:1.1rem;color:#22c55e;font-weight:600;"><span id="scoreDisplay">0</span>/25 correct</div>
     {% else %}
     <div style="font-size:clamp(1.4rem,4vw,2.2rem);font-weight:800;color:#ef4444;line-height:1.2;margin-bottom:8px;">
       ✗ Unfortunately! You did not pass.
     </div>
-    <div style="font-size:1.1rem;color:#ef4444;font-weight:600;">{{ attempt.score }}/25 — {{ 25 - attempt.score }} errors</div>
+    <div style="font-size:1.1rem;color:#ef4444;font-weight:600;"><span id="scoreDisplay">0</span>/25 correct</div>
     {% endif %}
+    <!-- Score progress bar -->
+    <div style="max-width:320px;margin:12px auto 4px;">
+      <div style="height:6px;background:var(--border);border-radius:999px;overflow:hidden;">
+        <div id="scoreBar" style="height:100%;width:0%;border-radius:999px;transition:width 1s ease;background:{% if attempt.passed %}#22c55e{% else %}#ef4444{% endif %};"></div>
+      </div>
+    </div>
     <p style="color:var(--text-muted);font-size:0.88rem;margin-top:10px;">You need at least 20 correct answers to pass.</p>
 
     <!-- Stats row -->
     <div style="display:inline-grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:24px;text-align:center;">
       <div>
-        <div style="font-size:2rem;font-weight:800;color:#22c55e;">{{ attempt.score }}</div>
+        <div id="statCorrect" style="font-size:2rem;font-weight:800;color:#22c55e;">0</div>
         <div style="font-size:0.78rem;color:var(--text-muted);">Correct</div>
       </div>
       <div>
-        <div style="font-size:2rem;font-weight:800;color:#ef4444;">{{ 25 - attempt.score }}</div>
+        <div id="statWrong" style="font-size:2rem;font-weight:800;color:#ef4444;">0</div>
         <div style="font-size:0.78rem;color:var(--text-muted);">Wrong</div>
       </div>
       <div>
-        <div style="font-size:2rem;font-weight:800;">{{ ((attempt.score / 25) * 100) | round | int }}%</div>
+        <div id="statPct" style="font-size:2rem;font-weight:800;">0%</div>
         <div style="font-size:0.78rem;color:var(--text-muted);">Score</div>
       </div>
     </div>
@@ -175,7 +181,7 @@
 
 <!-- Question detail modal -->
 <div class="modal-overlay" id="qModal">
-  <div class="modal" style="max-width:640px;">
+  <div class="modal modal-wide">
     <div class="modal-header">
       <span style="font-size:0.82rem;color:var(--text-muted);" id="modalMeta">Question 1 of 25</span>
       <button class="modal-close" onclick="closeModal()">✕</button>
@@ -317,5 +323,33 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft') { if(document.getElementById('qModal').classList.contains('open')) modalNav(-1); }
   if (e.key === 'ArrowRight') { if(document.getElementById('qModal').classList.contains('open')) modalNav(1); }
 });
+
+// Animate score counter
+(function(){
+  const SCORE = {{ attempt.score }};
+  const TOTAL = 25;
+  const duration = 900;
+  const start = performance.now();
+  function tick(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const eased = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+    const val = Math.round(eased * SCORE);
+    const el = document.getElementById('scoreDisplay');
+    const correct = document.getElementById('statCorrect');
+    const wrong = document.getElementById('statWrong');
+    const pct = document.getElementById('statPct');
+    if (el) el.textContent = val;
+    if (correct) correct.textContent = val;
+    if (wrong) wrong.textContent = TOTAL - val;
+    if (pct) pct.textContent = Math.round((val / TOTAL) * 100) + '%';
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+  // Animate progress bar
+  setTimeout(() => {
+    const bar = document.getElementById('scoreBar');
+    if (bar) bar.style.width = ((SCORE / TOTAL) * 100) + '%';
+  }, 50);
+})();
 </script>
 {% endblock %}

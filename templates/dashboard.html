@@ -61,6 +61,7 @@
     </div>
     <div style="display:flex;gap:10px;align-items:center;">
       <a href="/profile" class="btn-ghost btn-sm">History</a>
+      <a href="/saved" class="btn-ghost btn-sm">🔖 Saved</a>
       {% if user.subscription_status == 'active' %}
         <button id="portalBtn" onclick="openBillingPortal()" class="btn-ghost btn-sm">Manage Plan</button>
       {% elif not user.is_admin and not has_access %}

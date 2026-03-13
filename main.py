@@ -531,19 +531,27 @@ async def api_start_test(test_id: int, request: Request, db: Session = Depends(g
     user = get_current_user(request, db)
     if not user:
         return JSONResponse({"error": "Unauthorized"}, status_code=401)
-    # Test 1 is free for all authenticated users; Test 2+ requires subscription
     if test_id != 1 and not user_has_access(user):
         return JSONResponse({"error": "Subscription required"}, status_code=403)
 
     test = db.query(models.Test).filter(models.Test.id == test_id).first()
     if not test:
-        return JSONResponse({"error": "Not found"}, status_code=404)
+        total = db.query(models.Test).count()
+        print(f"[START] Test {test_id} not found. Total tests in DB: {total}")
+        return JSONResponse({"error": f"Test {test_id} not found (DB has {total} tests)"}, status_code=404)
 
-    attempt = models.UserTestAttempt(user_id=user.id, test_id=test_id, started_at=datetime.utcnow())
-    db.add(attempt)
-    db.commit()
-    db.refresh(attempt)
-    return {"attempt_id": attempt.id}
+    try:
+        attempt = models.UserTestAttempt(user_id=user.id, test_id=test_id, started_at=datetime.utcnow())
+        db.add(attempt)
+        db.commit()
+        db.refresh(attempt)
+        print(f"[START] attempt_id={attempt.id} user_id={user.id} test_id={test_id}")
+        return {"attempt_id": attempt.id}
+    except Exception as e:
+        db.rollback()
+        print(f"[START ERROR] user_id={user.id} test_id={test_id}: {e}")
+        traceback.print_exc()
+        return JSONResponse({"error": str(e)}, status_code=500)
 
 
 @app.post("/api/attempts/{attempt_id}/answer")
@@ -685,6 +693,55 @@ async def api_review(attempt_id: int, request: Request, db: Session = Depends(ge
         }
         for q in questions
     ]
+
+
+# ─── Bookmarks ─────────────────────────────────────────────────────────────────
+
+@app.get("/api/bookmarks")
+async def api_get_bookmarks(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    bookmarks = db.query(models.Bookmark).filter(
+        models.Bookmark.user_id == user.id
+    ).all()
+    return [{"question_id": bm.question_id} for bm in bookmarks]
+
+
+@app.post("/api/bookmarks/{question_id}")
+async def api_toggle_bookmark(question_id: int, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    existing = db.query(models.Bookmark).filter(
+        models.Bookmark.user_id == user.id,
+        models.Bookmark.question_id == question_id,
+    ).first()
+    if existing:
+        db.delete(existing)
+        db.commit()
+        return {"bookmarked": False}
+    bm = models.Bookmark(user_id=user.id, question_id=question_id, created_at=datetime.utcnow())
+    db.add(bm)
+    db.commit()
+    return {"bookmarked": True}
+
+
+@app.get("/saved", response_class=HTMLResponse)
+async def saved_questions_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        return RedirectResponse("/login", status_code=302)
+    bookmarks = (
+        db.query(models.Bookmark)
+        .options(selectinload(models.Bookmark.question).selectinload(models.Question.answers))
+        .filter(models.Bookmark.user_id == user.id)
+        .order_by(models.Bookmark.created_at.desc())
+        .all()
+    )
+    return templates.TemplateResponse("saved.html", {
+        "request": request, "user": user, "bookmarks": bookmarks,
+    })
 
 
 # ─── Contact API ───────────────────────────────────────────────────────────────

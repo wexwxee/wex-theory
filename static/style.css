@@ -854,3 +854,88 @@ body, nav, .sidebar, .modal, input, textarea, select {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* ── Custom checkboxes in answer options ── */
+.answer-option input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  background: var(--bg);
+  margin-top: 1px;
+}
+.answer-option input[type="checkbox"]:checked {
+  background: var(--text);
+  border-color: var(--text);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M13.485 1.431a1.473 1.473 0 0 0-2.084 0l-6.414 6.414-2.394-2.394A1.473 1.473 0 0 0 .61 7.535l3.436 3.436a1.473 1.473 0 0 0 2.084 0l7.354-7.354a1.473 1.473 0 0 0 0-2.186z'/%3E%3C/svg%3E");
+  background-size: 12px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.answer-option.selected input[type="checkbox"] {
+  background: var(--text);
+  border-color: var(--text);
+}
+
+/* ── Wide modal ── */
+.modal-wide { max-width: 860px !important; }
+@media (max-width: 900px) { .modal-wide { max-width: calc(100vw - 32px) !important; } }
+
+/* ── Word hover translation ── */
+.word-hover {
+  border-bottom: 1px dotted transparent;
+  cursor: help;
+  transition: border-color 0.1s;
+}
+.word-hover:hover { border-bottom-color: var(--text-muted); }
+
+.word-tooltip {
+  position: fixed;
+  background: #111;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  z-index: 9000;
+  pointer-events: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  animation: tooltipIn 0.15s ease both;
+  max-width: 240px;
+  line-height: 1.5;
+}
+@keyframes tooltipIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Dashboard test card stagger ── */
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.tests-grid .test-card { animation: cardIn 0.35s ease both; }
+.tests-grid .test-card:nth-child(1)  { animation-delay: 0.03s; }
+.tests-grid .test-card:nth-child(2)  { animation-delay: 0.06s; }
+.tests-grid .test-card:nth-child(3)  { animation-delay: 0.09s; }
+.tests-grid .test-card:nth-child(4)  { animation-delay: 0.12s; }
+.tests-grid .test-card:nth-child(5)  { animation-delay: 0.15s; }
+.tests-grid .test-card:nth-child(6)  { animation-delay: 0.18s; }
+.tests-grid .test-card:nth-child(7)  { animation-delay: 0.21s; }
+.tests-grid .test-card:nth-child(8)  { animation-delay: 0.24s; }
+.tests-grid .test-card:nth-child(9)  { animation-delay: 0.27s; }
+.tests-grid .test-card:nth-child(10) { animation-delay: 0.30s; }
+.tests-grid .test-card:nth-child(11) { animation-delay: 0.33s; }
+.tests-grid .test-card:nth-child(12) { animation-delay: 0.36s; }
+.tests-grid .test-card:nth-child(13) { animation-delay: 0.39s; }
+.tests-grid .test-card-locked { opacity: 0.65; }
+
+/* ── Score counter animation ── */
+.score-animated {
+  display: inline-block;
+  transition: color 0.3s;
+}

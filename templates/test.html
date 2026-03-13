@@ -11,6 +11,7 @@
     </div>
     <div class="nav-right" style="gap:10px;">
       <div class="timer" id="timerDisplay">45:00</div>
+      <button class="btn-ghost btn-sm" onclick="toggleTranslate()" id="translateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:1rem;">🇷🇺</button>
       <button class="theme-btn" onclick="toggleTheme()" id="navThemeBtn">☀️</button>
       <button class="btn-primary btn-sm" onclick="finishTest()" id="finishBtn">Finish</button>
     </div>
@@ -40,8 +41,11 @@
     <!-- Question header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
       <span style="font-size:0.85rem;color:var(--text-muted);" id="questionCounter">Question 1 of 25</span>
-      <div style="display:flex;gap:6px;" id="dotNav">
-        <!-- dots rendered by JS -->
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button id="bookmarkBtn" onclick="toggleBookmark()" style="background:none;border:none;cursor:pointer;font-size:1.3rem;opacity:0.4;transition:opacity 0.15s;padding:2px;" title="Bookmark">🔖</button>
+        <div style="display:flex;gap:6px;" id="dotNav">
+          <!-- dots rendered by JS -->
+        </div>
       </div>
     </div>
 
@@ -114,6 +118,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.location.href = '/login';
     return;
   }
+  initTooltip();
+  await loadBookmarks();
   await loadQuestions();
   startTimer();
 });
@@ -167,12 +173,31 @@ function updateTimerDisplay() {
 }
 
 // ── Render ────────────────────────────────────────────────────────
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function wrapWords(text) {
+  const escaped = escapeHtml(text);
+  return escaped.replace(/\b([A-Za-z]{3,})\b/g, m =>
+    `<span class="word-hover" data-word="${m}">${m}</span>`
+  );
+}
+
 function renderQuestion() {
   if (!questions.length) return;
   const q = questions[currentIndex];
 
   document.getElementById('questionCounter').textContent = `Question ${currentIndex + 1} of ${questions.length}`;
-  document.getElementById('questionText').textContent = q.question_text;
+
+  // Question text — use translation if enabled
+  const trans = questionTransCache[q.id];
+  const qTextEl = document.getElementById('questionText');
+  if (translateMode && trans) {
+    qTextEl.innerHTML = escapeHtml(trans.text);
+  } else {
+    qTextEl.innerHTML = wrapWords(q.question_text);
+  }
 
   // Image
   const img = document.getElementById('questionImg');
@@ -186,16 +211,19 @@ function renderQuestion() {
     placeholder.style.display = 'flex';
   }
 
-  // Answers — checkboxes, full card clickable
+  // Answers
   const container = document.getElementById('answersContainer');
   container.innerHTML = '';
   const selected = selectedAnswers[q.id] || [];
   q.answers.forEach(a => {
     const div = document.createElement('div');
     div.className = 'answer-option' + (selected.includes(a.id) ? ' selected' : '');
-    div.style.cssText = 'padding:16px;font-size:1.1rem;';
+    div.style.cssText = 'padding:16px;font-size:1.05rem;';
+    const ansText = (translateMode && trans?.answers?.[a.id])
+      ? escapeHtml(trans.answers[a.id])
+      : wrapWords(a.text);
     div.innerHTML = `<input type="checkbox" name="q${q.id}" value="${a.id}" ${selected.includes(a.id) ? 'checked' : ''}>
-      <span class="answer-option-label">${a.text}</span>`;
+      <span class="answer-option-label">${ansText}</span>`;
     div.addEventListener('click', (e) => {
       e.preventDefault();
       toggleAnswer(q.id, a.id, div);
@@ -214,6 +242,7 @@ function renderQuestion() {
 
   // Dots
   updateDots();
+  updateBookmarkBtn();
 }
 
 function toggleAnswer(questionId, answerId, clickedDiv) {
@@ -276,7 +305,9 @@ function prevQuestion() {
 function nextQuestion() {
   if (currentIndex < questions.length - 1) {
     currentIndex++;
+    if (translateMode) _ensureQuestionTranslated(questions[currentIndex]);
     renderQuestion();
+    _prefetchNext();
   } else {
     finishTest();
   }
@@ -365,6 +396,145 @@ async function submitTest(auto = false) {
     hideSubmitOverlay();
     if (btn) { btn.disabled = false; btn.textContent = 'Submit answers'; }
     showToast('Failed to submit: ' + e.message, 'error');
+  }
+}
+
+// ── Bookmarks ─────────────────────────────────────────────────────
+let bookmarkedIds = new Set();
+
+async function loadBookmarks() {
+  if (!IS_AUTHENTICATED) return;
+  try {
+    const res = await fetch('/api/bookmarks');
+    if (res.ok) {
+      const data = await res.json();
+      bookmarkedIds = new Set(data.map(b => b.question_id));
+    }
+  } catch(e) {}
+}
+
+function updateBookmarkBtn() {
+  const q = questions[currentIndex];
+  const btn = document.getElementById('bookmarkBtn');
+  if (!btn || !q) return;
+  btn.style.opacity = bookmarkedIds.has(q.id) ? '1' : '0.4';
+  btn.title = bookmarkedIds.has(q.id) ? 'Remove bookmark' : 'Bookmark this question';
+}
+
+async function toggleBookmark() {
+  if (!IS_AUTHENTICATED) { showToast('Sign in to bookmark questions', 'error'); return; }
+  const q = questions[currentIndex];
+  if (!q) return;
+  try {
+    const res = await fetch(`/api/bookmarks/${q.id}`, { method: 'POST' });
+    const data = await res.json();
+    if (data.bookmarked) { bookmarkedIds.add(q.id); showToast('Bookmarked', 'success'); }
+    else { bookmarkedIds.delete(q.id); showToast('Bookmark removed', 'success'); }
+    updateBookmarkBtn();
+  } catch(e) { showToast('Failed to bookmark', 'error'); }
+}
+
+// ── Word hover tooltip ─────────────────────────────────────────────
+let _tooltipEl = null;
+
+function initTooltip() {
+  document.addEventListener('mouseover', async (e) => {
+    if (!e.target.classList.contains('word-hover')) return;
+    const word = e.target.dataset.word;
+    if (!word) return;
+    _removeTooltip();
+    _tooltipEl = document.createElement('div');
+    _tooltipEl.className = 'word-tooltip';
+    _tooltipEl.textContent = '...';
+    document.body.appendChild(_tooltipEl);
+    _positionTooltip(e.clientX, e.clientY);
+    const t = await _fetchWord(word);
+    if (_tooltipEl) _tooltipEl.textContent = t || word;
+  });
+  document.addEventListener('mouseout', (e) => {
+    if (e.target.classList.contains('word-hover')) _removeTooltip();
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (_tooltipEl) _positionTooltip(e.clientX, e.clientY);
+  });
+}
+
+function _removeTooltip() {
+  if (_tooltipEl) { _tooltipEl.remove(); _tooltipEl = null; }
+}
+
+function _positionTooltip(x, y) {
+  if (!_tooltipEl) return;
+  _tooltipEl.style.left = Math.min(x + 14, window.innerWidth - 250) + 'px';
+  _tooltipEl.style.top = Math.max(y - 40, 8) + 'px';
+}
+
+async function _fetchWord(word) {
+  const key = 'wx_w_' + word.toLowerCase();
+  const cached = localStorage.getItem(key);
+  if (cached) return cached;
+  try {
+    const r = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=en|ru`);
+    const d = await r.json();
+    if (d.responseStatus === 200 && d.responseData?.translatedText) {
+      const t = d.responseData.translatedText;
+      try { localStorage.setItem(key, t); } catch(e) {}
+      return t;
+    }
+  } catch(e) {}
+  return null;
+}
+
+// ── Full translation toggle ────────────────────────────────────────
+let translateMode = false;
+const questionTransCache = {};
+
+async function toggleTranslate() {
+  translateMode = !translateMode;
+  const btn = document.getElementById('translateBtn');
+  if (btn) btn.textContent = translateMode ? '🇬🇧' : '🇷🇺';
+
+  if (translateMode && questions[currentIndex]) {
+    await _ensureQuestionTranslated(questions[currentIndex]);
+  }
+  renderQuestion();
+}
+
+async function _fetchText(text) {
+  const key = 'wx_t_' + btoa(encodeURIComponent(text.slice(0, 60))).slice(0, 40);
+  const cached = localStorage.getItem(key);
+  if (cached) return cached;
+  try {
+    const r = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0, 500))}&langpair=en|ru`);
+    const d = await r.json();
+    if (d.responseStatus === 200 && d.responseData?.translatedText) {
+      const t = d.responseData.translatedText;
+      try { localStorage.setItem(key, t); } catch(e) {}
+      return t;
+    }
+  } catch(e) {}
+  return text;
+}
+
+async function _ensureQuestionTranslated(q) {
+  if (questionTransCache[q.id]) return;
+  const btn = document.getElementById('translateBtn');
+  if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+  try {
+    const texts = [q.question_text, ...q.answers.map(a => a.text)];
+    const results = await Promise.all(texts.map(_fetchText));
+    questionTransCache[q.id] = { text: results[0], answers: {} };
+    q.answers.forEach((a, i) => { questionTransCache[q.id].answers[a.id] = results[i + 1]; });
+  } catch(e) {}
+  if (btn) { btn.textContent = '🇬🇧'; btn.disabled = false; }
+}
+
+// Pre-translate next question in background when in translate mode
+async function _prefetchNext() {
+  if (!translateMode || currentIndex >= questions.length - 1) return;
+  const next = questions[currentIndex + 1];
+  if (next && !questionTransCache[next.id]) {
+    _ensureQuestionTranslated(next); // fire and forget
   }
 }
 </script>

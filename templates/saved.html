@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Saved Questions — WEX Theory{% endblock %}
+
+{% block body %}
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" onclick="sbOpen()">☰</button>
+      <a href="/" class="logo">WEXTheory</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" onclick="toggleTheme()" id="navThemeBtn">☀️</button>
+      <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+  <div style="margin-bottom:32px;">
+    <h1 style="font-size:1.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:6px;">🔖 Saved Questions</h1>
+    <p style="color:var(--text-muted);">{{ bookmarks|length }} question{% if bookmarks|length != 1 %}s{% endif %} saved</p>
+  </div>
+
+  {% if not bookmarks %}
+  <div class="card" style="text-align:center;padding:60px 24px;">
+    <div style="font-size:3rem;margin-bottom:16px;">🔖</div>
+    <div style="font-weight:700;font-size:1.1rem;margin-bottom:8px;">No saved questions yet</div>
+    <p style="color:var(--text-muted);margin-bottom:24px;">Bookmark questions while taking a test to review them here.</p>
+    <a href="/dashboard" class="btn-primary">Go to Tests</a>
+  </div>
+  {% else %}
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    {% for bm in bookmarks %}
+    {% set q = bm.question %}
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+        <!-- Image -->
+        <div style="background:#000;min-height:200px;display:flex;align-items:center;justify-content:center;">
+          {% if q.image_path %}
+          <img src="/test-images/{{ q.image_path }}" alt="" style="width:100%;object-fit:cover;display:block;">
+          {% else %}
+          <div style="color:#333;font-size:0.8rem;">No image</div>
+          {% endif %}
+        </div>
+        <!-- Content -->
+        <div style="padding:24px;">
+          <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Question {{ q.question_index }}</div>
+          <div style="font-weight:600;font-size:0.95rem;line-height:1.5;margin-bottom:16px;">{{ q.question_text }}</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+            {% for a in q.answers %}
+            <div style="padding:10px 14px;border-radius:8px;font-size:0.88rem;
+              {% if a.is_correct %}border:2px solid #22c55e;background:rgba(34,197,94,0.08);color:#22c55e;font-weight:600;
+              {% else %}border:1px solid var(--border);color:var(--text-muted);{% endif %}">
+              {% if a.is_correct %}✓ {% endif %}{{ a.text }}
+            </div>
+            {% endfor %}
+          </div>
+          {% if q.explanation %}
+          <div style="font-size:0.82rem;color:var(--text-muted);line-height:1.6;padding:10px 14px;background:var(--bg);border-radius:8px;border:1px solid var(--border);">
+            <span style="font-weight:600;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;">Explanation: </span>{{ q.explanation }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/profile">Profile</a>
+    </div>
+    <div>© 2026 WEXTheory</div>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  const t = localStorage.getItem('wex-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  const nb = document.getElementById('navThemeBtn');
+  if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
+})();
+</script>
+{% endblock %}
