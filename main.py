@@ -718,44 +718,7 @@ async def debug_env():
     }
 
 
-# ─── Translation ───────────────────────────────────────────────────────────────
-
-@app.post("/api/translate")
-async def api_translate(request: Request):
-    try:
-        import anthropic
-        api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
-        if not api_key:
-            return JSONResponse({"error": "ANTHROPIC_API_KEY not set"}, status_code=503)
-
-        body = await request.json()
-        question_text = body.get("question", "")
-        answers = body.get("answers", [])
-
-        answers_str = "\n".join([f"{i+1}. {a}" for i, a in enumerate(answers)])
-        prompt = (
-            f"Переведи на русский язык вопрос и варианты ответов из экзамена по правилам дорожного движения Дании. "
-            f"Сохраняй точный смысл. Отвечай СТРОГО только JSON без пояснений.\n\n"
-            f"Вопрос: {question_text}\n"
-            f"Варианты:\n{answers_str}\n\n"
-            f'Формат: {{"q": "перевод вопроса", "a": ["перевод 1", "перевод 2", ...]}}'
-        )
-
-        client = anthropic.Anthropic(api_key=api_key)
-        message = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=600,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        text = message.content[0].text.strip()
-        match = re.search(r'\{.*\}', text, re.DOTALL)
-        if match:
-            result = json.loads(match.group())
-            return JSONResponse(result)
-        return JSONResponse({"error": "Parse failed"}, status_code=500)
-    except Exception as e:
-        print(f"[TRANSLATE ERROR] {e}")
-        return JSONResponse({"error": str(e)}, status_code=500)
+# Translation moved to frontend (MyMemory free API — no key required)
 
 
 # ─── Bookmarks ─────────────────────────────────────────────────────────────────
