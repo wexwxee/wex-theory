@@ -44,14 +44,11 @@ def get_current_user(request: Request, db: Session):
 
 
 def user_has_access(user) -> bool:
-    """True if user can access paid tests (Test 2+).
-    Supports legacy date-based accounts and new Stripe subscriptions."""
+    """True if user can access paid tests (Test 2+)."""
     if not user:
         return False
-    # Stripe active subscription
-    if getattr(user, "subscription_status", "free") == "active":
+    # Admins always have full access
+    if user.is_admin:
         return True
-    # Legacy: admin-created accounts with future expiry
-    if user.expires_at and user.expires_at > datetime.utcnow():
-        return True
-    return False
+    # Stripe active subscription only
+    return getattr(user, "subscription_status", "free") == "active"

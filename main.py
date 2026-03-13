@@ -817,9 +817,12 @@ async def api_billing_portal(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
     if not user:
         return JSONResponse({"error": "Unauthorized"}, status_code=401)
-    if not user.stripe_customer_id:
-        return JSONResponse({"error": "No billing account found"}, status_code=400)
     try:
+        # Auto-create Stripe customer if not yet present
+        if not user.stripe_customer_id:
+            customer_id = get_or_create_customer(user)
+            user.stripe_customer_id = customer_id
+            db.commit()
         url = create_portal_session(user.stripe_customer_id)
         return JSONResponse({"url": url})
     except Exception as e:
@@ -827,12 +830,7 @@ async def api_billing_portal(request: Request, db: Session = Depends(get_db)):
         return JSONResponse({"error": str(e)}, status_code=500)
 
 
-@app.post("/api/stripe/webhook")
-async def api_stripe_webhook(
-    request: Request,
-    db: Session = Depends(get_db),
-    stripe_signature: str = Header(None, alias="stripe-signature"),
-):
+async def _handle_stripe_webhook(request: Request, db: Session, stripe_signature: str):
     payload = await request.body()
     try:
         event = construct_webhook_event(payload, stripe_signature)
@@ -880,6 +878,25 @@ async def api_stripe_webhook(
             print(f"[WEBHOOK] Subscription canceled for customer {customer_id}")
 
     return JSONResponse({"received": True})
+
+
+# Accept webhook on both paths (Stripe dashboard may be configured to either)
+@app.post("/stripe/webhook")
+async def stripe_webhook_root(
+    request: Request,
+    db: Session = Depends(get_db),
+    stripe_signature: str = Header(None, alias="stripe-signature"),
+):
+    return await _handle_stripe_webhook(request, db, stripe_signature)
+
+
+@app.post("/api/stripe/webhook")
+async def api_stripe_webhook(
+    request: Request,
+    db: Session = Depends(get_db),
+    stripe_signature: str = Header(None, alias="stripe-signature"),
+):
+    return await _handle_stripe_webhook(request, db, stripe_signature)
 
 
 if __name__ == "__main__":

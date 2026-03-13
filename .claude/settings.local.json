@@ -84,7 +84,9 @@
       "Bash(du -sh /c/Teori/Test*/test*_ANSWERS.json 2>/dev/null | head -5 && echo \"---\" && find /c/Teori -name \"*_ANSWERS.json\" | wc -l)",
       "Bash(py import_data.py 2>&1 | tail -5)",
       "Bash(git rm:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(py -c \"\nfrom import_data import import_data\nfrom database import SessionLocal\nimport models\nfrom database import engine\nmodels.Base.metadata.create_all\\(bind=engine\\)\ndb = SessionLocal\\(\\)\ncount = db.query\\(models.Test\\).count\\(\\)\nprint\\(f'Tests in DB: {count}'\\)\ndb.close\\(\\)\n\")",
+      "Bash(py -c \"import main; print\\('OK'\\)\" 2>&1)"
     ]
   }
 }

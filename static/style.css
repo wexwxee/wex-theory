@@ -818,30 +818,34 @@ footer {
 
 .page { animation: fadeIn 0.3s ease both; }
 
+/* Theme color transitions — applied first so specific rules below can override/extend */
+body, nav, .sidebar, .modal, input, textarea, select {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Cards — merged: hover transform + theme colors */
 .card {
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+              background-color 0.2s ease, color 0.2s ease, border-color 0.15s ease;
 }
 .card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 32px rgba(0,0,0,0.35);
 }
 
+/* Buttons — merged: hover transform + opacity + theme colors */
 .btn-primary, .btn-ghost {
-  transition: transform 0.12s ease, opacity 0.12s ease, background 0.15s ease, color 0.15s ease;
+  transition: transform 0.12s ease, opacity 0.12s ease,
+              background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 .btn-primary:hover { transform: translateY(-1px); opacity: 0.9; }
 .btn-ghost:hover   { transform: translateY(-1px); }
 
 .answer-option {
-  transition: background 0.12s ease, border-color 0.12s ease, transform 0.1s ease;
+  transition: background-color 0.12s ease, border-color 0.12s ease, transform 0.1s ease;
 }
 .answer-option:hover { transform: translateX(3px); }
 
 .result-card {
   transition: transform 0.15s ease, opacity 0.15s ease;
-}
-
-/* Theme color transitions */
-body, nav, .sidebar, .modal, .card, .btn-primary, .btn-ghost, input, textarea, select {
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
