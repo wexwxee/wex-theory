@@ -3,6 +3,26 @@
 {% block title %}Dashboard — WEX Theory{% endblock %}
 
 {% block body %}
+<style>
+  .saved-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--border) 76%, #ff7a59 24%);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--bg-card) 88%, #fff 12%), color-mix(in srgb, #ff7a59 10%, var(--bg-card) 90%));
+    box-shadow: 0 10px 24px rgba(255, 122, 89, 0.08);
+  }
+  .saved-pill i {
+    color: #ff7a59;
+    font-size: 0.88rem;
+  }
+  .saved-pill span {
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+</style>
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
@@ -60,7 +80,7 @@
     </div>
     <div style="display:flex;gap:10px;align-items:center;">
       <a href="/profile" class="btn-ghost btn-sm">History</a>
-      <a href="/saved" class="btn-ghost btn-sm">🔖 Saved</a>
+      <a href="/saved" class="btn-ghost btn-sm saved-pill"><i class="fa-solid fa-bookmark"></i><span>Saved</span></a>
       {% if not user.is_admin and not has_access %}
         <a href="#" onclick="return openTelegramPurchase({ plan: 'Premium', amount: '99 kr', duration: '30 days' })" class="btn-primary btn-sm">Get Premium</a>
       {% endif %}

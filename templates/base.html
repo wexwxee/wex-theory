@@ -8,6 +8,54 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
   <link rel="stylesheet" href="/static/style.css?v=20260317-menufix">
+  <style>
+    .sb-item-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .sb-alert-dot {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 7px;
+      border-radius: 999px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 800;
+      line-height: 1;
+      box-shadow: 0 8px 18px rgba(239, 68, 68, 0.3);
+    }
+    .sb-alert-dot.show {
+      display: inline-flex;
+    }
+    .top-unread-banner {
+      margin: 0 auto 18px;
+      max-width: 1280px;
+      padding: 12px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(239, 68, 68, 0.24);
+      background: rgba(239, 68, 68, 0.08);
+      color: #b91c1c;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 14px 30px rgba(239, 68, 68, 0.08);
+    }
+    .top-unread-banner.show {
+      display: flex;
+    }
+    .top-unread-banner a {
+      color: inherit;
+      font-weight: 800;
+      text-decoration: none;
+    }
+  </style>
   {% block head %}{% endblock %}
 </head>
 <body>
@@ -63,11 +111,13 @@
       </a>
       {% if user.is_admin %}
       <a href="/support" class="sb-item">
-        <i class="fa-regular fa-comments sb-ic"></i><span>Support Inbox</span>
+        <i class="fa-regular fa-comments sb-ic"></i>
+        <span class="sb-item-label">Support Inbox <span class="sb-alert-dot" id="supportUnreadBadge"></span></span>
       </a>
       {% else %}
       <a href="/messages" class="sb-item">
-        <i class="fa-regular fa-comments sb-ic"></i><span>Messages</span>
+        <i class="fa-regular fa-comments sb-ic"></i>
+        <span class="sb-item-label">Messages <span class="sb-alert-dot" id="supportUnreadBadge"></span></span>
       </a>
       {% endif %}
       {% if user.is_admin %}
@@ -119,6 +169,13 @@
   </aside>
 
   {% block body %}{% endblock %}
+
+  {% if user is defined and user %}
+  <div class="top-unread-banner" id="topUnreadBanner">
+    <div id="topUnreadBannerText"></div>
+    <a href="{% if user.is_admin %}/support{% else %}/messages{% endif %}">Open</a>
+  </div>
+  {% endif %}
 
   <div id="toast-container"></div>
 
@@ -234,6 +291,58 @@
     return false;
   }
   window.openTelegramPurchase = openTelegramPurchase;
+
+  async function refreshSupportUnreadUI() {
+    const badge = document.getElementById('supportUnreadBadge');
+    const banner = document.getElementById('topUnreadBanner');
+    const bannerText = document.getElementById('topUnreadBannerText');
+    if (!badge && !banner) return;
+
+    try {
+      const url = {% if user is defined and user %}{{ '"/api/support/threads-data?scope=admin"' if user.is_admin else '"/api/support/threads-data"' }}{% else %}null{% endif %};
+      if (!url) return;
+      const response = await fetch(url, { headers: { accept: 'application/json' } });
+      if (!response.ok) return;
+      const data = await response.json();
+      const unreadCount = Array.isArray(data.threads)
+        ? data.threads.reduce((sum, thread) => sum + (thread.unread_count || 0), 0)
+        : 0;
+
+      if (badge) {
+        if (unreadCount > 0) {
+          badge.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
+          badge.classList.add('show');
+        } else {
+          badge.textContent = '';
+          badge.classList.remove('show');
+        }
+      }
+
+      if (banner && bannerText) {
+        const showOnPage = window.location.pathname === '/dashboard' || window.location.pathname === '/admin';
+        if (showOnPage && unreadCount > 0) {
+          bannerText.textContent = {% if user is defined and user and user.is_admin %}
+            `You have ${unreadCount} unread support ${unreadCount === 1 ? 'message' : 'messages'}.`;
+          {% else %}
+            `You have ${unreadCount} unread ${unreadCount === 1 ? 'reply' : 'replies'} from support.`;
+          {% endif %}
+          banner.classList.add('show');
+        } else {
+          banner.classList.remove('show');
+        }
+      }
+    } catch (error) {
+      console.error('Unread support count failed', error);
+    }
+  }
+  window.refreshSupportUnreadUI = refreshSupportUnreadUI;
+
+  {% if user is defined and user %}
+  refreshSupportUnreadUI();
+  setInterval(function () {
+    if (!document.hidden) refreshSupportUnreadUI();
+  }, 8000);
+  {% endif %}
 
   // Inject SVG sun/moon into every .theme-btn on the page (covers all templates)
   // CSS [data-theme] selectors show/hide the correct icon automatically.
