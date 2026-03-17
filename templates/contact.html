@@ -63,6 +63,14 @@
         <label class="form-label" for="cMsg">Message</label>
         <textarea id="cMsg" rows="5" placeholder="Write your message here..."></textarea>
       </div>
+      <div class="form-group">
+        <label class="form-label" for="cAttachment">Attachment (optional)</label>
+        <input type="file" id="cAttachment" accept=".png,.jpg,.jpeg,.webp,.gif,.pdf,.txt,.log,.json" style="padding:10px;">
+        <div style="font-size:0.8rem;color:var(--text-muted);line-height:1.6;">
+          If you can, attach a screenshot of the error or a file that helps explain the issue. Supported: images, PDF, TXT, LOG, JSON. Max 10 MB.
+        </div>
+        <div id="attachmentInfo" style="display:none;font-size:0.8rem;color:var(--text-muted);"></div>
+      </div>
       <button class="btn-primary" id="sendBtn" onclick="sendMessage()" style="width:100%;justify-content:center;">Send Message</button>
     </div>
   </div>
@@ -99,11 +107,24 @@ function showFormMsg(msg, type) {
   el.textContent = msg;
 }
 
+document.getElementById('cAttachment').addEventListener('change', () => {
+  const file = document.getElementById('cAttachment').files[0];
+  const info = document.getElementById('attachmentInfo');
+  if (!file) {
+    info.style.display = 'none';
+    info.textContent = '';
+    return;
+  }
+  info.style.display = 'block';
+  info.textContent = `Selected: ${file.name} (${Math.round(file.size / 1024)} KB)`;
+});
+
 async function sendMessage() {
   const name = document.getElementById('cName').value.trim();
   const email = document.getElementById('cEmail').value.trim();
   const subject = document.getElementById('cSubject').value;
   const message = document.getElementById('cMsg').value.trim();
+  const attachment = document.getElementById('cAttachment').files[0];
   const btn = document.getElementById('sendBtn');
 
   if (!name || !email || !message) { showFormMsg('Please fill all required fields', 'error'); return; }
@@ -112,10 +133,16 @@ async function sendMessage() {
   btn.textContent = 'Sending...';
 
   try {
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('email', email);
+    formData.append('subject', subject);
+    formData.append('message', message);
+    if (attachment) formData.append('attachment', attachment);
+
     const res = await fetch('/api/contact', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, subject, message })
+      body: formData
     });
     const data = await res.json();
     if (data.success) {

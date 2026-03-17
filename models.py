@@ -99,6 +99,9 @@ class ContactMessage(Base):
     email = Column(String, nullable=False)
     subject = Column(String, nullable=False)
     message = Column(Text, nullable=False)
+    attachment_name = Column(String, nullable=True)
+    attachment_path = Column(String, nullable=True)
+    attachment_type = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     is_read = Column(Boolean, default=False)
 

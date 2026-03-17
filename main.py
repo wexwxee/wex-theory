@@ -3,9 +3,10 @@ import os
 import re
 import secrets
 import traceback
+from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Optional
-from fastapi import FastAPI, Request, Depends, HTTPException, Header
+from fastapi import FastAPI, Request, Depends, HTTPException, Header, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -28,6 +29,11 @@ app = FastAPI(title="WEX Theory")
 AUTH_COOKIE_NAME = "token"
 AUTH_COOKIE_MAX_AGE = 86400 * 30
 PUBLIC_ID_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+BASE_DIR = Path(__file__).resolve().parent
+CONTACT_UPLOAD_DIR = BASE_DIR / "uploads" / "contact"
+ALLOWED_CONTACT_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".pdf", ".txt", ".log", ".json"}
+MAX_CONTACT_UPLOAD_BYTES = 10 * 1024 * 1024
+CONTACT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def _env_flag(name: str, default: bool = False) -> bool:
@@ -109,6 +115,49 @@ def ensure_all_user_public_ids(db: Session) -> None:
     print(f"[STARTUP] Assigned public IDs to {len(missing_users)} users")
 
 
+def ensure_contact_attachment_columns(db: Session) -> None:
+    try:
+        inspector = sql_inspect(engine)
+        columns = {col["name"] for col in inspector.get_columns("contact_messages")}
+        for name in ("attachment_name", "attachment_path", "attachment_type"):
+            if name not in columns:
+                db.execute(sql_text(f"ALTER TABLE contact_messages ADD COLUMN {name} VARCHAR"))
+                db.commit()
+                print(f"[STARTUP] Added contact_messages.{name} column")
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] attachment column setup skipped/error: {e}")
+
+
+def save_contact_attachment(upload: UploadFile) -> tuple[str, str, str]:
+    original_name = os.path.basename(upload.filename or "").strip()
+    if not original_name:
+        raise ValueError("Attachment filename is missing")
+
+    ext = Path(original_name).suffix.lower()
+    if ext not in ALLOWED_CONTACT_EXTENSIONS:
+        raise ValueError("Allowed files: images, PDF, TXT, LOG, JSON")
+
+    CONTACT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    stored_name = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{secrets.token_hex(6)}{ext}"
+    stored_path = CONTACT_UPLOAD_DIR / stored_name
+
+    size = 0
+    with stored_path.open("wb") as f:
+        while True:
+            chunk = upload.file.read(1024 * 1024)
+            if not chunk:
+                break
+            size += len(chunk)
+            if size > MAX_CONTACT_UPLOAD_BYTES:
+                f.close()
+                stored_path.unlink(missing_ok=True)
+                raise ValueError("Attachment is too large. Max size is 10 MB")
+            f.write(chunk)
+
+    return original_name, f"/uploads/contact/{stored_name}", (upload.content_type or "")
+
+
 app.add_middleware(
     SessionMiddleware,
     secret_key=SECRET_KEY,
@@ -154,6 +203,8 @@ async def startup_init():
     try:
         ensure_user_public_id_column(db)
         ensure_all_user_public_ids(db)
+        ensure_contact_attachment_columns(db)
+        CONTACT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
         # 1. Import test data if DB is empty
         test_count = db.query(models.Test).count()
@@ -232,6 +283,7 @@ async def startup_init():
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/test-images", StaticFiles(directory="test-images"), name="test-images")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 templates = Jinja2Templates(directory="templates")
 
 
@@ -983,15 +1035,30 @@ async def saved_questions_page(request: Request, db: Session = Depends(get_db)):
 @app.post("/api/contact")
 async def api_contact(request: Request, db: Session = Depends(get_db)):
     try:
-        data = await request.json()
+        form = await request.form()
+        attachment = form.get("attachment")
+        attachment_name = None
+        attachment_path = None
+        attachment_type = None
+
+        if isinstance(attachment, UploadFile) and attachment.filename:
+            attachment_name, attachment_path, attachment_type = save_contact_attachment(attachment)
+
         msg = models.ContactMessage(
-            name=data.get("name", ""), email=data.get("email", ""),
-            subject=data.get("subject", "General"), message=data.get("message", ""),
+            name=str(form.get("name", "")),
+            email=str(form.get("email", "")),
+            subject=str(form.get("subject", "General")),
+            message=str(form.get("message", "")),
+            attachment_name=attachment_name,
+            attachment_path=attachment_path,
+            attachment_type=attachment_type,
         )
         db.add(msg)
         db.commit()
-        print(f"[CONTACT] from={data.get('email')} subject={data.get('subject')}")
+        print(f"[CONTACT] from={form.get('email')} subject={form.get('subject')} attachment={attachment_name}")
         return JSONResponse({"success": True})
+    except ValueError as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
     except Exception as e:
         print(f"[CONTACT ERROR] {e}")
         return JSONResponse({"error": str(e)}, status_code=500)

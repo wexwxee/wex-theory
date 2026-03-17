@@ -120,6 +120,7 @@
             <th>From</th>
             <th>Subject</th>
             <th>Date</th>
+            <th>Attachment</th>
             <th>Status</th>
             <th>Action</th>
           </tr>
@@ -134,6 +135,13 @@
             <td style="font-size:0.88rem;">{{ m.subject }}</td>
             <td style="color:var(--text-muted);font-size:0.82rem;">{{ m.created_at.strftime('%d %b %Y') }}</td>
             <td>
+              {% if m.attachment_path %}
+              <a href="{{ m.attachment_path }}" target="_blank" rel="noopener" class="btn-ghost btn-sm">Open file</a>
+              {% else %}
+              <span style="color:var(--text-muted);font-size:0.82rem;">None</span>
+              {% endif %}
+            </td>
+            <td>
               {% if m.is_read %}
               <span class="badge-gray">Read</span>
               {% else %}
@@ -141,7 +149,7 @@
               {% endif %}
             </td>
             <td>
-              <button class="btn-ghost btn-sm" onclick='viewMessage({{ m.id }}, {{ m.name | tojson }}, {{ m.email | tojson }}, {{ m.subject | tojson }}, {{ m.message | tojson }}, {{ m.created_at.strftime("%d %b %Y") | tojson }}, {{ m.is_read | tojson }})'>View</button>
+              <button class="btn-ghost btn-sm" onclick='viewMessage({{ m.id }}, {{ m.name | tojson }}, {{ m.email | tojson }}, {{ m.subject | tojson }}, {{ m.message | tojson }}, {{ m.created_at.strftime("%d %b %Y") | tojson }}, {{ m.is_read | tojson }}, {{ (m.attachment_name or "") | tojson }}, {{ (m.attachment_path or "") | tojson }}, {{ (m.attachment_type or "") | tojson }})'>View</button>
             </td>
           </tr>
           {% endfor %}
@@ -256,6 +264,7 @@
       <div id="msgModalFrom" style="font-size:0.82rem;color:var(--text-muted);margin-bottom:4px;"></div>
       <div id="msgModalDate" style="font-size:0.78rem;color:var(--text-muted);"></div>
     </div>
+    <div id="msgModalAttachment" style="display:none;margin-bottom:16px;padding:12px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);"></div>
     <hr class="divider" style="margin:16px 0;">
     <div id="msgModalBody" style="white-space:pre-wrap;font-size:0.9rem;line-height:1.7;color:var(--text-muted);"></div>
   </div>
@@ -459,11 +468,30 @@ async function saveReset() {
 }
 
 // View message
-async function viewMessage(id, name, email, subject, message, date, isRead) {
+async function viewMessage(id, name, email, subject, message, date, isRead, attachmentName, attachmentPath, attachmentType) {
   document.getElementById('msgModalSubject').textContent = subject;
   document.getElementById('msgModalFrom').textContent = `From: ${name} <${email}>`;
   document.getElementById('msgModalDate').textContent = date;
   document.getElementById('msgModalBody').textContent = message;
+  const attachmentEl = document.getElementById('msgModalAttachment');
+  if (attachmentPath) {
+    const isImage = (attachmentType || '').startsWith('image/') || /\.(png|jpe?g|gif|webp)$/i.test(attachmentName || '');
+    attachmentEl.style.display = 'block';
+    attachmentEl.innerHTML = `
+      <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Attachment</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div>
+          <div style="font-weight:600;">${attachmentName || 'Attached file'}</div>
+          <div style="font-size:0.8rem;color:var(--text-muted);">${attachmentType || 'File'}</div>
+        </div>
+        <a href="${attachmentPath}" target="_blank" rel="noopener" class="btn-ghost btn-sm">Open</a>
+      </div>
+      ${isImage ? `<img src="${attachmentPath}" alt="${attachmentName || 'Attachment'}" style="margin-top:12px;max-width:100%;border-radius:8px;border:1px solid var(--border);">` : ''}
+    `;
+  } else {
+    attachmentEl.style.display = 'none';
+    attachmentEl.innerHTML = '';
+  }
   document.getElementById('msgModal').classList.add('open');
 
   if (!isRead) {
