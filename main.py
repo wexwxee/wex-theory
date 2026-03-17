@@ -2,9 +2,11 @@ import json
 import os
 import re
 import secrets
+import smtplib
 import traceback
 from pathlib import Path
 from datetime import datetime, timedelta
+from email.message import EmailMessage
 from typing import Optional
 from fastapi import FastAPI, Request, Depends, HTTPException, Header, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
@@ -46,6 +48,12 @@ SYSTEM_SUPPORT_MESSAGES = [
     "We received your message. Support usually replies within 32 hours.",
     "Thanks, your request is now in queue. We normally answer within 32 hours.",
 ]
+TEMP_EMAIL_DOMAINS = {
+    "mailinator.com", "guerrillamail.com", "yopmail.com", "tempmail.com",
+    "10minutemail.com", "sharklasers.com", "trashmail.com", "getnada.com",
+    "dispostable.com", "maildrop.cc", "emailondeck.com", "temp-mail.org",
+}
+EMAIL_REGEX = re.compile(r"^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}$", re.IGNORECASE)
 
 
 def _env_flag(name: str, default: bool = False) -> bool:
@@ -90,6 +98,66 @@ def clear_auth_cookie(response, request: Optional[Request] = None) -> None:
 
 def _new_public_user_id() -> str:
     return "WEX-" + "".join(secrets.choice(PUBLIC_ID_ALPHABET) for _ in range(8))
+
+
+def is_email_service_configured() -> bool:
+    return all(os.environ.get(name) for name in ("SMTP_HOST", "SMTP_USERNAME", "SMTP_PASSWORD", "SMTP_FROM"))
+
+
+def validate_registration_email(email: str) -> Optional[str]:
+    if not email:
+        return "Email is required"
+    if not EMAIL_REGEX.match(email):
+        return "Enter a valid email address"
+    domain = email.split("@", 1)[1].lower()
+    if domain in TEMP_EMAIL_DOMAINS:
+        return "Temporary email addresses are not allowed"
+    return None
+
+
+def validate_password_strength(password: str) -> Optional[str]:
+    if len(password) < 8:
+        return "Password must be at least 8 characters"
+    if not re.search(r"[A-Za-z]", password):
+        return "Password must contain at least one letter"
+    if not re.search(r"\d", password):
+        return "Password must contain at least one number"
+    return None
+
+
+def generate_email_verification_code() -> str:
+    return "".join(secrets.choice("0123456789") for _ in range(6))
+
+
+def send_verification_email(recipient_email: str, code: str, recipient_name: str) -> None:
+    if not is_email_service_configured():
+        raise RuntimeError("Email verification is not configured yet")
+
+    host = os.environ["SMTP_HOST"]
+    port = int(os.environ.get("SMTP_PORT", "587"))
+    username = os.environ["SMTP_USERNAME"]
+    password = os.environ["SMTP_PASSWORD"]
+    sender = os.environ["SMTP_FROM"]
+    use_tls = _env_flag("SMTP_USE_TLS", True)
+
+    message = EmailMessage()
+    message["Subject"] = "Your WEXTheory verification code"
+    message["From"] = sender
+    message["To"] = recipient_email
+    message.set_content(
+        f"Hello {recipient_name},\n\n"
+        f"Your WEXTheory verification code is: {code}\n\n"
+        "The code expires in 10 minutes.\n"
+        "If you did not request this, you can ignore this email.\n"
+    )
+
+    with smtplib.SMTP(host, port, timeout=20) as smtp:
+        smtp.ehlo()
+        if use_tls:
+            smtp.starttls()
+            smtp.ehlo()
+        smtp.login(username, password)
+        smtp.send_message(message)
 
 
 def generate_unique_public_user_id(db: Session) -> str:
@@ -553,40 +621,125 @@ async def api_register(request: Request, db: Session = Depends(get_db)):
         name     = str(data.get("name", "")).strip()
         email    = str(data.get("email", "")).strip().lower()
         password = str(data.get("password", ""))
-        # days only used when admin calls this endpoint directly; public registration gets no premium
-        days     = int(data.get("days", 0))
 
         if not name or not email or not password:
             return JSONResponse({"error": "All fields are required"}, status_code=400)
-        if len(password) < 6:
-            return JSONResponse({"error": "Password must be at least 6 characters"}, status_code=400)
+        email_error = validate_registration_email(email)
+        if email_error:
+            return JSONResponse({"error": email_error}, status_code=400)
+        password_error = validate_password_strength(password)
+        if password_error:
+            return JSONResponse({"error": password_error}, status_code=400)
+        if not is_email_service_configured():
+            return JSONResponse({"error": "Email verification is not configured on the server yet"}, status_code=503)
 
         existing = db.query(models.User).filter(models.User.email == email).first()
         if existing:
             print(f"[REGISTER] email taken: {email}")
             return JSONResponse({"error": "This email is already registered"}, status_code=400)
 
-        user = models.User(
+        db.query(models.EmailVerificationCode).filter(
+            models.EmailVerificationCode.email == email,
+            models.EmailVerificationCode.purpose == "register"
+        ).delete(synchronize_session=False)
+
+        code = generate_email_verification_code()
+        pending = models.EmailVerificationCode(
+            email=email,
             name=name,
+            password_hash=hash_password(password),
+            code=code,
+            purpose="register",
+            expires_at=datetime.utcnow() + timedelta(minutes=10),
+            created_at=datetime.utcnow(),
+        )
+        db.add(pending)
+        db.commit()
+        try:
+            send_verification_email(email, code, name)
+        except Exception:
+            db.query(models.EmailVerificationCode).filter(
+                models.EmailVerificationCode.email == email,
+                models.EmailVerificationCode.purpose == "register"
+            ).delete(synchronize_session=False)
+            db.commit()
+            raise
+
+        print(f"[REGISTER] verification sent: email={email}")
+        return JSONResponse({
+            "success": True,
+            "requires_verification": True,
+            "email": email,
+            "message": "We sent a 6-digit verification code to your email",
+        })
+
+    except Exception as e:
+        db.rollback()
+        print(f"[REGISTER ERROR] {e}")
+        traceback.print_exc()
+        return JSONResponse({"error": f"Server error: {str(e)}"}, status_code=500)
+
+
+@app.post("/api/auth/register/verify")
+async def api_register_verify(request: Request, db: Session = Depends(get_db)):
+    try:
+        data = await request.json()
+        email = str(data.get("email", "")).strip().lower()
+        code = str(data.get("code", "")).strip()
+
+        if not email or not code:
+            return JSONResponse({"error": "Email and verification code are required"}, status_code=400)
+
+        pending = (
+            db.query(models.EmailVerificationCode)
+            .filter(
+                models.EmailVerificationCode.email == email,
+                models.EmailVerificationCode.purpose == "register"
+            )
+            .order_by(models.EmailVerificationCode.created_at.desc())
+            .first()
+        )
+        if not pending:
+            return JSONResponse({"error": "Verification code not found. Request a new one."}, status_code=404)
+        if pending.expires_at < datetime.utcnow():
+            db.delete(pending)
+            db.commit()
+            return JSONResponse({"error": "Verification code expired. Request a new one."}, status_code=400)
+        if pending.code != code:
+            return JSONResponse({"error": "Invalid verification code"}, status_code=400)
+
+        existing = db.query(models.User).filter(models.User.email == email).first()
+        if existing:
+            db.delete(pending)
+            db.commit()
+            return JSONResponse({"error": "This email is already registered"}, status_code=400)
+
+        user = models.User(
+            name=pending.name,
             public_id=generate_unique_public_user_id(db),
             email=email,
-            password_hash=hash_password(password),
+            password_hash=pending.password_hash,
             created_at=datetime.utcnow(),
-            expires_at=datetime.utcnow() + timedelta(days=days),
-            is_admin=(email == "wexwxee@gmail.com"),
+            expires_at=datetime.utcnow(),
+            is_admin=False,
+            subscription_status="free",
         )
         db.add(user)
+        db.flush()
+        db.query(models.EmailVerificationCode).filter(
+            models.EmailVerificationCode.email == email,
+            models.EmailVerificationCode.purpose == "register"
+        ).delete(synchronize_session=False)
         db.commit()
-        db.refresh(user)
 
         token = create_token(user.id)
         resp = JSONResponse({"success": True, "redirect": "/dashboard"})
         set_auth_cookie(resp, token, request)
-        print(f"[REGISTER] success: id={user.id} email={email} admin={user.is_admin}")
+        print(f"[REGISTER VERIFY] success: id={user.id} email={email}")
         return resp
-
     except Exception as e:
-        print(f"[REGISTER ERROR] {e}")
+        db.rollback()
+        print(f"[REGISTER VERIFY ERROR] {e}")
         traceback.print_exc()
         return JSONResponse({"error": f"Server error: {str(e)}"}, status_code=500)
 
@@ -1424,11 +1577,18 @@ async def api_admin_create_user(request: Request, db: Session = Depends(get_db))
         return JSONResponse({"error": "Forbidden"}, status_code=403)
     try:
         data = await request.json()
-        existing = db.query(models.User).filter(models.User.email == data["email"].lower()).first()
+        email = str(data["email"]).lower().strip()
+        email_error = validate_registration_email(email)
+        if email_error:
+            return JSONResponse({"error": email_error}, status_code=400)
+        password_error = validate_password_strength(str(data["password"]))
+        if password_error:
+            return JSONResponse({"error": password_error}, status_code=400)
+        existing = db.query(models.User).filter(models.User.email == email).first()
         if existing:
             return JSONResponse({"error": "Email already registered"}, status_code=400)
         u = models.User(
-            name=data["name"], public_id=generate_unique_public_user_id(db), email=data["email"].lower(),
+            name=data["name"], public_id=generate_unique_public_user_id(db), email=email,
             password_hash=hash_password(data["password"]),
             created_at=datetime.utcnow(),
             expires_at=datetime.utcnow() + timedelta(days=int(data.get("days", 30))),
@@ -1453,8 +1613,15 @@ async def api_admin_update_user(user_id: int, request: Request, db: Session = De
     if "name" in data:
         u.name = data["name"]
     if "email" in data:
-        u.email = data["email"].lower()
+        email = str(data["email"]).lower().strip()
+        email_error = validate_registration_email(email)
+        if email_error:
+            return JSONResponse({"error": email_error}, status_code=400)
+        u.email = email
     if "password" in data and data["password"]:
+        password_error = validate_password_strength(str(data["password"]))
+        if password_error:
+            return JSONResponse({"error": password_error}, status_code=400)
         u.password_hash = hash_password(data["password"])
     if "days" in data:
         days = int(data["days"])

@@ -140,6 +140,19 @@ class SupportMessage(Base):
     thread = relationship("SupportThread", back_populates="messages")
 
 
+class EmailVerificationCode(Base):
+    __tablename__ = "email_verification_codes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, index=True, nullable=False)
+    name = Column(String, nullable=False)
+    password_hash = Column(String, nullable=False)
+    code = Column(String, nullable=False)
+    purpose = Column(String, nullable=False, default="register")
+    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 class Bookmark(Base):
     __tablename__ = "bookmarks"
 

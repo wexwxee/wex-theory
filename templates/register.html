@@ -177,6 +177,23 @@
       line-height: 1;
       font-family: inherit;
     }
+    .hint {
+      margin-top: 6px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .verify-box {
+      display: none;
+      margin-top: 18px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--bg);
+    }
+    .verify-box.show {
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -205,9 +222,19 @@
       </div>
       <div class="form-group">
         <label for="password">Password</label>
-        <input type="password" id="password" placeholder="Min. 6 characters" autocomplete="new-password">
+        <input type="password" id="password" placeholder="At least 8 chars, letters + numbers" autocomplete="new-password">
+        <div class="hint">Use at least 8 characters with one letter and one number. Example: `drive2026`</div>
       </div>
-      <button class="btn-primary" id="btn" onclick="handleRegister()">Create Account</button>
+      <button class="btn-primary" id="btn" onclick="handleRegister()">Send Verification Code</button>
+
+      <div class="verify-box" id="verifyBox">
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="verifyCode">Verification code</label>
+          <input type="text" id="verifyCode" placeholder="Enter the 6-digit code from your email" inputmode="numeric" maxlength="6">
+          <div class="hint">We send the code to your email for 10 minutes. This blocks fake addresses better.</div>
+        </div>
+        <button class="btn-primary" id="verifyBtn" onclick="handleVerify()" style="margin-top:14px;">Verify And Create Account</button>
+      </div>
 
       <div style="display:flex;align-items:center;gap:12px;margin:20px 0 4px;">
         <div style="flex:1;height:1px;background:var(--border);"></div>
@@ -258,15 +285,18 @@
     box.textContent = msg;
   }
 
+  let pendingVerificationEmail = '';
+
   async function handleRegister() {
     const btn = document.getElementById('btn');
     const name = document.getElementById('name').value.trim();
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
     if (!name || !email || !password) { showMsg('Please fill all fields', 'error'); return; }
-    if (password.length < 6) { showMsg('Password must be at least 6 characters', 'error'); return; }
+    if (password.length < 8) { showMsg('Password must be at least 8 characters', 'error'); return; }
+    if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) { showMsg('Password must include at least one letter and one number', 'error'); return; }
     btn.disabled = true;
-    btn.textContent = 'Creating...';
+    btn.textContent = 'Sending...';
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
@@ -276,20 +306,63 @@
       });
       const data = await res.json();
       if (data.success) {
-        window.location.href = data.redirect || '/dashboard';
+        pendingVerificationEmail = data.email || email;
+        document.getElementById('verifyBox').classList.add('show');
+        showMsg(data.message || 'Verification code sent', 'success');
+        btn.disabled = false;
+        btn.textContent = 'Resend Verification Code';
+        document.getElementById('verifyCode').focus();
       } else {
         showMsg(data.error || 'Registration failed', 'error');
         btn.disabled = false;
-        btn.textContent = 'Create Account';
+        btn.textContent = 'Send Verification Code';
       }
     } catch(e) {
       showMsg('Connection error', 'error');
       btn.disabled = false;
-      btn.textContent = 'Create Account';
+      btn.textContent = 'Send Verification Code';
     }
   }
 
-  document.addEventListener('keydown', e => { if (e.key === 'Enter') handleRegister(); });
+  async function handleVerify() {
+    const verifyBtn = document.getElementById('verifyBtn');
+    const email = pendingVerificationEmail || document.getElementById('email').value.trim();
+    const code = document.getElementById('verifyCode').value.trim();
+    if (!email) { showMsg('Please request the verification code first', 'error'); return; }
+    if (!/^\d{6}$/.test(code)) { showMsg('Enter the 6-digit code from your email', 'error'); return; }
+
+    verifyBtn.disabled = true;
+    verifyBtn.textContent = 'Verifying...';
+    try {
+      const res = await fetch('/api/auth/register/verify', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code })
+      });
+      const data = await res.json();
+      if (data.success) {
+        window.location.href = data.redirect || '/dashboard';
+      } else {
+        showMsg(data.error || 'Verification failed', 'error');
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = 'Verify And Create Account';
+      }
+    } catch (e) {
+      showMsg('Connection error', 'error');
+      verifyBtn.disabled = false;
+      verifyBtn.textContent = 'Verify And Create Account';
+    }
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (document.getElementById('verifyBox').classList.contains('show')) {
+      handleVerify();
+    } else {
+      handleRegister();
+    }
+  });
   </script>
 </body>
 </html>
