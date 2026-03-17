@@ -11,6 +11,8 @@ services:
         fromDatabase:
           name: wex-theory-db
           property: connectionString
+      - key: SESSION_COOKIE_SECURE
+        value: "true"
 
 databases:
   - name: wex-theory-db
