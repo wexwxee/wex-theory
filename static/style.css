@@ -400,13 +400,20 @@ input::placeholder, textarea::placeholder {
   border: 1px solid var(--border);
 }
 
-/* Sidebar nav */
+/* Sidebar nav — reset any inherited nav{} global styles */
 .sb-nav {
   flex: 1;
+  min-height: 0;        /* allow flex child to shrink below content size */
   padding: 8px 0;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
+  overflow-x: hidden;
+  display: flex !important;
+  flex-direction: column !important;
+  height: auto !important;
+  position: static !important;
+  background: transparent !important;
+  border-bottom: none !important;
+  z-index: auto !important;
 }
 .sb-nav-section {
   padding: 8px 16px 4px;
