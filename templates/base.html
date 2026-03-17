@@ -6,120 +6,103 @@
   <title>{% block title %}WEX Theory{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
   <link rel="stylesheet" href="/static/style.css">
   {% block head %}{% endblock %}
 </head>
 <body>
   <!-- Sidebar overlay -->
-  <div class="sidebar-overlay" id="sbOverlay" onclick="sbClose()"></div>
+  <div class="sb-overlay" id="sbOverlay" onclick="sbClose()"></div>
 
   <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar">
+  <aside class="sb" id="sidebar">
 
-    <!-- Header -->
-    <div class="sb-header">
-      <a href="/" class="logo">WEXTheory</a>
-      <button onclick="sbClose()" class="sb-close-btn" aria-label="Close menu">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/>
-        </svg>
+    <!-- Brand bar -->
+    <div class="sb-brand">
+      <a href="/" class="sb-logo">WEXTheory</a>
+      <button class="sb-x" onclick="sbClose()" aria-label="Close">
+        <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
 
-    <!-- User info -->
+    <!-- User profile -->
     {% if user is defined and user %}
-    <div class="sb-user">
-      <div class="sb-avatar">{{ user.name[0] | upper }}</div>
-      <div class="sb-user-info">
-        <div class="sb-user-name">{{ user.name }}</div>
-        <div class="sb-user-email">{{ user.email }}</div>
+    <div class="sb-profile">
+      <div class="sb-avi">{{ user.name[0] | upper }}</div>
+      <div class="sb-meta">
+        <div class="sb-name">{{ user.name }}</div>
+        <div class="sb-email">{{ user.email }}</div>
         {% if user.is_admin or user.subscription_status == 'active' %}
-          <span class="sb-user-plan plan-premium">
-            <svg width="9" height="9" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.39 7.26H19l-5.81 4.24 2.21 7.26L10 15.9l-5.4 3.86 2.21-7.26L1 8.26h6.61z"/></svg>
-            Premium
+          <span class="sb-badge sb-badge--pro">
+            <i class="fa-solid fa-star" style="font-size:8px;"></i> Premium
           </span>
         {% else %}
-          <span class="sb-user-plan plan-free">Free Plan</span>
+          <span class="sb-badge sb-badge--free">Free Plan</span>
         {% endif %}
       </div>
     </div>
     {% endif %}
 
-    <!-- Navigation -->
-    <div class="sb-nav">
-      <a href="/" class="sidebar-link">
-        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L10 3l7 7.5M5 9v8h4v-4h2v4h4V9"/></svg>
-        Home
+    <!-- Navigation list -->
+    <div class="sb-list">
+
+      <a href="/" class="sb-item">
+        <i class="fa-solid fa-house sb-ic"></i><span>Home</span>
       </a>
 
       {% if user is defined and user %}
-      <div class="sb-nav-section">Account</div>
-      <a href="/dashboard" class="sidebar-link">
-        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="6" height="6" rx="1.5"/><rect x="11" y="3" width="6" height="6" rx="1.5"/><rect x="3" y="11" width="6" height="6" rx="1.5"/><rect x="11" y="11" width="6" height="6" rx="1.5"/></svg>
-        Dashboard
+      <div class="sb-sep">Account</div>
+      <a href="/dashboard" class="sb-item">
+        <i class="fa-solid fa-grip sb-ic"></i><span>Dashboard</span>
       </a>
-      <a href="/profile" class="sidebar-link">
-        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3.5"/><path d="M3 18c0-3.9 3.1-7 7-7s7 3.1 7 7"/></svg>
-        Profile
+      <a href="/profile" class="sb-item">
+        <i class="fa-regular fa-user sb-ic"></i><span>Profile</span>
       </a>
-      <a href="/pricing" class="sidebar-link">
-        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="16" height="11" rx="2"/><line x1="2" y1="9" x2="18" y2="9"/><line x1="6" y1="13" x2="9" y2="13"/></svg>
-        Subscription
+      <a href="/pricing" class="sb-item">
+        <i class="fa-regular fa-credit-card sb-ic"></i><span>Subscription</span>
       </a>
       {% if user.is_admin %}
-      <a href="/admin" class="sidebar-link">
-        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="2.5"/><path d="M10 2.5v1.7M10 15.8v1.7M2.5 10h1.7M15.8 10h1.7M4.6 4.6l1.2 1.2M14.2 14.2l1.2 1.2M4.6 15.4l1.2-1.2M14.2 5.8l1.2-1.2"/></svg>
-        Admin Panel
+      <a href="/admin" class="sb-item">
+        <i class="fa-solid fa-sliders sb-ic"></i><span>Admin Panel</span>
       </a>
       {% endif %}
       {% endif %}
 
-      <div class="sb-nav-section">Info</div>
-      <a href="/about" class="sidebar-link">
-        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="10" cy="10" r="7.5"/><line x1="10" y1="9.5" x2="10" y2="14"/><circle cx="10" cy="6.5" r="0.8" fill="currentColor" stroke="none"/></svg>
-        About
+      <div class="sb-sep">Info</div>
+      <a href="/about" class="sb-item">
+        <i class="fa-regular fa-circle-info sb-ic"></i><span>About</span>
       </a>
-      <a href="/faq" class="sidebar-link">
-        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="10" cy="10" r="7.5"/><path d="M7.8 7.8a2.3 2.3 0 014 1.6c0 1.8-2.3 1.8-2.3 3.5"/><circle cx="9.5" cy="14.5" r="0.8" fill="currentColor" stroke="none"/></svg>
-        FAQ
+      <a href="/faq" class="sb-item">
+        <i class="fa-regular fa-circle-question sb-ic"></i><span>FAQ</span>
       </a>
-      <a href="/contact" class="sidebar-link">
-        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="16" height="13" rx="2"/><path d="M2 7.5l8 5 8-5"/></svg>
-        Contact
+      <a href="/contact" class="sb-item">
+        <i class="fa-regular fa-envelope sb-ic"></i><span>Contact</span>
       </a>
-      <a href="/privacy" class="sidebar-link">
-        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="9" width="10" height="9" rx="2"/><path d="M7 9V6.5a3 3 0 016 0V9"/></svg>
-        Privacy
+      <a href="/privacy" class="sb-item">
+        <i class="fa-solid fa-lock sb-ic"></i><span>Privacy</span>
       </a>
+
     </div>
 
     <!-- Footer -->
-    <div class="sb-footer">
-      <div class="sb-theme-row">
-        <span class="sb-footer-label">Theme</span>
-        <button class="theme-btn" onclick="toggleTheme()" id="sbThemeBtn" title="Toggle theme" aria-label="Toggle theme">
-          <!-- show sun when dark (switch to light), show moon when light (switch to dark) -->
-          <span class="theme-icon-sun">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-          </span>
-          <span class="theme-icon-moon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-          </span>
+    <div class="sb-foot">
+      <div class="sb-foot-row">
+        <span class="sb-foot-label">Theme</span>
+        <button class="sb-theme-btn theme-btn" onclick="toggleTheme()" id="sbThemeBtn" aria-label="Toggle theme">
+          <span class="theme-icon-sun"><i class="fa-solid fa-sun"></i></span>
+          <span class="theme-icon-moon"><i class="fa-solid fa-moon"></i></span>
         </button>
       </div>
       {% if user is defined and user %}
-      <button onclick="doLogout()" class="sidebar-link sb-signout">
-        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3h4a1 1 0 011 1v12a1 1 0 01-1 1h-4M8 14l5-4-5-4M13 10H3"/></svg>
-        Sign Out
+      <button class="sb-item sb-item--danger" onclick="doLogout()">
+        <i class="fa-solid fa-right-from-bracket sb-ic"></i><span>Sign Out</span>
       </button>
       {% else %}
-      <a href="/login" class="sidebar-link">
-        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17H3a1 1 0 01-1-1V4a1 1 0 011-1h4M12 6l5 4-5 4M17 10H7"/></svg>
-        Sign In
+      <a href="/login" class="sb-item">
+        <i class="fa-solid fa-right-to-bracket sb-ic"></i><span>Sign In</span>
       </a>
-      <a href="/register" class="sidebar-link">
-        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3.5"/><path d="M2 18c0-3.9 2.7-7 6-7M14 12v6M11 15h6"/></svg>
-        Register
+      <a href="/register" class="sb-item">
+        <i class="fa-solid fa-user-plus sb-ic"></i><span>Register</span>
       </a>
       {% endif %}
     </div>
