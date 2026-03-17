@@ -180,6 +180,8 @@
   <div id="toast-container"></div>
 
   <script>
+  window.WEX_SUPPORT_UNREAD_URL = {% if user is defined and user %}{{ ('/api/support/threads-data?scope=admin' if user.is_admin else '/api/support/threads-data') | tojson }}{% else %}null{% endif %};
+  window.WEX_SUPPORT_BANNER_MODE = {% if user is defined and user and user.is_admin %}"admin"{% elif user is defined and user %}"user"{% else %}null{% endif %};
   // Theme init — icons driven by CSS [data-theme] selector, no JS text update needed
   (function(){
     const t = localStorage.getItem('wex-theme') || 'dark';
@@ -192,6 +194,7 @@
     h.setAttribute('data-theme', next);
     localStorage.setItem('wex-theme', next);
   }
+  window.toggleTheme = toggleTheme;
 
   // Sidebar
   function sbOpen() {
@@ -202,6 +205,8 @@
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('sbOverlay').classList.remove('open');
   }
+  window.sbOpen = sbOpen;
+  window.sbClose = sbClose;
   document.addEventListener('keydown', e => { if (e.key === 'Escape') sbClose(); });
 
   // Toast
@@ -223,6 +228,7 @@
     await fetch('/api/auth/logout', { method: 'POST' });
     window.location.href = '/login';
   }
+  window.doLogout = doLogout;
 
   window.wexPurchaseUser = {% if user is defined and user %}{{ {"public_id": user.public_id, "name": user.name, "email": user.email} | tojson }}{% else %}null{% endif %};
 
@@ -299,7 +305,7 @@
     if (!badge && !banner) return;
 
     try {
-      const url = {% if user is defined and user %}{{ '"/api/support/threads-data?scope=admin"' if user.is_admin else '"/api/support/threads-data"' }}{% else %}null{% endif %};
+      const url = window.WEX_SUPPORT_UNREAD_URL;
       if (!url) return;
       const response = await fetch(url, { headers: { accept: 'application/json' } });
       if (!response.ok) return;
@@ -321,11 +327,11 @@
       if (banner && bannerText) {
         const showOnPage = window.location.pathname === '/dashboard' || window.location.pathname === '/admin';
         if (showOnPage && unreadCount > 0) {
-          bannerText.textContent = {% if user is defined and user and user.is_admin %}
-            `You have ${unreadCount} unread support ${unreadCount === 1 ? 'message' : 'messages'}.`;
-          {% else %}
-            `You have ${unreadCount} unread ${unreadCount === 1 ? 'reply' : 'replies'} from support.`;
-          {% endif %}
+          if (window.WEX_SUPPORT_BANNER_MODE === 'admin') {
+            bannerText.textContent = `You have ${unreadCount} unread support ${unreadCount === 1 ? 'message' : 'messages'}.`;
+          } else {
+            bannerText.textContent = `You have ${unreadCount} unread ${unreadCount === 1 ? 'reply' : 'replies'} from support.`;
+          }
           banner.classList.add('show');
         } else {
           banner.classList.remove('show');
