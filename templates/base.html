@@ -205,8 +205,23 @@
       copied = true;
     } catch (e) {}
 
-    window.open('https://t.me/wexwxeee', '_blank', 'noopener');
-    showToast(copied ? 'Telegram opened. Message copied - just paste and send.' : 'Telegram opened. Copy the payment details manually if needed.', 'success');
+    const encoded = encodeURIComponent(payload.text);
+    const tgAppUrl = `tg://resolve?domain=wexwxeee&text=${encoded}`;
+    const tgWebUrl = `https://t.me/wexwxeee?text=${encoded}`;
+
+    const win = window.open(tgAppUrl, '_blank', 'noopener');
+    setTimeout(() => {
+      if (!win || win.closed === false) {
+        window.open(tgWebUrl, '_blank', 'noopener');
+      }
+    }, 350);
+
+    showToast(
+      copied
+        ? 'Telegram opened. If the text is not inserted automatically, just paste it into the chat.'
+        : 'Telegram opened. If the text is not inserted automatically, copy the payment details manually.',
+      'success'
+    );
     return false;
   }
   window.openTelegramPurchase = openTelegramPurchase;
