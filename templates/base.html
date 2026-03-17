@@ -30,16 +30,18 @@
     {% if user is defined and user %}
     <div class="sb-user">
       <div class="sb-avatar">{{ user.name[0] | upper }}</div>
-      <div class="sb-user-name">{{ user.name }}</div>
-      <div class="sb-user-email">{{ user.email }}</div>
-      {% if user.is_admin or user.subscription_status == 'active' %}
-        <span class="sb-user-plan plan-premium">
-          <svg width="10" height="10" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.39 7.26H19l-5.81 4.24 2.21 7.26L10 15.9l-5.4 3.86 2.21-7.26L1 8.26h6.61z"/></svg>
-          Premium
-        </span>
-      {% else %}
-        <span class="sb-user-plan plan-free">Free Plan</span>
-      {% endif %}
+      <div class="sb-user-info">
+        <div class="sb-user-name">{{ user.name }}</div>
+        <div class="sb-user-email">{{ user.email }}</div>
+        {% if user.is_admin or user.subscription_status == 'active' %}
+          <span class="sb-user-plan plan-premium">
+            <svg width="9" height="9" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.39 7.26H19l-5.81 4.24 2.21 7.26L10 15.9l-5.4 3.86 2.21-7.26L1 8.26h6.61z"/></svg>
+            Premium
+          </span>
+        {% else %}
+          <span class="sb-user-plan plan-free">Free Plan</span>
+        {% endif %}
+      </div>
     </div>
     {% endif %}
 
@@ -95,7 +97,15 @@
     <div class="sb-footer">
       <div class="sb-theme-row">
         <span class="sb-footer-label">Theme</span>
-        <button class="theme-btn" onclick="toggleTheme()" id="sbThemeBtn" title="Toggle theme">☀️</button>
+        <button class="theme-btn" onclick="toggleTheme()" id="sbThemeBtn" title="Toggle theme" aria-label="Toggle theme">
+          <!-- show sun when dark (switch to light), show moon when light (switch to dark) -->
+          <span class="theme-icon-sun">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          </span>
+          <span class="theme-icon-moon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+          </span>
+        </button>
       </div>
       {% if user is defined and user %}
       <button onclick="doLogout()" class="sidebar-link sb-signout">
@@ -121,26 +131,17 @@
   <div id="toast-container"></div>
 
   <script>
-  // Theme init
+  // Theme init — icons driven by CSS [data-theme] selector, no JS text update needed
   (function(){
     const t = localStorage.getItem('wex-theme') || 'dark';
     document.documentElement.setAttribute('data-theme', t);
-    const btn = document.getElementById('sbThemeBtn');
-    if (btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
-    const nb = document.getElementById('navThemeBtn');
-    if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
   })();
 
   function toggleTheme() {
     const h = document.documentElement;
-    const cur = h.getAttribute('data-theme');
-    const next = cur === 'dark' ? 'light' : 'dark';
+    const next = h.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     h.setAttribute('data-theme', next);
     localStorage.setItem('wex-theme', next);
-    const sb = document.getElementById('sbThemeBtn');
-    if (sb) sb.textContent = next === 'dark' ? '☀️' : '🌙';
-    const nb = document.getElementById('navThemeBtn');
-    if (nb) nb.textContent = next === 'dark' ? '☀️' : '🌙';
   }
 
   // Sidebar
@@ -173,6 +174,18 @@
     await fetch('/api/auth/logout', { method: 'POST' });
     window.location.href = '/login';
   }
+
+  // Inject SVG sun/moon into every .theme-btn on the page (covers all templates)
+  // CSS [data-theme] selectors show/hide the correct icon automatically.
+  (function() {
+    const SVG_SUN  = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+    const SVG_MOON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>';
+    document.querySelectorAll('.theme-btn').forEach(function(btn) {
+      if (!btn.querySelector('.theme-icon-sun')) {
+        btn.innerHTML = '<span class="theme-icon-sun">' + SVG_SUN + '</span><span class="theme-icon-moon">' + SVG_MOON + '</span>';
+      }
+    });
+  })();
   </script>
   {% block scripts %}{% endblock %}
 </body>
