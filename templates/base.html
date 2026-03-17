@@ -62,6 +62,15 @@
         <i class="fa-regular fa-credit-card sb-ic"></i><span>Subscription</span>
       </a>
       {% if user.is_admin %}
+      <a href="/support" class="sb-item">
+        <i class="fa-regular fa-comments sb-ic"></i><span>Support Inbox</span>
+      </a>
+      {% else %}
+      <a href="/messages" class="sb-item">
+        <i class="fa-regular fa-comments sb-ic"></i><span>Messages</span>
+      </a>
+      {% endif %}
+      {% if user.is_admin %}
       <a href="/admin" class="sb-item">
         <i class="fa-solid fa-sliders sb-ic"></i><span>Admin Panel</span>
       </a>

@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_admin_view %}Support Inbox{% else %}Messages{% endif %} — WEX Theory{% endblock %}
+
+{% block body %}
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" onclick="sbOpen()">☰</button>
+      <a href="/" class="logo">WEXTheory</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" onclick="toggleTheme()" id="navThemeBtn">☀️</button>
+      <a href="{% if is_admin_view %}/admin{% else %}/dashboard{% endif %}" class="btn-ghost btn-sm">{% if is_admin_view %}Admin{% else %}Dashboard{% endif %}</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:24px;">
+    <div>
+      <h1 style="font-size:1.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:6px;">{% if is_admin_view %}Support Inbox{% else %}Messages{% endif %}</h1>
+      <div style="color:var(--text-muted);font-size:0.9rem;">
+        {% if is_admin_view %}
+        Open a chat and reply to users directly from here.
+        {% else %}
+        Your support requests live here. We usually reply within 32 hours.
+        {% endif %}
+      </div>
+    </div>
+    {% if not is_admin_view %}
+    <a href="/contact" class="btn-primary">New Request</a>
+    {% endif %}
+  </div>
+
+  <div style="display:grid;grid-template-columns:320px 1fr;gap:16px;align-items:start;">
+    <div class="card" style="padding:10px;max-height:75vh;overflow:auto;">
+      {% if threads %}
+        {% for thread in threads %}
+        <a href="{% if is_admin_view %}/support?thread={{ thread.id }}{% else %}/messages?thread={{ thread.id }}{% endif %}"
+           style="display:block;padding:12px;border-radius:10px;margin-bottom:8px;border:1px solid {% if active_thread and active_thread.id == thread.id %}var(--text){% else %}var(--border){% endif %};background:{% if active_thread and active_thread.id == thread.id %}var(--bg){% else %}var(--bg-card){% endif %};">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;">
+            <div style="font-weight:700;">{{ thread.subject }}</div>
+            {% if thread.unread_count > 0 %}
+            <span class="badge-green">{{ thread.unread_count }}</span>
+            {% endif %}
+          </div>
+          {% if is_admin_view %}
+          <div style="font-size:0.8rem;color:var(--text-muted);">{{ thread.user.name }} · {{ thread.user.public_id }}</div>
+          {% endif %}
+          <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">Updated {{ thread.updated_at.strftime('%d %b %Y %H:%M') }}</div>
+        </a>
+        {% endfor %}
+      {% else %}
+      <div style="padding:20px 12px;color:var(--text-muted);text-align:center;">No conversations yet.</div>
+      {% endif %}
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden;">
+      {% if active_thread %}
+      <div style="padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:1.1rem;font-weight:700;">{{ active_thread.subject }}</div>
+          <div style="font-size:0.82rem;color:var(--text-muted);margin-top:4px;">
+            Status: {{ active_thread.status|capitalize }} · Created {{ active_thread.created_at.strftime('%d %b %Y %H:%M') }}
+          </div>
+          {% if is_admin_view %}
+          <div style="font-size:0.82rem;color:var(--text-muted);margin-top:8px;line-height:1.6;">
+            {{ active_thread.user.name }} &lt;{{ active_thread.user.email }}&gt;<br>
+            User ID: <span style="font-weight:700;color:var(--text);">{{ active_thread.user.public_id }}</span>
+          </div>
+          {% endif %}
+        </div>
+        {% if is_admin_view %}
+        <span class="badge-gray">{{ active_thread.user.email }}</span>
+        {% endif %}
+      </div>
+
+      <div style="padding:20px;display:flex;flex-direction:column;gap:12px;max-height:55vh;overflow:auto;background:var(--bg);">
+        {% for msg in active_thread.messages %}
+        {% set is_mine = (msg.sender_role == 'admin' and is_admin_view) or (msg.sender_role == 'user' and not is_admin_view) %}
+        <div style="align-self:{% if msg.sender_role == 'system' %}center{% elif is_mine %}flex-end{% else %}flex-start{% endif %};max-width:78%;">
+          <div style="padding:12px 14px;border-radius:14px;border:1px solid var(--border);background:{% if msg.sender_role == 'system' %}var(--bg-card){% elif is_mine %}var(--text){% else %}var(--bg-card){% endif %};color:{% if is_mine and msg.sender_role != 'system' %}var(--bg){% else %}var(--text){% endif %};">
+            <div style="font-size:0.72rem;opacity:0.7;margin-bottom:6px;">
+              {% if msg.sender_role == 'system' %}System{% elif msg.sender_role == 'admin' %}Support{% else %}{{ active_thread.user.name }}{% endif %} · {{ msg.created_at.strftime('%d %b %Y %H:%M') }}
+            </div>
+            {% if msg.body %}
+            <div style="white-space:pre-wrap;line-height:1.6;">{{ msg.body }}</div>
+            {% endif %}
+            {% if msg.attachment_path %}
+            <div style="margin-top:10px;">
+              <a href="{{ msg.attachment_path }}" target="_blank" rel="noopener" class="btn-ghost btn-sm" style="display:inline-flex;">Open attachment</a>
+            </div>
+            {% if msg.attachment_name and (msg.attachment_name.lower().endswith('.png') or msg.attachment_name.lower().endswith('.jpg') or msg.attachment_name.lower().endswith('.jpeg') or msg.attachment_name.lower().endswith('.webp') or msg.attachment_name.lower().endswith('.gif')) %}
+            <img src="{{ msg.attachment_path }}" alt="{{ msg.attachment_name }}" style="margin-top:10px;max-width:100%;border-radius:10px;border:1px solid var(--border);">
+            {% endif %}
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <form action="/api/support/threads/{{ active_thread.id }}/reply" method="post" enctype="multipart/form-data" style="padding:18px 20px;border-top:1px solid var(--border);background:var(--bg-card);">
+        {% if is_admin_view %}
+        <div class="form-group">
+          <label class="form-label" for="replyStatus">Status</label>
+          <select id="replyStatus" name="status">
+            <option value="open" {% if active_thread.status == 'open' %}selected{% endif %}>Open</option>
+            <option value="answered" {% if active_thread.status == 'answered' %}selected{% endif %}>Answered</option>
+            <option value="closed" {% if active_thread.status == 'closed' %}selected{% endif %}>Closed</option>
+          </select>
+        </div>
+        {% endif %}
+        <div class="form-group">
+          <label class="form-label" for="replyMessage">Reply</label>
+          <textarea id="replyMessage" name="message" rows="4" placeholder="{% if is_admin_view %}Write a reply to the user...{% else %}Add more details here...{% endif %}"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="replyAttachment">Attachment (optional)</label>
+          <input type="file" id="replyAttachment" name="attachment" accept=".png,.jpg,.jpeg,.webp,.gif,.pdf,.txt,.log,.json" style="padding:10px;">
+        </div>
+        <div style="display:flex;justify-content:flex-end;">
+          <button class="btn-primary" type="submit">{% if is_admin_view %}Send Reply{% else %}Send Message{% endif %}</button>
+        </div>
+      </form>
+      {% else %}
+      <div style="padding:60px 24px;text-align:center;color:var(--text-muted);">
+        {% if is_admin_view %}
+        No support chats yet.
+        {% else %}
+        No messages yet. Open <a href="/contact" style="text-decoration:underline;">Contact</a> to create your first request.
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  const t = localStorage.getItem('wex-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  const nb = document.getElementById('navThemeBtn');
+  if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
+})();
+</script>
+{% endblock %}

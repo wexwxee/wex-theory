@@ -31,9 +31,11 @@ AUTH_COOKIE_MAX_AGE = 86400 * 30
 PUBLIC_ID_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 BASE_DIR = Path(__file__).resolve().parent
 CONTACT_UPLOAD_DIR = BASE_DIR / "uploads" / "contact"
+SUPPORT_UPLOAD_DIR = BASE_DIR / "uploads" / "support"
 ALLOWED_CONTACT_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".pdf", ".txt", ".log", ".json"}
 MAX_CONTACT_UPLOAD_BYTES = 10 * 1024 * 1024
 CONTACT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+SUPPORT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 QUESTION_TEXT_FIXES = {
     "You are required to turn right at the signal-controlled junction. There is no traffic directly behind you. How should":
         "You are required to turn right at the signal-controlled junction. There is no traffic directly behind you. How should you proceed?"
@@ -160,6 +162,46 @@ def save_contact_attachment(upload: UploadFile) -> tuple[str, str, str]:
             f.write(chunk)
 
     return original_name, f"/uploads/contact/{stored_name}", (upload.content_type or "")
+
+
+def save_support_attachment(upload: UploadFile) -> tuple[str, str, str]:
+    original_name = os.path.basename(upload.filename or "").strip()
+    if not original_name:
+        raise ValueError("Attachment filename is missing")
+
+    ext = Path(original_name).suffix.lower()
+    if ext not in ALLOWED_CONTACT_EXTENSIONS:
+        raise ValueError("Allowed files: images, PDF, TXT, LOG, JSON")
+
+    SUPPORT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    stored_name = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{secrets.token_hex(6)}{ext}"
+    stored_path = SUPPORT_UPLOAD_DIR / stored_name
+
+    size = 0
+    with stored_path.open("wb") as f:
+        while True:
+            chunk = upload.file.read(1024 * 1024)
+            if not chunk:
+                break
+            size += len(chunk)
+            if size > MAX_CONTACT_UPLOAD_BYTES:
+                f.close()
+                stored_path.unlink(missing_ok=True)
+                raise ValueError("Attachment is too large. Max size is 10 MB")
+            f.write(chunk)
+
+    return original_name, f"/uploads/support/{stored_name}", (upload.content_type or "")
+
+
+def create_support_system_message(db: Session, thread_id: int) -> None:
+    db.add(models.SupportMessage(
+        thread_id=thread_id,
+        sender_role="system",
+        body="Your request has been received. Please wait up to 32 hours for a reply from support.",
+        read_by_user=True,
+        read_by_admin=True,
+        created_at=datetime.utcnow(),
+    ))
 
 
 def ensure_question_text_fixes(db: Session) -> None:
@@ -600,6 +642,81 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
     )
     return templates.TemplateResponse("profile.html", {
         "request": request, "user": user, "attempts": attempts,
+        "now": datetime.utcnow(),
+    })
+
+
+@app.get("/messages", response_class=HTMLResponse)
+async def messages_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        return RedirectResponse("/login", status_code=302)
+
+    thread_id_raw = request.query_params.get("thread")
+    thread_id = int(thread_id_raw) if thread_id_raw and thread_id_raw.isdigit() else None
+    threads = (
+        db.query(models.SupportThread)
+        .options(selectinload(models.SupportThread.user), selectinload(models.SupportThread.messages))
+        .filter(models.SupportThread.user_id == user.id)
+        .order_by(models.SupportThread.updated_at.desc())
+        .all()
+    )
+    for thread in threads:
+        thread.unread_count = sum(1 for m in thread.messages if not m.read_by_user and m.sender_role in ("admin", "system"))
+    active_thread = None
+    if threads:
+        active_thread = next((t for t in threads if t.id == thread_id), threads[0])
+        unread = [m for m in active_thread.messages if not m.read_by_user and m.sender_role in ("admin", "system")]
+        for message in unread:
+            message.read_by_user = True
+        if unread:
+            db.commit()
+            active_thread.unread_count = 0
+
+    return templates.TemplateResponse("support.html", {
+        "request": request,
+        "user": user,
+        "threads": threads,
+        "active_thread": active_thread,
+        "is_admin_view": False,
+        "now": datetime.utcnow(),
+    })
+
+
+@app.get("/support", response_class=HTMLResponse)
+async def support_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        return RedirectResponse("/login", status_code=302)
+    if not user.is_admin:
+        return RedirectResponse("/dashboard", status_code=302)
+
+    thread_id_raw = request.query_params.get("thread")
+    thread_id = int(thread_id_raw) if thread_id_raw and thread_id_raw.isdigit() else None
+    threads = (
+        db.query(models.SupportThread)
+        .options(selectinload(models.SupportThread.user), selectinload(models.SupportThread.messages))
+        .order_by(models.SupportThread.updated_at.desc())
+        .all()
+    )
+    for thread in threads:
+        thread.unread_count = sum(1 for m in thread.messages if not m.read_by_admin and m.sender_role == "user")
+    active_thread = None
+    if threads:
+        active_thread = next((t for t in threads if t.id == thread_id), threads[0])
+        unread = [m for m in active_thread.messages if not m.read_by_admin and m.sender_role == "user"]
+        for message in unread:
+            message.read_by_admin = True
+        if unread:
+            db.commit()
+            active_thread.unread_count = 0
+
+    return templates.TemplateResponse("support.html", {
+        "request": request,
+        "user": user,
+        "threads": threads,
+        "active_thread": active_thread,
+        "is_admin_view": True,
         "now": datetime.utcnow(),
     })
 
@@ -1058,6 +1175,35 @@ async def api_contact(request: Request, db: Session = Depends(get_db)):
         attachment_path = None
         attachment_type = None
 
+        current_user = get_current_user(request, db)
+        if current_user:
+            if isinstance(attachment, UploadFile) and attachment.filename:
+                attachment_name, attachment_path, attachment_type = save_support_attachment(attachment)
+            support_thread = models.SupportThread(
+                user_id=current_user.id,
+                subject=str(form.get("subject", "Support")),
+                status="open",
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow(),
+            )
+            db.add(support_thread)
+            db.flush()
+            db.add(models.SupportMessage(
+                thread_id=support_thread.id,
+                sender_user_id=current_user.id,
+                sender_role="user",
+                body=str(form.get("message", "")),
+                attachment_name=attachment_name,
+                attachment_path=attachment_path,
+                attachment_type=attachment_type,
+                created_at=datetime.utcnow(),
+                read_by_user=True,
+                read_by_admin=False,
+            ))
+            create_support_system_message(db, support_thread.id)
+            db.commit()
+            return JSONResponse({"success": True, "redirect": f"/messages?thread={support_thread.id}"})
+
         if isinstance(attachment, UploadFile) and attachment.filename:
             attachment_name, attachment_path, attachment_type = save_contact_attachment(attachment)
 
@@ -1079,6 +1225,60 @@ async def api_contact(request: Request, db: Session = Depends(get_db)):
     except Exception as e:
         print(f"[CONTACT ERROR] {e}")
         return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@app.post("/api/support/threads/{thread_id}/reply")
+async def api_support_reply(thread_id: int, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        return RedirectResponse("/login", status_code=302)
+
+    thread = (
+        db.query(models.SupportThread)
+        .options(selectinload(models.SupportThread.user))
+        .filter(models.SupportThread.id == thread_id)
+        .first()
+    )
+    if not thread:
+        return JSONResponse({"error": "Thread not found"}, status_code=404)
+    if not user.is_admin and thread.user_id != user.id:
+        return JSONResponse({"error": "Forbidden"}, status_code=403)
+
+    form = await request.form()
+    body = str(form.get("message", "")).strip()
+    attachment = form.get("attachment")
+    attachment_name = None
+    attachment_path = None
+    attachment_type = None
+
+    if isinstance(attachment, UploadFile) and attachment.filename:
+        attachment_name, attachment_path, attachment_type = save_support_attachment(attachment)
+
+    if not body and not attachment_name:
+        return JSONResponse({"error": "Message or attachment is required"}, status_code=400)
+
+    sender_role = "admin" if user.is_admin else "user"
+    db.add(models.SupportMessage(
+        thread_id=thread.id,
+        sender_user_id=user.id,
+        sender_role=sender_role,
+        body=body,
+        attachment_name=attachment_name,
+        attachment_path=attachment_path,
+        attachment_type=attachment_type,
+        created_at=datetime.utcnow(),
+        read_by_user=(sender_role == "user"),
+        read_by_admin=(sender_role == "admin"),
+    ))
+    thread.updated_at = datetime.utcnow()
+    if user.is_admin:
+        thread.status = str(form.get("status", thread.status or "open"))
+    else:
+        thread.status = "open"
+    db.commit()
+
+    redirect_to = f"/support?thread={thread.id}" if user.is_admin else f"/messages?thread={thread.id}"
+    return RedirectResponse(redirect_to, status_code=303)
 
 
 # ─── Admin API ─────────────────────────────────────────────────────────────────

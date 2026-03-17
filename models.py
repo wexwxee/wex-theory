@@ -23,6 +23,7 @@ class User(Base):
     current_period_end     = Column(DateTime, nullable=True)
 
     attempts = relationship("UserTestAttempt", back_populates="user")
+    support_threads = relationship("SupportThread", back_populates="user")
 
 
 class Test(Base):
@@ -104,6 +105,38 @@ class ContactMessage(Base):
     attachment_type = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     is_read = Column(Boolean, default=False)
+
+
+class SupportThread(Base):
+    __tablename__ = "support_threads"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    subject = Column(String, nullable=False, default="Support")
+    status = Column(String, nullable=False, default="open")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="support_threads")
+    messages = relationship("SupportMessage", back_populates="thread", order_by="SupportMessage.created_at")
+
+
+class SupportMessage(Base):
+    __tablename__ = "support_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    thread_id = Column(Integer, ForeignKey("support_threads.id"), nullable=False, index=True)
+    sender_user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    sender_role = Column(String, nullable=False, default="user")  # user/admin/system
+    body = Column(Text, nullable=False, default="")
+    attachment_name = Column(String, nullable=True)
+    attachment_path = Column(String, nullable=True)
+    attachment_type = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    read_by_user = Column(Boolean, default=False)
+    read_by_admin = Column(Boolean, default=False)
+
+    thread = relationship("SupportThread", back_populates="messages")
 
 
 class Bookmark(Base):
