@@ -19,16 +19,24 @@
     <!-- Header -->
     <div class="sb-header">
       <a href="/" class="logo">WEXTheory</a>
-      <button onclick="sbClose()" class="sb-close-btn" aria-label="Close menu">✕</button>
+      <button onclick="sbClose()" class="sb-close-btn" aria-label="Close menu">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/>
+        </svg>
+      </button>
     </div>
 
     <!-- User info -->
     {% if user is defined and user %}
     <div class="sb-user">
+      <div class="sb-avatar">{{ user.name[0] | upper }}</div>
       <div class="sb-user-name">{{ user.name }}</div>
       <div class="sb-user-email">{{ user.email }}</div>
       {% if user.is_admin or user.subscription_status == 'active' %}
-        <span class="sb-user-plan plan-premium">⭐ Premium</span>
+        <span class="sb-user-plan plan-premium">
+          <svg width="10" height="10" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.39 7.26H19l-5.81 4.24 2.21 7.26L10 15.9l-5.4 3.86 2.21-7.26L1 8.26h6.61z"/></svg>
+          Premium
+        </span>
       {% else %}
         <span class="sb-user-plan plan-free">Free Plan</span>
       {% endif %}
@@ -37,36 +45,72 @@
 
     <!-- Navigation -->
     <div class="sb-nav">
-      <a href="/" class="sidebar-link">🏠 Home</a>
+      <a href="/" class="sidebar-link">
+        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L10 3l7 7.5M5 9v8h4v-4h2v4h4V9"/></svg>
+        Home
+      </a>
 
       {% if user is defined and user %}
       <div class="sb-nav-section">Account</div>
-      <a href="/dashboard" class="sidebar-link">📚 Dashboard</a>
-      <a href="/profile" class="sidebar-link">👤 Profile</a>
-      <a href="/pricing" class="sidebar-link">💳 Subscription</a>
+      <a href="/dashboard" class="sidebar-link">
+        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="6" height="6" rx="1.5"/><rect x="11" y="3" width="6" height="6" rx="1.5"/><rect x="3" y="11" width="6" height="6" rx="1.5"/><rect x="11" y="11" width="6" height="6" rx="1.5"/></svg>
+        Dashboard
+      </a>
+      <a href="/profile" class="sidebar-link">
+        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3.5"/><path d="M3 18c0-3.9 3.1-7 7-7s7 3.1 7 7"/></svg>
+        Profile
+      </a>
+      <a href="/pricing" class="sidebar-link">
+        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="16" height="11" rx="2"/><line x1="2" y1="9" x2="18" y2="9"/><line x1="6" y1="13" x2="9" y2="13"/></svg>
+        Subscription
+      </a>
       {% if user.is_admin %}
-      <a href="/admin" class="sidebar-link">⚙️ Admin Panel</a>
+      <a href="/admin" class="sidebar-link">
+        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="2.5"/><path d="M10 2.5v1.7M10 15.8v1.7M2.5 10h1.7M15.8 10h1.7M4.6 4.6l1.2 1.2M14.2 14.2l1.2 1.2M4.6 15.4l1.2-1.2M14.2 5.8l1.2-1.2"/></svg>
+        Admin Panel
+      </a>
       {% endif %}
       {% endif %}
 
       <div class="sb-nav-section">Info</div>
-      <a href="/about" class="sidebar-link">ℹ️ About</a>
-      <a href="/faq" class="sidebar-link">❓ FAQ</a>
-      <a href="/contact" class="sidebar-link">✉️ Contact</a>
-      <a href="/privacy" class="sidebar-link">🔒 Privacy</a>
+      <a href="/about" class="sidebar-link">
+        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="10" cy="10" r="7.5"/><line x1="10" y1="9.5" x2="10" y2="14"/><circle cx="10" cy="6.5" r="0.8" fill="currentColor" stroke="none"/></svg>
+        About
+      </a>
+      <a href="/faq" class="sidebar-link">
+        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="10" cy="10" r="7.5"/><path d="M7.8 7.8a2.3 2.3 0 014 1.6c0 1.8-2.3 1.8-2.3 3.5"/><circle cx="9.5" cy="14.5" r="0.8" fill="currentColor" stroke="none"/></svg>
+        FAQ
+      </a>
+      <a href="/contact" class="sidebar-link">
+        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="16" height="13" rx="2"/><path d="M2 7.5l8 5 8-5"/></svg>
+        Contact
+      </a>
+      <a href="/privacy" class="sidebar-link">
+        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="9" width="10" height="9" rx="2"/><path d="M7 9V6.5a3 3 0 016 0V9"/></svg>
+        Privacy
+      </a>
     </div>
 
     <!-- Footer -->
     <div class="sb-footer">
       <div class="sb-theme-row">
-        <span style="font-size:0.83rem;color:var(--text-muted);">Theme</span>
-        <button class="theme-btn" onclick="toggleTheme()" id="sbThemeBtn">☀️</button>
+        <span class="sb-footer-label">Theme</span>
+        <button class="theme-btn" onclick="toggleTheme()" id="sbThemeBtn" title="Toggle theme">☀️</button>
       </div>
       {% if user is defined and user %}
-      <button onclick="doLogout()" class="sidebar-link" style="color:var(--wrong);padding:9px 4px;">↩ Sign Out</button>
+      <button onclick="doLogout()" class="sidebar-link sb-signout">
+        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3h4a1 1 0 011 1v12a1 1 0 01-1 1h-4M8 14l5-4-5-4M13 10H3"/></svg>
+        Sign Out
+      </button>
       {% else %}
-      <a href="/login" class="sidebar-link" style="padding:9px 4px;">→ Sign In</a>
-      <a href="/register" class="sidebar-link" style="padding:9px 4px;">✦ Register</a>
+      <a href="/login" class="sidebar-link">
+        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17H3a1 1 0 01-1-1V4a1 1 0 011-1h4M12 6l5 4-5 4M17 10H7"/></svg>
+        Sign In
+      </a>
+      <a href="/register" class="sidebar-link">
+        <svg class="sb-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3.5"/><path d="M2 18c0-3.9 2.7-7 6-7M14 12v6M11 15h6"/></svg>
+        Register
+      </a>
       {% endif %}
     </div>
 
