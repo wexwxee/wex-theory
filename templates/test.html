@@ -7,7 +7,10 @@
   <div class="nav-inner">
     <div class="nav-left">
       <button class="burger-btn" onclick="sbOpen()">☰</button>
-      <span style="font-size:0.95rem;font-weight:600;color:var(--text);" id="navTestTitle">{{ test.title }}</span>
+      <a href="/dashboard" class="back-btn" title="Back to Dashboard">
+        <span class="back-arrow">←</span><span class="back-label"> Tests</span>
+      </a>
+      <span class="nav-test-title" id="navTestTitle">{{ test.title }}</span>
     </div>
     <div class="nav-right" style="gap:10px;">
       <div class="timer" id="timerDisplay">45:00</div>

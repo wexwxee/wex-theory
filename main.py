@@ -143,22 +143,40 @@ async def startup_init():
         else:
             print("[STARTUP] Image paths OK (already .jpg)")
 
-        # 3. Create default admin if not exists
-        existing = db.query(models.User).filter(models.User.email == "admin@wex.com").first()
+        # 3. Create default admin if not exists; migrate old admin@wex.com if present
+        _admin_email = "wexwxee@gmail.com"
+        existing = db.query(models.User).filter(models.User.email == _admin_email).first()
         if not existing:
-            u = models.User(
-                name="Admin",
-                email="admin@wex.com",
-                password_hash=hash_password("admin123"),
-                created_at=datetime.utcnow(),
-                expires_at=datetime.utcnow() + timedelta(days=3650),
-                is_admin=True,
-            )
-            db.add(u)
-            db.commit()
-            print("[STARTUP] Admin created: admin@wex.com")
+            # Also check for old email and update it
+            old_admin = db.query(models.User).filter(models.User.email == "admin@wex.com").first()
+            if old_admin:
+                old_admin.email = _admin_email
+                old_admin.password_hash = hash_password("fruktozik22")
+                old_admin.expires_at = datetime.utcnow() + timedelta(days=3650)
+                old_admin.is_admin = True
+                old_admin.subscription_status = "active"
+                db.commit()
+                print(f"[STARTUP] Admin migrated: admin@wex.com → {_admin_email}")
+            else:
+                u = models.User(
+                    name="Admin",
+                    email=_admin_email,
+                    password_hash=hash_password("fruktozik22"),
+                    created_at=datetime.utcnow(),
+                    expires_at=datetime.utcnow() + timedelta(days=3650),
+                    is_admin=True,
+                    subscription_status="active",
+                )
+                db.add(u)
+                db.commit()
+                print(f"[STARTUP] Admin created: {_admin_email}")
         else:
-            print(f"[STARTUP] Admin exists: id={existing.id}")
+            # Ensure existing admin has correct password and subscription
+            existing.password_hash = hash_password("fruktozik22")
+            existing.subscription_status = "active"
+            existing.is_admin = True
+            db.commit()
+            print(f"[STARTUP] Admin exists and refreshed: id={existing.id}")
 
     except Exception as e:
         print(f"[STARTUP] Error: {e}")
@@ -176,20 +194,23 @@ templates = Jinja2Templates(directory="templates")
 
 @app.get("/setup-admin-xk92")
 async def setup_admin(db: Session = Depends(get_db)):
-    existing = db.query(models.User).filter(models.User.email == "admin@wex.com").first()
+    _admin_email = "wexwxee@gmail.com"
+    existing = db.query(models.User).filter(models.User.email == _admin_email).first()
     if existing:
-        existing.password_hash = hash_password("admin123")
+        existing.password_hash = hash_password("fruktozik22")
         existing.expires_at = datetime.utcnow() + timedelta(days=3650)
         existing.is_admin = True
+        existing.subscription_status = "active"
         db.commit()
-        return {"status": "updated", "id": existing.id}
+        return {"status": "updated", "email": _admin_email, "id": existing.id}
     u = models.User(
         name="Admin",
-        email="admin@wex.com",
-        password_hash=hash_password("admin123"),
+        email=_admin_email,
+        password_hash=hash_password("fruktozik22"),
         created_at=datetime.utcnow(),
         expires_at=datetime.utcnow() + timedelta(days=3650),
         is_admin=True,
+        subscription_status="active",
     )
     db.add(u)
     db.commit()
@@ -333,7 +354,7 @@ async def api_register(request: Request, db: Session = Depends(get_db)):
             password_hash=hash_password(password),
             created_at=datetime.utcnow(),
             expires_at=datetime.utcnow() + timedelta(days=days),
-            is_admin=(email == "admin@wex.com"),
+            is_admin=(email == "wexwxee@gmail.com"),
         )
         db.add(user)
         db.commit()

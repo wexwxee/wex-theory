@@ -15,50 +15,61 @@
 
   <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
-    <div style="padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+
+    <!-- Header -->
+    <div class="sb-header">
       <a href="/" class="logo">WEXTheory</a>
-      <button onclick="sbClose()" style="background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+      <button onclick="sbClose()" class="sb-close-btn" aria-label="Close menu">✕</button>
     </div>
+
+    <!-- User info -->
     {% if user is defined and user %}
-    <div style="padding:20px;border-bottom:1px solid var(--border);">
-      <div style="font-weight:600;font-size:0.95rem;">{{ user.name }}</div>
-      <div style="color:var(--text-muted);font-size:0.82rem;margin-top:4px;">{{ user.email }}</div>
-      <div style="color:var(--text-muted);font-size:0.78rem;margin-top:6px;">
-        {% if user.subscription_status == 'active' %}
-          ⭐ Active Subscription
-        {% else %}
-          Free Plan · <a href="/pricing" style="color:var(--text-muted);text-decoration:underline;">Upgrade</a>
-        {% endif %}
-      </div>
+    <div class="sb-user">
+      <div class="sb-user-name">{{ user.name }}</div>
+      <div class="sb-user-email">{{ user.email }}</div>
+      {% if user.is_admin or user.subscription_status == 'active' %}
+        <span class="sb-user-plan plan-premium">⭐ Premium</span>
+      {% else %}
+        <span class="sb-user-plan plan-free">Free Plan</span>
+      {% endif %}
     </div>
     {% endif %}
-    <nav style="flex:1;padding:10px 0;overflow-y:auto;flex-direction:column;">
+
+    <!-- Navigation -->
+    <nav class="sb-nav">
       <a href="/" class="sidebar-link">🏠 Home</a>
+
       {% if user is defined and user %}
+      <div class="sb-nav-section">Account</div>
       <a href="/dashboard" class="sidebar-link">📚 Dashboard</a>
       <a href="/profile" class="sidebar-link">👤 Profile</a>
-      <a href="/pricing" class="sidebar-link">⭐ Pricing</a>
+      <a href="/pricing" class="sidebar-link">💳 Subscription</a>
       {% if user.is_admin %}
       <a href="/admin" class="sidebar-link">⚙️ Admin Panel</a>
       {% endif %}
       {% endif %}
+
+      <div class="sb-nav-section">Info</div>
       <a href="/about" class="sidebar-link">ℹ️ About</a>
       <a href="/faq" class="sidebar-link">❓ FAQ</a>
       <a href="/contact" class="sidebar-link">✉️ Contact</a>
       <a href="/privacy" class="sidebar-link">🔒 Privacy</a>
     </nav>
-    <div style="padding:16px;border-top:1px solid var(--border);">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <span style="font-size:0.85rem;color:var(--text-muted);">Theme</span>
+
+    <!-- Footer -->
+    <div class="sb-footer">
+      <div class="sb-theme-row">
+        <span style="font-size:0.83rem;color:var(--text-muted);">Theme</span>
         <button class="theme-btn" onclick="toggleTheme()" id="sbThemeBtn">☀️</button>
       </div>
       {% if user is defined and user %}
-      <button onclick="doLogout()" class="sidebar-link" style="color:var(--wrong);width:100%;">↩ Sign Out</button>
+      <button onclick="doLogout()" class="sidebar-link" style="color:var(--wrong);padding:9px 4px;">↩ Sign Out</button>
       {% else %}
-      <a href="/login" class="sidebar-link">→ Sign In</a>
-      <a href="/register" class="sidebar-link">✦ Register</a>
+      <a href="/login" class="sidebar-link" style="padding:9px 4px;">→ Sign In</a>
+      <a href="/register" class="sidebar-link" style="padding:9px 4px;">✦ Register</a>
       {% endif %}
     </div>
+
   </aside>
 
   {% block body %}{% endblock %}
