@@ -26,9 +26,10 @@
     overflow: auto;
   }
   .thread-card {
+    position: relative;
     border: 1px solid var(--border);
     border-radius: 18px;
-    padding: 14px;
+    padding: 16px;
     color: inherit;
     text-decoration: none;
     background: color-mix(in srgb, var(--bg-card) 84%, #ffffff 16%);
@@ -85,8 +86,9 @@
     font-weight: 700;
   }
   .count-pill {
-    background: #111;
+    background: #ef4444;
     color: #fff;
+    box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2);
   }
   .status-badge {
     background: color-mix(in srgb, var(--accent, #35c759) 18%, var(--bg-card) 82%);
@@ -116,7 +118,7 @@
     line-height: 1.6;
   }
   .chat-scroll {
-    padding: 22px;
+    padding: 26px;
     overflow: auto;
     background:
       radial-gradient(circle at top left, rgba(53, 199, 89, 0.08), transparent 24%),
@@ -198,7 +200,7 @@
     border: 1px solid rgba(77, 163, 255, 0.2);
   }
   .composer {
-    padding: 18px 22px 22px;
+    padding: 22px 24px 24px;
     border-top: 1px solid var(--border);
     background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 92%, #fff 8%), var(--bg-card));
   }
@@ -208,7 +210,7 @@
     width: 100%;
   }
   .upload-box {
-    margin-top: 12px;
+    margin-top: 14px;
     border: 1px dashed var(--border);
     border-radius: 16px;
     padding: 14px;
@@ -246,6 +248,23 @@
     border-radius: 50%;
     background: #35c759;
     box-shadow: 0 0 0 6px rgba(53, 199, 89, 0.12);
+  }
+  .thread-fresh {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #b91c1c;
+  }
+  .thread-fresh::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.12);
   }
   @media (max-width: 980px) {
     .support-shell {
@@ -435,12 +454,10 @@
   const dataUrlBase = isAdminView ? '/api/support/threads-data?scope=admin' : '/api/support/threads-data';
   const threadList = document.getElementById('threadList');
   const chatPanel = document.getElementById('chatPanel');
-  const replyForm = document.getElementById('replyForm');
-  const replyInput = document.getElementById('replyAttachment');
-  const uploadName = document.getElementById('uploadName');
-  const uploadPreview = document.getElementById('uploadPreview');
-  let refreshTimer = null;
   let isSubmitting = false;
+  let lastMessagesSignature = '';
+  let draftByThread = {};
+  let statusDraftByThread = {};
 
   function escapeHtml(value) {
     return String(value || '')
@@ -455,6 +472,26 @@
     if (thread.preview) return escapeHtml(thread.preview);
     if (thread.has_attachment) return 'Attachment added';
     return 'No messages yet';
+  }
+
+  function syncDraftFromComposer() {
+    const textarea = document.getElementById('replyMessage');
+    if (textarea && activeThreadId) {
+      draftByThread[activeThreadId] = textarea.value;
+    }
+    const statusSelect = document.getElementById('replyStatus');
+    if (statusSelect && activeThreadId) {
+      statusDraftByThread[activeThreadId] = statusSelect.value;
+    }
+  }
+
+  function hasPendingAttachment() {
+    const fileInput = document.getElementById('replyAttachment');
+    return !!(fileInput && fileInput.files && fileInput.files.length);
+  }
+
+  function buildMessagesSignature(thread) {
+    return (thread.messages || []).map((message) => `${message.id}:${message.created_at}:${message.body}:${message.attachment_name}`).join('|');
   }
 
   function messageBubbleClass(message) {
@@ -506,6 +543,7 @@
           </div>
           ${userLine}
           <div class="thread-preview">${formatPreview(thread)}</div>
+          ${thread.unread_count > 0 ? `<div class="thread-fresh">New message</div>` : ''}
           <div class="thread-meta" style="margin-top:10px;">Updated ${escapeHtml(thread.updated_at)}</div>
         </a>
       `;
@@ -523,7 +561,10 @@
 
   function renderChat(activeThread, threads) {
     if (!chatPanel) return;
+    syncDraftFromComposer();
+
     if (!activeThread) {
+      lastMessagesSignature = '';
       chatPanel.innerHTML = `
         <div class="chat-empty">
           <div class="chat-empty-inner">
@@ -562,6 +603,9 @@
       </div>
     `).join('');
 
+    const storedDraft = draftByThread[activeThread.id] || '';
+    const storedStatus = statusDraftByThread[activeThread.id] || activeThread.status;
+
     chatPanel.innerHTML = `
       <div class="chat-wrap">
         <div class="chat-header">
@@ -597,8 +641,17 @@
     `;
 
     bindComposer();
+    const textarea = document.getElementById('replyMessage');
+    if (textarea) {
+      textarea.value = storedDraft;
+    }
+    const statusSelectNode = document.getElementById('replyStatus');
+    if (statusSelectNode && storedStatus) {
+      statusSelectNode.value = storedStatus;
+    }
     const chatMessages = document.getElementById('chatMessages');
     if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+    lastMessagesSignature = buildMessagesSignature(activeThread);
   }
 
   function bindComposer() {
@@ -607,6 +660,15 @@
     const nameNode = document.getElementById('uploadName');
     const previewNode = document.getElementById('uploadPreview');
     if (!form) return;
+
+    const textarea = document.getElementById('replyMessage');
+    if (textarea) {
+      textarea.addEventListener('input', syncDraftFromComposer);
+    }
+    const statusSelect = document.getElementById('replyStatus');
+    if (statusSelect) {
+      statusSelect.addEventListener('change', syncDraftFromComposer);
+    }
 
     form.addEventListener('submit', async function (event) {
       event.preventDefault();
@@ -630,6 +692,9 @@
           return;
         }
         form.reset();
+        if (activeThreadId) {
+          draftByThread[activeThreadId] = '';
+        }
         if (nameNode) nameNode.textContent = 'No file selected';
         if (previewNode) {
           previewNode.style.display = 'none';
@@ -672,6 +737,7 @@
 
   async function loadSupportData(forceScroll) {
     try {
+      syncDraftFromComposer();
       const url = `${dataUrlBase}${activeThreadId ? `&thread=${activeThreadId}` : ''}`;
       const response = await fetch(url, { headers: { accept: 'application/json' } });
       if (!response.ok) return;
@@ -686,11 +752,21 @@
         updateUrl(activeThreadId);
       }
       renderThreadList(data.threads);
-      renderChat(activeThread, data.threads);
+
+      const nextSignature = activeThread ? buildMessagesSignature(activeThread) : '';
+      const sameThread = activeThread && activeThread.id === activeThreadId;
+      const shouldSkipChatRerender = !forceScroll && sameThread && hasPendingAttachment();
+
+      if (!shouldSkipChatRerender && (forceScroll || nextSignature !== lastMessagesSignature || !document.getElementById('replyForm'))) {
+        renderChat(activeThread, data.threads);
+      }
 
       if (forceScroll) {
         const chatMessages = document.getElementById('chatMessages');
         if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+      if (window.refreshSupportUnreadUI) {
+        window.refreshSupportUnreadUI();
       }
     } catch (error) {
       console.error('Support refresh failed', error);
@@ -698,7 +774,8 @@
   }
 
   bindComposer();
-  refreshTimer = window.setInterval(function () {
+  loadSupportData(false);
+  window.setInterval(function () {
     if (!document.hidden) loadSupportData(false);
   }, 4000);
 })();

@@ -79,7 +79,7 @@
             </td>
             <td style="font-weight:500;">{{ u.name }}</td>
             <td style="color:var(--text-muted);">{{ u.email }}</td>
-            <td style="color:var(--text-muted);font-size:0.82rem;">{{ u.expires_at.strftime('%d %b %Y') }}</td>
+            <td style="color:var(--text-muted);font-size:0.82rem;">{{ u.expires_at.strftime('%d %b %Y %H:%M') }}</td>
             <td>
               {% if u.expires_at > now %}
               <span class="badge-green">Active</span>
@@ -184,8 +184,15 @@
       <input type="password" id="editPassword" placeholder="••••••••">
     </div>
     <div class="form-group">
-      <label class="form-label">Extend access by (days from now)</label>
-      <input type="number" id="editDays" placeholder="e.g. 30" min="1" max="3650">
+      <label class="form-label">Extend access by</label>
+      <div style="display:grid;grid-template-columns:1fr 140px;gap:10px;">
+        <input type="number" id="editDays" placeholder="e.g. 30" min="0" max="525600">
+        <select id="editDurationUnit">
+          <option value="minutes">Minutes</option>
+          <option value="hours">Hours</option>
+          <option value="days" selected>Days</option>
+        </select>
+      </div>
     </div>
     <div class="form-group" style="flex-direction:row;align-items:center;gap:10px;">
       <input type="checkbox" id="editIsAdmin" style="width:auto;">
@@ -219,8 +226,15 @@
       <input type="password" id="createPassword" placeholder="Min. 6 characters">
     </div>
     <div class="form-group">
-      <label class="form-label">Access days</label>
-      <input type="number" id="createDays" value="30" min="1" max="3650">
+      <label class="form-label">Access duration</label>
+      <div style="display:grid;grid-template-columns:1fr 140px;gap:10px;">
+        <input type="number" id="createDays" value="30" min="0" max="525600">
+        <select id="createDurationUnit">
+          <option value="minutes">Minutes</option>
+          <option value="hours">Hours</option>
+          <option value="days" selected>Days</option>
+        </select>
+      </div>
     </div>
     <div class="form-group" style="flex-direction:row;align-items:center;gap:10px;">
       <input type="checkbox" id="createIsAdmin" style="width:auto;">
@@ -244,7 +258,7 @@
     <div id="resetMsg" style="display:none;padding:10px 14px;border-radius:8px;font-size:0.85rem;margin-bottom:14px;"></div>
     <div class="form-group">
       <label class="form-label">New password</label>
-      <input type="password" id="resetPassword" placeholder="Min. 6 characters">
+      <input type="password" id="resetPassword" placeholder="At least 8 chars, letters + numbers">
     </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
       <button class="btn-ghost" onclick="closeReset()">Cancel</button>
@@ -309,6 +323,7 @@ function openEditModal(id, name, email, isAdmin) {
   document.getElementById('editIsAdmin').checked = isAdmin;
   document.getElementById('editPassword').value = '';
   document.getElementById('editDays').value = '';
+  document.getElementById('editDurationUnit').value = 'days';
   document.getElementById('editMsg').style.display = 'none';
   document.getElementById('editModal').classList.add('open');
 }
@@ -320,12 +335,16 @@ async function saveEdit() {
   const email = document.getElementById('editEmail').value.trim();
   const password = document.getElementById('editPassword').value;
   const days = document.getElementById('editDays').value;
+  const durationUnit = document.getElementById('editDurationUnit').value;
   const isAdmin = document.getElementById('editIsAdmin').checked;
   const btn = document.getElementById('saveEditBtn');
 
   const body = { name, email, is_admin: isAdmin };
   if (password) body.password = password;
-  if (days) body.days = parseInt(days);
+  if (days !== '') {
+    body.duration_value = parseInt(days, 10);
+    body.duration_unit = durationUnit;
+  }
 
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
@@ -357,6 +376,7 @@ function openCreateModal() {
   document.getElementById('createEmail').value = '';
   document.getElementById('createPassword').value = '';
   document.getElementById('createDays').value = '30';
+  document.getElementById('createDurationUnit').value = 'days';
   document.getElementById('createIsAdmin').checked = false;
   document.getElementById('createMsg').style.display = 'none';
   document.getElementById('createModal').classList.add('open');
@@ -367,7 +387,8 @@ async function createUser() {
   const name = document.getElementById('createName').value.trim();
   const email = document.getElementById('createEmail').value.trim();
   const password = document.getElementById('createPassword').value;
-  const days = parseInt(document.getElementById('createDays').value) || 30;
+  const durationValue = parseInt(document.getElementById('createDays').value, 10) || 30;
+  const durationUnit = document.getElementById('createDurationUnit').value;
   const isAdmin = document.getElementById('createIsAdmin').checked;
   const btn = document.getElementById('createBtn');
 
@@ -386,7 +407,7 @@ async function createUser() {
     const res = await fetch('/api/admin/users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password, days, is_admin: isAdmin })
+      body: JSON.stringify({ name, email, password, duration_value: durationValue, duration_unit: durationUnit, is_admin: isAdmin })
     });
     const data = await res.json();
     if (data.success) {

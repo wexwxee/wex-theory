@@ -129,6 +129,18 @@ def generate_email_verification_code() -> str:
     return "".join(secrets.choice("0123456789") for _ in range(6))
 
 
+def compute_admin_expiry(duration_value: int, duration_unit: str) -> datetime:
+    unit = (duration_unit or "days").strip().lower()
+    value = max(int(duration_value), 0)
+    if value == 0:
+        return datetime.utcnow()
+    if unit == "minutes":
+        return datetime.utcnow() + timedelta(minutes=value)
+    if unit == "hours":
+        return datetime.utcnow() + timedelta(hours=value)
+    return datetime.utcnow() + timedelta(days=value)
+
+
 def send_verification_email(recipient_email: str, code: str, recipient_name: str) -> None:
     if not is_email_service_configured():
         raise RuntimeError("Email verification is not configured yet")
@@ -1578,6 +1590,8 @@ async def api_admin_create_user(request: Request, db: Session = Depends(get_db))
     try:
         data = await request.json()
         email = str(data["email"]).lower().strip()
+        duration_value = int(data.get("duration_value", data.get("days", 30)) or 0)
+        duration_unit = str(data.get("duration_unit", "days") or "days")
         email_error = validate_registration_email(email)
         if email_error:
             return JSONResponse({"error": email_error}, status_code=400)
@@ -1591,10 +1605,12 @@ async def api_admin_create_user(request: Request, db: Session = Depends(get_db))
             name=data["name"], public_id=generate_unique_public_user_id(db), email=email,
             password_hash=hash_password(data["password"]),
             created_at=datetime.utcnow(),
-            expires_at=datetime.utcnow() + timedelta(days=int(data.get("days", 30))),
+            expires_at=compute_admin_expiry(duration_value, duration_unit),
             is_admin=data.get("is_admin", False),
         )
         db.add(u)
+        if duration_value > 0:
+            u.subscription_status = "active"
         db.commit()
         return JSONResponse({"success": True, "id": u.id, "public_id": u.public_id})
     except Exception as e:
@@ -1623,11 +1639,12 @@ async def api_admin_update_user(user_id: int, request: Request, db: Session = De
         if password_error:
             return JSONResponse({"error": password_error}, status_code=400)
         u.password_hash = hash_password(data["password"])
-    if "days" in data:
-        days = int(data["days"])
-        u.expires_at = datetime.utcnow() + timedelta(days=days)
+    if "days" in data or "duration_value" in data:
+        duration_value = int(data.get("duration_value", data.get("days", 0)) or 0)
+        duration_unit = str(data.get("duration_unit", "days") or "days")
+        u.expires_at = compute_admin_expiry(duration_value, duration_unit)
         # Keep subscription_status in sync so all UI checks are consistent
-        if days > 0:
+        if duration_value > 0:
             u.subscription_status = "active"
             u.current_period_end = None   # clear Stripe period end to avoid timer confusion
         else:
@@ -1636,7 +1653,7 @@ async def api_admin_update_user(user_id: int, request: Request, db: Session = De
     if "is_admin" in data:
         u.is_admin = data["is_admin"]
     db.commit()
-    print(f"[ADMIN UPDATE] user_id={u.id} days={data.get('days')} status={u.subscription_status} expires={u.expires_at}")
+    print(f"[ADMIN UPDATE] user_id={u.id} duration={data.get('duration_value', data.get('days'))} {data.get('duration_unit', 'days')} status={u.subscription_status} expires={u.expires_at}")
     return JSONResponse({"success": True})
 
 

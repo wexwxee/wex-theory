@@ -55,6 +55,31 @@
       font-weight: 800;
       text-decoration: none;
     }
+    .nav-unread-pill {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      height: 40px;
+      border-radius: 999px;
+      border: 1px solid rgba(239, 68, 68, 0.28);
+      background: rgba(239, 68, 68, 0.1);
+      color: #b91c1c;
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-decoration: none;
+      box-shadow: 0 10px 24px rgba(239, 68, 68, 0.08);
+    }
+    .nav-unread-pill.show {
+      display: inline-flex;
+    }
+    .nav-unread-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ef4444;
+      box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.12);
+    }
   </style>
   {% block head %}{% endblock %}
 </head>
@@ -175,6 +200,10 @@
     <div id="topUnreadBannerText"></div>
     <a href="{% if user.is_admin %}/support{% else %}/messages{% endif %}">Open</a>
   </div>
+  <a href="{% if user.is_admin %}/support{% else %}/messages{% endif %}" class="nav-unread-pill" id="navUnreadPill">
+    <span class="nav-unread-dot"></span>
+    <span id="navUnreadText"></span>
+  </a>
   {% endif %}
 
   <div id="toast-container"></div>
@@ -182,6 +211,7 @@
   <script>
   window.WEX_SUPPORT_UNREAD_URL = {% if user is defined and user %}{{ ('/api/support/threads-data?scope=admin' if user.is_admin else '/api/support/threads-data') | tojson }}{% else %}null{% endif %};
   window.WEX_SUPPORT_BANNER_MODE = {% if user is defined and user and user.is_admin %}"admin"{% elif user is defined and user %}"user"{% else %}null{% endif %};
+  window.WEX_SUPPORT_TARGET_URL = {% if user is defined and user %}{{ ('/support' if user.is_admin else '/messages') | tojson }}{% else %}null{% endif %};
   // Theme init — icons driven by CSS [data-theme] selector, no JS text update needed
   (function(){
     const t = localStorage.getItem('wex-theme') || 'dark';
@@ -302,7 +332,9 @@
     const badge = document.getElementById('supportUnreadBadge');
     const banner = document.getElementById('topUnreadBanner');
     const bannerText = document.getElementById('topUnreadBannerText');
-    if (!badge && !banner) return;
+    const navPill = document.getElementById('navUnreadPill');
+    const navText = document.getElementById('navUnreadText');
+    if (!badge && !banner && !navPill) return;
 
     try {
       const url = window.WEX_SUPPORT_UNREAD_URL;
@@ -321,6 +353,21 @@
         } else {
           badge.textContent = '';
           badge.classList.remove('show');
+        }
+      }
+
+      if (navPill && navText) {
+        if (unreadCount > 0) {
+          navText.textContent = window.WEX_SUPPORT_BANNER_MODE === 'admin'
+            ? `${unreadCount} new support`
+            : `${unreadCount} new reply`;
+          navPill.classList.add('show');
+          const navRight = document.querySelector('.nav-right');
+          if (navRight && navPill.parentElement !== navRight) {
+            navRight.insertBefore(navPill, navRight.firstChild);
+          }
+        } else {
+          navPill.classList.remove('show');
         }
       }
 
