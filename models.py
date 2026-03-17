@@ -128,6 +128,7 @@ class SupportMessage(Base):
     thread_id = Column(Integer, ForeignKey("support_threads.id"), nullable=False, index=True)
     sender_user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
     sender_role = Column(String, nullable=False, default="user")  # user/admin/system
+    sender_name = Column(String, nullable=True)
     body = Column(Text, nullable=False, default="")
     attachment_name = Column(String, nullable=True)
     attachment_path = Column(String, nullable=True)

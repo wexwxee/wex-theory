@@ -40,6 +40,12 @@ QUESTION_TEXT_FIXES = {
     "You are required to turn right at the signal-controlled junction. There is no traffic directly behind you. How should":
         "You are required to turn right at the signal-controlled junction. There is no traffic directly behind you. How should you proceed?"
 }
+SYSTEM_SUPPORT_SENDERS = ["WEX Assistant", "Mia", "Nora", "Alex", "Support Bot"]
+SYSTEM_SUPPORT_MESSAGES = [
+    "Your request has been received. Please wait up to 32 hours for a reply from support.",
+    "We received your message. Support usually replies within 32 hours.",
+    "Thanks, your request is now in queue. We normally answer within 32 hours.",
+]
 
 
 def _env_flag(name: str, default: bool = False) -> bool:
@@ -135,6 +141,21 @@ def ensure_contact_attachment_columns(db: Session) -> None:
         print(f"[STARTUP] attachment column setup skipped/error: {e}")
 
 
+def ensure_support_message_columns(db: Session) -> None:
+    try:
+        inspector = sql_inspect(engine)
+        if "support_messages" not in inspector.get_table_names():
+            return
+        columns = {col["name"] for col in inspector.get_columns("support_messages")}
+        if "sender_name" not in columns:
+            db.execute(sql_text("ALTER TABLE support_messages ADD COLUMN sender_name VARCHAR"))
+            db.commit()
+            print("[STARTUP] Added support_messages.sender_name column")
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] support_messages column setup skipped/error: {e}")
+
+
 def save_contact_attachment(upload: UploadFile) -> tuple[str, str, str]:
     original_name = os.path.basename(upload.filename or "").strip()
     if not original_name:
@@ -194,14 +215,52 @@ def save_support_attachment(upload: UploadFile) -> tuple[str, str, str]:
 
 
 def create_support_system_message(db: Session, thread_id: int) -> None:
+    sender_name = secrets.choice(SYSTEM_SUPPORT_SENDERS)
+    body = secrets.choice(SYSTEM_SUPPORT_MESSAGES)
     db.add(models.SupportMessage(
         thread_id=thread_id,
         sender_role="system",
-        body="Your request has been received. Please wait up to 32 hours for a reply from support.",
+        sender_name=sender_name,
+        body=body,
         read_by_user=True,
         read_by_admin=True,
         created_at=datetime.utcnow(),
     ))
+
+
+def serialize_support_message(message: models.SupportMessage) -> dict:
+    attachment_name = message.attachment_name or ""
+    lower_name = attachment_name.lower()
+    is_image = bool(message.attachment_path) and lower_name.endswith((".png", ".jpg", ".jpeg", ".webp", ".gif"))
+    return {
+        "id": message.id,
+        "sender_role": message.sender_role,
+        "sender_name": message.sender_name or ("Support" if message.sender_role == "admin" else "System" if message.sender_role == "system" else "User"),
+        "body": message.body or "",
+        "attachment_name": attachment_name,
+        "attachment_path": message.attachment_path or "",
+        "attachment_type": message.attachment_type or "",
+        "is_image": is_image,
+        "created_at": message.created_at.strftime("%d %b %Y %H:%M"),
+    }
+
+
+def serialize_support_thread(thread: models.SupportThread, is_admin_view: bool) -> dict:
+    last_message = thread.messages[-1] if thread.messages else None
+    return {
+        "id": thread.id,
+        "subject": thread.subject,
+        "status": thread.status,
+        "created_at": thread.created_at.strftime("%d %b %Y %H:%M"),
+        "updated_at": thread.updated_at.strftime("%d %b %Y %H:%M"),
+        "unread_count": getattr(thread, "unread_count", 0),
+        "user_name": thread.user.name,
+        "user_email": thread.user.email,
+        "user_public_id": thread.user.public_id,
+        "preview": (last_message.body if last_message and last_message.body else (last_message.attachment_name if last_message else ""))[:100] if last_message else "",
+        "has_attachment": bool(last_message and last_message.attachment_path),
+        "messages": [serialize_support_message(m) for m in thread.messages],
+    }
 
 
 def ensure_question_text_fixes(db: Session) -> None:
@@ -262,6 +321,7 @@ async def startup_init():
         ensure_user_public_id_column(db)
         ensure_all_user_public_ids(db)
         ensure_contact_attachment_columns(db)
+        ensure_support_message_columns(db)
         ensure_question_text_fixes(db)
         CONTACT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -1192,6 +1252,7 @@ async def api_contact(request: Request, db: Session = Depends(get_db)):
                 thread_id=support_thread.id,
                 sender_user_id=current_user.id,
                 sender_role="user",
+                sender_name=current_user.name,
                 body=str(form.get("message", "")),
                 attachment_name=attachment_name,
                 attachment_path=attachment_path,
@@ -1262,6 +1323,7 @@ async def api_support_reply(thread_id: int, request: Request, db: Session = Depe
         thread_id=thread.id,
         sender_user_id=user.id,
         sender_role=sender_role,
+        sender_name=(user.name if sender_role in ("user", "admin") else None),
         body=body,
         attachment_name=attachment_name,
         attachment_path=attachment_path,
@@ -1277,8 +1339,66 @@ async def api_support_reply(thread_id: int, request: Request, db: Session = Depe
         thread.status = "open"
     db.commit()
 
+    wants_json = (
+        request.headers.get("x-requested-with", "").lower() == "xmlhttprequest"
+        or "application/json" in request.headers.get("accept", "").lower()
+    )
+    if wants_json:
+        return JSONResponse({
+            "success": True,
+            "thread_id": thread.id,
+            "status": thread.status,
+        })
+
     redirect_to = f"/support?thread={thread.id}" if user.is_admin else f"/messages?thread={thread.id}"
     return RedirectResponse(redirect_to, status_code=303)
+
+
+@app.get("/api/support/threads-data")
+async def api_support_threads_data(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+
+    is_admin_view = user.is_admin and request.query_params.get("scope") == "admin"
+    thread_id_raw = request.query_params.get("thread")
+    thread_id = int(thread_id_raw) if thread_id_raw and thread_id_raw.isdigit() else None
+
+    query = (
+        db.query(models.SupportThread)
+        .options(selectinload(models.SupportThread.user), selectinload(models.SupportThread.messages))
+        .order_by(models.SupportThread.updated_at.desc())
+    )
+    if not is_admin_view:
+        query = query.filter(models.SupportThread.user_id == user.id)
+
+    threads = query.all()
+    for thread in threads:
+        if is_admin_view:
+            thread.unread_count = sum(1 for m in thread.messages if not m.read_by_admin and m.sender_role == "user")
+        else:
+            thread.unread_count = sum(1 for m in thread.messages if not m.read_by_user and m.sender_role in ("admin", "system"))
+
+    active_thread = next((t for t in threads if t.id == thread_id), threads[0] if threads else None)
+    if active_thread:
+        if is_admin_view:
+            unread = [m for m in active_thread.messages if not m.read_by_admin and m.sender_role == "user"]
+        else:
+            unread = [m for m in active_thread.messages if not m.read_by_user and m.sender_role in ("admin", "system")]
+        for message in unread:
+            if is_admin_view:
+                message.read_by_admin = True
+            else:
+                message.read_by_user = True
+        if unread:
+            db.commit()
+            active_thread.unread_count = 0
+
+    return {
+        "threads": [serialize_support_thread(thread, is_admin_view) for thread in threads],
+        "active_thread_id": active_thread.id if active_thread else None,
+        "is_admin_view": is_admin_view,
+    }
 
 
 # ─── Admin API ─────────────────────────────────────────────────────────────────
