@@ -34,6 +34,10 @@ CONTACT_UPLOAD_DIR = BASE_DIR / "uploads" / "contact"
 ALLOWED_CONTACT_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".pdf", ".txt", ".log", ".json"}
 MAX_CONTACT_UPLOAD_BYTES = 10 * 1024 * 1024
 CONTACT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+QUESTION_TEXT_FIXES = {
+    "You are required to turn right at the signal-controlled junction. There is no traffic directly behind you. How should":
+        "You are required to turn right at the signal-controlled junction. There is no traffic directly behind you. How should you proceed?"
+}
 
 
 def _env_flag(name: str, default: bool = False) -> bool:
@@ -158,6 +162,18 @@ def save_contact_attachment(upload: UploadFile) -> tuple[str, str, str]:
     return original_name, f"/uploads/contact/{stored_name}", (upload.content_type or "")
 
 
+def ensure_question_text_fixes(db: Session) -> None:
+    updated = 0
+    for broken_text, fixed_text in QUESTION_TEXT_FIXES.items():
+        updated += db.query(models.Question).filter(models.Question.question_text == broken_text).update(
+            {models.Question.question_text: fixed_text},
+            synchronize_session=False,
+        )
+    if updated:
+        db.commit()
+        print(f"[STARTUP] Fixed {updated} broken question text entries")
+
+
 app.add_middleware(
     SessionMiddleware,
     secret_key=SECRET_KEY,
@@ -204,6 +220,7 @@ async def startup_init():
         ensure_user_public_id_column(db)
         ensure_all_user_public_ids(db)
         ensure_contact_attachment_columns(db)
+        ensure_question_text_fixes(db)
         CONTACT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
         # 1. Import test data if DB is empty
