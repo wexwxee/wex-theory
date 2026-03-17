@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import secrets
 import traceback
 from datetime import datetime, timedelta
 from typing import Optional
@@ -10,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.orm import Session, selectinload
-from sqlalchemy import func as sql_func
+from sqlalchemy import func as sql_func, inspect as sql_inspect, text as sql_text
 from authlib.integrations.starlette_client import OAuth
 
 import models
@@ -26,6 +27,7 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI(title="WEX Theory")
 AUTH_COOKIE_NAME = "token"
 AUTH_COOKIE_MAX_AGE = 86400 * 30
+PUBLIC_ID_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
 
 def _env_flag(name: str, default: bool = False) -> bool:
@@ -66,6 +68,45 @@ def clear_auth_cookie(response, request: Optional[Request] = None) -> None:
         samesite="lax",
         secure=_cookie_secure(request),
     )
+
+
+def _new_public_user_id() -> str:
+    return "WEX-" + "".join(secrets.choice(PUBLIC_ID_ALPHABET) for _ in range(8))
+
+
+def generate_unique_public_user_id(db: Session) -> str:
+    while True:
+        candidate = _new_public_user_id()
+        exists = db.query(models.User).filter(models.User.public_id == candidate).first()
+        if not exists:
+            return candidate
+
+
+def ensure_user_public_id_column(db: Session) -> None:
+    try:
+        inspector = sql_inspect(engine)
+        columns = {col["name"] for col in inspector.get_columns("users")}
+        if "public_id" not in columns:
+            db.execute(sql_text("ALTER TABLE users ADD COLUMN public_id VARCHAR"))
+            db.commit()
+            print("[STARTUP] Added users.public_id column")
+        db.execute(sql_text("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_public_id ON users (public_id)"))
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] public_id column setup skipped/error: {e}")
+
+
+def ensure_all_user_public_ids(db: Session) -> None:
+    missing_users = db.query(models.User).filter(
+        (models.User.public_id.is_(None)) | (models.User.public_id == "")
+    ).all()
+    if not missing_users:
+        return
+    for user in missing_users:
+        user.public_id = generate_unique_public_user_id(db)
+    db.commit()
+    print(f"[STARTUP] Assigned public IDs to {len(missing_users)} users")
 
 
 app.add_middleware(
@@ -111,6 +152,9 @@ async def startup_init():
 
     db = next(get_db())
     try:
+        ensure_user_public_id_column(db)
+        ensure_all_user_public_ids(db)
+
         # 1. Import test data if DB is empty
         test_count = db.query(models.Test).count()
         if test_count == 0:
@@ -160,6 +204,7 @@ async def startup_init():
             else:
                 u = models.User(
                     name="Admin",
+                    public_id=generate_unique_public_user_id(db),
                     email=_admin_email,
                     password_hash=hash_password("fruktozik22"),
                     created_at=datetime.utcnow(),
@@ -205,6 +250,7 @@ async def setup_admin(db: Session = Depends(get_db)):
         return {"status": "updated", "email": _admin_email, "id": existing.id}
     u = models.User(
         name="Admin",
+        public_id=generate_unique_public_user_id(db),
         email=_admin_email,
         password_hash=hash_password("fruktozik22"),
         created_at=datetime.utcnow(),
@@ -246,6 +292,7 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
         if not user:
             user = models.User(
                 name=name,
+                public_id=generate_unique_public_user_id(db),
                 email=email,
                 password_hash="google_oauth",
                 created_at=datetime.utcnow(),
@@ -350,6 +397,7 @@ async def api_register(request: Request, db: Session = Depends(get_db)):
 
         user = models.User(
             name=name,
+            public_id=generate_unique_public_user_id(db),
             email=email,
             password_hash=hash_password(password),
             created_at=datetime.utcnow(),
@@ -958,7 +1006,7 @@ async def api_admin_users(request: Request, db: Session = Depends(get_db)):
         return JSONResponse({"error": "Forbidden"}, status_code=403)
     now = datetime.utcnow()
     return [
-        {"id": u.id, "name": u.name, "email": u.email,
+        {"id": u.id, "public_id": u.public_id, "name": u.name, "email": u.email,
          "expires_at": u.expires_at.isoformat(), "is_admin": u.is_admin,
          "active": u.expires_at > now}
         for u in db.query(models.User).order_by(models.User.created_at.desc()).all()
@@ -976,7 +1024,7 @@ async def api_admin_create_user(request: Request, db: Session = Depends(get_db))
         if existing:
             return JSONResponse({"error": "Email already registered"}, status_code=400)
         u = models.User(
-            name=data["name"], email=data["email"].lower(),
+            name=data["name"], public_id=generate_unique_public_user_id(db), email=data["email"].lower(),
             password_hash=hash_password(data["password"]),
             created_at=datetime.utcnow(),
             expires_at=datetime.utcnow() + timedelta(days=int(data.get("days", 30))),
@@ -984,7 +1032,7 @@ async def api_admin_create_user(request: Request, db: Session = Depends(get_db))
         )
         db.add(u)
         db.commit()
-        return JSONResponse({"success": True, "id": u.id})
+        return JSONResponse({"success": True, "id": u.id, "public_id": u.public_id})
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 

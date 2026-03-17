@@ -79,11 +79,11 @@
         {% if user.subscription_status == 'active' or user.expires_at and user.expires_at > now %}
         <div style="text-align:center;padding:8px 0;color:var(--correct);font-size:0.9rem;font-weight:600;">✓ Active — you have full access</div>
         {% else %}
-        <a href="https://t.me/wexwxeee" target="_blank" rel="noopener" class="btn-primary" style="width:100%;text-align:center;display:block;">Subscribe Now</a>
+        <a href="#" onclick="return openTelegramPurchase({ plan: 'Premium', amount: '99 kr', duration: '30 days' })" class="btn-primary" style="width:100%;text-align:center;display:block;">Subscribe Now</a>
         <div style="text-align:center;margin-top:10px;font-size:0.82rem;color:var(--text-muted);">Contact us on Telegram to get access</div>
         {% endif %}
       {% else %}
-      <a href="https://t.me/wexwxeee" target="_blank" rel="noopener" class="btn-primary" style="width:100%;text-align:center;display:block;">Subscribe Now</a>
+      <a href="#" onclick="return openTelegramPurchase({ plan: 'Premium', amount: '99 kr', duration: '30 days' })" class="btn-primary" style="width:100%;text-align:center;display:block;">Subscribe Now</a>
       <div style="text-align:center;margin-top:10px;font-size:0.82rem;color:var(--text-muted);">Contact us on Telegram to get access</div>
       {% endif %}
     </div>

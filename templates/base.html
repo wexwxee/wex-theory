@@ -158,6 +158,59 @@
     window.location.href = '/login';
   }
 
+  window.wexPurchaseUser = {% if user is defined and user %}{{ {"public_id": user.public_id, "name": user.name, "email": user.email} | tojson }}{% else %}null{% endif %};
+
+  function buildTelegramPurchaseMessage(options = {}) {
+    const plan = options.plan || 'Premium';
+    const amount = options.amount || '99 kr';
+    const duration = options.duration || '30 days';
+    const orderId = 'REQ-' + Date.now().toString().slice(-10) + '-' + Math.floor(100 + Math.random() * 900);
+    const user = window.wexPurchaseUser;
+    return {
+      orderId,
+      text: [
+        'Hello! I want to buy access for WEXTheory.',
+        '',
+        `User ID: ${user.public_id}`,
+        `Order ID: ${orderId}`,
+        `Plan: ${plan}`,
+        `Amount: ${amount}`,
+        `Duration: ${duration}`,
+        `Email: ${user.email}`,
+        `Name: ${user.name}`
+      ].join('\n')
+    };
+  }
+
+  async function openTelegramPurchase(options = {}) {
+    if (!window.wexPurchaseUser || !window.wexPurchaseUser.public_id) {
+      const goRegister = confirm('To create a payment request, first sign in or create your account so we can attach access to your user ID. Open registration now?');
+      if (goRegister) window.location.href = '/register';
+      return false;
+    }
+
+    const payload = buildTelegramPurchaseMessage(options);
+    const confirmed = confirm(
+      'Open Telegram and copy a ready payment message?\n\n' +
+      `User ID: ${window.wexPurchaseUser.public_id}\n` +
+      `Order ID: ${payload.orderId}\n` +
+      `Plan: ${options.plan || 'Premium'}\n` +
+      `Amount: ${options.amount || '99 kr'}`
+    );
+    if (!confirmed) return false;
+
+    let copied = false;
+    try {
+      await navigator.clipboard.writeText(payload.text);
+      copied = true;
+    } catch (e) {}
+
+    window.open('https://t.me/wexwxeee', '_blank', 'noopener');
+    showToast(copied ? 'Telegram opened. Message copied - just paste and send.' : 'Telegram opened. Copy the payment details manually if needed.', 'success');
+    return false;
+  }
+  window.openTelegramPurchase = openTelegramPurchase;
+
   // Inject SVG sun/moon into every .theme-btn on the page (covers all templates)
   // CSS [data-theme] selectors show/hide the correct icon automatically.
   (function() {
