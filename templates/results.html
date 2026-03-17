@@ -70,6 +70,54 @@
 @media (max-width: 480px) {
   .result-grid { grid-template-columns: repeat(2, 1fr); }
 }
+.tw {
+  cursor: pointer;
+  border-bottom: 1px dotted #9ca3af;
+  border-radius: 2px;
+  padding: 0 1px;
+  transition: background 0.1s ease;
+}
+.tw:hover { background: rgba(254,249,195,0.3); }
+[data-theme="light"] .tw:hover { background: #fef9c3; }
+.word-popup {
+  position: absolute;
+  background: #1f2937;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  z-index: 9999;
+  pointer-events: none;
+  min-width: 120px;
+  max-width: 280px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  line-height: 1.4;
+}
+.word-popup::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-bottom: none;
+  border-top-color: #1f2937;
+}
+.wp-orig     { font-size: 11px; color: #9ca3af; margin-bottom: 4px; }
+.wp-tr       { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+.wp-load     { font-size: 12px; color: #9ca3af; }
+.wp-context  { font-size: 11px; color: #cbd5e1; margin-top: 6px; line-height: 1.35; }
+.wp-sentence { font-size: 11px; color: #93c5fd; margin-top: 6px; line-height: 1.35; border-top: 1px solid #374151; padding-top: 6px; }
+.wp-variants {
+  border-top: 1px solid #374151;
+  padding-top: 6px;
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.wp-v { font-size: 13px; color: #d1d5db; }
 </style>
 {% endblock %}
 
@@ -81,6 +129,7 @@
       <a href="/" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
+      <button class="btn-ghost btn-sm" onclick="toggleResultsTranslate()" id="resultsTranslateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:0.95rem;">RU</button>
       <button class="theme-btn" onclick="toggleTheme()" id="navThemeBtn">☀️</button>
       {% if user %}
       <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
@@ -192,10 +241,15 @@
     </div>
     <!-- Question text -->
     <div id="modalQuestion" style="font-size:1rem;font-weight:600;line-height:1.5;margin-bottom:16px;"></div>
+    <div id="modalQuestionRu" style="display:none;font-size:0.9rem;color:#6b7280;font-style:italic;margin:-8px 0 16px;animation:fadeIn 0.25s ease both;"></div>
     <!-- Answers -->
     <div id="modalAnswers" style="margin-bottom:16px;"></div>
     <!-- Explanation -->
-    <div id="modalExplanation" style="display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:0.88rem;color:var(--text-muted);line-height:1.6;"></div>
+    <div id="modalExplanation" style="display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:0.88rem;color:var(--text-muted);line-height:1.6;">
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:6px;">Explanation</div>
+      <div id="modalExplanationBody"></div>
+      <div id="modalExplanationRu" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-style:italic;"></div>
+    </div>
     <!-- Prev/Next -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
       <button class="btn-ghost btn-sm" onclick="modalNav(-1)" id="modalPrev">← Prev</button>
@@ -236,6 +290,170 @@ const DATA = [
 ];
 
 let currentModal = 0;
+let resultsTranslateMode = false;
+const resultsTranslateCache = {};
+const _RESULTS_STOP = new Set(['the','a','an','in','to','of','and','or','is','are','you','at','on','for',
+  'it','be','as','by','with','from','this','that','not','but','if','up','do','so','we','he',
+  'she','they','my','your','all','have','has','had','was','were','will','can','i','its','our',
+  'their','into','also','when','then','than','there','about','been','which','who','what']);
+const _RESULTS_GLOSSARY = [
+  { phrase: 'turn right', translation: 'повернуть направо', words: ['turn', 'right'] },
+  { phrase: 'turn left', translation: 'повернуть налево', words: ['turn', 'left'] },
+  { phrase: 'right turn', translation: 'поворот направо', words: ['right', 'turn'] },
+  { phrase: 'left turn', translation: 'поворот налево', words: ['left', 'turn'] },
+  { phrase: 'signal-controlled junction', translation: 'регулируемый перекресток', words: ['signal', 'controlled', 'junction'] },
+  { phrase: 'pedestrian crossing', translation: 'пешеходный переход', words: ['pedestrian', 'crossing'] },
+  { phrase: 'bus lane', translation: 'полоса для автобусов', words: ['bus', 'lane'] },
+  { phrase: 'cycle path', translation: 'велодорожка', words: ['cycle', 'path'] },
+  { phrase: 'own lane', translation: 'своя полоса', words: ['own', 'lane'] },
+  { phrase: 'keep to my own lane', translation: 'держаться своей полосы', words: ['keep', 'own', 'lane'] },
+  { phrase: 'pull in', translation: 'перестроиться ближе к краю', words: ['pull', 'in'] },
+  { phrase: 'directly behind you', translation: 'непосредственно позади вас', words: ['directly', 'behind'] },
+  { phrase: 'all the way', translation: 'до самого конца', words: ['all', 'way'] },
+  { phrase: 'remain there', translation: 'оставаться там', words: ['remain', 'there'] },
+  { phrase: 'kerb', translation: 'бордюр', words: ['kerb'] },
+  { phrase: 'lane', translation: 'полоса движения', words: ['lane'] },
+  { phrase: 'junction', translation: 'перекресток', words: ['junction'] }
+];
+let _resultsWordPopup = null;
+let _resultsPopupHideTimer = null;
+
+function _resultsTranslateUrl(text) {
+  return 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&dt=t&q=' + encodeURIComponent(text);
+}
+
+function _extractResultsTranslation(data) {
+  if (!Array.isArray(data) || !Array.isArray(data[0])) return null;
+  return data[0].map(part => Array.isArray(part) ? (part[0] || '') : '').join('').trim() || null;
+}
+
+async function _translateResultsText(text) {
+  if (!text || !text.trim()) return null;
+  const key = 'gr_' + btoa(unescape(encodeURIComponent(text.trim().slice(0, 60)))).slice(0, 36);
+  const cached = sessionStorage.getItem(key);
+  if (cached) return cached;
+  try {
+    const res = await fetch(_resultsTranslateUrl(text.slice(0, 500)));
+    const data = await res.json();
+    const translated = _extractResultsTranslation(data);
+    if (translated) {
+      try { sessionStorage.setItem(key, translated); } catch(e) {}
+      return translated;
+    }
+  } catch(e) {}
+  return null;
+}
+
+async function _translateResultsWord(word) {
+  const key = 'rw_' + word.toLowerCase();
+  const cached = sessionStorage.getItem(key);
+  if (cached) { try { return JSON.parse(cached); } catch(e) {} }
+  try {
+    const res = await fetch(_resultsTranslateUrl(word));
+    const data = await res.json();
+    const result = { main: _extractResultsTranslation(data) || '-', variants: [] };
+    try { sessionStorage.setItem(key, JSON.stringify(result)); } catch(e) {}
+    return result;
+  } catch(e) {
+    return { main: '-', variants: [] };
+  }
+}
+
+function _normalizeResultsContext(text) {
+  return (text || '').toLowerCase().replace(/[^\w\s-]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function _findResultsGlossaryMatch(word, contextText) {
+  const lcWord = (word || '').toLowerCase();
+  const normalized = _normalizeResultsContext(contextText);
+  return _RESULTS_GLOSSARY
+    .filter(item => item.words.includes(lcWord) && normalized.includes(item.phrase))
+    .sort((a, b) => b.phrase.length - a.phrase.length)[0] || null;
+}
+
+async function _translateResultsWordInContext(word, contextText) {
+  const glossary = _findResultsGlossaryMatch(word, contextText);
+  const base = glossary ? { main: glossary.translation, variants: [] } : await _translateResultsWord(word);
+  const sentence = contextText ? await _translateResultsText(contextText) : null;
+  return {
+    main: base.main || '-',
+    variants: base.variants || [],
+    contextPhrase: glossary ? glossary.phrase : '',
+    contextTranslation: glossary ? glossary.translation : '',
+    sentenceTranslation: sentence || ''
+  };
+}
+
+async function _ensureResultTranslated(d) {
+  const cacheKey = 'result_translate_' + d.index;
+  if (resultsTranslateCache[cacheKey]) return resultsTranslateCache[cacheKey];
+  const cached = sessionStorage.getItem(cacheKey);
+  if (cached) {
+    try {
+      resultsTranslateCache[cacheKey] = JSON.parse(cached);
+      return resultsTranslateCache[cacheKey];
+    } catch(e) {}
+  }
+  const texts = [d.text, ...d.answers.map(a => a.text)];
+  if (d.explanation) texts.push(d.explanation);
+  const translated = await Promise.all(texts.map(_translateResultsText));
+  const payload = {
+    q: translated[0] || d.text,
+    a: translated.slice(1, 1 + d.answers.length),
+    explanation: d.explanation ? (translated[translated.length - 1] || d.explanation) : ''
+  };
+  resultsTranslateCache[cacheKey] = payload;
+  try { sessionStorage.setItem(cacheKey, JSON.stringify(payload)); } catch(e) {}
+  return payload;
+}
+
+function _wrapResultsWords(el) {
+  if (!el || el.dataset.wrapped) return;
+  el.dataset.wrapped = '1';
+
+  function processNode(node) {
+    if (node.nodeType === 3) {
+      const text = node.textContent;
+      if (!/[a-zA-Z]{3,}/.test(text)) return;
+      const wrap = document.createElement('span');
+      wrap.innerHTML = text.replace(/\b([a-zA-Z]{3,})\b/g, (m) =>
+        _RESULTS_STOP.has(m.toLowerCase()) ? m : `<span class="tw">${m}</span>`
+      );
+      node.parentNode.replaceChild(wrap, node);
+    } else if (node.nodeType === 1 &&
+               !['SCRIPT','STYLE','INPUT','TEXTAREA'].includes(node.tagName) &&
+               !node.classList.contains('tw')) {
+      Array.from(node.childNodes).forEach(processNode);
+    }
+  }
+
+  Array.from(el.childNodes).forEach(processNode);
+}
+
+function _resultsPopupPos(popup, rect) {
+  const pw = popup.offsetWidth;
+  const ph = popup.offsetHeight;
+  const left = Math.max(4, Math.min(rect.left + rect.width / 2 - pw / 2, window.innerWidth - pw - 4));
+  const top = rect.top + window.scrollY - ph - 10;
+  popup.style.left = left + 'px';
+  popup.style.top = top + 'px';
+}
+
+async function toggleResultsTranslate() {
+  resultsTranslateMode = !resultsTranslateMode;
+  const btn = document.getElementById('resultsTranslateBtn');
+  if (btn) {
+    btn.textContent = resultsTranslateMode ? 'EN' : 'RU';
+    btn.disabled = resultsTranslateMode;
+  }
+  if (resultsTranslateMode && DATA[currentModal]) {
+    await _ensureResultTranslated(DATA[currentModal]);
+  }
+  if (btn) btn.disabled = false;
+  if (document.getElementById('qModal').classList.contains('open')) {
+    renderModal();
+  }
+}
 
 function openModal(i) {
   currentModal = i;
@@ -252,11 +470,22 @@ function modalNav(dir) {
   renderModal();
 }
 
-function renderModal() {
+async function renderModal() {
   const d = DATA[currentModal];
+  const trans = resultsTranslateMode ? await _ensureResultTranslated(d) : null;
 
   document.getElementById('modalMeta').textContent = `Question ${d.index} of ${DATA.length}`;
-  document.getElementById('modalQuestion').textContent = d.text;
+  const qEl = document.getElementById('modalQuestion');
+  qEl.textContent = d.text;
+  qEl.dataset.sourceText = d.text;
+  delete qEl.dataset.wrapped;
+  const qRuEl = document.getElementById('modalQuestionRu');
+  if (resultsTranslateMode && trans?.q) {
+    qRuEl.textContent = trans.q;
+    qRuEl.style.display = 'block';
+  } else {
+    qRuEl.style.display = 'none';
+  }
 
   // Image
   const imgWrap = document.getElementById('modalImgWrap');
@@ -271,7 +500,7 @@ function renderModal() {
   // Answers
   const answersEl = document.getElementById('modalAnswers');
   answersEl.innerHTML = '';
-  d.answers.forEach(a => {
+  d.answers.forEach((a, idx) => {
     const wasSelected = d.selected_ids.includes(a.id);
     const isCorrect = d.correct_ids.includes(a.id);
 
@@ -291,15 +520,47 @@ function renderModal() {
 
     const row = document.createElement('div');
     row.className = cls;
-    row.innerHTML = `<span style="flex:1;">${a.text}</span><span style="display:flex;gap:6px;flex-shrink:0;">${badges}</span>`;
+
+    const textWrap = document.createElement('div');
+    textWrap.style.flex = '1';
+
+    const answerText = document.createElement('span');
+    answerText.textContent = a.text;
+    answerText.dataset.sourceText = a.text;
+    textWrap.appendChild(answerText);
+
+    if (resultsTranslateMode && trans?.a?.[idx]) {
+      const answerRu = document.createElement('div');
+      answerRu.textContent = trans.a[idx];
+      answerRu.style.cssText = 'font-size:0.82rem;color:#6b7280;font-style:italic;margin-top:6px;';
+      textWrap.appendChild(answerRu);
+    }
+
+    const badgesWrap = document.createElement('span');
+    badgesWrap.style.cssText = 'display:flex;gap:6px;flex-shrink:0;';
+    badgesWrap.innerHTML = badges;
+
+    row.appendChild(textWrap);
+    row.appendChild(badgesWrap);
     answersEl.appendChild(row);
+    _wrapResultsWords(answerText);
   });
 
   // Explanation
   const expl = document.getElementById('modalExplanation');
+  const explBody = document.getElementById('modalExplanationBody');
+  const explRu = document.getElementById('modalExplanationRu');
   if (d.explanation) {
     expl.style.display = 'block';
-    expl.innerHTML = `<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:6px;">Explanation</div>${d.explanation}`;
+    explBody.textContent = d.explanation;
+    explBody.dataset.sourceText = d.explanation;
+    delete explBody.dataset.wrapped;
+    if (resultsTranslateMode && trans?.explanation) {
+      explRu.textContent = trans.explanation;
+      explRu.style.display = 'block';
+    } else {
+      explRu.style.display = 'none';
+    }
   } else {
     expl.style.display = 'none';
   }
@@ -312,6 +573,8 @@ function renderModal() {
   // Prev/Next buttons
   document.getElementById('modalPrev').disabled = currentModal === 0;
   document.getElementById('modalNext').disabled = currentModal === DATA.length - 1;
+  _wrapResultsWords(qEl);
+  if (d.explanation) _wrapResultsWords(explBody);
 }
 
 // Close on overlay click
@@ -322,6 +585,47 @@ document.getElementById('qModal').addEventListener('click', e => {
 document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft') { if(document.getElementById('qModal').classList.contains('open')) modalNav(-1); }
   if (e.key === 'ArrowRight') { if(document.getElementById('qModal').classList.contains('open')) modalNav(1); }
+});
+
+document.addEventListener('mouseover', (e) => {
+  if (!e.target.classList.contains('tw')) return;
+  clearTimeout(_resultsPopupHideTimer);
+  const word = e.target.textContent.trim();
+  if (!word || _RESULTS_STOP.has(word.toLowerCase()) || word.length < 3) return;
+  if (_resultsWordPopup) { _resultsWordPopup.remove(); _resultsWordPopup = null; }
+
+  const popup = document.createElement('div');
+  popup.className = 'word-popup';
+  popup.innerHTML = `<div class="wp-orig">${word}</div><div class="wp-load">⏳</div>`;
+  document.body.appendChild(popup);
+  _resultsWordPopup = popup;
+
+  const rect = e.target.getBoundingClientRect();
+  const contextHost = e.target.closest('[data-source-text]');
+  const contextText = contextHost ? contextHost.dataset.sourceText || '' : '';
+  _resultsPopupPos(popup, rect);
+
+  _translateResultsWordInContext(word, contextText).then(result => {
+    if (_resultsWordPopup !== popup) return;
+    const contextHtml = result.contextPhrase
+      ? `<div class="wp-context">Context: ${result.contextPhrase} -> ${result.contextTranslation}</div>`
+      : '';
+    const sentenceHtml = result.sentenceTranslation
+      ? `<div class="wp-sentence">${result.sentenceTranslation}</div>`
+      : '';
+    const varHtml = result.variants.length
+      ? `<div class="wp-variants">${result.variants.map(v => `<span class="wp-v">${v}</span>`).join('')}</div>`
+      : '';
+    popup.innerHTML = `<div class="wp-orig">${word}</div><div class="wp-tr">${result.main}</div>${contextHtml}${sentenceHtml}${varHtml}`;
+    _resultsPopupPos(popup, rect);
+  });
+});
+
+document.addEventListener('mouseout', (e) => {
+  if (!e.target.classList.contains('tw')) return;
+  _resultsPopupHideTimer = setTimeout(() => {
+    if (_resultsWordPopup) { _resultsWordPopup.remove(); _resultsWordPopup = null; }
+  }, 120);
 });
 
 // Animate score counter
