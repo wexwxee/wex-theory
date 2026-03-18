@@ -319,7 +319,7 @@ def ensure_super_admin_column(db: Session) -> None:
         inspector = sql_inspect(engine)
         columns = {col["name"] for col in inspector.get_columns("users")}
         if "is_super_admin" not in columns:
-            db.execute(sql_text("ALTER TABLE users ADD COLUMN is_super_admin BOOLEAN DEFAULT 0"))
+            db.execute(sql_text("ALTER TABLE users ADD COLUMN is_super_admin BOOLEAN DEFAULT FALSE"))
             db.commit()
             print("[STARTUP] Added users.is_super_admin column")
     except Exception as e:
