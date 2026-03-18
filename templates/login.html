@@ -197,6 +197,9 @@
       {% if request.query_params.get('google_error') %}
       <div class="msg-box error">Google: {{ request.query_params.get('google_error') }}</div>
       {% endif %}
+      {% if request.query_params.get('reset') %}
+      <div class="msg-box success">Password updated. You can sign in now.</div>
+      {% endif %}
       <div class="form-group">
         <label for="email">Email address</label>
         <input type="email" id="email" placeholder="you@example.com" autocomplete="email" autofocus>
@@ -231,6 +234,9 @@
     </div>
     <div class="footer-link">
       Don't have an account? <a href="/register">Create one</a>
+    </div>
+    <div class="footer-link" style="margin-top:10px;">
+      <a href="/forgot-password">Forgot password?</a>
     </div>
     <div class="footer-link" style="margin-top:10px;">
       <a href="/test/1" style="color:var(--text-muted);text-decoration:none;font-size:0.82rem;">Try Test 1 free without signing in →</a>

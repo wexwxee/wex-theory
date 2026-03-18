@@ -167,6 +167,15 @@ def render_verification_email_html(recipient_name: str, confirm_url: str, code: 
     )
 
 
+def render_password_reset_email_html(recipient_name: str, reset_url: str, code: str) -> str:
+    return templates.env.get_template("emails/password_reset_email.html").render(
+        recipient_name=recipient_name,
+        reset_url=reset_url,
+        fallback_url=reset_url,
+        reset_code=code,
+    )
+
+
 def send_verification_email(recipient_email: str, code: str, recipient_name: str, confirm_url: str) -> None:
     if not is_email_service_configured():
         raise RuntimeError("Email verification is not configured yet")
@@ -197,6 +206,50 @@ def send_verification_email(recipient_email: str, code: str, recipient_name: str
     }
 
     print("[EMAIL API] provider='resend' url=%r from=%r to=%r" % (resend_api_url, sender, recipient_email))
+
+    with httpx.Client(timeout=20.0) as client:
+        response = client.post(
+            resend_api_url,
+            headers={
+                "Authorization": f"Bearer {resend_api_key}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+        )
+        if response.status_code >= 400:
+            raise RuntimeError(f"Resend API error {response.status_code}: {response.text[:300]}")
+
+
+def send_password_reset_email(recipient_email: str, code: str, recipient_name: str, reset_url: str) -> None:
+    if not is_email_service_configured():
+        raise RuntimeError("Email verification is not configured yet")
+
+    resend_api_key = _clean_env_value("RESEND_API_KEY")
+    configured_sender = _clean_env_value("RESEND_FROM_EMAIL", VERIFICATION_EMAIL_SENDER)
+    sender = VERIFICATION_EMAIL_SENDER
+    resend_api_url = _clean_env_value("RESEND_API_URL", "https://api.resend.com/emails")
+
+    if not resend_api_key:
+        raise RuntimeError("RESEND_API_KEY is empty")
+    if configured_sender and configured_sender != VERIFICATION_EMAIL_SENDER:
+        print(f"[EMAIL API] RESEND_FROM_EMAIL overridden to required sender {VERIFICATION_EMAIL_SENDER!r} (configured={configured_sender!r})")
+
+    payload = {
+        "from": sender,
+        "to": [recipient_email],
+        "subject": "Reset your WEXTheory password",
+        "html": render_password_reset_email_html(recipient_name, reset_url, code),
+        "text": (
+            f"Hello {recipient_name},\n\n"
+            "We received a request to reset your WEXTheory password.\n\n"
+            f"Reset code: {code}\n"
+            f"Reset link: {reset_url}\n\n"
+            "The reset link and code expire in 10 minutes.\n"
+            "If you did not request this, you can ignore this email.\n"
+        ),
+    }
+
+    print("[EMAIL API] provider='resend' kind='password_reset' url=%r from=%r to=%r" % (resend_api_url, sender, recipient_email))
 
     with httpx.Client(timeout=20.0) as client:
         response = client.post(
@@ -632,6 +685,16 @@ async def register_page(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
 
+@app.get("/forgot-password", response_class=HTMLResponse)
+async def forgot_password_page(request: Request):
+    return templates.TemplateResponse("forgot_password.html", {"request": request})
+
+
+@app.get("/reset-password", response_class=HTMLResponse)
+async def reset_password_page(request: Request):
+    return templates.TemplateResponse("reset_password.html", {"request": request})
+
+
 def complete_email_verification(db: Session, email: str, code: str):
     pending = (
         db.query(models.EmailVerificationCode)
@@ -675,6 +738,44 @@ def complete_email_verification(db: Session, email: str, code: str):
     ).delete(synchronize_session=False)
     db.commit()
     return user, None
+
+
+def complete_password_reset(db: Session, email: str, code: str, new_password: str):
+    pending = (
+        db.query(models.EmailVerificationCode)
+        .filter(
+            models.EmailVerificationCode.email == email,
+            models.EmailVerificationCode.purpose == "reset_password"
+        )
+        .order_by(models.EmailVerificationCode.created_at.desc())
+        .first()
+    )
+    if not pending:
+        return "Reset code not found. Request a new one."
+    if pending.expires_at < datetime.utcnow():
+        db.delete(pending)
+        db.commit()
+        return "Reset code expired. Request a new one."
+    if pending.code != code:
+        return "Invalid reset code"
+
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if not user:
+        db.delete(pending)
+        db.commit()
+        return "User not found"
+
+    password_error = validate_password_strength(new_password)
+    if password_error:
+        return password_error
+
+    user.password_hash = hash_password(new_password)
+    db.query(models.EmailVerificationCode).filter(
+        models.EmailVerificationCode.email == email,
+        models.EmailVerificationCode.purpose == "reset_password"
+    ).delete(synchronize_session=False)
+    db.commit()
+    return None
 
 
 @app.get("/about", response_class=HTMLResponse)
@@ -802,6 +903,86 @@ async def api_register_verify(request: Request, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         print(f"[REGISTER VERIFY ERROR] {e}")
+        traceback.print_exc()
+        return JSONResponse({"error": f"Server error: {str(e)}"}, status_code=500)
+
+
+@app.post("/api/auth/forgot-password")
+async def api_forgot_password(request: Request, db: Session = Depends(get_db)):
+    try:
+        data = await request.json()
+        email = str(data.get("email", "")).strip().lower()
+        if not email:
+            return JSONResponse({"error": "Email is required"}, status_code=400)
+        email_error = validate_registration_email(email)
+        if email_error:
+            return JSONResponse({"error": email_error}, status_code=400)
+        if not is_email_service_configured():
+            return JSONResponse({"error": "Email sending is not configured on the server yet"}, status_code=503)
+
+        user = db.query(models.User).filter(models.User.email == email).first()
+        if not user:
+            return JSONResponse({"success": True, "message": "If this email exists, we sent reset instructions."})
+
+        db.query(models.EmailVerificationCode).filter(
+            models.EmailVerificationCode.email == email,
+            models.EmailVerificationCode.purpose == "reset_password"
+        ).delete(synchronize_session=False)
+
+        code = generate_email_verification_code()
+        pending = models.EmailVerificationCode(
+            email=email,
+            name=user.name,
+            password_hash=user.password_hash,
+            code=code,
+            purpose="reset_password",
+            expires_at=datetime.utcnow() + timedelta(minutes=10),
+            created_at=datetime.utcnow(),
+        )
+        db.add(pending)
+        db.commit()
+
+        reset_url = get_public_base_url(request) + "/reset-password?" + urlencode({
+            "email": email,
+            "code": code,
+        })
+        try:
+            send_password_reset_email(email, code, user.name, reset_url)
+        except Exception:
+            db.query(models.EmailVerificationCode).filter(
+                models.EmailVerificationCode.email == email,
+                models.EmailVerificationCode.purpose == "reset_password"
+            ).delete(synchronize_session=False)
+            db.commit()
+            raise
+
+        return JSONResponse({"success": True, "message": "If this email exists, we sent reset instructions.", "email": email})
+    except Exception as e:
+        db.rollback()
+        print(f"[FORGOT PASSWORD ERROR] {e}")
+        traceback.print_exc()
+        return JSONResponse({"error": f"Server error: {str(e)}"}, status_code=500)
+
+
+@app.post("/api/auth/reset-password")
+async def api_reset_password(request: Request, db: Session = Depends(get_db)):
+    try:
+        data = await request.json()
+        email = str(data.get("email", "")).strip().lower()
+        code = str(data.get("code", "")).strip()
+        password = str(data.get("password", ""))
+
+        if not email or not code or not password:
+            return JSONResponse({"error": "Email, reset code and new password are required"}, status_code=400)
+
+        error = complete_password_reset(db, email, code, password)
+        if error:
+            return JSONResponse({"error": error}, status_code=400)
+
+        return JSONResponse({"success": True, "redirect": "/login?reset=1"})
+    except Exception as e:
+        db.rollback()
+        print(f"[RESET PASSWORD ERROR] {e}")
         traceback.print_exc()
         return JSONResponse({"error": f"Server error: {str(e)}"}, status_code=500)
 
