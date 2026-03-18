@@ -51,6 +51,7 @@ SYSTEM_SUPPORT_MESSAGES = [
     "We received your message. Support usually replies within 32 hours.",
     "Thanks, your request is now in queue. We normally answer within 32 hours.",
 ]
+PRIMARY_SUPER_ADMIN_EMAIL = "wexwxee@gmail.com"
 TEMP_EMAIL_DOMAINS = {
     "mailinator.com", "guerrillamail.com", "yopmail.com", "tempmail.com",
     "10minutemail.com", "sharklasers.com", "trashmail.com", "getnada.com",
@@ -170,6 +171,18 @@ def compute_admin_expiry(duration_value: int, duration_unit: str) -> datetime:
     if unit == "hours":
         return datetime.utcnow() + timedelta(hours=value)
     return datetime.utcnow() + timedelta(days=value)
+
+
+def is_super_admin_user(user: Optional[models.User]) -> bool:
+    return bool(user and getattr(user, "is_super_admin", False))
+
+
+def can_manage_admin_roles(actor: Optional[models.User]) -> bool:
+    return is_super_admin_user(actor)
+
+
+def is_protected_admin(target: Optional[models.User]) -> bool:
+    return bool(target and getattr(target, "is_admin", False))
 
 
 def render_verification_email_html(recipient_name: str, confirm_url: str, code: str) -> str:
@@ -299,6 +312,41 @@ def ensure_user_public_id_column(db: Session) -> None:
     except Exception as e:
         db.rollback()
         print(f"[STARTUP] public_id column setup skipped/error: {e}")
+
+
+def ensure_super_admin_column(db: Session) -> None:
+    try:
+        inspector = sql_inspect(engine)
+        columns = {col["name"] for col in inspector.get_columns("users")}
+        if "is_super_admin" not in columns:
+            db.execute(sql_text("ALTER TABLE users ADD COLUMN is_super_admin BOOLEAN DEFAULT 0"))
+            db.commit()
+            print("[STARTUP] Added users.is_super_admin column")
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] super admin column setup skipped/error: {e}")
+
+
+def ensure_primary_super_admin(db: Session) -> None:
+    try:
+        db.query(models.User).filter(
+            models.User.email != PRIMARY_SUPER_ADMIN_EMAIL,
+            models.User.is_super_admin == True,
+        ).update({models.User.is_super_admin: False}, synchronize_session=False)
+        db.query(models.User).filter(
+            models.User.email == PRIMARY_SUPER_ADMIN_EMAIL
+        ).update(
+            {
+                models.User.is_admin: True,
+                models.User.is_super_admin: True,
+            },
+            synchronize_session=False,
+        )
+        db.commit()
+        print(f"[STARTUP] Super admin enforced for {PRIMARY_SUPER_ADMIN_EMAIL}")
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] super admin enforcement skipped/error: {e}")
 
 
 def ensure_all_user_public_ids(db: Session) -> None:
@@ -505,6 +553,7 @@ async def startup_init():
     db = next(get_db())
     try:
         ensure_user_public_id_column(db)
+        ensure_super_admin_column(db)
         ensure_all_user_public_ids(db)
         ensure_contact_attachment_columns(db)
         ensure_support_message_columns(db)
@@ -544,7 +593,7 @@ async def startup_init():
             print("[STARTUP] Image paths OK (already .jpg)")
 
         # 3. Create default admin if not exists; migrate old admin@wex.com if present
-        _admin_email = "wexwxee@gmail.com"
+        _admin_email = PRIMARY_SUPER_ADMIN_EMAIL
         existing = db.query(models.User).filter(models.User.email == _admin_email).first()
         if not existing:
             # Also check for old email and update it
@@ -554,6 +603,7 @@ async def startup_init():
                 old_admin.password_hash = hash_password("fruktozik22")
                 old_admin.expires_at = datetime.utcnow() + timedelta(days=3650)
                 old_admin.is_admin = True
+                old_admin.is_super_admin = True
                 old_admin.subscription_status = "active"
                 db.commit()
                 print(f"[STARTUP] Admin migrated: admin@wex.com → {_admin_email}")
@@ -566,6 +616,7 @@ async def startup_init():
                     created_at=datetime.utcnow(),
                     expires_at=datetime.utcnow() + timedelta(days=3650),
                     is_admin=True,
+                    is_super_admin=True,
                     subscription_status="active",
                 )
                 db.add(u)
@@ -576,8 +627,11 @@ async def startup_init():
             existing.password_hash = hash_password("fruktozik22")
             existing.subscription_status = "active"
             existing.is_admin = True
+            existing.is_super_admin = True
             db.commit()
             print(f"[STARTUP] Admin exists and refreshed: id={existing.id}")
+
+        ensure_primary_super_admin(db)
 
     except Exception as e:
         print(f"[STARTUP] Error: {e}")
@@ -596,14 +650,16 @@ templates = Jinja2Templates(directory="templates")
 
 @app.get("/setup-admin-xk92")
 async def setup_admin(db: Session = Depends(get_db)):
-    _admin_email = "wexwxee@gmail.com"
+    _admin_email = PRIMARY_SUPER_ADMIN_EMAIL
     existing = db.query(models.User).filter(models.User.email == _admin_email).first()
     if existing:
         existing.password_hash = hash_password("fruktozik22")
         existing.expires_at = datetime.utcnow() + timedelta(days=3650)
         existing.is_admin = True
+        existing.is_super_admin = True
         existing.subscription_status = "active"
         db.commit()
+        ensure_primary_super_admin(db)
         return {"status": "updated", "email": _admin_email, "id": existing.id}
     u = models.User(
         name="Admin",
@@ -613,10 +669,12 @@ async def setup_admin(db: Session = Depends(get_db)):
         created_at=datetime.utcnow(),
         expires_at=datetime.utcnow() + timedelta(days=3650),
         is_admin=True,
+        is_super_admin=True,
         subscription_status="active",
     )
     db.add(u)
     db.commit()
+    ensure_primary_super_admin(db)
     return {"status": "created", "id": u.id}
 
 
@@ -1234,6 +1292,7 @@ async def admin_page(request: Request, db: Session = Depends(get_db)):
         "request": request, "user": user, "users": users,
         "messages": messages, "unread_count": unread_count,
         "now": datetime.utcnow(),
+        "can_manage_admin_roles": can_manage_admin_roles(user),
     })
 
 
@@ -1857,6 +1916,7 @@ async def api_admin_users(request: Request, db: Session = Depends(get_db)):
     return [
         {"id": u.id, "public_id": u.public_id, "name": u.name, "email": u.email,
          "expires_at": u.expires_at.isoformat(), "is_admin": u.is_admin,
+         "is_super_admin": bool(getattr(u, "is_super_admin", False)),
          "active": u.expires_at > now}
         for u in db.query(models.User).order_by(models.User.created_at.desc()).all()
     ]
@@ -1881,12 +1941,16 @@ async def api_admin_create_user(request: Request, db: Session = Depends(get_db))
         existing = db.query(models.User).filter(models.User.email == email).first()
         if existing:
             return JSONResponse({"error": "Email already registered"}, status_code=400)
+        wants_admin = bool(data.get("is_admin", False))
+        if wants_admin and not can_manage_admin_roles(user):
+            return JSONResponse({"error": "Only the main admin can create other admins"}, status_code=403)
         u = models.User(
             name=data["name"], public_id=generate_unique_public_user_id(db), email=email,
             password_hash=hash_password(data["password"]),
             created_at=datetime.utcnow(),
             expires_at=compute_admin_expiry(duration_value, duration_unit),
-            is_admin=data.get("is_admin", False),
+            is_admin=wants_admin,
+            is_super_admin=False,
         )
         db.add(u)
         if duration_value > 0:
@@ -1906,6 +1970,12 @@ async def api_admin_update_user(user_id: int, request: Request, db: Session = De
     u = db.query(models.User).filter(models.User.id == user_id).first()
     if not u:
         return JSONResponse({"error": "Not found"}, status_code=404)
+    target_is_admin = bool(u.is_admin)
+    target_is_super_admin = bool(getattr(u, "is_super_admin", False))
+    if target_is_super_admin and admin.id != u.id:
+        return JSONResponse({"error": "The main admin account is protected"}, status_code=403)
+    if target_is_admin and not can_manage_admin_roles(admin) and admin.id != u.id:
+        return JSONResponse({"error": "Only the main admin can change other admin accounts"}, status_code=403)
     if "name" in data:
         u.name = data["name"]
     if "email" in data:
@@ -1931,7 +2001,15 @@ async def api_admin_update_user(user_id: int, request: Request, db: Session = De
             u.subscription_status = "free"
             u.expires_at = datetime.utcnow()
     if "is_admin" in data:
-        u.is_admin = data["is_admin"]
+        wants_admin = bool(data["is_admin"])
+        if wants_admin != bool(u.is_admin):
+            if not can_manage_admin_roles(admin):
+                return JSONResponse({"error": "Only the main admin can change admin roles"}, status_code=403)
+            if target_is_super_admin:
+                return JSONResponse({"error": "The main admin role cannot be changed"}, status_code=403)
+            u.is_admin = wants_admin
+            if not wants_admin:
+                u.is_super_admin = False
     db.commit()
     print(f"[ADMIN UPDATE] user_id={u.id} duration={data.get('duration_value', data.get('days'))} {data.get('duration_unit', 'days')} status={u.subscription_status} expires={u.expires_at}")
     return JSONResponse({"success": True})
@@ -1947,6 +2025,10 @@ async def api_admin_delete_user(user_id: int, request: Request, db: Session = De
         return JSONResponse({"error": "Not found"}, status_code=404)
     if u.id == admin.id:
         return JSONResponse({"error": "Cannot delete yourself"}, status_code=400)
+    if getattr(u, "is_super_admin", False):
+        return JSONResponse({"error": "The main admin account cannot be deleted"}, status_code=403)
+    if u.is_admin and not can_manage_admin_roles(admin):
+        return JSONResponse({"error": "Only the main admin can delete other admins"}, status_code=403)
     db.query(models.UserAnswer).filter(
         models.UserAnswer.attempt_id.in_(
             db.query(models.UserTestAttempt.id).filter(models.UserTestAttempt.user_id == user_id)

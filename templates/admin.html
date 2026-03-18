@@ -88,7 +88,9 @@
               {% endif %}
             </td>
             <td>
-              {% if u.is_admin %}
+              {% if u.is_super_admin %}
+              <span class="badge-green">Main Admin</span>
+              {% elif u.is_admin %}
               <span class="badge-gray">Admin</span>
               {% else %}
               <span style="color:var(--text-muted);font-size:0.82rem;">User</span>
@@ -96,9 +98,15 @@
             </td>
             <td>
               <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                <button class="btn-ghost btn-sm" onclick='openEditModal({{ u.id }}, {{ u.name | tojson }}, {{ u.email | tojson }}, {{ u.is_admin | tojson }})'>Edit</button>
+                {% set can_edit_target = can_manage_admin_roles or not u.is_admin or u.id == user.id %}
+                {% set can_delete_target = u.id != user.id and (can_manage_admin_roles or not u.is_admin) and not u.is_super_admin %}
+                {% if can_edit_target %}
+                <button class="btn-ghost btn-sm" onclick='openEditModal({{ u.id }}, {{ u.name | tojson }}, {{ u.email | tojson }}, {{ u.is_admin | tojson }}, {{ u.is_super_admin | tojson }})'>Edit</button>
                 <button class="btn-ghost btn-sm" onclick='openResetModal({{ u.id }}, {{ u.name | tojson }})'>Reset Pwd</button>
-                {% if u.id != user.id %}
+                {% else %}
+                <span style="color:var(--text-muted);font-size:0.78rem;">Protected admin</span>
+                {% endif %}
+                {% if can_delete_target %}
                 <button class="btn-ghost btn-sm" style="color:var(--wrong);border-color:var(--wrong);" onclick="deleteUser({{ u.id }}, {{ u.name | tojson }})">Delete</button>
                 {% endif %}
               </div>
@@ -198,6 +206,9 @@
       <input type="checkbox" id="editIsAdmin" style="width:auto;">
       <label class="form-label" for="editIsAdmin" style="margin:0;">Is Admin</label>
     </div>
+    {% if not can_manage_admin_roles %}
+    <div style="font-size:0.78rem;color:var(--text-muted);margin-top:-6px;">Only the main admin can change admin roles.</div>
+    {% endif %}
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
       <button class="btn-ghost" onclick="closeEdit()">Cancel</button>
       <button class="btn-primary" onclick="saveEdit()" id="saveEditBtn">Save</button>
@@ -240,6 +251,9 @@
       <input type="checkbox" id="createIsAdmin" style="width:auto;">
       <label class="form-label" for="createIsAdmin" style="margin:0;">Is Admin</label>
     </div>
+    {% if not can_manage_admin_roles %}
+    <div style="font-size:0.78rem;color:var(--text-muted);margin-top:-6px;">Only the main admin can create new admins.</div>
+    {% endif %}
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
       <button class="btn-ghost" onclick="closeCreate()">Cancel</button>
       <button class="btn-primary" onclick="createUser()" id="createBtn">Create</button>
@@ -315,12 +329,15 @@ function filterUsers() {
   });
 }
 
+const canManageAdminRoles = {{ can_manage_admin_roles | tojson }};
+
 // Edit modal
-function openEditModal(id, name, email, isAdmin) {
+function openEditModal(id, name, email, isAdmin, isSuperAdmin) {
   document.getElementById('editUserId').value = id;
   document.getElementById('editName').value = name;
   document.getElementById('editEmail').value = email;
   document.getElementById('editIsAdmin').checked = isAdmin;
+  document.getElementById('editIsAdmin').disabled = !canManageAdminRoles || !!isSuperAdmin;
   document.getElementById('editPassword').value = '';
   document.getElementById('editDays').value = '';
   document.getElementById('editDurationUnit').value = 'days';
@@ -378,6 +395,7 @@ function openCreateModal() {
   document.getElementById('createDays').value = '30';
   document.getElementById('createDurationUnit').value = 'days';
   document.getElementById('createIsAdmin').checked = false;
+  document.getElementById('createIsAdmin').disabled = !canManageAdminRoles;
   document.getElementById('createMsg').style.display = 'none';
   document.getElementById('createModal').classList.add('open');
 }
