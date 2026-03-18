@@ -321,8 +321,12 @@ function finishTest() {
   const answered = Object.keys(selectedAnswers).length;
   const total = questions.length;
   const unanswered = total - answered;
+  const savedInThisTest = questions.filter(q => bookmarkedIds.has(q.id)).length;
   let summary = `You've answered ${answered} of ${total} questions.`;
   if (unanswered > 0) summary += ` ${unanswered} question${unanswered > 1 ? 's' : ''} unanswered.`;
+  if (savedInThisTest > 0) {
+    summary += ` You saved ${savedInThisTest} question${savedInThisTest > 1 ? 's' : ''} for review, and they will appear on the results page.`;
+  }
   document.getElementById('finishSummary').textContent = summary;
   document.getElementById('finishModal').classList.add('open');
 }

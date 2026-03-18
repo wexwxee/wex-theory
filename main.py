@@ -1323,20 +1323,33 @@ async def results_page(test_id: int, attempt_id: int, request: Request, db: Sess
     ).order_by(models.Question.question_index).all()
     ua_map = {ua.question_id: ua for ua in attempt.user_answers}
     question_results = []
-    for q in questions:
+    for idx, q in enumerate(questions):
         ua = ua_map.get(q.id)
         correct_ids = [a.id for a in q.answers if a.is_correct]
         selected_ids = json.loads(ua.selected_answer_ids) if ua else []
         question_results.append({
+            "modal_index": idx,
             "question": q,
             "answers": q.answers,
             "is_correct": ua.is_correct if ua else False,
             "selected_ids": selected_ids,
             "correct_ids": correct_ids,
         })
+    bookmarked_question_ids = {
+        row[0]
+        for row in db.query(models.Bookmark.question_id).filter(
+            models.Bookmark.user_id == user.id,
+            models.Bookmark.question_id.in_([q.id for q in questions]),
+        ).all()
+    }
+    saved_question_results = [
+        qr for qr in question_results if qr["question"].id in bookmarked_question_ids
+    ]
     return templates.TemplateResponse("results.html", {
         "request": request, "user": user, "test": attempt.test,
         "attempt": attempt, "question_results": question_results,
+        "bookmarked_question_ids": bookmarked_question_ids,
+        "saved_question_results": saved_question_results,
     })
 
 
