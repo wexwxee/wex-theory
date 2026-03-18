@@ -115,13 +115,18 @@
           setInterval(tick, 60000);
         })();
         </script>
-        {% else %}
+        {% elif user.subscription_status != 'free' %}
         <div class="sub-status-card expired">
           <div class="sub-status-title" style="color:var(--wrong);">Expired</div>
           <div class="sub-status-meta">Your subscription has expired. Premium tests are locked until you renew access.</div>
           <div style="margin-top:12px;">
-            <a href="#" onclick="return openTelegramPurchase({ plan: 'Premium', amount: '99 kr', duration: '30 days' })" class="btn-primary btn-sm">Renew Access</a>
+            <a href="/pricing" class="btn-primary btn-sm">Renew Access</a>
           </div>
+        </div>
+        {% else %}
+        <div class="sub-status-card">
+          <div class="sub-status-title" style="color:var(--text);">Free</div>
+          <div class="sub-status-meta">You can use Test 1 for free. Open pricing when you want access to all 13 tests.</div>
         </div>
         {% endif %}
       {% endif %}
@@ -130,7 +135,7 @@
       <a href="/profile" class="btn-ghost btn-sm">History</a>
       <a href="/saved" class="btn-ghost btn-sm saved-pill"><i class="fa-solid fa-bookmark"></i><span>Saved</span></a>
       {% if not user.is_admin and not has_access %}
-        <a href="#" onclick="return openTelegramPurchase({ plan: 'Premium', amount: '99 kr', duration: '30 days' })" class="btn-primary btn-sm">{% if user.subscription_status != 'free' %}Renew Access{% else %}Unlock Full Access{% endif %}</a>
+        <a href="/pricing" class="btn-primary btn-sm">{% if user.subscription_status != 'free' %}Renew Access{% else %}Unlock Full Access{% endif %}</a>
       {% endif %}
     </div>
   </div>
@@ -203,7 +208,7 @@
   <div class="card" style="padding:32px;text-align:center;margin-top:24px;border:1px solid var(--border);">
     <div style="font-size:1.3rem;font-weight:800;margin-bottom:8px;">Unlock All 13 Tests</div>
     <p style="color:var(--text-muted);margin-bottom:20px;max-width:440px;margin-left:auto;margin-right:auto;">Keep Test 1 free forever, or unlock the full exam-style practice set with 13 tests, explanations, and saved progress.</p>
-    <a href="#" onclick="return openTelegramPurchase({ plan: 'Premium', amount: '99 kr', duration: '30 days' })" class="btn-primary">{% if user.subscription_status != 'free' %}Renew Access{% else %}Unlock Full Access{% endif %}</a>
+    <a href="/pricing" class="btn-primary">{% if user.subscription_status != 'free' %}Renew Access{% else %}Unlock Full Access{% endif %}</a>
   </div>
   {% endif %}
 </div>
@@ -231,7 +236,7 @@
       This test is available to subscribers. Unlock all 13 tests and maximize your chances of passing.
     </p>
     <div style="display:flex;flex-direction:column;gap:10px;max-width:240px;margin:0 auto;">
-      <a href="#" onclick="return openTelegramPurchase({ plan: 'Premium', amount: '99 kr', duration: '30 days' })" class="btn-primary">Unlock Full Access</a>
+      <a href="/pricing" class="btn-primary">Unlock Full Access</a>
       <button onclick="document.getElementById('paywallModal').classList.remove('open')" class="btn-ghost">Maybe later</button>
     </div>
   </div>
