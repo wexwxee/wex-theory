@@ -321,6 +321,54 @@ function filterUsers() {
   });
 }
 
+function setMessageAttachment(attachmentEl, attachmentName, attachmentPath, attachmentType) {
+  attachmentEl.replaceChildren();
+  if (!attachmentPath) {
+    attachmentEl.style.display = 'none';
+    return;
+  }
+  const isImage = (attachmentType || '').startsWith('image/') || /\.(png|jpe?g|gif|webp)$/i.test(attachmentName || '');
+  attachmentEl.style.display = 'block';
+
+  const title = document.createElement('div');
+  title.style.cssText = 'font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;';
+  title.textContent = 'Attachment';
+
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;';
+
+  const meta = document.createElement('div');
+  const nameEl = document.createElement('div');
+  nameEl.style.fontWeight = '600';
+  nameEl.textContent = attachmentName || 'Attached file';
+  const typeEl = document.createElement('div');
+  typeEl.style.cssText = 'font-size:0.8rem;color:var(--text-muted);';
+  typeEl.textContent = attachmentType || 'File';
+  meta.appendChild(nameEl);
+  meta.appendChild(typeEl);
+
+  const link = document.createElement('a');
+  link.href = attachmentPath;
+  link.target = '_blank';
+  link.rel = 'noopener';
+  link.className = 'btn-ghost btn-sm';
+  link.textContent = 'Open';
+
+  row.appendChild(meta);
+  row.appendChild(link);
+
+  attachmentEl.appendChild(title);
+  attachmentEl.appendChild(row);
+
+  if (isImage) {
+    const img = document.createElement('img');
+    img.src = attachmentPath;
+    img.alt = attachmentName || 'Attachment';
+    img.style.cssText = 'margin-top:12px;max-width:100%;border-radius:8px;border:1px solid var(--border);';
+    attachmentEl.appendChild(img);
+  }
+}
+
 const canManageAdminRoles = {{ can_manage_admin_roles | tojson }};
 
 // Edit modal
@@ -505,24 +553,7 @@ async function viewMessage(id, name, email, subject, message, date, isRead, atta
   document.getElementById('msgModalDate').textContent = date;
   document.getElementById('msgModalBody').textContent = message;
   const attachmentEl = document.getElementById('msgModalAttachment');
-  if (attachmentPath) {
-    const isImage = (attachmentType || '').startsWith('image/') || /\.(png|jpe?g|gif|webp)$/i.test(attachmentName || '');
-    attachmentEl.style.display = 'block';
-    attachmentEl.innerHTML = `
-      <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Attachment</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-        <div>
-          <div style="font-weight:600;">${attachmentName || 'Attached file'}</div>
-          <div style="font-size:0.8rem;color:var(--text-muted);">${attachmentType || 'File'}</div>
-        </div>
-        <a href="${attachmentPath}" target="_blank" rel="noopener" class="btn-ghost btn-sm">Open</a>
-      </div>
-      ${isImage ? `<img src="${attachmentPath}" alt="${attachmentName || 'Attachment'}" style="margin-top:12px;max-width:100%;border-radius:8px;border:1px solid var(--border);">` : ''}
-    `;
-  } else {
-    attachmentEl.style.display = 'none';
-    attachmentEl.innerHTML = '';
-  }
+  setMessageAttachment(attachmentEl, attachmentName, attachmentPath, attachmentType);
   document.getElementById('msgModal').classList.add('open');
 
   if (!isRead) {

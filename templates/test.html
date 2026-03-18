@@ -313,8 +313,71 @@ function updateTimerDisplay() {
 }
 
 // ── Render ────────────────────────────────────────────────────────
-function escapeHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function appendWordWrappedText(parent, text, stopWords) {
+  const fragment = document.createDocumentFragment();
+  const regex = /\b([a-zA-Z]{3,})\b/g;
+  let lastIndex = 0;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      fragment.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
+    }
+    const word = match[0];
+    if (stopWords.has(word.toLowerCase())) {
+      fragment.appendChild(document.createTextNode(word));
+    } else {
+      const wordEl = document.createElement('span');
+      wordEl.className = 'tw';
+      wordEl.textContent = word;
+      fragment.appendChild(wordEl);
+    }
+    lastIndex = regex.lastIndex;
+  }
+  if (lastIndex < text.length) {
+    fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
+  }
+  parent.appendChild(fragment);
+}
+
+function setWordPopupLoading(popup, word) {
+  popup.replaceChildren();
+  const orig = document.createElement('div');
+  orig.className = 'wp-orig';
+  orig.textContent = word;
+  const loading = document.createElement('div');
+  loading.className = 'wp-load';
+  loading.textContent = '⏳';
+  popup.appendChild(orig);
+  popup.appendChild(loading);
+}
+
+function setWordPopupResult(popup, word, result) {
+  popup.replaceChildren();
+  const orig = document.createElement('div');
+  orig.className = 'wp-orig';
+  orig.textContent = word;
+  const translation = document.createElement('div');
+  translation.className = 'wp-tr';
+  translation.textContent = result.main || '-';
+  popup.appendChild(orig);
+  popup.appendChild(translation);
+  if (result.contextPhrase) {
+    const context = document.createElement('div');
+    context.className = 'wp-context';
+    context.textContent = `Context: ${result.contextPhrase} -> ${result.contextTranslation}`;
+    popup.appendChild(context);
+  }
+  if (Array.isArray(result.variants) && result.variants.length) {
+    const variants = document.createElement('div');
+    variants.className = 'wp-variants';
+    result.variants.forEach((item) => {
+      const variant = document.createElement('span');
+      variant.className = 'wp-v';
+      variant.textContent = item;
+      variants.appendChild(variant);
+    });
+    popup.appendChild(variants);
+  }
 }
 
 function renderQuestion() {
@@ -358,13 +421,22 @@ function renderQuestion() {
   q.answers.forEach((a, idx) => {
     const div = document.createElement('div');
     div.className = 'answer-option' + (selected.includes(a.id) ? ' selected' : '');
+    const checkbox = document.createElement('div');
+    checkbox.className = 'answer-checkbox';
+    const label = document.createElement('span');
+    label.className = 'answer-option-label';
+    label.textContent = a.text;
+    label.dataset.sourceText = a.text;
     const ruText = (translateMode && trans?.a?.[idx]) ? trans.a[idx] : null;
-    const ruSpan = ruText
-      ? `<br><span style="font-size:0.85rem;color:#6b7280;font-style:italic;">${escapeHtml(ruText)}</span>`
-      : '';
-    div.innerHTML = `<div class="answer-checkbox"></div>
-      <span class="answer-option-label">${escapeHtml(a.text)}${ruSpan}</span>`;
-    div.querySelector('.answer-option-label').dataset.sourceText = a.text;
+    if (ruText) {
+      label.appendChild(document.createElement('br'));
+      const ruNode = document.createElement('span');
+      ruNode.style.cssText = 'font-size:0.85rem;color:#6b7280;font-style:italic;';
+      ruNode.textContent = ruText;
+      label.appendChild(ruNode);
+    }
+    div.appendChild(checkbox);
+    div.appendChild(label);
     div.addEventListener('click', () => toggleAnswer(q.id, a.id, div));
     container.appendChild(div);
   });
@@ -738,9 +810,7 @@ function _wrapWords(el) {
       const text = node.textContent;
       if (!/[a-zA-Z]{3,}/.test(text)) return;
       const wrap = document.createElement('span');
-      wrap.innerHTML = text.replace(/\b([a-zA-Z]{3,})\b/g, (m) =>
-        _STOP.has(m.toLowerCase()) ? m : `<span class="tw">${m}</span>`
-      );
+      appendWordWrappedText(wrap, text, _STOP);
       node.parentNode.replaceChild(wrap, node);
     } else if (node.nodeType === 1 &&
                !['SCRIPT','STYLE','INPUT','TEXTAREA'].includes(node.tagName) &&
@@ -772,7 +842,7 @@ document.addEventListener('mouseover', (e) => {
 
   const popup = document.createElement('div');
   popup.className = 'word-popup';
-  popup.innerHTML = `<div class="wp-orig">${word}</div><div class="wp-load">⏳</div>`;
+  setWordPopupLoading(popup, word);
   document.body.appendChild(popup);
   _wordPopup = popup;
 
@@ -783,13 +853,7 @@ document.addEventListener('mouseover', (e) => {
 
   _translateWordInContext(word, contextText).then(result => {
     if (_wordPopup !== popup) return;
-    const contextHtml = result.contextPhrase
-      ? `<div class="wp-context">Context: ${result.contextPhrase} -> ${result.contextTranslation}</div>`
-      : '';
-    const varHtml = result.variants.length
-      ? `<div class="wp-variants">${result.variants.map(v => `<span class="wp-v">${v}</span>`).join('')}</div>`
-      : '';
-    popup.innerHTML = `<div class="wp-orig">${word}</div><div class="wp-tr">${result.main}</div>${contextHtml}${varHtml}`;
+    setWordPopupResult(popup, word, result);
     _popupPos(popup, rect);
   });
 });

@@ -468,6 +468,17 @@
       .replace(/'/g, '&#39;');
   }
 
+  function createNode(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (typeof text === 'string') node.textContent = text;
+    return node;
+  }
+
+  function clearNode(node) {
+    if (node) node.replaceChildren();
+  }
+
   function formatPreview(thread) {
     if (thread.preview) return escapeHtml(thread.preview);
     if (thread.has_attachment) return 'Attachment added';
@@ -501,150 +512,235 @@
   }
 
   function renderAttachment(message) {
-    if (!message.attachment_path) return '';
-    const preview = message.is_image
-      ? `<img src="${escapeHtml(message.attachment_path)}" alt="${escapeHtml(message.attachment_name || 'attachment')}" class="attachment-preview">`
-      : '';
-    return `
-      <div class="attachment-card">
-        <div class="attachment-title">Attachment</div>
-        <div class="attachment-name">${escapeHtml(message.attachment_name || 'Attached file')}</div>
-        <div class="attachment-actions">
-          <a href="${escapeHtml(message.attachment_path)}" target="_blank" rel="noopener" class="btn-ghost btn-sm">Open attachment</a>
-          <a href="${escapeHtml(message.attachment_path)}" download class="btn-ghost btn-sm">Download</a>
-        </div>
-        ${preview}
-      </div>
-    `;
+    if (!message.attachment_path) return null;
+    const card = createNode('div', 'attachment-card');
+    card.appendChild(createNode('div', 'attachment-title', 'Attachment'));
+    card.appendChild(createNode('div', 'attachment-name', message.attachment_name || 'Attached file'));
+
+    const actions = createNode('div', 'attachment-actions');
+
+    const openLink = createNode('a', 'btn-ghost btn-sm', 'Open attachment');
+    openLink.href = message.attachment_path;
+    openLink.target = '_blank';
+    openLink.rel = 'noopener';
+    actions.appendChild(openLink);
+
+    const downloadLink = createNode('a', 'btn-ghost btn-sm', 'Download');
+    downloadLink.href = message.attachment_path;
+    downloadLink.download = '';
+    actions.appendChild(downloadLink);
+
+    card.appendChild(actions);
+
+    if (message.is_image) {
+      const preview = createNode('img', 'attachment-preview');
+      preview.src = message.attachment_path;
+      preview.alt = message.attachment_name || 'attachment';
+      card.appendChild(preview);
+    }
+
+    return card;
   }
 
   function renderThreadList(threads) {
     if (!threadList) return;
+    clearNode(threadList);
     if (!threads.length) {
-      threadList.innerHTML = `
-        <div class="chat-empty-inner">
-          <div class="chat-title" style="margin-bottom:8px;">No conversations yet</div>
-          <div class="empty-copy">${isAdminView ? 'Пользовательские обращения появятся здесь автоматически.' : 'Открой Contact, чтобы создать первое обращение.'}</div>
-        </div>
-      `;
+      const empty = createNode('div', 'chat-empty-inner');
+      const title = createNode('div', 'chat-title', 'No conversations yet');
+      title.style.marginBottom = '8px';
+      empty.appendChild(title);
+      empty.appendChild(createNode('div', 'empty-copy', isAdminView
+        ? 'User support conversations will appear here automatically.'
+        : 'Open Contact to create your first support conversation.'
+      ));
+      threadList.appendChild(empty);
       return;
     }
 
-    threadList.innerHTML = threads.map((thread) => {
-      const activeClass = thread.id === activeThreadId ? 'active' : '';
-      const unread = thread.unread_count > 0 ? `<span class="count-pill">${thread.unread_count}</span>` : '';
-      const userLine = isAdminView ? `<div class="thread-meta">${escapeHtml(thread.user_name)} · ${escapeHtml(thread.user_public_id || '')}</div>` : '';
-      const attachBadge = thread.has_attachment ? `<span class="attach-badge">File</span>` : '';
-      return `
-        <a href="#" class="thread-card ${activeClass}" data-thread-id="${thread.id}">
-          <div class="thread-card-head">
-            <div class="thread-subject">${escapeHtml(thread.subject)}</div>
-            <div style="display:flex;gap:8px;align-items:center;">${attachBadge}${unread}</div>
-          </div>
-          ${userLine}
-          <div class="thread-preview">${formatPreview(thread)}</div>
-          ${thread.unread_count > 0 ? `<div class="thread-fresh">New message</div>` : ''}
-          <div class="thread-meta" style="margin-top:10px;">Updated ${escapeHtml(thread.updated_at)}</div>
-        </a>
-      `;
-    }).join('');
+    threads.forEach((thread) => {
+      const node = createNode('a', `thread-card${thread.id === activeThreadId ? ' active' : ''}`);
+      node.href = '#';
+      node.dataset.threadId = String(thread.id);
 
-    threadList.querySelectorAll('[data-thread-id]').forEach((node) => {
+      const head = createNode('div', 'thread-card-head');
+      head.appendChild(createNode('div', 'thread-subject', thread.subject));
+      const headRight = createNode('div');
+      headRight.style.cssText = 'display:flex;gap:8px;align-items:center;';
+      if (thread.has_attachment) {
+        headRight.appendChild(createNode('span', 'attach-badge', 'File'));
+      }
+      if (thread.unread_count > 0) {
+        headRight.appendChild(createNode('span', 'count-pill', String(thread.unread_count)));
+      }
+      head.appendChild(headRight);
+      node.appendChild(head);
+
+      if (isAdminView) {
+        node.appendChild(createNode('div', 'thread-meta', `${thread.user_name || ''} · ${thread.user_public_id || ''}`));
+      }
+
+      node.appendChild(createNode('div', 'thread-preview', formatPreview(thread)));
+      if (thread.unread_count > 0) {
+        node.appendChild(createNode('div', 'thread-fresh', 'New message'));
+      }
+      const updated = createNode('div', 'thread-meta', `Updated ${thread.updated_at || ''}`);
+      updated.style.marginTop = '10px';
+      node.appendChild(updated);
+
       node.addEventListener('click', function (event) {
         event.preventDefault();
         activeThreadId = Number(this.getAttribute('data-thread-id'));
         updateUrl(activeThreadId);
         loadSupportData(true);
       });
+      threadList.appendChild(node);
     });
+    return;
   }
 
   function renderChat(activeThread, threads) {
     if (!chatPanel) return;
     syncDraftFromComposer();
+    clearNode(chatPanel);
 
     if (!activeThread) {
       lastMessagesSignature = '';
-      chatPanel.innerHTML = `
-        <div class="chat-empty">
-          <div class="chat-empty-inner">
-            <div class="chat-title" style="margin-bottom:10px;">No active chat selected</div>
-            <div class="empty-copy">${isAdminView ? 'Выбери обращение слева, и здесь появится диалог, статус и вложения пользователя.' : 'Открой Contact и создай обращение, после чего чат появится здесь автоматически.'}</div>
-          </div>
-        </div>
-      `;
+      const empty = createNode('div', 'chat-empty');
+      const inner = createNode('div', 'chat-empty-inner');
+      const title = createNode('div', 'chat-title', 'No active chat selected');
+      title.style.marginBottom = '10px';
+      inner.appendChild(title);
+      inner.appendChild(createNode('div', 'empty-copy', isAdminView
+        ? 'Choose a conversation on the left to view the chat, status, and attachments.'
+        : 'Open Contact and create a request. Your support chat will appear here automatically.'
+      ));
+      empty.appendChild(inner);
+      chatPanel.appendChild(empty);
       return;
     }
 
-    const userInfo = isAdminView
-      ? `<div class="chat-header-copy"><strong>${escapeHtml(activeThread.user_name)}</strong> · ${escapeHtml(activeThread.user_email)}<br>User ID: <strong>${escapeHtml(activeThread.user_public_id || '')}</strong></div>`
-      : `<div class="chat-header-copy">Если вы прикрепили скриншот или файл, он появится прямо в сообщении ниже с кнопкой <strong>Open attachment</strong>.</div>`;
-
-    const statusSelect = isAdminView ? `
-      <div class="form-group">
-        <label class="form-label" for="replyStatus">Status</label>
-        <select id="replyStatus" name="status">
-          <option value="open" ${activeThread.status === 'open' ? 'selected' : ''}>Open</option>
-          <option value="answered" ${activeThread.status === 'answered' ? 'selected' : ''}>Answered</option>
-          <option value="closed" ${activeThread.status === 'closed' ? 'selected' : ''}>Closed</option>
-        </select>
-      </div>` : '';
-
-    const messages = activeThread.messages.map((message) => `
-      <div class="${messageBubbleClass(message)}">
-        <div class="message-bubble">
-          <div class="message-meta">
-            <span>${escapeHtml(message.sender_name || (message.sender_role === 'system' ? 'System' : message.sender_role === 'admin' ? 'Support' : 'User'))}</span>
-            <span>${escapeHtml(message.created_at)}</span>
-          </div>
-          ${message.body ? `<div class="message-body">${escapeHtml(message.body)}</div>` : ''}
-          ${renderAttachment(message)}
-        </div>
-      </div>
-    `).join('');
-
     const storedDraft = draftByThread[activeThread.id] || '';
     const storedStatus = statusDraftByThread[activeThread.id] || activeThread.status;
+    const statusText = activeThread.status.charAt(0).toUpperCase() + activeThread.status.slice(1);
 
-    chatPanel.innerHTML = `
-      <div class="chat-wrap">
-        <div class="chat-header">
-          <div class="chat-header-top">
-            <div>
-              <div class="chat-title">${escapeHtml(activeThread.subject)}</div>
-              <div class="chat-meta">Status: ${escapeHtml(activeThread.status.charAt(0).toUpperCase() + activeThread.status.slice(1))} · Created ${escapeHtml(activeThread.created_at)}</div>
-            </div>
-            <span class="status-badge">${escapeHtml(activeThread.status.charAt(0).toUpperCase() + activeThread.status.slice(1))}</span>
-          </div>
-          ${userInfo}
-        </div>
-        <div class="chat-scroll" id="chatMessages">${messages}</div>
-        <form id="replyForm" action="/api/support/threads/${activeThread.id}/reply" method="post" enctype="multipart/form-data" class="composer">
-          ${statusSelect}
-          <div class="form-group">
-            <label class="form-label" for="replyMessage">${isAdminView ? 'Reply' : 'Message'}</label>
-            <textarea id="replyMessage" name="message" rows="4" placeholder="${isAdminView ? 'Reply to the user here...' : 'Опиши проблему подробнее. Если есть ошибка, ниже можно приложить скриншот или файл.'}"></textarea>
-          </div>
-          <div class="upload-box">
-            <label class="form-label" for="replyAttachment">Attachment (optional)</label>
-            <input type="file" id="replyAttachment" name="attachment" accept=".png,.jpg,.jpeg,.webp,.gif,.pdf,.txt,.log,.json">
-            <div class="upload-hint">Можно приложить скрин ошибки, PDF, лог, JSON или другой поддерживаемый файл до 10 MB.</div>
-            <div class="upload-name" id="uploadName">No file selected</div>
-            <img id="uploadPreview" class="upload-preview" alt="Selected attachment preview">
-          </div>
-          <div class="composer-row" style="margin-top:14px;">
-            <div class="composer-note">Live mode is on. New messages will appear automatically.</div>
-            <button class="btn-primary" type="submit" id="replySubmit">${isAdminView ? 'Send Reply' : 'Send Message'}</button>
-          </div>
-        </form>
-      </div>
-    `;
+    const wrap = createNode('div', 'chat-wrap');
+    const header = createNode('div', 'chat-header');
+    const headerTop = createNode('div', 'chat-header-top');
+    const headerLeft = createNode('div');
+    headerLeft.appendChild(createNode('div', 'chat-title', activeThread.subject));
+    headerLeft.appendChild(createNode('div', 'chat-meta', `Status: ${statusText} · Created ${activeThread.created_at}`));
+    headerTop.appendChild(headerLeft);
+    headerTop.appendChild(createNode('span', 'status-badge', statusText));
+    header.appendChild(headerTop);
+
+    const headerCopy = createNode('div', 'chat-header-copy');
+    if (isAdminView) {
+      headerCopy.appendChild(createNode('strong', null, activeThread.user_name || ''));
+      headerCopy.appendChild(document.createTextNode(` · ${activeThread.user_email || ''}`));
+      headerCopy.appendChild(document.createElement('br'));
+      headerCopy.appendChild(document.createTextNode('User ID: '));
+      headerCopy.appendChild(createNode('strong', null, activeThread.user_public_id || ''));
+    } else {
+      headerCopy.appendChild(document.createTextNode('If you attached a screenshot or file, it will appear directly in the message below with the '));
+      headerCopy.appendChild(createNode('strong', null, 'Open attachment'));
+      headerCopy.appendChild(document.createTextNode(' button.'));
+    }
+    header.appendChild(headerCopy);
+    wrap.appendChild(header);
+
+    const messagesNode = createNode('div', 'chat-scroll');
+    messagesNode.id = 'chatMessages';
+    (activeThread.messages || []).forEach((message) => {
+      const row = createNode('div', messageBubbleClass(message));
+      const bubble = createNode('div', 'message-bubble');
+      const meta = createNode('div', 'message-meta');
+      meta.appendChild(createNode('span', null, message.sender_name || (message.sender_role === 'system' ? 'System' : message.sender_role === 'admin' ? 'Support' : 'User')));
+      meta.appendChild(createNode('span', null, message.created_at || ''));
+      bubble.appendChild(meta);
+      if (message.body) {
+        bubble.appendChild(createNode('div', 'message-body', message.body));
+      }
+      const attachmentNode = renderAttachment(message);
+      if (attachmentNode) bubble.appendChild(attachmentNode);
+      row.appendChild(bubble);
+      messagesNode.appendChild(row);
+    });
+    wrap.appendChild(messagesNode);
+
+    const form = createNode('form', 'composer');
+    form.id = 'replyForm';
+    form.action = `/api/support/threads/${activeThread.id}/reply`;
+    form.method = 'post';
+    form.enctype = 'multipart/form-data';
+
+    if (isAdminView) {
+      const statusGroup = createNode('div', 'form-group');
+      const statusLabel = createNode('label', 'form-label', 'Status');
+      statusLabel.setAttribute('for', 'replyStatus');
+      const statusSelectNode = createNode('select');
+      statusSelectNode.id = 'replyStatus';
+      statusSelectNode.name = 'status';
+      ['open', 'answered', 'closed'].forEach((value) => {
+        const option = createNode('option', null, value.charAt(0).toUpperCase() + value.slice(1));
+        option.value = value;
+        if (value === activeThread.status) option.selected = true;
+        statusSelectNode.appendChild(option);
+      });
+      statusGroup.appendChild(statusLabel);
+      statusGroup.appendChild(statusSelectNode);
+      form.appendChild(statusGroup);
+    }
+
+    const messageGroup = createNode('div', 'form-group');
+    const messageLabel = createNode('label', 'form-label', isAdminView ? 'Reply' : 'Message');
+    messageLabel.setAttribute('for', 'replyMessage');
+    const textarea = createNode('textarea');
+    textarea.id = 'replyMessage';
+    textarea.name = 'message';
+    textarea.rows = 4;
+    textarea.placeholder = isAdminView
+      ? 'Reply to the user here...'
+      : 'Describe the problem in more detail. If there is an error, you can attach a screenshot or file below.';
+    messageGroup.appendChild(messageLabel);
+    messageGroup.appendChild(textarea);
+    form.appendChild(messageGroup);
+
+    const uploadBox = createNode('div', 'upload-box');
+    const uploadLabel = createNode('label', 'form-label', 'Attachment (optional)');
+    uploadLabel.setAttribute('for', 'replyAttachment');
+    const fileInput = createNode('input');
+    fileInput.type = 'file';
+    fileInput.id = 'replyAttachment';
+    fileInput.name = 'attachment';
+    fileInput.accept = '.png,.jpg,.jpeg,.webp,.gif,.pdf,.txt,.log,.json';
+    const uploadHint = createNode('div', 'upload-hint', 'You can attach a screenshot, PDF, log, JSON, or another supported file up to 10 MB.');
+    const uploadName = createNode('div', 'upload-name', 'No file selected');
+    uploadName.id = 'uploadName';
+    const uploadPreview = createNode('img', 'upload-preview');
+    uploadPreview.id = 'uploadPreview';
+    uploadPreview.alt = 'Selected attachment preview';
+    uploadBox.appendChild(uploadLabel);
+    uploadBox.appendChild(fileInput);
+    uploadBox.appendChild(uploadHint);
+    uploadBox.appendChild(uploadName);
+    uploadBox.appendChild(uploadPreview);
+    form.appendChild(uploadBox);
+
+    const composerRow = createNode('div', 'composer-row');
+    composerRow.style.marginTop = '14px';
+    composerRow.appendChild(createNode('div', 'composer-note', 'Live mode is on. New messages will appear automatically.'));
+    const submitBtn = createNode('button', 'btn-primary', isAdminView ? 'Send Reply' : 'Send Message');
+    submitBtn.type = 'submit';
+    submitBtn.id = 'replySubmit';
+    composerRow.appendChild(submitBtn);
+    form.appendChild(composerRow);
+
+    wrap.appendChild(form);
+    chatPanel.appendChild(wrap);
 
     bindComposer();
-    const textarea = document.getElementById('replyMessage');
-    if (textarea) {
-      textarea.value = storedDraft;
-    }
+    textarea.value = storedDraft;
     const statusSelectNode = document.getElementById('replyStatus');
     if (statusSelectNode && storedStatus) {
       statusSelectNode.value = storedStatus;
@@ -652,6 +748,8 @@
     const chatMessages = document.getElementById('chatMessages');
     if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
     lastMessagesSignature = buildMessagesSignature(activeThread);
+    return;
+
   }
 
   function bindComposer() {
