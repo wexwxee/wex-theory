@@ -100,6 +100,28 @@
     }
     input:focus { border-color: var(--text-muted); }
     input::placeholder { color: var(--text-muted); }
+    .password-wrap {
+      position: relative;
+    }
+    .password-wrap input {
+      padding-right: 48px;
+    }
+    .password-toggle {
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      transform: translateY(-50%);
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.95rem;
+      line-height: 1;
+      padding: 4px;
+    }
+    .password-toggle:hover {
+      color: var(--text);
+    }
     .msg-box {
       padding: 12px 14px;
       border-radius: 8px;
@@ -181,7 +203,10 @@
       </div>
       <div class="form-group">
         <label for="password">Password</label>
-        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+        <div class="password-wrap">
+          <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+          <button type="button" class="password-toggle" id="passwordToggle" onclick="togglePassword('password','passwordToggle')" aria-label="Show password">👁</button>
+        </div>
       </div>
       <button class="btn-primary" id="btn" onclick="handleLogin()">Sign In</button>
 
@@ -232,6 +257,16 @@
     const box = document.getElementById('msgBox');
     box.className = 'msg-box ' + type;
     box.textContent = msg;
+  }
+
+  function togglePassword(inputId, buttonId) {
+    const input = document.getElementById(inputId);
+    const button = document.getElementById(buttonId);
+    if (!input || !button) return;
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    button.textContent = show ? '🙈' : '👁';
+    button.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
   }
 
   async function handleLogin() {
