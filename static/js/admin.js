@@ -23,6 +23,32 @@
     }
   }
 
+  async function copyPromoCode(button) {
+    const code = (button?.dataset.promoCode || '').trim();
+    if (!code) return;
+    const originalLabel = button.textContent;
+    try {
+      await navigator.clipboard.writeText(code);
+      button.textContent = 'Copied';
+      button.disabled = true;
+      showToast(`Copied ${code}`, 'success');
+      window.setTimeout(() => {
+        button.textContent = originalLabel;
+        button.disabled = false;
+      }, 1600);
+    } catch (e) {
+      showToast('Could not copy promo code', 'error');
+    }
+  }
+
+  function bindPromoCopyButtons(scope = document) {
+    scope.querySelectorAll('.promo-copy-btn').forEach((btn) => {
+      if (btn.dataset.boundCopy === '1') return;
+      btn.dataset.boundCopy = '1';
+      btn.addEventListener('click', () => copyPromoCode(btn));
+    });
+  }
+
   function filterUsers() {
     const query = (document.getElementById('userSearch').value || '').trim().toLowerCase();
     document.querySelectorAll('.user-row').forEach((row) => {
@@ -345,13 +371,19 @@
         if (promoTbody) {
           const row = document.createElement('tr');
           row.innerHTML = `
-            <td style="font-weight:700;letter-spacing:0.05em;">${data.code}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <span style="font-weight:700;letter-spacing:0.05em;">${data.code}</span>
+                <button class="btn-ghost btn-sm promo-copy-btn" type="button" data-promo-code="${data.code}">Copy</button>
+              </div>
+            </td>
             <td>${durationDays} days</td>
             <td>0${maxUsesRaw ? `/${maxUsesRaw}` : ' / unlimited'}</td>
             <td style="color:var(--text-muted);font-size:0.82rem;">${expiresAt || 'No expiry'}</td>
             <td><span class="badge-green">Active</span></td>
           `;
           promoTbody.prepend(row);
+          bindPromoCopyButtons(row);
         }
         const tabPromos = document.getElementById('tabPromos');
         if (tabPromos) {
@@ -473,4 +505,5 @@
     document.getElementById('msgModal').classList.remove('open');
   });
   document.getElementById('createPromoBtn')?.addEventListener('click', createPromoCode);
+  bindPromoCopyButtons();
 })();

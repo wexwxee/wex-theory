@@ -356,7 +356,14 @@
           <tbody id="promoCodesTbody">
             {% for promo in promo_codes %}
             <tr>
-              <td style="font-weight:700;letter-spacing:0.05em;">{{ promo.code }}</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                  <span style="font-weight:700;letter-spacing:0.05em;">{{ promo.code }}</span>
+                  <button class="btn-ghost btn-sm promo-copy-btn"
+                          type="button"
+                          data-promo-code="{{ promo.code }}">Copy</button>
+                </div>
+              </td>
               <td>{{ promo.duration_days }} days</td>
               <td>
                 {{ promo.current_uses }}{% if promo.max_uses is not none %}/{{ promo.max_uses }}{% else %} / unlimited{% endif %}
