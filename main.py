@@ -834,6 +834,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/test-images", StaticFiles(directory="test-images"), name="test-images")
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 templates = Jinja2Templates(directory="templates")
+templates.env.globals["asset_version"] = "20260318-adminflow-fix"
 
 
 # ─── One-time setup endpoint ───────────────────────────────────────────────────
@@ -1539,6 +1540,7 @@ async def admin_page(request: Request, db: Session = Depends(get_db)):
     messages = db.query(models.ContactMessage).order_by(
         models.ContactMessage.created_at.desc()
     ).all()
+    ensure_promo_codes_table(db)
     promo_codes = db.query(models.PromoCode).order_by(
         models.PromoCode.created_at.desc()
     ).all()
@@ -2377,6 +2379,7 @@ async def api_admin_create_promo_code(request: Request, db: Session = Depends(ge
     if not user or not user.is_admin:
         return JSONResponse({"error": "Forbidden"}, status_code=403)
     try:
+        ensure_promo_codes_table(db)
         data = await request.json()
         duration_days = int(data.get("duration_days", 0) or 0)
         max_uses_raw = data.get("max_uses")
