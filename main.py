@@ -6,6 +6,7 @@ import traceback
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Optional
+from urllib.parse import urlencode, quote
 from fastapi import FastAPI, Request, Depends, HTTPException, Header, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -53,6 +54,7 @@ TEMP_EMAIL_DOMAINS = {
     "dispostable.com", "maildrop.cc", "emailondeck.com", "temp-mail.org",
 }
 EMAIL_REGEX = re.compile(r"^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}$", re.IGNORECASE)
+VERIFICATION_EMAIL_SENDER = "WEXTheory <no-reply@mail.wextheory.cv>"
 
 
 def _env_flag(name: str, default: bool = False) -> bool:
@@ -100,7 +102,7 @@ def _new_public_user_id() -> str:
 
 
 def is_email_service_configured() -> bool:
-    return all((os.environ.get(name) or "").strip() for name in ("RESEND_API_KEY", "RESEND_FROM_EMAIL"))
+    return bool((os.environ.get("RESEND_API_KEY") or "").strip())
 
 
 def _clean_env_value(name: str, default: str = "") -> str:
@@ -108,6 +110,15 @@ def _clean_env_value(name: str, default: str = "") -> str:
     if value is None:
         return ""
     return str(value).strip().strip('"').strip("'").strip()
+
+
+def get_public_base_url(request: Optional[Request] = None) -> str:
+    configured = _clean_env_value("BASE_URL")
+    if configured:
+        return configured.rstrip("/")
+    if request is not None:
+        return str(request.base_url).rstrip("/")
+    return ""
 
 
 def validate_registration_email(email: str) -> Optional[str]:
@@ -147,27 +158,40 @@ def compute_admin_expiry(duration_value: int, duration_unit: str) -> datetime:
     return datetime.utcnow() + timedelta(days=value)
 
 
-def send_verification_email(recipient_email: str, code: str, recipient_name: str) -> None:
+def render_verification_email_html(recipient_name: str, confirm_url: str, code: str) -> str:
+    return templates.env.get_template("emails/verification_email.html").render(
+        recipient_name=recipient_name,
+        confirm_url=confirm_url,
+        fallback_url=confirm_url,
+        verification_code=code,
+    )
+
+
+def send_verification_email(recipient_email: str, code: str, recipient_name: str, confirm_url: str) -> None:
     if not is_email_service_configured():
         raise RuntimeError("Email verification is not configured yet")
 
     resend_api_key = _clean_env_value("RESEND_API_KEY")
-    sender = _clean_env_value("RESEND_FROM_EMAIL")
+    configured_sender = _clean_env_value("RESEND_FROM_EMAIL", VERIFICATION_EMAIL_SENDER)
+    sender = VERIFICATION_EMAIL_SENDER
     resend_api_url = _clean_env_value("RESEND_API_URL", "https://api.resend.com/emails")
 
     if not resend_api_key:
         raise RuntimeError("RESEND_API_KEY is empty")
-    if not sender:
-        raise RuntimeError("RESEND_FROM_EMAIL is empty")
+    if configured_sender and configured_sender != VERIFICATION_EMAIL_SENDER:
+        print(f"[EMAIL API] RESEND_FROM_EMAIL overridden to required sender {VERIFICATION_EMAIL_SENDER!r} (configured={configured_sender!r})")
 
     payload = {
         "from": sender,
         "to": [recipient_email],
-        "subject": "Your WEXTheory verification code",
+        "subject": "Confirm your email for WEXTheory",
+        "html": render_verification_email_html(recipient_name, confirm_url, code),
         "text": (
             f"Hello {recipient_name},\n\n"
-            f"Your WEXTheory verification code is: {code}\n\n"
-            "The code expires in 10 minutes.\n"
+            "Confirm your email to finish creating your WEXTheory account.\n\n"
+            f"Verification code: {code}\n"
+            f"Confirm link: {confirm_url}\n\n"
+            "The verification link and code expire in 10 minutes.\n"
             "If you did not request this, you can ignore this email.\n"
         ),
     }
@@ -608,6 +632,51 @@ async def register_page(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
 
+def complete_email_verification(db: Session, email: str, code: str):
+    pending = (
+        db.query(models.EmailVerificationCode)
+        .filter(
+            models.EmailVerificationCode.email == email,
+            models.EmailVerificationCode.purpose == "register"
+        )
+        .order_by(models.EmailVerificationCode.created_at.desc())
+        .first()
+    )
+    if not pending:
+        return None, "Verification code not found. Request a new one."
+    if pending.expires_at < datetime.utcnow():
+        db.delete(pending)
+        db.commit()
+        return None, "Verification code expired. Request a new one."
+    if pending.code != code:
+        return None, "Invalid verification code"
+
+    existing = db.query(models.User).filter(models.User.email == email).first()
+    if existing:
+        db.delete(pending)
+        db.commit()
+        return None, "This email is already registered"
+
+    user = models.User(
+        name=pending.name,
+        public_id=generate_unique_public_user_id(db),
+        email=email,
+        password_hash=pending.password_hash,
+        created_at=datetime.utcnow(),
+        expires_at=datetime.utcnow(),
+        is_admin=False,
+        subscription_status="free",
+    )
+    db.add(user)
+    db.flush()
+    db.query(models.EmailVerificationCode).filter(
+        models.EmailVerificationCode.email == email,
+        models.EmailVerificationCode.purpose == "register"
+    ).delete(synchronize_session=False)
+    db.commit()
+    return user, None
+
+
 @app.get("/about", response_class=HTMLResponse)
 async def about_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
@@ -682,8 +751,12 @@ async def api_register(request: Request, db: Session = Depends(get_db)):
         )
         db.add(pending)
         db.commit()
+        confirm_url = get_public_base_url(request) + "/verify-email?" + urlencode({
+            "email": email,
+            "code": code,
+        })
         try:
-            send_verification_email(email, code, name)
+            send_verification_email(email, code, name, confirm_url)
         except Exception:
             db.query(models.EmailVerificationCode).filter(
                 models.EmailVerificationCode.email == email,
@@ -716,48 +789,10 @@ async def api_register_verify(request: Request, db: Session = Depends(get_db)):
 
         if not email or not code:
             return JSONResponse({"error": "Email and verification code are required"}, status_code=400)
-
-        pending = (
-            db.query(models.EmailVerificationCode)
-            .filter(
-                models.EmailVerificationCode.email == email,
-                models.EmailVerificationCode.purpose == "register"
-            )
-            .order_by(models.EmailVerificationCode.created_at.desc())
-            .first()
-        )
-        if not pending:
-            return JSONResponse({"error": "Verification code not found. Request a new one."}, status_code=404)
-        if pending.expires_at < datetime.utcnow():
-            db.delete(pending)
-            db.commit()
-            return JSONResponse({"error": "Verification code expired. Request a new one."}, status_code=400)
-        if pending.code != code:
-            return JSONResponse({"error": "Invalid verification code"}, status_code=400)
-
-        existing = db.query(models.User).filter(models.User.email == email).first()
-        if existing:
-            db.delete(pending)
-            db.commit()
-            return JSONResponse({"error": "This email is already registered"}, status_code=400)
-
-        user = models.User(
-            name=pending.name,
-            public_id=generate_unique_public_user_id(db),
-            email=email,
-            password_hash=pending.password_hash,
-            created_at=datetime.utcnow(),
-            expires_at=datetime.utcnow(),
-            is_admin=False,
-            subscription_status="free",
-        )
-        db.add(user)
-        db.flush()
-        db.query(models.EmailVerificationCode).filter(
-            models.EmailVerificationCode.email == email,
-            models.EmailVerificationCode.purpose == "register"
-        ).delete(synchronize_session=False)
-        db.commit()
+        user, error = complete_email_verification(db, email, code)
+        if error:
+            status_code = 404 if "not found" in error.lower() else 400
+            return JSONResponse({"error": error}, status_code=status_code)
 
         token = create_token(user.id)
         resp = JSONResponse({"success": True, "redirect": "/dashboard"})
@@ -769,6 +804,27 @@ async def api_register_verify(request: Request, db: Session = Depends(get_db)):
         print(f"[REGISTER VERIFY ERROR] {e}")
         traceback.print_exc()
         return JSONResponse({"error": f"Server error: {str(e)}"}, status_code=500)
+
+
+@app.get("/verify-email")
+async def verify_email_link(email: str, code: str, request: Request, db: Session = Depends(get_db)):
+    email = str(email or "").strip().lower()
+    code = str(code or "").strip()
+    if not email or not code:
+        return RedirectResponse(f"/register?error={quote('Verification link is incomplete')}", status_code=302)
+
+    user, error = complete_email_verification(db, email, code)
+    if error:
+        return RedirectResponse(
+            f"/register?error={quote(error)}&email={quote(email)}&code={quote(code)}",
+            status_code=302,
+        )
+
+    token = create_token(user.id)
+    resp = RedirectResponse("/dashboard?verified=1", status_code=302)
+    set_auth_cookie(resp, token, request)
+    print(f"[VERIFY LINK] success: id={user.id} email={email}")
+    return resp
 
 
 @app.post("/api/auth/login")

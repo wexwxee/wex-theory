@@ -287,6 +287,24 @@
 
   let pendingVerificationEmail = '';
 
+  (function initFromQuery() {
+    const params = new URLSearchParams(window.location.search);
+    const email = params.get('email') || '';
+    const code = params.get('code') || '';
+    const error = params.get('error') || '';
+    if (email) {
+      document.getElementById('email').value = email;
+      pendingVerificationEmail = email;
+    }
+    if (code) {
+      document.getElementById('verifyCode').value = code;
+      document.getElementById('verifyBox').classList.add('show');
+    }
+    if (error) {
+      showMsg(error, 'error');
+    }
+  })();
+
   async function handleRegister() {
     const btn = document.getElementById('btn');
     const name = document.getElementById('name').value.trim();
