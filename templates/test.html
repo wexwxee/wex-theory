@@ -2,6 +2,58 @@
 
 {% block title %}{{ test.title }} — WEX Theory{% endblock %}
 
+{% block head %}
+<style>
+  #testContainer {
+    max-width: 1420px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  #questionArea {
+    max-width: none;
+  }
+  .test-layout {
+    grid-template-columns: minmax(540px, 1.08fr) minmax(460px, 0.92fr);
+    gap: 20px;
+  }
+  .test-image-wrap img,
+  .test-image-placeholder {
+    min-height: 390px !important;
+  }
+  #questionText {
+    font-size: 1.34rem !important;
+    line-height: 1.42 !important;
+    margin-bottom: 12px !important;
+  }
+  #answersContainer .answer-option {
+    margin-bottom: 10px;
+  }
+  @media (max-width: 1200px) {
+    .test-layout {
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    #testContainer {
+      max-width: 1240px;
+    }
+  }
+  @media (max-width: 768px) {
+    #testContainer {
+      max-width: none;
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+    .test-image-wrap img,
+    .test-image-placeholder {
+      min-height: 260px !important;
+    }
+    #questionText {
+      font-size: 1.14rem !important;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block body %}
 <nav>
   <div class="nav-inner">
