@@ -341,20 +341,37 @@
         <button class="btn-primary" id="createPromoBtn" style="width:100%;">Generate Promo Code</button>
       </div>
 
-      <div class="card admin-table-wrap">
-        {% if promo_codes %}
+      <div style="display:grid;gap:16px;">
+        <div class="card admin-table-wrap">
+          <div style="padding:18px 20px 0 20px;">
+            <h3 style="font-size:1rem;font-weight:700;">Active Promo Codes</h3>
+            <div style="font-size:0.82rem;color:var(--text-muted);margin-top:4px;">Ready to use promo codes with remaining availability.</div>
+          </div>
+          {% set promo_ns = namespace(active_count=0, inactive_count=0) %}
+          {% for promo in promo_codes %}
+            {% set promo_state = promo_status(promo) %}
+            {% if promo_state == 'Active' %}
+              {% set promo_ns.active_count = promo_ns.active_count + 1 %}
+            {% else %}
+              {% set promo_ns.inactive_count = promo_ns.inactive_count + 1 %}
+            {% endif %}
+          {% endfor %}
+          {% if promo_ns.active_count > 0 %}
         <table class="admin-table" id="promoCodesTable">
           <thead>
             <tr>
               <th>Code</th>
               <th>Duration</th>
               <th>Uses</th>
+              <th>Created</th>
               <th>Expires</th>
               <th>Status</th>
             </tr>
           </thead>
           <tbody id="promoCodesTbody">
             {% for promo in promo_codes %}
+            {% set promo_state = promo_status(promo) %}
+            {% if promo_state == 'Active' %}
             <tr>
               <td>
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -368,6 +385,7 @@
               <td>
                 {{ promo.current_uses }}{% if promo.max_uses is not none %}/{{ promo.max_uses }}{% else %} / unlimited{% endif %}
               </td>
+              <td style="color:var(--text-muted);font-size:0.82rem;">{{ promo.created_at.strftime('%d %b %Y') }}</td>
               <td style="color:var(--text-muted);font-size:0.82rem;">
                 {% if promo.expires_at %}
                   {{ promo.expires_at.strftime('%d %b %Y') }}
@@ -376,27 +394,22 @@
                 {% endif %}
               </td>
               <td>
-                {% set promo_state = promo_status(promo) %}
-                {% if promo_state == 'Active' %}
                 <span class="badge-green">Active</span>
-                {% elif promo_state == 'Inactive' %}
-                <span class="badge-gray">Inactive</span>
-                {% else %}
-                <span class="badge-red">{{ promo_state }}</span>
-                {% endif %}
               </td>
             </tr>
+            {% endif %}
             {% endfor %}
           </tbody>
         </table>
         {% else %}
-        <div id="promoEmptyState" style="padding:28px;text-align:center;color:var(--text-muted);">No promo codes yet.</div>
+        <div id="promoEmptyState" style="padding:28px;text-align:center;color:var(--text-muted);">No active promo codes yet.</div>
         <table class="admin-table" id="promoCodesTable" style="display:none;">
           <thead>
             <tr>
               <th>Code</th>
               <th>Duration</th>
               <th>Uses</th>
+              <th>Created</th>
               <th>Expires</th>
               <th>Status</th>
             </tr>
@@ -404,6 +417,66 @@
           <tbody id="promoCodesTbody"></tbody>
         </table>
         {% endif %}
+        </div>
+
+        <div class="card admin-table-wrap">
+          <div style="padding:18px 20px 0 20px;">
+            <h3 style="font-size:1rem;font-weight:700;">Used / Inactive Promo Codes</h3>
+            <div style="font-size:0.82rem;color:var(--text-muted);margin-top:4px;">Expired, fully used or manually disabled codes are kept here.</div>
+          </div>
+          {% if promo_ns.inactive_count > 0 %}
+          <table class="admin-table" id="promoInactiveTable">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Duration</th>
+                <th>Uses</th>
+                <th>Created</th>
+                <th>Expires</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="promoInactiveTbody">
+              {% for promo in promo_codes %}
+              {% set promo_state = promo_status(promo) %}
+              {% if promo_state != 'Active' %}
+              <tr>
+                <td>
+                  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <span style="font-weight:700;letter-spacing:0.05em;">{{ promo.code }}</span>
+                    <button class="btn-ghost btn-sm promo-copy-btn"
+                            type="button"
+                            data-promo-code="{{ promo.code }}">Copy</button>
+                  </div>
+                </td>
+                <td>{{ promo.duration_days }} days</td>
+                <td>
+                  {{ promo.current_uses }}{% if promo.max_uses is not none %}/{{ promo.max_uses }}{% else %} / unlimited{% endif %}
+                </td>
+                <td style="color:var(--text-muted);font-size:0.82rem;">{{ promo.created_at.strftime('%d %b %Y') }}</td>
+                <td style="color:var(--text-muted);font-size:0.82rem;">
+                  {% if promo.expires_at %}
+                    {{ promo.expires_at.strftime('%d %b %Y') }}
+                  {% else %}
+                    No expiry
+                  {% endif %}
+                </td>
+                <td>
+                  {% if promo_state == 'Inactive' %}
+                  <span class="badge-gray">Inactive</span>
+                  {% else %}
+                  <span class="badge-red">{{ promo_state }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <div id="promoInactiveEmptyState" style="padding:28px;text-align:center;color:var(--text-muted);">No used or inactive promo codes.</div>
+          {% endif %}
+        </div>
       </div>
     </div>
   </div>

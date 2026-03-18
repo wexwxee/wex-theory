@@ -366,6 +366,11 @@
         const emptyState = document.getElementById('promoEmptyState');
         const promoTable = document.getElementById('promoCodesTable');
         const promoTbody = document.getElementById('promoCodesTbody');
+        const createdLabel = new Date().toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        }).replace(/ /g, ' ');
         if (emptyState) emptyState.style.display = 'none';
         if (promoTable) promoTable.style.display = '';
         if (promoTbody) {
@@ -379,6 +384,7 @@
             </td>
             <td>${durationDays} days</td>
             <td>0${maxUsesRaw ? `/${maxUsesRaw}` : ' / unlimited'}</td>
+            <td style="color:var(--text-muted);font-size:0.82rem;">${createdLabel}</td>
             <td style="color:var(--text-muted);font-size:0.82rem;">${expiresAt || 'No expiry'}</td>
             <td><span class="badge-green">Active</span></td>
           `;
