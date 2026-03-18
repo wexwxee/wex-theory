@@ -648,6 +648,16 @@ def save_support_attachment(upload: UploadFile) -> tuple[str, str, str]:
     return original_name, f"/uploads/support/{stored_name}", (upload.content_type or "")
 
 
+def get_uploaded_file(value) -> Optional[UploadFile]:
+    if value is None:
+        return None
+    filename = getattr(value, "filename", None)
+    file_obj = getattr(value, "file", None)
+    if filename and file_obj is not None:
+        return value
+    return None
+
+
 def create_support_system_message(db: Session, thread_id: int) -> None:
     sender_name = secrets.choice(SYSTEM_SUPPORT_SENDERS)
     body = secrets.choice(SYSTEM_SUPPORT_MESSAGES)
@@ -2059,14 +2069,14 @@ async def api_contact(request: Request, db: Session = Depends(get_db)):
         return limited
     try:
         form = await request.form()
-        attachment = form.get("attachment")
+        attachment = get_uploaded_file(form.get("attachment"))
         attachment_name = None
         attachment_path = None
         attachment_type = None
 
         current_user = get_current_user(request, db)
         if current_user:
-            if isinstance(attachment, UploadFile) and attachment.filename:
+            if attachment:
                 attachment_name, attachment_path, attachment_type = save_support_attachment(attachment)
             support_thread = models.SupportThread(
                 user_id=current_user.id,
@@ -2094,7 +2104,7 @@ async def api_contact(request: Request, db: Session = Depends(get_db)):
             db.commit()
             return JSONResponse({"success": True, "redirect": f"/messages?thread={support_thread.id}"})
 
-        if isinstance(attachment, UploadFile) and attachment.filename:
+        if attachment:
             attachment_name, attachment_path, attachment_type = save_contact_attachment(attachment)
 
         msg = models.ContactMessage(
@@ -2143,12 +2153,12 @@ async def api_support_reply(thread_id: int, request: Request, db: Session = Depe
 
     form = await request.form()
     body = str(form.get("message", "")).strip()
-    attachment = form.get("attachment")
+    attachment = get_uploaded_file(form.get("attachment"))
     attachment_name = None
     attachment_path = None
     attachment_type = None
 
-    if isinstance(attachment, UploadFile) and attachment.filename:
+    if attachment:
         attachment_name, attachment_path, attachment_type = save_support_attachment(attachment)
 
     if not body and not attachment_name:

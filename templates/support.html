@@ -64,7 +64,8 @@
   .empty-copy,
   .upload-hint,
   .composer-note,
-  .status-chip {
+  .status-chip,
+  .composer-feedback {
     color: var(--text-muted);
   }
   .thread-preview {
@@ -171,8 +172,8 @@
   .attachment-card {
     margin-top: 12px;
     border-radius: 16px;
-    padding: 12px;
-    background: rgba(77, 163, 255, 0.08);
+    padding: 14px;
+    background: linear-gradient(180deg, rgba(77, 163, 255, 0.08), rgba(77, 163, 255, 0.04));
     border: 1px dashed rgba(77, 163, 255, 0.34);
   }
   .attachment-title {
@@ -192,6 +193,11 @@
     gap: 10px;
     flex-wrap: wrap;
     margin-top: 10px;
+  }
+  .attachment-meta {
+    margin-top: 4px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
   }
   .attachment-preview {
     margin-top: 12px;
@@ -216,6 +222,10 @@
     padding: 14px;
     background: color-mix(in srgb, var(--bg-card) 84%, #ffffff 16%);
   }
+  .upload-box.has-file {
+    border-color: color-mix(in srgb, var(--accent, #35c759) 42%, var(--border) 58%);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent, #35c759) 10%, var(--bg-card) 90%), var(--bg-card));
+  }
   .upload-name {
     margin-top: 8px;
     font-weight: 700;
@@ -226,6 +236,32 @@
     max-width: 220px;
     border-radius: 14px;
     border: 1px solid var(--border);
+  }
+  .composer-feedback {
+    display: none;
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 0.88rem;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+  .composer-feedback.show {
+    display: block;
+  }
+  .composer-feedback.success {
+    color: var(--correct);
+    background: var(--correct-bg);
+    border-color: color-mix(in srgb, var(--correct) 55%, var(--border) 45%);
+  }
+  .composer-feedback.error {
+    color: var(--wrong);
+    background: var(--wrong-bg);
+    border-color: color-mix(in srgb, var(--wrong) 55%, var(--border) 45%);
+  }
+  .composer-feedback.info {
+    color: var(--text);
+    background: color-mix(in srgb, var(--bg-card) 82%, #ffffff 18%);
   }
   .chat-empty {
     display: flex;
@@ -278,6 +314,41 @@
     }
     .message-bubble {
       width: 100%;
+    }
+    .chat-header,
+    .composer,
+    .chat-scroll {
+      padding-left: 18px;
+      padding-right: 18px;
+    }
+  }
+  @media (max-width: 640px) {
+    .support-shell {
+      gap: 14px;
+    }
+    .thread-list {
+      padding: 12px;
+      max-height: none;
+    }
+    .thread-card {
+      padding: 14px;
+    }
+    .chat-title {
+      font-size: 0.98rem;
+    }
+    .message-bubble {
+      border-radius: 18px;
+      padding: 12px 14px;
+    }
+    .composer-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .composer-row .btn-primary {
+      width: 100%;
+    }
+    .upload-preview {
+      max-width: 100%;
     }
   }
 </style>
@@ -401,6 +472,7 @@
         </div>
 
         <form id="replyForm" action="/api/support/threads/{{ active_thread.id }}/reply" method="post" enctype="multipart/form-data" class="composer">
+          <div id="replyFeedback" class="composer-feedback" aria-live="polite"></div>
           {% if is_admin_view %}
           <div class="form-group">
             <label class="form-label" for="replyStatus">Status</label>

@@ -17,6 +17,7 @@
   let lastMessagesSignature = '';
   let draftByThread = {};
   let statusDraftByThread = {};
+  let uploadPreviewUrl = null;
 
   function escapeHtml(value) {
     return String(value || '')
@@ -36,6 +37,37 @@
 
   function clearNode(node) {
     if (node) node.replaceChildren();
+  }
+
+  function showComposerFeedback(message, type = 'info') {
+    const feedback = document.getElementById('replyFeedback');
+    if (!feedback) {
+      if (type === 'error') showToast(message, 'error');
+      if (type === 'success') showToast(message, 'success');
+      return;
+    }
+    feedback.className = `composer-feedback show ${type}`;
+    feedback.textContent = message;
+  }
+
+  function clearComposerFeedback() {
+    const feedback = document.getElementById('replyFeedback');
+    if (!feedback) return;
+    feedback.className = 'composer-feedback';
+    feedback.textContent = '';
+  }
+
+  function resetAttachmentPreview(nameNode, previewNode, fileInput) {
+    if (nameNode) nameNode.textContent = 'No file selected';
+    if (previewNode) {
+      previewNode.style.display = 'none';
+      previewNode.removeAttribute('src');
+    }
+    if (uploadPreviewUrl) {
+      URL.revokeObjectURL(uploadPreviewUrl);
+      uploadPreviewUrl = null;
+    }
+    fileInput?.closest('.upload-box')?.classList.remove('has-file');
   }
 
   function formatPreview(thread) {
@@ -75,6 +107,12 @@
     const card = createNode('div', 'attachment-card');
     card.appendChild(createNode('div', 'attachment-title', 'Attachment'));
     card.appendChild(createNode('div', 'attachment-name', message.attachment_name || 'Attached file'));
+    const metaText = [];
+    if (message.attachment_type) metaText.push(message.attachment_type);
+    if (message.is_image) metaText.push('Image preview available');
+    if (metaText.length) {
+      card.appendChild(createNode('div', 'attachment-meta', metaText.join(' · ')));
+    }
 
     const actions = createNode('div', 'attachment-actions');
 
@@ -316,6 +354,7 @@
     const fileInput = document.getElementById('replyAttachment');
     const nameNode = document.getElementById('uploadName');
     const previewNode = document.getElementById('uploadPreview');
+    const uploadBox = fileInput?.closest('.upload-box');
     if (!form) return;
 
     const textarea = document.getElementById('replyMessage');
@@ -332,7 +371,13 @@
       if (isSubmitting) return;
       isSubmitting = true;
       const submitBtn = document.getElementById('replySubmit');
-      if (submitBtn) submitBtn.disabled = true;
+      const originalBtnText = submitBtn ? submitBtn.textContent : '';
+      clearComposerFeedback();
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+      }
+      showComposerFeedback('Sending your message...', 'info');
 
       try {
         const response = await fetch(form.action, {
@@ -345,34 +390,49 @@
         });
         const data = await response.json();
         if (!response.ok) {
-          alert(data.error || 'Failed to send message');
+          showComposerFeedback(data.error || 'Failed to send message', 'error');
           return;
         }
         form.reset();
         if (activeThreadId) {
           draftByThread[activeThreadId] = '';
         }
-        if (nameNode) nameNode.textContent = 'No file selected';
-        if (previewNode) {
-          previewNode.style.display = 'none';
-          previewNode.removeAttribute('src');
-        }
+        resetAttachmentPreview(nameNode, previewNode, fileInput);
+        showComposerFeedback('Message sent successfully.', 'success');
+        showToast('Message sent', 'success');
         await loadSupportData(true);
+        window.setTimeout(clearComposerFeedback, 2200);
       } catch (error) {
-        alert('Could not send the message right now.');
+        showComposerFeedback('Could not send the message right now.', 'error');
       } finally {
         isSubmitting = false;
-        if (submitBtn) submitBtn.disabled = false;
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalBtnText;
+        }
       }
     });
 
     if (fileInput) {
       fileInput.addEventListener('change', function () {
         const file = this.files && this.files[0];
-        if (nameNode) nameNode.textContent = file ? file.name : 'No file selected';
+        clearComposerFeedback();
+        if (nameNode) {
+          nameNode.textContent = file ? `${file.name}${file.size ? ` · ${(file.size / 1024 / 1024).toFixed(file.size > 1024 * 1024 ? 1 : 2)} MB` : ''}` : 'No file selected';
+        }
+        if (uploadPreviewUrl) {
+          URL.revokeObjectURL(uploadPreviewUrl);
+          uploadPreviewUrl = null;
+        }
+        if (file) {
+          uploadBox?.classList.add('has-file');
+        } else {
+          uploadBox?.classList.remove('has-file');
+        }
         if (!previewNode) return;
         if (file && file.type && file.type.startsWith('image/')) {
-          previewNode.src = URL.createObjectURL(file);
+          uploadPreviewUrl = URL.createObjectURL(file);
+          previewNode.src = uploadPreviewUrl;
           previewNode.style.display = 'block';
         } else {
           previewNode.style.display = 'none';
