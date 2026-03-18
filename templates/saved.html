@@ -111,11 +111,11 @@
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" id="savedBurgerBtn">в°</button>
+      <button class="burger-btn" id="savedBurgerBtn">&#9776;</button>
       <a href="/" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
-      <button class="theme-btn" id="navThemeBtn">вЂпёЏ</button>
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
       <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
     </div>
   </div>
@@ -164,7 +164,7 @@
           <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
             {% for a in q.answers %}
             <div class="saved-answer {% if a.is_correct %}correct{% else %}default{% endif %}">
-              {% if a.is_correct %}вњ“ {% endif %}{{ a.text }}
+              {% if a.is_correct %}&#10003; {% endif %}{{ a.text }}
             </div>
             {% endfor %}
           </div>
@@ -188,7 +188,7 @@
       <a href="/dashboard">Dashboard</a>
       <a href="/profile">Profile</a>
     </div>
-    <div>В© 2026 WEXTheory</div>
+    <div>&copy; 2026 WEXTheory</div>
   </div>
 </footer>
 {% endblock %}

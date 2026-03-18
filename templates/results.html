@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
-{% block title %}Results Р Р†Р вЂљРІР‚Сњ {{ test.title }} Р Р†Р вЂљРІР‚Сњ WEX Theory{% endblock %}
+{% block title %}Results - {{ test.title }} - WEX Theory{% endblock %}
 
 {% block head %}
 <style>
@@ -198,12 +198,12 @@
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" id="resultsBurgerBtn">Р Р†Р’ВР’В°</button>
+      <button class="burger-btn" id="resultsBurgerBtn">&#9776;</button>
       <a href="/" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
       <button class="btn-ghost btn-sm" id="resultsTranslateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:0.95rem;">RU</button>
-      <button class="theme-btn" id="navThemeBtn">Р Р†Р’ВР вЂљР С—РЎвЂР РЏ</button>
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
       {% if user %}
       <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
       {% endif %}
@@ -216,12 +216,12 @@
     <div style="font-size:0.82rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;">{{ test.title }}</div>
     {% if attempt.passed %}
     <div style="font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;color:#22c55e;line-height:1.2;margin-bottom:8px;">
-      Р Р†РЎС™РІР‚Сљ Congratulations! You passed!
+      &#10003; Congratulations! You passed!
     </div>
     <div style="font-size:1.1rem;color:#22c55e;font-weight:600;"><span id="scoreDisplay">0</span>/25 correct</div>
     {% else %}
     <div style="font-size:clamp(1.4rem,4vw,2.2rem);font-weight:800;color:#ef4444;line-height:1.2;margin-bottom:8px;">
-      Р Р†РЎС™РІР‚вЂќ Unfortunately! You did not pass.
+      &#10005; Unfortunately! You did not pass.
     </div>
     <div style="font-size:1.1rem;color:#ef4444;font-weight:600;"><span id="scoreDisplay">0</span>/25 correct</div>
     {% endif %}
@@ -270,7 +270,7 @@
       <span class="rc-save">Saved</span>
       {% endif %}
       <span class="rc-num">{{ qr.question.question_index }}</span>
-      <span class="rc-icon">{% if qr.is_correct %}Р Р†РЎС™РІР‚Сљ{% else %}Р Р†РЎС™РІР‚вЂќ{% endif %}</span>
+      <span class="rc-icon">{% if qr.is_correct %}&#10003;{% else %}&#10005;{% endif %}</span>
     </div>
     {% endfor %}
   </div>
@@ -309,7 +309,7 @@
               <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
                 <span>{{ a.text }}</span>
                 <span style="font-size:0.72rem;font-weight:700;white-space:nowrap;">
-                  {% if was_selected and is_correct_answer %}Your answer Р вЂ™Р’В· Correct{% elif was_selected and not is_correct_answer %}Your answer Р вЂ™Р’В· Wrong{% elif not was_selected and is_correct_answer %}Correct answer{% endif %}
+                  {% if was_selected and is_correct_answer %}Your answer - Correct{% elif was_selected and not is_correct_answer %}Your answer - Wrong{% elif not was_selected and is_correct_answer %}Correct answer{% endif %}
                 </span>
               </div>
             </div>
@@ -336,7 +336,7 @@
     {% if user %}
     <a href="/dashboard" class="btn-ghost">Back to Dashboard</a>
     {% else %}
-    <a href="/register" class="btn-ghost">Create Account Р Р†Р вЂљРІР‚Сњ Get All Tests</a>
+    <a href="/register" class="btn-ghost">Create Account - Get All Tests</a>
     {% endif %}
   </div>
 </div>
@@ -349,7 +349,7 @@
       <a href="/contact">Contact</a>
       <a href="/privacy">Privacy</a>
     </div>
-    <div>Р вЂ™Р’В© 2026 WEXTheory</div>
+    <div>&copy; 2026 WEXTheory</div>
   </div>
 </footer>
 
@@ -360,7 +360,7 @@
         <span style="font-size:0.82rem;color:var(--text-muted);" id="modalMeta">Question 1 of 25</span>
         <button class="btn-ghost btn-sm" id="modalTranslateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:0.85rem;">RU</button>
       </div>
-      <button class="modal-close" id="modalCloseBtn">Р Р†РЎС™РІР‚Сћ</button>
+      <button class="modal-close" id="modalCloseBtn">&times;</button>
     </div>
     <div id="modalImgWrap" style="margin-bottom:16px;display:none;">
       <img id="modalImg" src="" alt="" style="width:100%;border-radius:8px;border:1px solid var(--border);max-height:300px;object-fit:cover;">
@@ -374,9 +374,9 @@
       <div id="modalExplanationRu" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-style:italic;"></div>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
-      <button class="btn-ghost btn-sm" id="modalPrev">Р Р†РІР‚В РЎвЂ™ Prev</button>
+      <button class="btn-ghost btn-sm" id="modalPrev">&#8592; Prev</button>
       <span id="modalStatus" style="font-size:0.85rem;"></span>
-      <button class="btn-ghost btn-sm" id="modalNext">Next Р Р†РІР‚В РІР‚в„ў</button>
+      <button class="btn-ghost btn-sm" id="modalNext">Next &#8594;</button>
     </div>
   </div>
 </div>
@@ -387,6 +387,7 @@
 {% block scripts %}
 <script src="/static/js/results.js"></script>
 {% endblock %}
+
 
 
 

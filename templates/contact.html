@@ -1,16 +1,16 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
-{% block title %}Contact РІР‚вЂќ WEX Theory{% endblock %}
+{% block title %}Contact - WEX Theory{% endblock %}
 
 {% block body %}
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" id="contactBurgerBtn">РІВВ°</button>
+      <button class="burger-btn" id="contactBurgerBtn">&#9776;</button>
       <a href="/" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
-      <button class="theme-btn" id="navThemeBtn">РІВР‚РїС‘РЏ</button>
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
       {% if user %}
       <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
       {% else %}
@@ -32,7 +32,7 @@
   </p>
 
   <div id="successState" style="display:none;text-align:center;padding:48px 0;">
-    <div style="font-size:2rem;margin-bottom:16px;">РІСљвЂњ</div>
+    <div style="font-size:2rem;margin-bottom:16px;">&#10003;</div>
     <div style="font-size:1.3rem;font-weight:700;margin-bottom:8px;">Message sent!</div>
     <p style="color:var(--text-muted);margin-bottom:24px;">We'll get back to you as soon as possible.</p>
     <a href="/" class="btn-ghost">Back to home</a>
@@ -85,7 +85,7 @@
       <a href="/faq">FAQ</a>
       <a href="/privacy">Privacy</a>
     </div>
-    <div>Р’В© 2026 WEXTheory</div>
+    <div>&copy; 2026 WEXTheory</div>
   </div>
 </footer>
 {% endblock %}
@@ -93,5 +93,6 @@
 {% block scripts %}
 <script src="/static/js/contact.js"></script>
 {% endblock %}
+
 
 

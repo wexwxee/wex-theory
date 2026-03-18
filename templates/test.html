@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
-{% block title %}{{ test.title }} РІР‚вЂќ WEX Theory{% endblock %}
+{% block title %}{{ test.title }} - WEX Theory{% endblock %}
 
 {% block head %}
 <style>
@@ -155,16 +155,16 @@
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" id="testBurgerBtn">РІВВ°</button>
+      <button class="burger-btn" id="testBurgerBtn">&#9776;</button>
       <a href="/dashboard" class="back-btn" title="Back to Dashboard">
-        <span class="back-arrow">РІвЂ С’</span><span class="back-label"> Tests</span>
+        <span class="back-arrow">&#8592;</span><span class="back-label"> Tests</span>
       </a>
       <span class="nav-test-title" id="navTestTitle">{{ test.title }}</span>
     </div>
     <div class="nav-right" style="gap:10px;">
       <div class="timer" id="timerDisplay">45:00</div>
-      <button class="btn-ghost btn-sm" id="translateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:1rem;">СЂСџвЂЎВ·СЂСџвЂЎС”</button>
-      <button class="theme-btn" id="navThemeBtn">РІВР‚РїС‘РЏ</button>
+      <button class="btn-ghost btn-sm" id="translateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:1rem;">RU</button>
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
       <button class="btn-primary btn-sm" id="finishBtn">Finish</button>
     </div>
   </div>
@@ -213,9 +213,9 @@
 </div>
 
 <div class="nav-buttons" id="navButtons" style="display:none;">
-  <button class="btn-ghost" id="prevBtn" disabled>РІвЂ С’ Previous</button>
+  <button class="btn-ghost" id="prevBtn" disabled>&#8592; Previous</button>
   <span style="font-size:0.85rem;color:var(--text-muted);" id="navCounter">1 / 25</span>
-  <button class="btn-primary" id="nextBtn">Next РІвЂ вЂ™</button>
+  <button class="btn-primary" id="nextBtn">Next &#8594;</button>
 </div>
 
 <div id="submitOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
@@ -227,7 +227,7 @@
   <div class="modal">
     <div class="modal-header">
       <h3 style="font-weight:700;font-size:1.1rem;">Submit Test?</h3>
-      <button class="modal-close" id="finishModalCloseBtn">РІСљвЂў</button>
+      <button class="modal-close" id="finishModalCloseBtn">&times;</button>
     </div>
     <div id="finishSummary" style="color:var(--text-muted);font-size:0.9rem;margin-bottom:24px;line-height:1.6;"></div>
     <div style="display:flex;gap:12px;justify-content:flex-end;">
@@ -294,5 +294,6 @@
 .wp-v { font-size: 13px; color: #d1d5db; }
 </style>
 {% endblock %}
+
 
 

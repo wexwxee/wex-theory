@@ -1,9 +1,9 @@
-(function () {
+﻿(function () {
   function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     const button = document.getElementById('navThemeBtn');
     if (button) {
-      button.textContent = theme === 'dark' ? '☀️' : '🌙';
+      button.textContent = theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
     }
   }
 
@@ -27,12 +27,12 @@
     const score = data.score;
     page.innerHTML = `
       <div style="text-align:center;padding:48px 0 40px;">
-        <div style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;">Test 1 — Free Test</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;">Test 1 - Free Test</div>
         <div class="results-score" style="color:${passed ? 'var(--correct)' : 'var(--wrong)'};">${score}/25</div>
         <div style="margin-top:16px;">
           ${passed
-            ? '<span class="badge-green" style="font-size:1rem;padding:8px 20px;">✓ PASSED</span>'
-            : '<span class="badge-red" style="font-size:1rem;padding:8px 20px;">✕ FAILED</span>'}
+            ? '<span class="badge-green" style="font-size:1rem;padding:8px 20px;">&#10003; PASSED</span>'
+            : '<span class="badge-red" style="font-size:1rem;padding:8px 20px;">&#10005; FAILED</span>'}
         </div>
         <p style="color:var(--text-muted);font-size:0.9rem;margin-top:16px;">
           ${passed
@@ -41,7 +41,7 @@
         </p>
         <div style="display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap;">
           <a href="/test/1" class="btn-primary">Try Again</a>
-          <a href="/pricing" class="btn-ghost">Unlock Full Access →</a>
+          <a href="/pricing" class="btn-ghost">Unlock Full Access &#8594;</a>
         </div>
       </div>
 
@@ -81,7 +81,7 @@
       const isCorrect = r.is_correct;
       div.style.cssText = `display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--bg-card);border:1px solid ${isCorrect ? 'var(--correct)' : 'var(--wrong)'};border-radius:10px;`;
       div.innerHTML = `
-        <div style="font-size:1.1rem;flex-shrink:0;color:${isCorrect ? 'var(--correct)' : 'var(--wrong)'};">${isCorrect ? '✓' : '✕'}</div>
+        <div style="font-size:1.1rem;flex-shrink:0;color:${isCorrect ? 'var(--correct)' : 'var(--wrong)'};">${isCorrect ? '&#10003;' : '&#10005;'}</div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:2px;">Question ${r.question_index}</div>
           <div style="font-size:0.9rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
@@ -111,3 +111,4 @@
     renderResultsList(data);
   });
 })();
+

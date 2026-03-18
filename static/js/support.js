@@ -2,7 +2,7 @@
   const currentTheme = localStorage.getItem('wex-theme') || 'dark';
   document.documentElement.setAttribute('data-theme', currentTheme);
   const navBtn = document.getElementById('navThemeBtn');
-  if (navBtn) navBtn.textContent = currentTheme === 'dark' ? 'вЂпёЏ' : 'рџЊ™';
+  if (navBtn) navBtn.textContent = currentTheme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
 
   document.getElementById('supportBurgerBtn')?.addEventListener('click', sbOpen);
   navBtn?.addEventListener('click', toggleTheme);
@@ -136,7 +136,7 @@
       node.appendChild(head);
 
       if (isAdminView) {
-        node.appendChild(createNode('div', 'thread-meta', `${thread.user_name || ''} В· ${thread.user_public_id || ''}`));
+        node.appendChild(createNode('div', 'thread-meta', `${thread.user_name || ''} · ${thread.user_public_id || ''}`));
       }
 
       node.appendChild(createNode('div', 'thread-preview', formatPreview(thread)));
@@ -188,7 +188,7 @@
     const headerTop = createNode('div', 'chat-header-top');
     const headerLeft = createNode('div');
     headerLeft.appendChild(createNode('div', 'chat-title', activeThread.subject));
-    headerLeft.appendChild(createNode('div', 'chat-meta', `Status: ${statusText} В· Created ${activeThread.created_at}`));
+    headerLeft.appendChild(createNode('div', 'chat-meta', `Status: ${statusText} · Created ${activeThread.created_at}`));
     headerTop.appendChild(headerLeft);
     headerTop.appendChild(createNode('span', 'status-badge', statusText));
     header.appendChild(headerTop);
@@ -196,7 +196,7 @@
     const headerCopy = createNode('div', 'chat-header-copy');
     if (isAdminView) {
       headerCopy.appendChild(createNode('strong', null, activeThread.user_name || ''));
-      headerCopy.appendChild(document.createTextNode(` В· ${activeThread.user_email || ''}`));
+      headerCopy.appendChild(document.createTextNode(` · ${activeThread.user_email || ''}`));
       headerCopy.appendChild(document.createElement('br'));
       headerCopy.appendChild(document.createTextNode('User ID: '));
       headerCopy.appendChild(createNode('strong', null, activeThread.user_public_id || ''));
@@ -436,4 +436,5 @@
     if (!document.hidden) loadSupportData(false);
   }, 4000);
 })();
+
 

@@ -1,4 +1,6 @@
-﻿const testContainer = document.getElementById('testContainer');`r`nconst TEST_ID = Number(testContainer?.dataset.testId || 0);`r`nconst IS_AUTHENTICATED = testContainer?.dataset.isAuthenticated === 'true';
+﻿const testContainer = document.getElementById('testContainer');
+const TEST_ID = Number(testContainer?.dataset.testId || 0);
+const IS_AUTHENTICATED = testContainer?.dataset.isAuthenticated === 'true';
 
 let questions = [];
 let currentIndex = 0;
@@ -111,7 +113,7 @@ function setWordPopupLoading(popup, word) {
   orig.textContent = word;
   const loading = document.createElement('div');
   loading.className = 'wp-load';
-  loading.textContent = 'вЏі';
+  loading.textContent = '...';
   popup.appendChild(orig);
   popup.appendChild(loading);
 }
@@ -209,7 +211,7 @@ function renderQuestion() {
   // Fixed nav
   document.getElementById('navButtons').style.display = 'flex';
   document.getElementById('prevBtn').disabled = currentIndex === 0;
-  document.getElementById('nextBtn').textContent = currentIndex === questions.length - 1 ? 'Review в†’' : 'Next в†’';
+  document.getElementById('nextBtn').textContent = currentIndex === questions.length - 1 ? 'Review →' : 'Next →';
   document.getElementById('navCounter').textContent = `${currentIndex + 1} / ${questions.length}`;
 
   // Progress
@@ -431,23 +433,23 @@ async function toggleBookmark() {
 let translateMode = false;
 const questionTransCache = {};
 const _TRAFFIC_GLOSSARY = [
-  { phrase: 'turn right', translation: 'РїРѕРІРµСЂРЅСѓС‚СЊ РЅР°РїСЂР°РІРѕ', words: ['turn', 'right'] },
-  { phrase: 'turn left', translation: 'РїРѕРІРµСЂРЅСѓС‚СЊ РЅР°Р»РµРІРѕ', words: ['turn', 'left'] },
-  { phrase: 'right turn', translation: 'РїРѕРІРѕСЂРѕС‚ РЅР°РїСЂР°РІРѕ', words: ['right', 'turn'] },
-  { phrase: 'left turn', translation: 'РїРѕРІРѕСЂРѕС‚ РЅР°Р»РµРІРѕ', words: ['left', 'turn'] },
-  { phrase: 'signal-controlled junction', translation: 'СЂРµРіСѓР»РёСЂСѓРµРјС‹Р№ РїРµСЂРµРєСЂРµСЃС‚РѕРє', words: ['signal', 'controlled', 'junction'] },
-  { phrase: 'pedestrian crossing', translation: 'РїРµС€РµС…РѕРґРЅС‹Р№ РїРµСЂРµС…РѕРґ', words: ['pedestrian', 'crossing'] },
-  { phrase: 'bus lane', translation: 'РїРѕР»РѕСЃР° РґР»СЏ Р°РІС‚РѕР±СѓСЃРѕРІ', words: ['bus', 'lane'] },
-  { phrase: 'cycle path', translation: 'РІРµР»РѕРґРѕСЂРѕР¶РєР°', words: ['cycle', 'path'] },
-  { phrase: 'own lane', translation: 'СЃРІРѕСЏ РїРѕР»РѕСЃР°', words: ['own', 'lane'] },
-  { phrase: 'keep to my own lane', translation: 'РґРµСЂР¶Р°С‚СЊСЃСЏ СЃРІРѕРµР№ РїРѕР»РѕСЃС‹', words: ['keep', 'own', 'lane'] },
-  { phrase: 'pull in', translation: 'РїРµСЂРµСЃС‚СЂРѕРёС‚СЊСЃСЏ Р±Р»РёР¶Рµ Рє РєСЂР°СЋ', words: ['pull', 'in'] },
-  { phrase: 'directly behind you', translation: 'РЅРµРїРѕСЃСЂРµРґСЃС‚РІРµРЅРЅРѕ РїРѕР·Р°РґРё РІР°СЃ', words: ['directly', 'behind'] },
-  { phrase: 'all the way', translation: 'РґРѕ СЃР°РјРѕРіРѕ РєРѕРЅС†Р°', words: ['all', 'way'] },
-  { phrase: 'remain there', translation: 'РѕСЃС‚Р°РІР°С‚СЊСЃСЏ С‚Р°Рј', words: ['remain', 'there'] },
-  { phrase: 'kerb', translation: 'Р±РѕСЂРґСЋСЂ', words: ['kerb'] },
-  { phrase: 'lane', translation: 'РїРѕР»РѕСЃР° РґРІРёР¶РµРЅРёСЏ', words: ['lane'] },
-  { phrase: 'junction', translation: 'РїРµСЂРµРєСЂРµСЃС‚РѕРє', words: ['junction'] }
+  { phrase: 'turn right', translation: 'повернуть направо', words: ['turn', 'right'] },
+  { phrase: 'turn left', translation: 'повернуть налево', words: ['turn', 'left'] },
+  { phrase: 'right turn', translation: 'поворот направо', words: ['right', 'turn'] },
+  { phrase: 'left turn', translation: 'поворот налево', words: ['left', 'turn'] },
+  { phrase: 'signal-controlled junction', translation: 'регулируемый перекресток', words: ['signal', 'controlled', 'junction'] },
+  { phrase: 'pedestrian crossing', translation: 'пешеходный переход', words: ['pedestrian', 'crossing'] },
+  { phrase: 'bus lane', translation: 'полоса для автобусов', words: ['bus', 'lane'] },
+  { phrase: 'cycle path', translation: 'велодорожка', words: ['cycle', 'path'] },
+  { phrase: 'own lane', translation: 'своя полоса', words: ['own', 'lane'] },
+  { phrase: 'keep to my own lane', translation: 'держаться своей полосы', words: ['keep', 'own', 'lane'] },
+  { phrase: 'pull in', translation: 'перестроиться ближе к краю', words: ['pull', 'in'] },
+  { phrase: 'directly behind you', translation: 'непосредственно позади вас', words: ['directly', 'behind'] },
+  { phrase: 'all the way', translation: 'до самого конца', words: ['all', 'way'] },
+  { phrase: 'remain there', translation: 'оставаться там', words: ['remain', 'there'] },
+  { phrase: 'kerb', translation: 'бордюр', words: ['kerb'] },
+  { phrase: 'lane', translation: 'полоса движения', words: ['lane'] },
+  { phrase: 'junction', translation: 'перекресток', words: ['junction'] }
 ];
 
 function _googleTranslateUrl(text) {
@@ -528,16 +530,16 @@ async function toggleTranslate() {
   const btn = document.getElementById('translateBtn');
   if (translateMode) {
     translateMode = false;
-    if (btn) btn.textContent = 'рџ‡·рџ‡є';
+    if (btn) btn.textContent = 'RU';
     renderQuestion();
     return;
   }
   translateMode = true;
-  if (btn) { btn.textContent = 'вЏі'; btn.disabled = true; }
+  if (btn) { btn.textContent = '...'; btn.disabled = true; }
   if (questions[currentIndex]) {
     await _ensureQuestionTranslated(questions[currentIndex]);
   }
-  if (btn) { btn.textContent = 'рџ‡¬рџ‡§'; btn.disabled = false; }
+  if (btn) { btn.textContent = 'EN'; btn.disabled = false; }
   renderQuestion();
 }
 
@@ -632,3 +634,5 @@ document.addEventListener('mouseout', (e) => {
     if (_wordPopup) { _wordPopup.remove(); _wordPopup = null; }
   }, 120);
 });
+
+

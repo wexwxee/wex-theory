@@ -1,16 +1,16 @@
 ﻿{% extends "base.html" %}
 
-{% block title %}Privacy Policy вЂ” WEX Theory{% endblock %}
+{% block title %}Privacy Policy - WEX Theory{% endblock %}
 
 {% block body %}
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" id="privacyBurgerBtn">в°</button>
+      <button class="burger-btn" id="privacyBurgerBtn">&#9776;</button>
       <a href="/" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
-      <button class="theme-btn" id="navThemeBtn">вЂпёЏ</button>
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
       {% if user %}
       <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
       {% else %}
@@ -76,7 +76,7 @@
       <a href="/contact">Contact</a>
       <a href="/pricing">Pricing</a>
     </div>
-    <div>В© 2026 WEXTheory</div>
+    <div>&copy; 2026 WEXTheory</div>
   </div>
 </footer>
 {% endblock %}
@@ -84,4 +84,5 @@
 {% block scripts %}
 <script src="/static/js/privacy.js"></script>
 {% endblock %}
+
 

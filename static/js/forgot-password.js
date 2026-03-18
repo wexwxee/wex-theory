@@ -1,9 +1,9 @@
-(function () {
+﻿(function () {
   function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     const themeBtn = document.getElementById('themeBtn');
     if (themeBtn) {
-      themeBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+      themeBtn.textContent = theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
     }
   }
 
@@ -82,3 +82,4 @@
     if (e.key === 'Enter') handleForgotPassword();
   });
 })();
+

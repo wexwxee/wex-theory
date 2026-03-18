@@ -1,16 +1,16 @@
 ﻿{% extends "base.html" %}
 
-{% block title %}Profile вЂ” WEX Theory{% endblock %}
+{% block title %}Profile - WEX Theory{% endblock %}
 
 {% block body %}
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" id="profileBurgerBtn">в°</button>
+      <button class="burger-btn" id="profileBurgerBtn">&#9776;</button>
       <a href="/" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
-      <button class="theme-btn" id="navThemeBtn">вЂпёЏ</button>
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
       <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
     </div>
   </div>
@@ -100,7 +100,7 @@
       </div>
       {% else %}
       <div class="card" style="text-align:center;padding:40px;">
-        <div style="font-size:1.5rem;margin-bottom:12px;">рџ“‹</div>
+        <div style="font-size:1.5rem;margin-bottom:12px;">&#128203;</div>
         <div style="font-weight:600;margin-bottom:8px;">No attempts yet</div>
         <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;">Take a test to see your history here.</p>
         <a href="/dashboard" class="btn-primary">Go to tests</a>
@@ -119,7 +119,7 @@
       <a href="/contact">Contact</a>
       <a href="/privacy">Privacy</a>
     </div>
-    <div>В© 2026 WEXTheory</div>
+    <div>&copy; 2026 WEXTheory</div>
   </div>
 </footer>
 {% endblock %}
@@ -127,5 +127,6 @@
 {% block scripts %}
 <script src="/static/js/profile.js"></script>
 {% endblock %}
+
 
 

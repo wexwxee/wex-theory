@@ -1,9 +1,9 @@
-(function () {
+﻿(function () {
   function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     const themeBtn = document.getElementById('themeBtn');
     if (themeBtn) {
-      themeBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+      themeBtn.textContent = theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
     }
   }
 
@@ -46,7 +46,7 @@
     if (!input || !button) return;
     const show = input.type === 'password';
     input.type = show ? 'text' : 'password';
-    button.textContent = show ? '🙈' : '👁';
+    button.textContent = show ? '\uD83D\uDE48' : '\uD83D\uDC41';
     button.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
   }
 
@@ -107,3 +107,4 @@
     if (e.key === 'Enter') handleResetPassword();
   });
 })();
+

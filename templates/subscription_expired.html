@@ -1,33 +1,26 @@
 ﻿{% extends "base.html" %}
 
-{% block title %}Subscription Expired вЂ” WEX Theory{% endblock %}
+{% block title %}Subscription Expired - WEX Theory{% endblock %}
 
 {% block body %}
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" id="expiredBurgerBtn">в°</button>
+      <button class="burger-btn" id="expiredBurgerBtn">&#9776;</button>
       <a href="/" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
-      <button class="theme-btn" id="navThemeBtn">вЂпёЏ</button>
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
       <button id="expiredLogoutBtn" class="btn-ghost btn-sm">Sign Out</button>
     </div>
   </div>
 </nav>
 
 <div class="page" style="max-width:560px;text-align:center;padding-top:80px;">
-  <div style="font-size:3rem;margin-bottom:20px;">вЏі</div>
+  <div style="font-size:3rem;margin-bottom:20px;">&#128274;</div>
   <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:12px;">Your subscription has expired</h1>
   <p style="color:var(--text-muted);line-height:1.7;margin-bottom:32px;">
-    Premium tests are now locked. Renew access to continue with Tests 2 to 13, or use Test 1 for free anytime.
-  </p>
-  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-    <a href="/pricing" class="btn-primary">Renew Access</a>
-    <a href="/test/1" class="btn-ghost">Try Free Test</a>
-  </div>
-  <p style="color:var(--text-muted);font-size:0.82rem;margin-top:32px;">
-    Test 1 is always free вЂ” no subscription required.
+    Premium tests are now locked. Renew access to continue with Tests 2 to 13, or use Test 1 for free - no subscription required.
   </p>
 </div>
 
@@ -39,7 +32,7 @@
       <a href="/faq">FAQ</a>
       <a href="/privacy">Privacy</a>
     </div>
-    <div>В© 2026 WEXTheory</div>
+    <div>&copy; 2026 WEXTheory</div>
   </div>
 </footer>
 {% endblock %}
@@ -47,4 +40,5 @@
 {% block scripts %}
 <script src="/static/js/subscription-expired.js"></script>
 {% endblock %}
+
 

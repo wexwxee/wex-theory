@@ -23,23 +23,23 @@ const _RESULTS_STOP = new Set(['the','a','an','in','to','of','and','or','is','ar
   'she','they','my','your','all','have','has','had','was','were','will','can','i','its','our',
   'their','into','also','when','then','than','there','about','been','which','who','what']);
 const _RESULTS_GLOSSARY = [
-  { phrase: 'turn right', translation: 'РїРѕРІРµСЂРЅСѓС‚СЊ РЅР°РїСЂР°РІРѕ', words: ['turn', 'right'] },
-  { phrase: 'turn left', translation: 'РїРѕРІРµСЂРЅСѓС‚СЊ РЅР°Р»РµРІРѕ', words: ['turn', 'left'] },
-  { phrase: 'right turn', translation: 'РїРѕРІРѕСЂРѕС‚ РЅР°РїСЂР°РІРѕ', words: ['right', 'turn'] },
-  { phrase: 'left turn', translation: 'РїРѕРІРѕСЂРѕС‚ РЅР°Р»РµРІРѕ', words: ['left', 'turn'] },
-  { phrase: 'signal-controlled junction', translation: 'СЂРµРіСѓР»РёСЂСѓРµРјС‹Р№ РїРµСЂРµРєСЂРµСЃС‚РѕРє', words: ['signal', 'controlled', 'junction'] },
-  { phrase: 'pedestrian crossing', translation: 'РїРµС€РµС…РѕРґРЅС‹Р№ РїРµСЂРµС…РѕРґ', words: ['pedestrian', 'crossing'] },
-  { phrase: 'bus lane', translation: 'РїРѕР»РѕСЃР° РґР»СЏ Р°РІС‚РѕР±СѓСЃРѕРІ', words: ['bus', 'lane'] },
-  { phrase: 'cycle path', translation: 'РІРµР»РѕРґРѕСЂРѕР¶РєР°', words: ['cycle', 'path'] },
-  { phrase: 'own lane', translation: 'СЃРІРѕСЏ РїРѕР»РѕСЃР°', words: ['own', 'lane'] },
-  { phrase: 'keep to my own lane', translation: 'РґРµСЂР¶Р°С‚СЊСЃСЏ СЃРІРѕРµР№ РїРѕР»РѕСЃС‹', words: ['keep', 'own', 'lane'] },
-  { phrase: 'pull in', translation: 'РїРµСЂРµСЃС‚СЂРѕРёС‚СЊСЃСЏ Р±Р»РёР¶Рµ Рє РєСЂР°СЋ', words: ['pull', 'in'] },
-  { phrase: 'directly behind you', translation: 'РЅРµРїРѕСЃСЂРµРґСЃС‚РІРµРЅРЅРѕ РїРѕР·Р°РґРё РІР°СЃ', words: ['directly', 'behind'] },
-  { phrase: 'all the way', translation: 'РґРѕ СЃР°РјРѕРіРѕ РєРѕРЅС†Р°', words: ['all', 'way'] },
-  { phrase: 'remain there', translation: 'РѕСЃС‚Р°РІР°С‚СЊСЃСЏ С‚Р°Рј', words: ['remain', 'there'] },
-  { phrase: 'kerb', translation: 'Р±РѕСЂРґСЋСЂ', words: ['kerb'] },
-  { phrase: 'lane', translation: 'РїРѕР»РѕСЃР° РґРІРёР¶РµРЅРёСЏ', words: ['lane'] },
-  { phrase: 'junction', translation: 'РїРµСЂРµРєСЂРµСЃС‚РѕРє', words: ['junction'] }
+  { phrase: 'turn right', translation: 'повернуть направо', words: ['turn', 'right'] },
+  { phrase: 'turn left', translation: 'повернуть налево', words: ['turn', 'left'] },
+  { phrase: 'right turn', translation: 'поворот направо', words: ['right', 'turn'] },
+  { phrase: 'left turn', translation: 'поворот налево', words: ['left', 'turn'] },
+  { phrase: 'signal-controlled junction', translation: 'регулируемый перекресток', words: ['signal', 'controlled', 'junction'] },
+  { phrase: 'pedestrian crossing', translation: 'пешеходный переход', words: ['pedestrian', 'crossing'] },
+  { phrase: 'bus lane', translation: 'полоса для автобусов', words: ['bus', 'lane'] },
+  { phrase: 'cycle path', translation: 'велодорожка', words: ['cycle', 'path'] },
+  { phrase: 'own lane', translation: 'своя полоса', words: ['own', 'lane'] },
+  { phrase: 'keep to my own lane', translation: 'держаться своей полосы', words: ['keep', 'own', 'lane'] },
+  { phrase: 'pull in', translation: 'перестроиться ближе к краю', words: ['pull', 'in'] },
+  { phrase: 'directly behind you', translation: 'непосредственно позади вас', words: ['directly', 'behind'] },
+  { phrase: 'all the way', translation: 'до самого конца', words: ['all', 'way'] },
+  { phrase: 'remain there', translation: 'оставаться там', words: ['remain', 'there'] },
+  { phrase: 'kerb', translation: 'бордюр', words: ['kerb'] },
+  { phrase: 'lane', translation: 'полоса движения', words: ['lane'] },
+  { phrase: 'junction', translation: 'перекресток', words: ['junction'] }
 ];
 let _resultsWordPopup = null;
 let _resultsPopupHideTimer = null;
@@ -201,7 +201,7 @@ function setResultsPopupLoading(popup, word) {
   orig.textContent = word;
   const loading = document.createElement('div');
   loading.className = 'wp-load';
-  loading.textContent = 'вЏі';
+  loading.textContent = '...';
   popup.appendChild(orig);
   popup.appendChild(loading);
 }
@@ -334,10 +334,10 @@ async function renderModal() {
     const badgesWrap = document.createElement('span');
     badgesWrap.style.cssText = 'display:flex;gap:6px;flex-shrink:0;';
     if (wasSelected && isCorrect) {
-      addResultBadge(badgesWrap, 'badge-user', 'вњ“ Your answer');
+      addResultBadge(badgesWrap, 'badge-user', 'Your answer');
       addResultBadge(badgesWrap, 'badge-correct', 'Correct');
     } else if (wasSelected && !isCorrect) {
-      addResultBadge(badgesWrap, 'badge-user', 'вњ— Your answer');
+      addResultBadge(badgesWrap, 'badge-user', 'Your answer');
       addResultBadge(badgesWrap, 'badge-wrong', 'Wrong');
     } else if (!wasSelected && isCorrect) {
       addResultBadge(badgesWrap, 'badge-correct', 'Correct (missed)');
@@ -374,7 +374,7 @@ async function renderModal() {
   const statusText = document.createElement('span');
   statusText.style.fontWeight = '600';
   statusText.style.color = d.is_correct ? '#22c55e' : '#ef4444';
-  statusText.textContent = d.is_correct ? 'вњ“ Correct' : 'вњ— Wrong';
+  statusText.textContent = d.is_correct ? 'Correct' : 'Wrong';
   statusEl.appendChild(statusText);
 
   // Prev/Next buttons
@@ -453,3 +453,5 @@ document.addEventListener('mouseout', (e) => {
     if (bar) bar.style.width = ((SCORE / TOTAL) * 100) + '%';
   }, 50);
 })();
+
+

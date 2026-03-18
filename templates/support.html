@@ -285,11 +285,11 @@
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" id="supportBurgerBtn">в°</button>
+      <button class="burger-btn" id="supportBurgerBtn">&#9776;</button>
       <a href="/" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
-      <button class="theme-btn" id="navThemeBtn">вЂпёЏ</button>
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
       <a href="{% if is_admin_view %}/admin{% else %}/dashboard{% endif %}" class="btn-ghost btn-sm">{% if is_admin_view %}Admin{% else %}Dashboard{% endif %}</a>
     </div>
   </div>
@@ -301,9 +301,9 @@
       <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.04em;margin-bottom:8px;">{% if is_admin_view %}Support Inbox{% else %}Messages{% endif %}</h1>
       <div class="empty-copy" style="max-width:740px;">
         {% if is_admin_view %}
-        Р—РґРµСЃСЊ РјРѕР¶РЅРѕ РѕС‚РІРµС‡Р°С‚СЊ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРј РїСЂСЏРјРѕ СЃ СЃР°Р№С‚Р°. РЎРѕРѕР±С‰РµРЅРёСЏ Рё С„Р°Р№Р»С‹ РїРѕРґС‚СЏРіРёРІР°СЋС‚СЃСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё Р±РµР· РїРµСЂРµР·Р°РіСЂСѓР·РєРё СЃС‚СЂР°РЅРёС†С‹.
+        Here you can reply to users directly from the site. Messages and attachments refresh automatically without reloading the page.
         {% else %}
-        Р—РґРµСЃСЊ Р¶РёРІСѓС‚ РІСЃРµ РІР°С€Рё РѕР±СЂР°С‰РµРЅРёСЏ. РќРѕРІС‹Рµ РѕС‚РІРµС‚С‹ РїРѕРґРґРµСЂР¶РєРё РїРѕСЏРІР»СЏСЋС‚СЃСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё, Р° РµСЃР»Рё РµСЃС‚СЊ СЃРєСЂРёРЅС€РѕС‚ РёР»Рё С„Р°Р№Р», РѕРЅ Р±СѓРґРµС‚ РїРѕРєР°Р·Р°РЅ РїСЂСЏРјРѕ РІРЅСѓС‚СЂРё С‡Р°С‚Р°.
+        This is where all your support requests live. New replies appear automatically, and screenshots or files are shown directly inside the chat.
         {% endif %}
       </div>
     </div>
@@ -334,7 +334,7 @@
               {% endif %}
             </div>
             {% if is_admin_view %}
-            <div class="thread-meta">{{ thread.user.name }} В· {{ thread.user.public_id }}</div>
+            <div class="thread-meta">{{ thread.user.name }} &middot; {{ thread.user.public_id }}</div>
             {% endif %}
             <div class="thread-preview">{{ (thread.messages[-1].body if thread.messages and thread.messages[-1].body else 'Attachment added') if thread.messages else 'No messages yet' }}</div>
             <div class="thread-meta" style="margin-top:10px;">Updated {{ thread.updated_at.strftime('%d %b %Y %H:%M') }}</div>
@@ -343,7 +343,7 @@
         {% else %}
         <div class="chat-empty-inner">
           <div class="chat-title" style="margin-bottom:8px;">No conversations yet</div>
-          <div class="empty-copy">{% if is_admin_view %}РџРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРёРµ РѕР±СЂР°С‰РµРЅРёСЏ РїРѕСЏРІСЏС‚СЃСЏ Р·РґРµСЃСЊ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё.{% else %}РћС‚РєСЂРѕР№ СЃС‚СЂР°РЅРёС†Сѓ Contact, С‡С‚РѕР±С‹ СЃРѕР·РґР°С‚СЊ РїРµСЂРІРѕРµ РѕР±СЂР°С‰РµРЅРёРµ.{% endif %}</div>
+          <div class="empty-copy">{% if is_admin_view %}User requests will appear here automatically.{% else %}Open the Contact page to create your first support request.{% endif %}</div>
         </div>
         {% endif %}
       </div>
@@ -356,16 +356,16 @@
           <div class="chat-header-top">
             <div>
               <div class="chat-title">{{ active_thread.subject }}</div>
-              <div class="chat-meta">Status: {{ active_thread.status|capitalize }} В· Created {{ active_thread.created_at.strftime('%d %b %Y %H:%M') }}</div>
+              <div class="chat-meta">Status: {{ active_thread.status|capitalize }} &middot; Created {{ active_thread.created_at.strftime('%d %b %Y %H:%M') }}</div>
             </div>
             <span class="status-badge">{{ active_thread.status|capitalize }}</span>
           </div>
           <div class="chat-header-copy">
             {% if is_admin_view %}
-            <strong>{{ active_thread.user.name }}</strong> В· {{ active_thread.user.email }}<br>
+            <strong>{{ active_thread.user.name }}</strong> &middot; {{ active_thread.user.email }}<br>
             User ID: <strong>{{ active_thread.user.public_id }}</strong>
             {% else %}
-            Р•СЃР»Рё РІС‹ РїСЂРёРєСЂРµРїРёР»Рё СЃРєСЂРёРЅС€РѕС‚ РёР»Рё С„Р°Р№Р», РѕРЅ РїРѕСЏРІРёС‚СЃСЏ РїСЂСЏРјРѕ РІ СЃРѕРѕР±С‰РµРЅРёРё РЅРёР¶Рµ СЃ РєРЅРѕРїРєРѕР№ <strong>Open attachment</strong>.
+            If you attach a screenshot or file, it will appear directly inside the message below with an <strong>Open attachment</strong> button.
             {% endif %}
           </div>
         </div>
@@ -413,12 +413,12 @@
           {% endif %}
           <div class="form-group">
             <label class="form-label" for="replyMessage">{% if is_admin_view %}Reply{% else %}Message{% endif %}</label>
-            <textarea id="replyMessage" name="message" rows="4" placeholder="{% if is_admin_view %}Reply to the user here...{% else %}РћРїРёС€Рё РїСЂРѕР±Р»РµРјСѓ РїРѕРґСЂРѕР±РЅРµРµ. Р•СЃР»Рё РµСЃС‚СЊ РѕС€РёР±РєР°, РЅРёР¶Рµ РјРѕР¶РЅРѕ РїСЂРёР»РѕР¶РёС‚СЊ СЃРєСЂРёРЅС€РѕС‚ РёР»Рё С„Р°Р№Р».{% endif %}"></textarea>
+            <textarea id="replyMessage" name="message" rows="4" placeholder="{% if is_admin_view %}Reply to the user here...{% else %}Describe the issue in as much detail as possible. If there is an error, you can attach a screenshot or file below.{% endif %}"></textarea>
           </div>
           <div class="upload-box">
             <label class="form-label" for="replyAttachment">Attachment (optional)</label>
             <input type="file" id="replyAttachment" name="attachment" accept=".png,.jpg,.jpeg,.webp,.gif,.pdf,.txt,.log,.json">
-            <div class="upload-hint">РњРѕР¶РЅРѕ РїСЂРёР»РѕР¶РёС‚СЊ СЃРєСЂРёРЅ РѕС€РёР±РєРё, PDF, Р»РѕРі, JSON РёР»Рё РґСЂСѓРіРѕР№ РїРѕРґРґРµСЂР¶РёРІР°РµРјС‹Р№ С„Р°Р№Р» РґРѕ 10 MB.</div>
+            <div class="upload-hint">You can attach an error screenshot, PDF, log, JSON, or another supported file up to 10 MB.</div>
             <div class="upload-name" id="uploadName">No file selected</div>
             <img id="uploadPreview" class="upload-preview" alt="Selected attachment preview">
           </div>
@@ -432,7 +432,7 @@
       <div class="chat-empty">
         <div class="chat-empty-inner">
           <div class="chat-title" style="margin-bottom:10px;">No active chat selected</div>
-          <div class="empty-copy">{% if is_admin_view %}Р’С‹Р±РµСЂРё РѕР±СЂР°С‰РµРЅРёРµ СЃР»РµРІР°, Рё Р·РґРµСЃСЊ РїРѕСЏРІРёС‚СЃСЏ РґРёР°Р»РѕРі, СЃС‚Р°С‚СѓСЃ Рё РІР»РѕР¶РµРЅРёСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.{% else %}РћС‚РєСЂРѕР№ Contact Рё СЃРѕР·РґР°Р№ РѕР±СЂР°С‰РµРЅРёРµ, РїРѕСЃР»Рµ С‡РµРіРѕ С‡Р°С‚ РїРѕСЏРІРёС‚СЃСЏ Р·РґРµСЃСЊ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё.{% endif %}</div>
+          <div class="empty-copy">{% if is_admin_view %}Choose a conversation on the left, and the dialog, status, and attachments will appear here.{% else %}Open Contact and create a support request. The chat will then appear here automatically.{% endif %}</div>
         </div>
       </div>
       {% endif %}
