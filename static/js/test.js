@@ -6,7 +6,7 @@ let questions = [];
 let currentIndex = 0;
 let selectedAnswers = {}; // { questionId: [answerId, ...] }
 let attemptId = null;
-let timerSeconds = 45 * 60;
+let timerSeconds = 25 * 60;
 let timerInterval = null;
 let isSubmitting = false;
 
