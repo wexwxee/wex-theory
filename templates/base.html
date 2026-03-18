@@ -130,6 +130,11 @@
       <a href="/profile" class="sb-item">
         <i class="fa-regular fa-user sb-ic"></i><span>Profile</span>
       </a>
+      {% if not user.is_admin %}
+      <a href="/promo-code" class="sb-item">
+        <i class="fa-solid fa-ticket sb-ic"></i><span>Activate Promo Code</span>
+      </a>
+      {% endif %}
       <a href="/pricing" class="sb-item">
         <i class="fa-regular fa-credit-card sb-ic"></i><span>Subscription</span>
       </a>

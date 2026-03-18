@@ -1425,6 +1425,21 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
     })
 
 
+@app.get("/promo-code", response_class=HTMLResponse)
+async def promo_code_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        return RedirectResponse("/login", status_code=302)
+    access_expires_at = None if user.is_admin else get_user_access_expiry(user)
+    return templates.TemplateResponse("promo_code.html", {
+        "request": request,
+        "user": user,
+        "has_access": user_has_access(user),
+        "access_expires_at": access_expires_at,
+        "now": datetime.utcnow(),
+    })
+
+
 @app.get("/messages", response_class=HTMLResponse)
 async def messages_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)

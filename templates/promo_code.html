@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Activate Promo Code - WEX Theory{% endblock %}
+
+{% block body %}
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" id="promoBurgerBtn">&#9776;</button>
+      <a href="/" class="logo">WEXTheory</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
+      <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+  <div style="max-width:780px;margin:0 auto;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px;">
+      <div>
+        <h1 style="font-size:1.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:8px;">Activate Promo Code</h1>
+        <p style="color:var(--text-muted);max-width:560px;line-height:1.7;">Enter a valid promo code to add premium access to your account. If you already have access, the new days will be added on top.</p>
+      </div>
+      <a href="/profile" class="btn-ghost btn-sm">Profile</a>
+    </div>
+
+    <div class="card" style="padding:24px;margin-bottom:16px;">
+      <div style="font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;">Promo Code</div>
+      <div id="promoRedeemMsg" style="display:none;padding:10px 12px;border-radius:10px;font-size:0.84rem;margin-bottom:12px;"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <input type="text" id="promoCodeInput" placeholder="Enter promo code" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1;min-width:220px;">
+        <button class="btn-primary" id="promoRedeemBtn" type="button">Activate</button>
+      </div>
+    </div>
+
+    <div class="card" style="padding:20px;">
+      <div style="font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">Current Access</div>
+      {% if user.is_admin %}
+      <div style="color:var(--correct);font-weight:700;">Admin account</div>
+      <div style="color:var(--text-muted);line-height:1.7;">Your account already has admin-level access.</div>
+      {% elif has_access and access_expires_at %}
+      <div style="color:var(--correct);font-weight:700;">Premium active</div>
+      <div style="color:var(--text-muted);line-height:1.7;">Access valid until {{ access_expires_at.strftime('%d %b %Y %H:%M') }}.</div>
+      {% else %}
+      <div style="color:var(--text);font-weight:700;">Free plan</div>
+      <div style="color:var(--text-muted);line-height:1.7;">You can still use the free test. A promo code will unlock premium access instantly.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/profile">Profile</a>
+      <a href="/pricing">Pricing</a>
+    </div>
+    <div>&copy; 2026 WEXTheory</div>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/promo-code.js"></script>
+{% endblock %}

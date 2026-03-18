@@ -173,9 +173,9 @@
   </div>
 
   <div class="tabs">
-    <button class="tab-btn active" id="tabUsers">Users ({{ users|length }})</button>
-    <button class="tab-btn" id="tabMessages">Messages ({{ messages|length }}){% if unread_count > 0 %} <span style="color:var(--wrong);">&bull;</span>{% endif %}</button>
-    <button class="tab-btn" id="tabPromos">Promo Codes ({{ promo_codes|length }})</button>
+    <button type="button" class="tab-btn active" id="tabUsers">Users ({{ users|length }})</button>
+    <button type="button" class="tab-btn" id="tabMessages">Messages ({{ messages|length }}){% if unread_count > 0 %} <span style="color:var(--wrong);">&bull;</span>{% endif %}</button>
+    <button type="button" class="tab-btn" id="tabPromos">Promo Codes ({{ promo_codes|length }})</button>
   </div>
 
   <div id="panelUsers">

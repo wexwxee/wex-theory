@@ -339,9 +339,18 @@
   document.getElementById('adminBurgerBtn')?.addEventListener('click', sbOpen);
   document.getElementById('navThemeBtn')?.addEventListener('click', toggleTheme);
   document.getElementById('openCreateModalBtn')?.addEventListener('click', openCreateModal);
-  document.getElementById('tabUsers')?.addEventListener('click', () => switchTab('users'));
-  document.getElementById('tabMessages')?.addEventListener('click', () => switchTab('messages'));
-  document.getElementById('tabPromos')?.addEventListener('click', () => switchTab('promos'));
+  document.getElementById('tabUsers')?.addEventListener('click', (event) => {
+    event.preventDefault();
+    switchTab('users');
+  });
+  document.getElementById('tabMessages')?.addEventListener('click', (event) => {
+    event.preventDefault();
+    switchTab('messages');
+  });
+  document.getElementById('tabPromos')?.addEventListener('click', (event) => {
+    event.preventDefault();
+    switchTab('promos');
+  });
   userSearch?.addEventListener('input', filterUsers);
 
   document.querySelectorAll('.user-edit-btn').forEach((btn) => {
