@@ -1531,12 +1531,16 @@ async def admin_page(request: Request, db: Session = Depends(get_db)):
         models.PromoCode.created_at.desc()
     ).all()
     unread_count = sum(1 for m in messages if not m.is_read)
+    active_tab = str(request.query_params.get("tab", "users") or "users").strip().lower()
+    if active_tab not in {"users", "messages", "promos"}:
+        active_tab = "users"
 
     return templates.TemplateResponse("admin.html", {
         "request": request, "user": user, "users": users,
         "messages": messages, "unread_count": unread_count,
         "promo_codes": promo_codes,
         "promo_status": get_promo_status,
+        "active_tab": active_tab,
         "now": datetime.utcnow(),
         "can_manage_admin_roles": can_manage_admin_roles(user),
     })

@@ -173,12 +173,12 @@
   </div>
 
   <div class="tabs">
-    <button type="button" class="tab-btn active" id="tabUsers">Users ({{ users|length }})</button>
-    <button type="button" class="tab-btn" id="tabMessages">Messages ({{ messages|length }}){% if unread_count > 0 %} <span style="color:var(--wrong);">&bull;</span>{% endif %}</button>
-    <button type="button" class="tab-btn" id="tabPromos">Promo Codes ({{ promo_codes|length }})</button>
+    <a href="/admin?tab=users" class="tab-btn{% if active_tab == 'users' %} active{% endif %}" id="tabUsers">Users ({{ users|length }})</a>
+    <a href="/admin?tab=messages" class="tab-btn{% if active_tab == 'messages' %} active{% endif %}" id="tabMessages">Messages ({{ messages|length }}){% if unread_count > 0 %} <span style="color:var(--wrong);">&bull;</span>{% endif %}</a>
+    <a href="/admin?tab=promos" class="tab-btn{% if active_tab == 'promos' %} active{% endif %}" id="tabPromos">Promo Codes ({{ promo_codes|length }})</a>
   </div>
 
-  <div id="panelUsers">
+  <div id="panelUsers" style="display:{% if active_tab == 'users' %}block{% else %}none{% endif %};">
     <form class="admin-search-form" id="userSearchForm" autocomplete="off" action="#" method="get">
       <input class="admin-autofill-trap" type="text" name="email" autocomplete="username" tabindex="-1" aria-hidden="true">
       <input class="admin-autofill-trap" type="password" name="password" autocomplete="current-password" tabindex="-1" aria-hidden="true">
@@ -255,7 +255,7 @@
     </div>
   </div>
 
-  <div id="panelMessages" style="display:none;">
+  <div id="panelMessages" style="display:{% if active_tab == 'messages' %}block{% else %}none{% endif %};">
     {% if messages %}
     <div class="card admin-table-wrap">
       <table class="admin-table">
@@ -315,7 +315,7 @@
     {% endif %}
   </div>
 
-  <div id="panelPromos" style="display:none;">
+  <div id="panelPromos" style="display:{% if active_tab == 'promos' %}block{% else %}none{% endif %};">
     <div style="display:grid;grid-template-columns:minmax(280px, 360px) 1fr;gap:16px;align-items:start;">
       <div class="card">
         <h3 style="font-size:1rem;font-weight:700;margin-bottom:14px;">Create Promo Code</h3>

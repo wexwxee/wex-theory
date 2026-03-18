@@ -18,6 +18,9 @@
     document.getElementById('tabUsers').className = 'tab-btn' + (tab === 'users' ? ' active' : '');
     document.getElementById('tabMessages').className = 'tab-btn' + (tab === 'messages' ? ' active' : '');
     document.getElementById('tabPromos').className = 'tab-btn' + (tab === 'promos' ? ' active' : '');
+    if (window.history?.replaceState) {
+      window.history.replaceState(null, '', `/admin?tab=${tab}`);
+    }
   }
 
   function filterUsers() {
