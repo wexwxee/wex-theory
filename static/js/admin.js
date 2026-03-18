@@ -261,10 +261,22 @@
   }
 
   const userSearch = document.getElementById('userSearch');
+  const userSearchForm = document.getElementById('userSearchForm');
   if (userSearch) {
-    userSearch.value = '';
+    const clearSearch = () => {
+      userSearch.value = '';
+      filterUsers();
+    };
+    clearSearch();
     userSearch.setAttribute('autocomplete', 'off');
+    userSearch.setAttribute('name', 'lookup_term');
+    requestAnimationFrame(clearSearch);
+    window.setTimeout(clearSearch, 0);
+    window.setTimeout(clearSearch, 150);
+    window.addEventListener('pageshow', clearSearch);
   }
+  userSearchForm?.setAttribute('autocomplete', 'off');
+  userSearchForm?.addEventListener('submit', (event) => event.preventDefault());
 
   document.getElementById('adminBurgerBtn')?.addEventListener('click', sbOpen);
   document.getElementById('navThemeBtn')?.addEventListener('click', toggleTheme);
