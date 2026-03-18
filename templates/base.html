@@ -6,7 +6,7 @@
   <title>{% block title %}WEX Theory{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
   <link rel="stylesheet" href="/static/style.css?v=20260317-menufix">
   <style>
     .sb-item-label {
@@ -84,13 +84,8 @@
   {% block head %}{% endblock %}
 </head>
 <body>
-  <!-- Sidebar overlay -->
   <div class="sb-overlay" id="sbOverlay" onclick="sbClose()"></div>
-
-  <!-- Sidebar -->
   <aside class="sb" id="sidebar">
-
-    <!-- Brand bar -->
     <div class="sb-brand">
       <a href="/" class="sb-logo">WEXTheory</a>
       <button class="sb-x" onclick="sbClose()" aria-label="Close">
@@ -98,7 +93,6 @@
       </button>
     </div>
 
-    <!-- User profile -->
     {% if user is defined and user %}
     <div class="sb-profile">
       <div class="sb-avi">{{ user.name[0] | upper }}</div>
@@ -116,7 +110,6 @@
     </div>
     {% endif %}
 
-    <!-- Navigation list -->
     <div class="sb-list">
 
       <a href="/" class="sb-item">
@@ -168,7 +161,6 @@
 
     </div>
 
-    <!-- Footer -->
     <div class="sb-foot">
       <div class="sb-foot-row">
         <span class="sb-foot-label">Theme</span>

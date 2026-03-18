@@ -212,7 +212,6 @@
 </nav>
 
 <div class="page">
-  <!-- Header result -->
   <div style="text-align:center;padding:40px 0 36px;">
     <div style="font-size:0.82rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;">{{ test.title }}</div>
     {% if attempt.passed %}
@@ -226,7 +225,6 @@
     </div>
     <div style="font-size:1.1rem;color:#ef4444;font-weight:600;"><span id="scoreDisplay">0</span>/25 correct</div>
     {% endif %}
-    <!-- Score progress bar -->
     <div style="max-width:320px;margin:12px auto 4px;">
       <div style="height:6px;background:var(--border);border-radius:999px;overflow:hidden;">
         <div id="scoreBar" style="height:100%;width:0%;border-radius:999px;transition:width 1s ease;background:{% if attempt.passed %}#22c55e{% else %}#ef4444{% endif %};"></div>
@@ -234,7 +232,6 @@
     </div>
     <p style="color:var(--text-muted);font-size:0.88rem;margin-top:10px;">You need at least 20 correct answers to pass.</p>
 
-    <!-- Stats row -->
     <div style="display:inline-grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:24px;text-align:center;">
       <div>
         <div id="statCorrect" style="font-size:2rem;font-weight:800;color:#22c55e;">0</div>
@@ -250,7 +247,6 @@
       </div>
     </div>
 
-    <!-- Buttons -->
     <div style="display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap;">
       <a href="/test/{{ test.id }}" class="btn-primary">Try Again</a>
       {% if user %}
@@ -261,7 +257,6 @@
     </div>
   </div>
 
-  <!-- 5-column grid of all 25 questions -->
   <h2 style="font-size:1rem;font-weight:700;margin-bottom:16px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Question Breakdown</h2>
   <div class="result-grid">
     {% for qr in question_results %}
@@ -337,7 +332,6 @@
   </div>
   {% endif %}
 
-  <!-- Bottom CTAs -->
   <div style="display:flex;gap:12px;justify-content:center;margin-bottom:40px;flex-wrap:wrap;">
     <a href="/test/{{ test.id }}" class="btn-primary">Try Again</a>
     {% if user %}
@@ -360,7 +354,6 @@
   </div>
 </footer>
 
-<!-- Question detail modal -->
 <div class="modal-overlay" id="qModal">
   <div class="modal modal-wide">
     <div class="modal-header">
@@ -370,22 +363,17 @@
       </div>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
-    <!-- Image -->
     <div id="modalImgWrap" style="margin-bottom:16px;display:none;">
       <img id="modalImg" src="" alt="" style="width:100%;border-radius:8px;border:1px solid var(--border);max-height:300px;object-fit:cover;">
     </div>
-    <!-- Question text -->
     <div id="modalQuestion" style="font-size:1rem;font-weight:600;line-height:1.5;margin-bottom:16px;"></div>
     <div id="modalQuestionRu" style="display:none;font-size:0.9rem;color:#6b7280;font-style:italic;margin:-8px 0 16px;animation:fadeIn 0.25s ease both;"></div>
-    <!-- Answers -->
     <div id="modalAnswers" style="margin-bottom:16px;"></div>
-    <!-- Explanation -->
     <div id="modalExplanation" style="display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:0.88rem;color:var(--text-muted);line-height:1.6;">
       <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:6px;">Explanation</div>
       <div id="modalExplanationBody"></div>
       <div id="modalExplanationRu" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-style:italic;"></div>
     </div>
-    <!-- Prev/Next -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
       <button class="btn-ghost btn-sm" onclick="modalNav(-1)" id="modalPrev">← Prev</button>
       <span id="modalStatus" style="font-size:0.85rem;"></span>

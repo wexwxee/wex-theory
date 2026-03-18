@@ -622,6 +622,30 @@ app.add_middleware(
 )
 
 
+def should_disable_cache(request: Request) -> bool:
+    path = (request.url.path or "").rstrip("/") or "/"
+    exact_paths = {
+        "/login",
+        "/register",
+        "/forgot-password",
+        "/reset-password",
+        "/dashboard",
+        "/profile",
+        "/messages",
+        "/support",
+        "/admin",
+        "/saved",
+        "/subscription-expired",
+    }
+    prefix_paths = (
+        "/test/",
+        "/results",
+    )
+    if path in exact_paths:
+        return True
+    return any(path.startswith(prefix) for prefix in prefix_paths)
+
+
 @app.middleware("http")
 async def refresh_auth_session(request: Request, call_next):
     if request.method.upper() not in {"GET", "HEAD", "OPTIONS"} and request.url.path not in {"/stripe/webhook", "/api/stripe/webhook"}:
@@ -644,6 +668,10 @@ async def refresh_auth_session(request: Request, call_next):
     response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
     if _cookie_secure(request):
         response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
+    if should_disable_cache(request):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+        response.headers.setdefault("Pragma", "no-cache")
+        response.headers["Expires"] = "0"
     return response
 
 # ─── Google OAuth ──────────────────────────────────────────────────────────────

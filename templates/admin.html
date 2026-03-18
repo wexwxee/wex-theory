@@ -26,7 +26,6 @@
     <button class="btn-primary btn-sm" onclick="openCreateModal()">+ Add User</button>
   </div>
 
-  <!-- Stats -->
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:36px;">
     <div class="card" style="padding:20px;text-align:center;">
       <div style="font-size:2rem;font-weight:800;line-height:1;">{{ users|length }}</div>
@@ -46,13 +45,11 @@
     </div>
   </div>
 
-  <!-- Tabs -->
   <div class="tabs">
     <button class="tab-btn active" id="tabUsers" onclick="switchTab('users')">Users ({{ users|length }})</button>
     <button class="tab-btn" id="tabMessages" onclick="switchTab('messages')">Messages ({{ messages|length }}){% if unread_count > 0 %} <span style="color:var(--wrong);">•</span>{% endif %}</button>
   </div>
 
-  <!-- Users tab -->
   <div id="panelUsers">
     <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
       <input type="text" id="userSearch" placeholder="Search by User ID, email or name" oninput="filterUsers()" style="max-width:320px;">
@@ -118,7 +115,6 @@
     </div>
   </div>
 
-  <!-- Messages tab -->
   <div id="panelMessages" style="display:none;">
     {% if messages %}
     <div class="card" style="padding:0;overflow:hidden;">
@@ -170,7 +166,6 @@
   </div>
 </div>
 
-<!-- Edit user modal -->
 <div class="modal-overlay" id="editModal">
   <div class="modal">
     <div class="modal-header">
@@ -216,7 +211,6 @@
   </div>
 </div>
 
-<!-- Create user modal -->
 <div class="modal-overlay" id="createModal">
   <div class="modal">
     <div class="modal-header">
@@ -261,7 +255,6 @@
   </div>
 </div>
 
-<!-- Reset password modal -->
 <div class="modal-overlay" id="resetModal">
   <div class="modal" style="max-width:400px;">
     <div class="modal-header">
@@ -281,7 +274,6 @@
   </div>
 </div>
 
-<!-- View message modal -->
 <div class="modal-overlay" id="msgModal">
   <div class="modal" style="max-width:560px;">
     <div class="modal-header">
