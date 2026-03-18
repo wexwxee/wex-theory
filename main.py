@@ -338,6 +338,14 @@ def render_password_reset_email_html(recipient_name: str, reset_url: str, code: 
     )
 
 
+def render_account_removed_email_html(recipient_name: str) -> str:
+    return templates.env.get_template("emails/account_removed_email.html").render(
+        recipient_name=recipient_name,
+        support_email="wexwxee@gmail.com",
+        support_telegram="@wexwxeee",
+    )
+
+
 def send_verification_email(recipient_email: str, code: str, recipient_name: str, confirm_url: str) -> None:
     if not is_email_service_configured():
         raise RuntimeError("Email verification is not configured yet")
@@ -368,6 +376,52 @@ def send_verification_email(recipient_email: str, code: str, recipient_name: str
     }
 
     print("[EMAIL API] provider='resend' url=%r from=%r to=%r" % (resend_api_url, sender, recipient_email))
+
+    with httpx.Client(timeout=20.0) as client:
+        response = client.post(
+            resend_api_url,
+            headers={
+                "Authorization": f"Bearer {resend_api_key}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+        )
+        if response.status_code >= 400:
+            raise RuntimeError(f"Resend API error {response.status_code}: {response.text[:300]}")
+
+
+def send_account_removed_email(recipient_email: str, recipient_name: str) -> None:
+    if not is_email_service_configured():
+        print(f"[EMAIL API] account_removed skipped: email service not configured for {recipient_email!r}")
+        return
+
+    resend_api_key = _clean_env_value("RESEND_API_KEY")
+    configured_sender = _clean_env_value("RESEND_FROM_EMAIL", VERIFICATION_EMAIL_SENDER)
+    sender = VERIFICATION_EMAIL_SENDER
+    resend_api_url = _clean_env_value("RESEND_API_URL", "https://api.resend.com/emails")
+
+    if not resend_api_key:
+        raise RuntimeError("RESEND_API_KEY is empty")
+    if configured_sender and configured_sender != VERIFICATION_EMAIL_SENDER:
+        print(f"[EMAIL API] RESEND_FROM_EMAIL overridden to required sender {VERIFICATION_EMAIL_SENDER!r} (configured={configured_sender!r})")
+
+    payload = {
+        "from": sender,
+        "to": [recipient_email],
+        "subject": "Your WEXTheory account has been removed",
+        "html": render_account_removed_email_html(recipient_name),
+        "text": (
+            f"Hello {recipient_name},\n\n"
+            "Your WEXTheory account has been removed by administration.\n\n"
+            "If you believe this was a mistake or would like to request a review, please contact us and we will look into it.\n\n"
+            "Email: wexwxee@gmail.com\n"
+            "Telegram: @wexwxeee\n\n"
+            "Best regards,\n"
+            "WEXTheory"
+        ),
+    }
+
+    print("[EMAIL API] provider='resend' kind='account_removed' url=%r from=%r to=%r" % (resend_api_url, sender, recipient_email))
 
     with httpx.Client(timeout=20.0) as client:
         response = client.post(
@@ -2334,6 +2388,14 @@ async def api_admin_delete_user(user_id: int, request: Request, db: Session = De
         return JSONResponse({"error": "The main admin account cannot be deleted"}, status_code=403)
     if u.is_admin and not can_manage_admin_roles(admin):
         return JSONResponse({"error": "Only the main admin can delete other admins"}, status_code=403)
+
+    deleted_email = u.email
+    deleted_name = u.name
+    try:
+        send_account_removed_email(deleted_email, deleted_name)
+    except Exception as e:
+        print(f"[ADMIN DELETE] account removed email failed for {deleted_email!r}: {e}")
+
     db.query(models.UserAnswer).filter(
         models.UserAnswer.attempt_id.in_(
             db.query(models.UserTestAttempt.id).filter(models.UserTestAttempt.user_id == user_id)

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your account has been removed</title>
+  </head>
+  <body style="margin:0;padding:0;background-color:#0a0a0a;font-family:Inter,Segoe UI,Arial,sans-serif;color:#f5f5f5;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#0a0a0a;margin:0;padding:0;">
+      <tr>
+        <td align="center" style="padding:32px 16px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:620px;">
+            <tr>
+              <td style="padding:0 0 18px 0;text-align:center;">
+                <div style="display:inline-block;padding:10px 16px;border:1px solid #232323;border-radius:999px;background-color:#111111;color:#f5f5f5;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">
+                  WEXTheory
+                </div>
+                <div style="margin-top:14px;color:#7f7f7f;font-size:14px;line-height:1.6;">
+                  Danish Driving Theory Practice
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:linear-gradient(180deg,#141414 0%,#101010 100%);border:1px solid #242424;border-radius:28px;padding:40px 34px;box-shadow:0 24px 60px rgba(0,0,0,0.35);">
+                <div style="display:inline-block;padding:6px 12px;border-radius:999px;background-color:#171717;border:1px solid #2b2b2b;color:#9ca3af;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">
+                  Account update
+                </div>
+                <h1 style="margin:18px 0 14px 0;font-size:32px;line-height:1.14;font-weight:800;letter-spacing:-0.04em;color:#ffffff;">
+                  Your WEXTheory account has been removed
+                </h1>
+                <p style="margin:0 0 16px 0;font-size:16px;line-height:1.75;color:#b7b7b7;">
+                  Hello {{ recipient_name }},
+                </p>
+                <p style="margin:0 0 16px 0;font-size:16px;line-height:1.75;color:#b7b7b7;">
+                  Your WEXTheory account has been removed by administration.
+                </p>
+                <p style="margin:0 0 26px 0;font-size:16px;line-height:1.75;color:#b7b7b7;">
+                  If you believe this was a mistake or would like to request a review, please contact us and we will look into it.
+                </p>
+
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 24px 0;background-color:#0d0d0d;border:1px solid #232323;border-radius:20px;">
+                  <tr>
+                    <td style="padding:22px 22px 10px 22px;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#7f7f7f;">
+                      Contact support
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 22px 10px 22px;font-size:16px;line-height:1.7;color:#ffffff;">
+                      Email: <a href="mailto:{{ support_email }}" style="color:#ffffff;text-decoration:underline;">{{ support_email }}</a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 22px 22px 22px;font-size:16px;line-height:1.7;color:#ffffff;">
+                      Telegram: <a href="https://t.me/{{ support_telegram.lstrip('@') }}" style="color:#ffffff;text-decoration:underline;">{{ support_telegram }}</a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin:0;font-size:14px;line-height:1.7;color:#8d8d8d;">
+                  If you did not expect this change, just reply using the contacts above and we will review the case.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:18px 8px 0 8px;text-align:center;color:#7f7f7f;font-size:13px;line-height:1.8;">
+                This is a service email from WEXTheory.
+                <br>
+                WEXTheory, sent by WEXTheory &lt;no-reply@mail.wextheory.cv&gt;
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
