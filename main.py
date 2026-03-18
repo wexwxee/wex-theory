@@ -124,6 +124,17 @@ def get_public_base_url(request: Optional[Request] = None) -> str:
     return ""
 
 
+def get_request_base_url(request: Request) -> str:
+    forwarded_proto = (request.headers.get("x-forwarded-proto") or "").split(",")[0].strip()
+    forwarded_host = (request.headers.get("x-forwarded-host") or "").split(",")[0].strip()
+    if forwarded_proto and forwarded_host:
+        return f"{forwarded_proto}://{forwarded_host}".rstrip("/")
+    host = request.headers.get("host", "").strip()
+    if host:
+        return f"{request.url.scheme}://{host}".rstrip("/")
+    return str(request.base_url).rstrip("/")
+
+
 def validate_registration_email(email: str) -> Optional[str]:
     if not email:
         return "Email is required"
@@ -615,8 +626,9 @@ async def setup_admin(db: Session = Depends(get_db)):
 async def google_login(request: Request):
     if not _google_client_id:
         return RedirectResponse("/login?error=google_not_configured", status_code=302)
-    base_url = os.environ.get("BASE_URL", str(request.base_url).rstrip("/"))
+    base_url = get_request_base_url(request)
     redirect_uri = base_url + "/auth/google/callback"
+    print(f"[GOOGLE LOGIN] redirect_uri={redirect_uri}")
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 
