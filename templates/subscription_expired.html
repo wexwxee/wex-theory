@@ -18,12 +18,12 @@
 
 <div class="page" style="max-width:560px;text-align:center;padding-top:80px;">
   <div style="font-size:3rem;margin-bottom:20px;">⏳</div>
-  <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:12px;">Your access has expired</h1>
+  <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:12px;">Your subscription has expired</h1>
   <p style="color:var(--text-muted);line-height:1.7;margin-bottom:32px;">
-    Your subscription has ended. Contact us to renew your access and continue practicing for your Danish driving theory test.
+    Premium tests are now locked. Renew access to continue with Tests 2 to 13, or use Test 1 for free anytime.
   </p>
   <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-    <a href="/contact" class="btn-primary">Contact to Renew</a>
+    <a href="#" onclick="return openTelegramPurchase({ plan: 'Premium', amount: '99 kr', duration: '30 days' })" class="btn-primary">Renew Access</a>
     <a href="/test/1" class="btn-ghost">Try Free Test</a>
   </div>
   <p style="color:var(--text-muted);font-size:0.82rem;margin-top:32px;">

@@ -44,6 +44,27 @@ def get_current_user(request: Request, db: Session):
     return db.query(User).filter(User.id == int(payload["sub"])).first()
 
 
+def get_user_access_expiry(user):
+    if not user:
+        return None
+
+    now = datetime.utcnow()
+    expiry_candidates = []
+
+    manual_expiry = getattr(user, "expires_at", None)
+    if manual_expiry and manual_expiry > now:
+        expiry_candidates.append(manual_expiry)
+
+    subscription_status = str(getattr(user, "subscription_status", "free") or "free").lower()
+    stripe_expiry = getattr(user, "current_period_end", None)
+    if subscription_status in {"active", "trialing", "past_due"} and stripe_expiry and stripe_expiry > now:
+        expiry_candidates.append(stripe_expiry)
+
+    if not expiry_candidates:
+        return None
+    return max(expiry_candidates)
+
+
 def user_has_access(user) -> bool:
     """True if user can access paid tests (Test 2+)."""
     if not user:
@@ -51,10 +72,4 @@ def user_has_access(user) -> bool:
     # Admins always have full access
     if user.is_admin:
         return True
-    # Stripe active subscription
-    if getattr(user, "subscription_status", "free") == "active":
-        return True
-    # Legacy: admin-granted access via expires_at (manual subscriptions)
-    if user.expires_at and user.expires_at > datetime.utcnow():
-        return True
-    return False
+    return get_user_access_expiry(user) is not None

@@ -22,6 +22,34 @@
     font-weight: 700;
     letter-spacing: -0.01em;
   }
+  .sub-status-card {
+    margin-top: 14px;
+    max-width: 420px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 90%, #fff 10%), var(--bg-card));
+  }
+  .sub-status-title {
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .sub-status-meta {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+  .sub-status-card.active {
+    border-color: rgba(34, 197, 94, 0.35);
+    background: linear-gradient(180deg, rgba(34, 197, 94, 0.08), var(--bg-card));
+  }
+  .sub-status-card.expired {
+    border-color: rgba(239, 68, 68, 0.35);
+    background: linear-gradient(180deg, rgba(239, 68, 68, 0.08), var(--bg-card));
+  }
 </style>
 <nav>
   <div class="nav-inner">
@@ -51,30 +79,50 @@
       <div style="margin-top:8px;font-size:0.78rem;color:var(--text-muted);">
         User ID: <span style="font-weight:700;letter-spacing:0.05em;color:var(--text);">{{ user.public_id }}</span>
       </div>
-      {% if has_access %}
-        {% set expiry = user.current_period_end or user.expires_at %}
-        {% if expiry and not user.is_admin %}
-        <div id="subTimer" style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;"></div>
+      {% if not user.is_admin %}
+        {% if has_access and access_expires_at %}
+        <div class="sub-status-card active">
+          <div class="sub-status-title" style="color:var(--correct);">Active</div>
+          <div class="sub-status-meta">
+            Access valid until {{ access_expires_at.strftime('%d %b %Y %H:%M') }}.
+          </div>
+          <div id="subTimer" class="sub-status-meta" style="margin-top:6px;"></div>
+        </div>
         <script>
         (function(){
-          var exp = new Date("{{ expiry.isoformat() }}Z");
+          var exp = new Date("{{ access_expires_at.isoformat() }}Z");
           function tick(){
             var now = new Date();
             var diff = Math.floor((exp - now) / 1000);
             var el = document.getElementById('subTimer');
             if (!el) return;
-            if (diff <= 0) { el.textContent = 'Subscription expired'; el.style.color = '#ef4444'; return; }
+            if (diff <= 0) {
+              el.textContent = 'Your premium access has ended.';
+              el.style.color = '#ef4444';
+              return;
+            }
             var d = Math.floor(diff / 86400);
             var h = Math.floor((diff % 86400) / 3600);
             var m = Math.floor((diff % 3600) / 60);
-            var s = diff % 60;
-            el.textContent = 'Expires in: ' + d + 'd ' + h + 'h ' + m + 'm ' + s + 's';
+            if (d > 0) {
+              el.textContent = d + ' day' + (d === 1 ? '' : 's') + ' remaining';
+            } else {
+              el.textContent = h + 'h ' + m + 'm remaining';
+            }
             el.style.color = d < 3 ? '#ef4444' : 'var(--text-muted)';
           }
           tick();
-          setInterval(tick, 1000);
+          setInterval(tick, 60000);
         })();
         </script>
+        {% else %}
+        <div class="sub-status-card expired">
+          <div class="sub-status-title" style="color:var(--wrong);">Expired</div>
+          <div class="sub-status-meta">Your subscription has expired. Premium tests are locked until you renew access.</div>
+          <div style="margin-top:12px;">
+            <a href="#" onclick="return openTelegramPurchase({ plan: 'Premium', amount: '99 kr', duration: '30 days' })" class="btn-primary btn-sm">Renew Access</a>
+          </div>
+        </div>
         {% endif %}
       {% endif %}
     </div>
@@ -82,7 +130,7 @@
       <a href="/profile" class="btn-ghost btn-sm">History</a>
       <a href="/saved" class="btn-ghost btn-sm saved-pill"><i class="fa-solid fa-bookmark"></i><span>Saved</span></a>
       {% if not user.is_admin and not has_access %}
-        <a href="#" onclick="return openTelegramPurchase({ plan: 'Premium', amount: '99 kr', duration: '30 days' })" class="btn-primary btn-sm">Get Premium</a>
+        <a href="#" onclick="return openTelegramPurchase({ plan: 'Premium', amount: '99 kr', duration: '30 days' })" class="btn-primary btn-sm">{% if user.subscription_status != 'free' %}Renew Access{% else %}Unlock Full Access{% endif %}</a>
       {% endif %}
     </div>
   </div>
@@ -154,8 +202,8 @@
   <!-- Upgrade CTA -->
   <div class="card" style="padding:32px;text-align:center;margin-top:24px;border:1px solid var(--border);">
     <div style="font-size:1.3rem;font-weight:800;margin-bottom:8px;">Unlock All 13 Tests</div>
-    <p style="color:var(--text-muted);margin-bottom:20px;max-width:400px;margin-left:auto;margin-right:auto;">Get access to all practice tests and maximize your chances of passing the Danish driving theory exam.</p>
-    <a href="#" onclick="return openTelegramPurchase({ plan: 'Premium', amount: '99 kr', duration: '30 days' })" class="btn-primary">Get Access via Telegram</a>
+    <p style="color:var(--text-muted);margin-bottom:20px;max-width:440px;margin-left:auto;margin-right:auto;">Keep Test 1 free forever, or unlock the full exam-style practice set with 13 tests, explanations, and saved progress.</p>
+    <a href="#" onclick="return openTelegramPurchase({ plan: 'Premium', amount: '99 kr', duration: '30 days' })" class="btn-primary">{% if user.subscription_status != 'free' %}Renew Access{% else %}Unlock Full Access{% endif %}</a>
   </div>
   {% endif %}
 </div>
@@ -183,7 +231,7 @@
       This test is available to subscribers. Unlock all 13 tests and maximize your chances of passing.
     </p>
     <div style="display:flex;flex-direction:column;gap:10px;max-width:240px;margin:0 auto;">
-      <a href="#" onclick="return openTelegramPurchase({ plan: 'Premium', amount: '99 kr', duration: '30 days' })" class="btn-primary">Get Access via Telegram</a>
+      <a href="#" onclick="return openTelegramPurchase({ plan: 'Premium', amount: '99 kr', duration: '30 days' })" class="btn-primary">Unlock Full Access</a>
       <button onclick="document.getElementById('paywallModal').classList.remove('open')" class="btn-ghost">Maybe later</button>
     </div>
   </div>

@@ -15,7 +15,7 @@
       <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
       {% else %}
       <a href="/login" class="btn-ghost btn-sm">Sign In</a>
-      <a href="/register" class="btn-primary btn-sm">Get Access</a>
+      <a href="/register" class="btn-primary btn-sm">Create Account</a>
       {% endif %}
     </div>
   </div>
@@ -25,7 +25,7 @@
   <p style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Contact</p>
   <h1 style="font-size:2.2rem;font-weight:800;letter-spacing:-0.04em;margin-bottom:12px;">Get in touch</h1>
   <p style="color:var(--text-muted);margin-bottom:40px;line-height:1.7;">
-    Have a question, found an issue, or want to get access? Fill in the form and we'll get back to you.
+    Use this form for support, account help, bug reports, or content issues. This page is for support, not for hidden pricing requests.
     {% if user %}
     Your message will open a support chat in Messages, where you can continue the conversation and get replies from support.
     {% endif %}
@@ -55,7 +55,7 @@
         <label class="form-label" for="cSubject">Subject</label>
         <select id="cSubject">
           <option value="General">General question</option>
-          <option value="Access">Get access / pricing</option>
+          <option value="Billing">Billing / access</option>
           <option value="Technical">Technical issue</option>
           <option value="Content">Question error / content</option>
           <option value="Extend">Extend subscription</option>

@@ -18,7 +18,10 @@ from authlib.integrations.starlette_client import OAuth
 import httpx
 
 import models
-from auth import hash_password, verify_password, create_token, decode_token, get_current_user, user_has_access, SECRET_KEY
+from auth import (
+    hash_password, verify_password, create_token, decode_token,
+    get_current_user, user_has_access, get_user_access_expiry, SECRET_KEY,
+)
 from database import engine, get_db
 from stripe_helpers import (
     get_or_create_customer, create_checkout_session,
@@ -1094,11 +1097,14 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
 
     completed = sum(1 for s in best_scores.values() if s >= 20)
     has_full_access = user_has_access(user)
+    access_expires_at = None if user.is_admin else get_user_access_expiry(user)
 
     return templates.TemplateResponse("dashboard.html", {
         "request": request, "user": user, "tests": tests,
         "best_scores": best_scores, "images": images,
         "completed": completed, "has_access": has_full_access,
+        "access_expires_at": access_expires_at,
+        "now": datetime.utcnow(),
     })
 
 
@@ -1223,8 +1229,7 @@ async def admin_page(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/test/1/free", response_class=HTMLResponse)
 async def free_test_page(request: Request, db: Session = Depends(get_db)):
-    test = db.query(models.Test).filter(models.Test.id == 1).first()
-    return templates.TemplateResponse("free_test.html", {"request": request, "test": test})
+    return RedirectResponse("/test/1", status_code=302)
 
 
 @app.get("/api/tests/1/questions/free")
@@ -1270,15 +1275,11 @@ async def api_free_check(request: Request, db: Session = Depends(get_db)):
 @app.get("/test/{test_id}", response_class=HTMLResponse)
 async def test_page(test_id: int, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
-    # Test 1: free for all authenticated users
-    if test_id == 1:
-        if not user:
-            return RedirectResponse("/login", status_code=302)
-    else:
+    if test_id != 1:
         if not user:
             return RedirectResponse("/login", status_code=302)
         if not user_has_access(user):
-            return RedirectResponse("/pricing", status_code=302)
+            return RedirectResponse("/subscription-expired" if getattr(user, "subscription_status", "free") != "free" else "/pricing", status_code=302)
 
     test = db.query(models.Test).filter(models.Test.id == test_id).first()
     if not test:
@@ -1291,6 +1292,8 @@ async def overview_page(test_id: int, request: Request, db: Session = Depends(ge
     user = get_current_user(request, db)
     if not user:
         return RedirectResponse("/login", status_code=302)
+    if test_id != 1 and not user_has_access(user):
+        return RedirectResponse("/subscription-expired" if getattr(user, "subscription_status", "free") != "free" else "/pricing", status_code=302)
     test = db.query(models.Test).filter(models.Test.id == test_id).first()
     if not test:
         raise HTTPException(status_code=404)
@@ -1401,7 +1404,7 @@ async def api_tests(request: Request, db: Session = Depends(get_db)):
 @app.get("/api/tests/{test_id}/questions")
 async def api_questions(test_id: int, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
-    if not user:
+    if test_id != 1 and not user:
         return JSONResponse({"error": "Unauthorized"}, status_code=401)
     # Test 2+ requires active subscription
     if test_id != 1 and not user_has_access(user):
@@ -1976,7 +1979,13 @@ async def api_admin_mark_read(msg_id: int, request: Request, db: Session = Depen
 @app.get("/pricing", response_class=HTMLResponse)
 async def pricing_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
-    return templates.TemplateResponse("pricing.html", {"request": request, "user": user, "now": datetime.utcnow()})
+    return templates.TemplateResponse("pricing.html", {
+        "request": request,
+        "user": user,
+        "now": datetime.utcnow(),
+        "has_access": user_has_access(user) if user else False,
+        "access_expires_at": get_user_access_expiry(user) if user and not user.is_admin else None,
+    })
 
 
 @app.get("/success", response_class=HTMLResponse)

@@ -15,95 +15,85 @@
       <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
       {% else %}
       <a href="/login" class="btn-ghost btn-sm">Sign In</a>
+      <a href="/register" class="btn-primary btn-sm">Create Account</a>
       {% endif %}
     </div>
   </div>
 </nav>
 
-<div class="page" style="max-width:800px;margin:0 auto;">
+<div class="page" style="max-width:920px;margin:0 auto;">
   <div style="text-align:center;padding:60px 0 48px;">
     <div style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px;">Pricing</div>
-    <h1 style="font-size:clamp(1.8rem,5vw,2.8rem);font-weight:800;letter-spacing:-0.03em;margin-bottom:14px;">Pass your theory test</h1>
-    <p style="color:var(--text-muted);font-size:1rem;max-width:480px;margin:0 auto;">Full access to all 13 official practice tests. Cancel anytime.</p>
+    <h1 style="font-size:clamp(1.9rem,5vw,3rem);font-weight:800;letter-spacing:-0.03em;margin-bottom:14px;">Simple access for Danish theory practice</h1>
+    <p style="color:var(--text-muted);font-size:1rem;max-width:620px;margin:0 auto;">Start with Test 1 for free. Unlock the full practice library when you want all 13 tests, answer explanations, saved questions, and progress tracking.</p>
   </div>
 
-  <!-- Pricing cards -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:48px;">
-    <!-- Free card -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:28px;">
     <div class="card" style="padding:32px;">
       <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:16px;">Free</div>
       <div style="font-size:2.5rem;font-weight:800;margin-bottom:4px;">0 kr</div>
-      <div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:28px;">Forever free</div>
+      <div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:28px;">Free starter access</div>
       <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;">
-          <span style="color:var(--correct);">✓</span> Test 1 — full access
-        </li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;color:var(--text-muted);">
-          <span>✗</span> Tests 2–13
-        </li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;color:var(--text-muted);">
-          <span>✗</span> Progress tracking
-        </li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">✓</span> Test 1 without registration</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;color:var(--text-muted);"><span>—</span> One full 25-question exam-style test</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;color:var(--text-muted);"><span>—</span> Instant pass/fail result</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;color:var(--text-muted);"><span>—</span> No saved progress</li>
       </ul>
-      {% if user %}
-      <a href="/dashboard" class="btn-ghost" style="width:100%;text-align:center;">Current Plan</a>
-      {% else %}
-      <a href="/register" class="btn-ghost" style="width:100%;text-align:center;">Get Started Free</a>
-      {% endif %}
+      <a href="/test/1" class="btn-ghost" style="width:100%;text-align:center;">Start Free Test</a>
     </div>
 
-    <!-- Premium card -->
     <div class="card" style="padding:32px;border:2px solid var(--text);position:relative;">
-      <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);font-size:0.72rem;font-weight:700;padding:4px 14px;border-radius:999px;text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap;">Most Popular</div>
+      <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);font-size:0.72rem;font-weight:700;padding:4px 14px;border-radius:999px;text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap;">Full Access</div>
       <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:16px;">Premium</div>
       <div style="font-size:2.5rem;font-weight:800;margin-bottom:4px;">99 kr</div>
-      <div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:28px;">per month · cancel anytime</div>
+      <div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:28px;">30 days of access</div>
       <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;">
-          <span style="color:var(--correct);">✓</span> All 13 official tests
-        </li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;">
-          <span style="color:var(--correct);">✓</span> 325 practice questions
-        </li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;">
-          <span style="color:var(--correct);">✓</span> Detailed explanations
-        </li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;">
-          <span style="color:var(--correct);">✓</span> Progress tracking
-        </li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;">
-          <span style="color:var(--correct);">✓</span> Cancel anytime
-        </li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">✓</span> All 13 official practice tests</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">✓</span> 325 questions with road photos</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">✓</span> Answer explanations and review</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">✓</span> Saved questions and progress tracking</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">✓</span> Works on phone, tablet, and desktop</li>
       </ul>
-      {% if user %}
-        {% if user.subscription_status == 'active' or user.expires_at and user.expires_at > now %}
-        <div style="text-align:center;padding:8px 0;color:var(--correct);font-size:0.9rem;font-weight:600;">✓ Active — you have full access</div>
-        {% else %}
-        <a href="#" onclick="return openTelegramPurchase({ plan: 'Premium', amount: '99 kr', duration: '30 days' })" class="btn-primary" style="width:100%;text-align:center;display:block;">Subscribe Now</a>
-        <div style="text-align:center;margin-top:10px;font-size:0.82rem;color:var(--text-muted);">Contact us on Telegram to get access</div>
-        {% endif %}
+      {% if user and has_access %}
+      <div style="text-align:center;padding:8px 0;color:var(--correct);font-size:0.9rem;font-weight:600;">✓ Active{% if access_expires_at %} · valid until {{ access_expires_at.strftime('%d %b %Y') }}{% endif %}</div>
       {% else %}
-      <a href="#" onclick="return openTelegramPurchase({ plan: 'Premium', amount: '99 kr', duration: '30 days' })" class="btn-primary" style="width:100%;text-align:center;display:block;">Subscribe Now</a>
-      <div style="text-align:center;margin-top:10px;font-size:0.82rem;color:var(--text-muted);">Contact us on Telegram to get access</div>
+      <a href="#" onclick="return openTelegramPurchase({ plan: 'Premium', amount: '99 kr', duration: '30 days' })" class="btn-primary" style="width:100%;text-align:center;display:block;">{% if user and user.subscription_status != 'free' %}Renew Access{% else %}Unlock Full Access{% endif %}</a>
+      <div style="text-align:center;margin-top:10px;font-size:0.82rem;color:var(--text-muted);">Telegram opens with a ready-to-send access request, including your user ID.</div>
       {% endif %}
     </div>
   </div>
 
-  <!-- FAQ -->
+  <div class="card" style="padding:24px 28px;margin-bottom:56px;">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+      <div>
+        <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Included</div>
+        <div style="font-weight:700;">13 tests · 325 questions · explanations</div>
+      </div>
+      <div>
+        <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Exam format</div>
+        <div style="font-weight:700;">25 questions per test · pass at 20/25</div>
+      </div>
+      <div>
+        <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Activation</div>
+        <div style="font-weight:700;">Manual activation after Telegram request</div>
+      </div>
+    </div>
+  </div>
+
   <div style="margin-bottom:60px;">
     <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:20px;text-align:center;">Common Questions</h2>
     <div style="display:flex;flex-direction:column;gap:12px;">
       <div class="card" style="padding:20px 24px;">
-        <div style="font-weight:600;margin-bottom:6px;">Can I cancel at any time?</div>
-        <div style="color:var(--text-muted);font-size:0.9rem;">Yes. Cancel anytime from your billing portal — no questions asked. Access continues until the end of your billing period.</div>
+        <div style="font-weight:600;margin-bottom:6px;">What is included in full access?</div>
+        <div style="color:var(--text-muted);font-size:0.9rem;">You get all 13 tests, 325 questions, review explanations, saved questions, and your test history.</div>
       </div>
       <div class="card" style="padding:20px 24px;">
-        <div style="font-weight:600;margin-bottom:6px;">What payment methods are accepted?</div>
-        <div style="color:var(--text-muted);font-size:0.9rem;">All major credit and debit cards via Stripe. Your payment information is never stored on our servers.</div>
+        <div style="font-weight:600;margin-bottom:6px;">Can I try the site before paying?</div>
+        <div style="color:var(--text-muted);font-size:0.9rem;">Yes. Test 1 is free and works without registration, so you can see the format before creating an account.</div>
       </div>
       <div class="card" style="padding:20px 24px;">
-        <div style="font-weight:600;margin-bottom:6px;">Are these real exam questions?</div>
-        <div style="color:var(--text-muted);font-size:0.9rem;">Yes. All 325 questions are from the official Danish driving theory test pool (Færdselsstyrelsen).</div>
+        <div style="font-weight:600;margin-bottom:6px;">How does activation work?</div>
+        <div style="color:var(--text-muted);font-size:0.9rem;">Use the access button, send the prepared Telegram message, and your account can then be activated for the selected period.</div>
       </div>
     </div>
   </div>
@@ -113,7 +103,7 @@
   <div class="footer-inner">
     <div class="footer-links">
       <a href="/">Home</a>
-      <a href="/about">About</a>
+      <a href="/faq">FAQ</a>
       <a href="/contact">Contact</a>
       <a href="/privacy">Privacy</a>
     </div>
@@ -130,6 +120,5 @@
   const nb = document.getElementById('navThemeBtn');
   if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
 })();
-
 </script>
 {% endblock %}
