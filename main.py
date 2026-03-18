@@ -101,7 +101,14 @@ def _new_public_user_id() -> str:
 
 
 def is_email_service_configured() -> bool:
-    return all(os.environ.get(name) for name in ("SMTP_HOST", "SMTP_USERNAME", "SMTP_PASSWORD", "SMTP_FROM"))
+    return all((os.environ.get(name) or "").strip() for name in ("SMTP_HOST", "SMTP_USERNAME", "SMTP_PASSWORD", "SMTP_FROM"))
+
+
+def _clean_env_value(name: str, default: str = "") -> str:
+    value = os.environ.get(name, default)
+    if value is None:
+        return ""
+    return str(value).strip().strip('"').strip("'").strip()
 
 
 def validate_registration_email(email: str) -> Optional[str]:
@@ -145,12 +152,25 @@ def send_verification_email(recipient_email: str, code: str, recipient_name: str
     if not is_email_service_configured():
         raise RuntimeError("Email verification is not configured yet")
 
-    host = os.environ["SMTP_HOST"]
-    port = int(os.environ.get("SMTP_PORT", "587"))
-    username = os.environ["SMTP_USERNAME"]
-    password = os.environ["SMTP_PASSWORD"]
-    sender = os.environ["SMTP_FROM"]
-    use_tls = _env_flag("SMTP_USE_TLS", True)
+    host = _clean_env_value("SMTP_HOST")
+    port_raw = _clean_env_value("SMTP_PORT", "587")
+    username = _clean_env_value("SMTP_USERNAME")
+    password = _clean_env_value("SMTP_PASSWORD")
+    sender = _clean_env_value("SMTP_FROM")
+    use_tls_raw = _clean_env_value("SMTP_USE_TLS", "true")
+
+    if not host:
+        raise RuntimeError("SMTP_HOST is empty")
+    try:
+        port = int(port_raw)
+    except ValueError:
+        raise RuntimeError(f"SMTP_PORT is invalid: {port_raw!r}")
+    use_tls = use_tls_raw.lower() in {"1", "true", "yes", "on"}
+
+    print(
+        "[SMTP] host=%r port=%s username=%r from=%r use_tls=%s" %
+        (host, port, username, sender, use_tls)
+    )
 
     message = EmailMessage()
     message["Subject"] = "Your WEXTheory verification code"
