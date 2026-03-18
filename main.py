@@ -277,6 +277,37 @@ def compute_admin_expiry(duration_value: int, duration_unit: str) -> datetime:
     return datetime.utcnow() + timedelta(days=value)
 
 
+def generate_unique_promo_code(db: Session) -> str:
+    while True:
+        code = "WEX-" + "".join(secrets.choice(PUBLIC_ID_ALPHABET) for _ in range(6))
+        exists = db.query(models.PromoCode).filter(models.PromoCode.code == code).first()
+        if not exists:
+            return code
+
+
+def apply_subscription_days(user: models.User, duration_days: int) -> datetime:
+    now = datetime.utcnow()
+    base_expiry = get_user_access_expiry(user) if user else None
+    start_from = base_expiry if base_expiry and base_expiry > now else now
+    new_expiry = start_from + timedelta(days=max(int(duration_days), 0))
+    user.expires_at = new_expiry
+    if duration_days > 0:
+        user.subscription_status = "active"
+    user.current_period_end = None
+    return new_expiry
+
+
+def get_promo_status(promo: models.PromoCode) -> str:
+    now = datetime.utcnow()
+    if not promo.is_active:
+        return "Inactive"
+    if promo.expires_at and promo.expires_at < now:
+        return "Expired"
+    if promo.max_uses is not None and promo.current_uses >= promo.max_uses:
+        return "Used up"
+    return "Active"
+
+
 def is_super_admin_user(user: Optional[models.User]) -> bool:
     return bool(user and getattr(user, "is_super_admin", False))
 
@@ -1481,11 +1512,16 @@ async def admin_page(request: Request, db: Session = Depends(get_db)):
     messages = db.query(models.ContactMessage).order_by(
         models.ContactMessage.created_at.desc()
     ).all()
+    promo_codes = db.query(models.PromoCode).order_by(
+        models.PromoCode.created_at.desc()
+    ).all()
     unread_count = sum(1 for m in messages if not m.is_read)
 
     return templates.TemplateResponse("admin.html", {
         "request": request, "user": user, "users": users,
         "messages": messages, "unread_count": unread_count,
+        "promo_codes": promo_codes,
+        "promo_status": get_promo_status,
         "now": datetime.utcnow(),
         "can_manage_admin_roles": can_manage_admin_roles(user),
     })
@@ -2275,6 +2311,87 @@ async def api_admin_mark_read(msg_id: int, request: Request, db: Session = Depen
     msg.is_read = True
     db.commit()
     return JSONResponse({"success": True})
+
+
+@app.post("/api/admin/promo-codes")
+async def api_admin_create_promo_code(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user or not user.is_admin:
+        return JSONResponse({"error": "Forbidden"}, status_code=403)
+    try:
+        data = await request.json()
+        duration_days = int(data.get("duration_days", 0) or 0)
+        max_uses_raw = data.get("max_uses")
+        expires_at_raw = str(data.get("expires_at", "") or "").strip()
+        if duration_days <= 0:
+            return JSONResponse({"error": "Duration must be at least 1 day"}, status_code=400)
+
+        max_uses = None
+        if max_uses_raw not in (None, "", 0, "0"):
+            max_uses = int(max_uses_raw)
+            if max_uses <= 0:
+                return JSONResponse({"error": "Usage limit must be greater than 0"}, status_code=400)
+
+        expires_at = None
+        if expires_at_raw:
+            try:
+                expires_at = datetime.strptime(expires_at_raw, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)
+            except ValueError:
+                return JSONResponse({"error": "Invalid expiry date"}, status_code=400)
+
+        promo = models.PromoCode(
+            code=generate_unique_promo_code(db),
+            duration_days=duration_days,
+            max_uses=max_uses,
+            current_uses=0,
+            expires_at=expires_at,
+            created_at=datetime.utcnow(),
+            is_active=True,
+        )
+        db.add(promo)
+        db.commit()
+        return JSONResponse({"success": True, "code": promo.code})
+    except Exception as e:
+        db.rollback()
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@app.post("/api/promo-codes/redeem")
+async def api_redeem_promo_code(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    try:
+        data = await request.json()
+        code = str(data.get("code", "")).strip().upper()
+        if not code:
+            return JSONResponse({"error": "Enter a promo code"}, status_code=400)
+
+        promo = db.query(models.PromoCode).filter(models.PromoCode.code == code).first()
+        if not promo:
+            return JSONResponse({"error": "Promo code not found"}, status_code=404)
+        if not promo.is_active:
+            return JSONResponse({"error": "This promo code is inactive"}, status_code=400)
+        if promo.expires_at and promo.expires_at < datetime.utcnow():
+            return JSONResponse({"error": "This promo code has expired"}, status_code=400)
+        if promo.max_uses is not None and promo.current_uses >= promo.max_uses:
+            return JSONResponse({"error": "This promo code has reached its usage limit"}, status_code=400)
+
+        promo.current_uses += 1
+        if promo.max_uses is not None and promo.current_uses >= promo.max_uses:
+            promo.is_active = False
+
+        new_expiry = apply_subscription_days(user, promo.duration_days)
+        db.commit()
+        return JSONResponse({
+            "success": True,
+            "message": f"Promo code applied. {promo.duration_days} days added.",
+            "duration_days": promo.duration_days,
+            "expires_at": new_expiry.isoformat(),
+        })
+    except Exception as e:
+        db.rollback()
+        return JSONResponse({"error": str(e)}, status_code=500)
 
 
 # ─── Pricing / Subscription pages ─────────────────────────────────────────────

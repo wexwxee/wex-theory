@@ -60,6 +60,15 @@
       {% if user.is_admin %}
       <a href="/admin" class="btn-ghost" style="width:100%;justify-content:center;display:flex;">Admin Panel</a>
       {% else %}
+      <div class="card" style="margin-bottom:16px;">
+        <div style="font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">Promo Code</div>
+        <div style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;margin-bottom:12px;">Use a promo code to add days to your access.</div>
+        <div id="promoRedeemMsg" style="display:none;padding:10px 12px;border-radius:10px;font-size:0.84rem;margin-bottom:10px;"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <input type="text" id="promoCodeInput" placeholder="Enter promo code" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1;min-width:160px;">
+          <button class="btn-primary btn-sm" id="promoRedeemBtn" type="button">Activate</button>
+        </div>
+      </div>
       <a href="/contact" class="btn-ghost" style="width:100%;justify-content:center;display:flex;">Extend Access</a>
       {% endif %}
     </div>

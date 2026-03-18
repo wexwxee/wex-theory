@@ -154,6 +154,19 @@ class EmailVerificationCode(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class PromoCode(Base):
+    __tablename__ = "promo_codes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String, unique=True, index=True, nullable=False)
+    duration_days = Column(Integer, nullable=False, default=30)
+    max_uses = Column(Integer, nullable=True)
+    current_uses = Column(Integer, nullable=False, default=0)
+    expires_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    is_active = Column(Boolean, default=True)
+
+
 class Bookmark(Base):
     __tablename__ = "bookmarks"
 

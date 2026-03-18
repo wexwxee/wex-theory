@@ -14,8 +14,10 @@
   function switchTab(tab) {
     document.getElementById('panelUsers').style.display = tab === 'users' ? 'block' : 'none';
     document.getElementById('panelMessages').style.display = tab === 'messages' ? 'block' : 'none';
+    document.getElementById('panelPromos').style.display = tab === 'promos' ? 'block' : 'none';
     document.getElementById('tabUsers').className = 'tab-btn' + (tab === 'users' ? ' active' : '');
     document.getElementById('tabMessages').className = 'tab-btn' + (tab === 'messages' ? ' active' : '');
+    document.getElementById('tabPromos').className = 'tab-btn' + (tab === 'promos' ? ' active' : '');
   }
 
   function filterUsers() {
@@ -260,6 +262,62 @@
     }
   }
 
+  async function createPromoCode() {
+    const durationDays = parseInt(document.getElementById('promoDurationDays')?.value || '0', 10);
+    const maxUsesRaw = (document.getElementById('promoMaxUses')?.value || '').trim();
+    const expiresAt = (document.getElementById('promoExpiresAt')?.value || '').trim();
+    const msg = document.getElementById('promoCreateMsg');
+    const btn = document.getElementById('createPromoBtn');
+
+    if (!durationDays || durationDays < 1) {
+      msg.style.display = 'block';
+      msg.style.background = 'var(--wrong-bg)';
+      msg.style.color = 'var(--wrong)';
+      msg.style.border = '1px solid var(--wrong)';
+      msg.textContent = 'Duration must be at least 1 day';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Generating...';
+    msg.style.display = 'none';
+    try {
+      const res = await fetch('/api/admin/promo-codes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          duration_days: durationDays,
+          max_uses: maxUsesRaw || null,
+          expires_at: expiresAt || null
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        msg.style.display = 'block';
+        msg.style.background = 'var(--correct-bg)';
+        msg.style.color = 'var(--correct)';
+        msg.style.border = '1px solid var(--correct)';
+        msg.textContent = `Promo code created: ${data.code}`;
+        showToast(`Promo code created: ${data.code}`, 'success');
+        window.setTimeout(() => window.location.reload(), 700);
+      } else {
+        msg.style.display = 'block';
+        msg.style.background = 'var(--wrong-bg)';
+        msg.style.color = 'var(--wrong)';
+        msg.style.border = '1px solid var(--wrong)';
+        msg.textContent = data.error || 'Failed to create promo code';
+      }
+    } catch (e) {
+      msg.style.display = 'block';
+      msg.style.background = 'var(--wrong-bg)';
+      msg.style.color = 'var(--wrong)';
+      msg.style.border = '1px solid var(--wrong)';
+      msg.textContent = 'Connection error';
+    }
+    btn.disabled = false;
+    btn.textContent = 'Generate Promo Code';
+  }
+
   const userSearch = document.getElementById('userSearch');
   const userSearchForm = document.getElementById('userSearchForm');
   if (userSearch) {
@@ -283,6 +341,7 @@
   document.getElementById('openCreateModalBtn')?.addEventListener('click', openCreateModal);
   document.getElementById('tabUsers')?.addEventListener('click', () => switchTab('users'));
   document.getElementById('tabMessages')?.addEventListener('click', () => switchTab('messages'));
+  document.getElementById('tabPromos')?.addEventListener('click', () => switchTab('promos'));
   userSearch?.addEventListener('input', filterUsers);
 
   document.querySelectorAll('.user-edit-btn').forEach((btn) => {
@@ -336,4 +395,5 @@
   document.getElementById('closeMsgModalBtn')?.addEventListener('click', () => {
     document.getElementById('msgModal').classList.remove('open');
   });
+  document.getElementById('createPromoBtn')?.addEventListener('click', createPromoCode);
 })();
