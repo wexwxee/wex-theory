@@ -688,13 +688,11 @@ function _findGlossaryMatch(word, contextText) {
 async function _translateWordInContext(word, contextText) {
   const glossary = _findGlossaryMatch(word, contextText);
   const base = glossary ? { main: glossary.translation, variants: [] } : await _translateWord(word);
-  const sentence = contextText ? await _translateText(contextText) : null;
   return {
     main: base.main || '-',
     variants: base.variants || [],
     contextPhrase: glossary ? glossary.phrase : '',
-    contextTranslation: glossary ? glossary.translation : '',
-    sentenceTranslation: sentence || ''
+    contextTranslation: glossary ? glossary.translation : ''
   };
 }
 
@@ -800,13 +798,10 @@ document.addEventListener('mouseover', (e) => {
     const contextHtml = result.contextPhrase
       ? `<div class="wp-context">Context: ${result.contextPhrase} -> ${result.contextTranslation}</div>`
       : '';
-    const sentenceHtml = result.sentenceTranslation
-      ? `<div class="wp-sentence">${result.sentenceTranslation}</div>`
-      : '';
     const varHtml = result.variants.length
       ? `<div class="wp-variants">${result.variants.map(v => `<span class="wp-v">${v}</span>`).join('')}</div>`
       : '';
-    popup.innerHTML = `<div class="wp-orig">${word}</div><div class="wp-tr">${result.main}</div>${contextHtml}${sentenceHtml}${varHtml}`;
+    popup.innerHTML = `<div class="wp-orig">${word}</div><div class="wp-tr">${result.main}</div>${contextHtml}${varHtml}`;
     _popupPos(popup, rect);
   });
 });
@@ -871,7 +866,6 @@ document.addEventListener('mouseout', (e) => {
 .wp-tr       { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
 .wp-load     { font-size: 12px; color: #9ca3af; }
 .wp-context  { font-size: 11px; color: #cbd5e1; margin-top: 6px; line-height: 1.35; }
-.wp-sentence { font-size: 11px; color: #93c5fd; margin-top: 6px; line-height: 1.35; border-top: 1px solid #374151; padding-top: 6px; }
 .wp-variants {
   border-top: 1px solid #374151;
   padding-top: 6px;
