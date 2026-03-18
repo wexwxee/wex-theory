@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard РІР‚вЂќ WEX Theory{% endblock %}
+{% block title %}Dashboard - WEX Theory{% endblock %}
 
 {% block body %}
 <style>
@@ -54,11 +54,11 @@
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" id="dashboardBurgerBtn">РІВВ°</button>
+      <button class="burger-btn" id="dashboardBurgerBtn">&#9776;</button>
       <a href="/" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
-      <button class="theme-btn" id="navThemeBtn">РІВР‚РїС‘РЏ</button>
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
       <a href="/profile" class="btn-ghost btn-sm">{{ user.name }}</a>
     </div>
   </div>
@@ -148,7 +148,7 @@
       <div style="aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center;color:#333;font-size:0.8rem;">No image</div>
       {% endif %}
       {% if is_locked %}
-      <div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);border-radius:6px;padding:4px 8px;font-size:0.8rem;">СЂСџвЂќвЂ™</div>
+      <div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);border-radius:6px;padding:4px 8px;font-size:0.8rem;">LOCKED</div>
       {% endif %}
       <div class="test-card-body">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
@@ -162,9 +162,9 @@
           {% endif %}
           {% if t.id in best_scores %}
             {% if best_scores[t.id] >= 20 %}
-              <span class="badge-green">РІСљвЂњ {{ best_scores[t.id] }}/25</span>
+              <span class="badge-green">&#10003; {{ best_scores[t.id] }}/25</span>
             {% else %}
-              <span class="badge-red">РІСљвЂ” {{ best_scores[t.id] }}/25</span>
+              <span class="badge-red">&#10005; {{ best_scores[t.id] }}/25</span>
             {% endif %}
           {% elif not is_locked %}
             <span style="color:var(--text-muted);font-size:0.82rem;">Not started</span>
@@ -193,13 +193,13 @@
       <a href="/contact">Contact</a>
       <a href="/privacy">Privacy</a>
     </div>
-    <div>Р’В© 2026 WEXTheory</div>
+    <div>&copy; 2026 WEXTheory</div>
   </div>
 </footer>
 
 <div class="modal-overlay" id="paywallModal">
   <div class="modal" style="max-width:420px;text-align:center;padding:40px 32px;">
-    <div style="font-size:2.5rem;margin-bottom:16px;">СЂСџвЂќвЂ™</div>
+    <div style="font-size:2.5rem;margin-bottom:16px;">&#128274;</div>
     <h2 style="font-weight:800;font-size:1.3rem;margin-bottom:10px;">Premium Test</h2>
     <p style="color:var(--text-muted);margin-bottom:28px;line-height:1.6;">
       This test is available to subscribers. Unlock all 13 tests and maximize your chances of passing.
@@ -215,5 +215,6 @@
 {% block scripts %}
 <script src="/static/js/dashboard.js"></script>
 {% endblock %}
+
 
 
