@@ -6,12 +6,12 @@
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" onclick="sbOpen()">☰</button>
+      <button class="burger-btn" id="adminBurgerBtn">☰</button>
       <a href="/" class="logo">WEXTheory</a>
       <span style="font-size:0.75rem;padding:3px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:999px;color:var(--text-muted);">Admin</span>
     </div>
     <div class="nav-right">
-      <button class="theme-btn" onclick="toggleTheme()" id="navThemeBtn">☀️</button>
+      <button class="theme-btn" id="navThemeBtn">☀️</button>
       {% if unread_count > 0 %}
       <span style="font-size:0.75rem;padding:3px 10px;background:var(--wrong-bg);border:1px solid var(--wrong);border-radius:999px;color:var(--wrong);">{{ unread_count }} unread</span>
       {% endif %}
@@ -23,7 +23,7 @@
 <div class="page">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px;">
     <h1 style="font-size:1.8rem;font-weight:800;letter-spacing:-0.03em;">Admin Panel</h1>
-    <button class="btn-primary btn-sm" onclick="openCreateModal()">+ Add User</button>
+    <button class="btn-primary btn-sm" id="openCreateModalBtn">+ Add User</button>
   </div>
 
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:36px;">
@@ -46,13 +46,13 @@
   </div>
 
   <div class="tabs">
-    <button class="tab-btn active" id="tabUsers" onclick="switchTab('users')">Users ({{ users|length }})</button>
-    <button class="tab-btn" id="tabMessages" onclick="switchTab('messages')">Messages ({{ messages|length }}){% if unread_count > 0 %} <span style="color:var(--wrong);">•</span>{% endif %}</button>
+    <button class="tab-btn active" id="tabUsers">Users ({{ users|length }})</button>
+    <button class="tab-btn" id="tabMessages">Messages ({{ messages|length }}){% if unread_count > 0 %} <span style="color:var(--wrong);">•</span>{% endif %}</button>
   </div>
 
   <div id="panelUsers">
     <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
-      <input type="text" id="userSearch" placeholder="Search by User ID, email or name" oninput="filterUsers()" style="max-width:320px;">
+      <input type="text" id="userSearch" placeholder="Search by User ID, email or name" style="max-width:320px;">
     </div>
     <div class="card" style="padding:0;overflow:hidden;">
       <table class="admin-table">
@@ -98,13 +98,23 @@
                 {% set can_edit_target = can_manage_admin_roles or not u.is_admin or u.id == user.id %}
                 {% set can_delete_target = u.id != user.id and (can_manage_admin_roles or not u.is_admin) and not u.is_super_admin %}
                 {% if can_edit_target %}
-                <button class="btn-ghost btn-sm" onclick='openEditModal({{ u.id }}, {{ u.name | tojson }}, {{ u.email | tojson }}, {{ u.is_admin | tojson }}, {{ u.is_super_admin | tojson }})'>Edit</button>
-                <button class="btn-ghost btn-sm" onclick='openResetModal({{ u.id }}, {{ u.name | tojson }})'>Reset Pwd</button>
+                <button class="btn-ghost btn-sm user-edit-btn"
+                        data-user-id="{{ u.id }}"
+                        data-user-name='{{ u.name | tojson | safe }}'
+                        data-user-email='{{ u.email | tojson | safe }}'
+                        data-user-admin="{{ 1 if u.is_admin else 0 }}"
+                        data-user-super-admin="{{ 1 if u.is_super_admin else 0 }}">Edit</button>
+                <button class="btn-ghost btn-sm user-reset-btn"
+                        data-user-id="{{ u.id }}"
+                        data-user-name='{{ u.name | tojson | safe }}'>Reset Pwd</button>
                 {% else %}
                 <span style="color:var(--text-muted);font-size:0.78rem;">Protected admin</span>
                 {% endif %}
                 {% if can_delete_target %}
-                <button class="btn-ghost btn-sm" style="color:var(--wrong);border-color:var(--wrong);" onclick="deleteUser({{ u.id }}, {{ u.name | tojson }})">Delete</button>
+                <button class="btn-ghost btn-sm user-delete-btn"
+                        style="color:var(--wrong);border-color:var(--wrong);"
+                        data-user-id="{{ u.id }}"
+                        data-user-name='{{ u.name | tojson | safe }}'>Delete</button>
                 {% endif %}
               </div>
             </td>
@@ -153,7 +163,17 @@
               {% endif %}
             </td>
             <td>
-              <button class="btn-ghost btn-sm" onclick='viewMessage({{ m.id }}, {{ m.name | tojson }}, {{ m.email | tojson }}, {{ m.subject | tojson }}, {{ m.message | tojson }}, {{ m.created_at.strftime("%d %b %Y") | tojson }}, {{ m.is_read | tojson }}, {{ (m.attachment_name or "") | tojson }}, {{ (m.attachment_path or "") | tojson }}, {{ (m.attachment_type or "") | tojson }})'>View</button>
+              <button class="btn-ghost btn-sm message-view-btn"
+                      data-message-id="{{ m.id }}"
+                      data-message-name='{{ m.name | tojson | safe }}'
+                      data-message-email='{{ m.email | tojson | safe }}'
+                      data-message-subject='{{ m.subject | tojson | safe }}'
+                      data-message-body='{{ m.message | tojson | safe }}'
+                      data-message-date='{{ m.created_at.strftime("%d %b %Y") | tojson | safe }}'
+                      data-message-read="{{ 1 if m.is_read else 0 }}"
+                      data-attachment-name='{{ (m.attachment_name or "") | tojson | safe }}'
+                      data-attachment-path='{{ (m.attachment_path or "") | tojson | safe }}'
+                      data-attachment-type='{{ (m.attachment_type or "") | tojson | safe }}'>View</button>
             </td>
           </tr>
           {% endfor %}
@@ -170,7 +190,7 @@
   <div class="modal">
     <div class="modal-header">
       <h3 style="font-weight:700;font-size:1.1rem;">Edit User</h3>
-      <button class="modal-close" onclick="closeEdit()">✕</button>
+      <button class="modal-close" id="closeEditModalBtn">✕</button>
     </div>
     <input type="hidden" id="editUserId">
     <div id="editMsg" style="display:none;padding:10px 14px;border-radius:8px;font-size:0.85rem;margin-bottom:14px;"></div>
@@ -205,8 +225,8 @@
     <div style="font-size:0.78rem;color:var(--text-muted);margin-top:-6px;">Only the main admin can change admin roles.</div>
     {% endif %}
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
-      <button class="btn-ghost" onclick="closeEdit()">Cancel</button>
-      <button class="btn-primary" onclick="saveEdit()" id="saveEditBtn">Save</button>
+      <button class="btn-ghost" id="cancelEditBtn">Cancel</button>
+      <button class="btn-primary" id="saveEditBtn">Save</button>
     </div>
   </div>
 </div>
@@ -215,7 +235,7 @@
   <div class="modal">
     <div class="modal-header">
       <h3 style="font-weight:700;font-size:1.1rem;">Add User</h3>
-      <button class="modal-close" onclick="closeCreate()">✕</button>
+      <button class="modal-close" id="closeCreateModalBtn">✕</button>
     </div>
     <div id="createMsg" style="display:none;padding:10px 14px;border-radius:8px;font-size:0.85rem;margin-bottom:14px;"></div>
     <div class="form-group">
@@ -249,8 +269,8 @@
     <div style="font-size:0.78rem;color:var(--text-muted);margin-top:-6px;">Only the main admin can create new admins.</div>
     {% endif %}
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
-      <button class="btn-ghost" onclick="closeCreate()">Cancel</button>
-      <button class="btn-primary" onclick="createUser()" id="createBtn">Create</button>
+      <button class="btn-ghost" id="cancelCreateBtn">Cancel</button>
+      <button class="btn-primary" id="createBtn">Create</button>
     </div>
   </div>
 </div>
@@ -259,7 +279,7 @@
   <div class="modal" style="max-width:400px;">
     <div class="modal-header">
       <h3 style="font-weight:700;font-size:1.1rem;">Reset Password — <span id="resetUserName"></span></h3>
-      <button class="modal-close" onclick="closeReset()">✕</button>
+      <button class="modal-close" id="closeResetModalBtn">✕</button>
     </div>
     <input type="hidden" id="resetUserId">
     <div id="resetMsg" style="display:none;padding:10px 14px;border-radius:8px;font-size:0.85rem;margin-bottom:14px;"></div>
@@ -268,8 +288,8 @@
       <input type="password" id="resetPassword" placeholder="At least 8 chars, letters + numbers">
     </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
-      <button class="btn-ghost" onclick="closeReset()">Cancel</button>
-      <button class="btn-primary" onclick="saveReset()" id="resetBtn">Set Password</button>
+      <button class="btn-ghost" id="cancelResetBtn">Cancel</button>
+      <button class="btn-primary" id="resetBtn">Set Password</button>
     </div>
   </div>
 </div>
@@ -278,7 +298,7 @@
   <div class="modal" style="max-width:560px;">
     <div class="modal-header">
       <h3 style="font-weight:700;font-size:1.1rem;" id="msgModalSubject">Message</h3>
-      <button class="modal-close" onclick="document.getElementById('msgModal').classList.remove('open')">✕</button>
+      <button class="modal-close" id="closeMsgModalBtn">✕</button>
     </div>
     <div style="margin-bottom:16px;">
       <div id="msgModalFrom" style="font-size:0.82rem;color:var(--text-muted);margin-bottom:4px;"></div>
@@ -370,6 +390,15 @@ function setMessageAttachment(attachmentEl, attachmentName, attachmentPath, atta
 }
 
 const canManageAdminRoles = {{ can_manage_admin_roles | tojson }};
+
+function parseJsonDataset(value, fallback = '') {
+  if (value == null || value === '') return fallback;
+  try {
+    return JSON.parse(value);
+  } catch (e) {
+    return fallback;
+  }
+}
 
 // Edit modal
 function openEditModal(id, name, email, isAdmin, isSuperAdmin) {
@@ -562,5 +591,64 @@ async function viewMessage(id, name, email, subject, message, date, isRead, atta
     if (row) row.style.fontWeight = '400';
   }
 }
+
+document.getElementById('adminBurgerBtn')?.addEventListener('click', sbOpen);
+document.getElementById('navThemeBtn')?.addEventListener('click', toggleTheme);
+document.getElementById('openCreateModalBtn')?.addEventListener('click', openCreateModal);
+document.getElementById('tabUsers')?.addEventListener('click', () => switchTab('users'));
+document.getElementById('tabMessages')?.addEventListener('click', () => switchTab('messages'));
+document.getElementById('userSearch')?.addEventListener('input', filterUsers);
+
+document.querySelectorAll('.user-edit-btn').forEach((btn) => {
+  btn.addEventListener('click', () => openEditModal(
+    Number(btn.dataset.userId),
+    parseJsonDataset(btn.dataset.userName, ''),
+    parseJsonDataset(btn.dataset.userEmail, ''),
+    btn.dataset.userAdmin === '1',
+    btn.dataset.userSuperAdmin === '1'
+  ));
+});
+
+document.querySelectorAll('.user-reset-btn').forEach((btn) => {
+  btn.addEventListener('click', () => openResetModal(
+    Number(btn.dataset.userId),
+    parseJsonDataset(btn.dataset.userName, '')
+  ));
+});
+
+document.querySelectorAll('.user-delete-btn').forEach((btn) => {
+  btn.addEventListener('click', () => deleteUser(
+    Number(btn.dataset.userId),
+    parseJsonDataset(btn.dataset.userName, '')
+  ));
+});
+
+document.querySelectorAll('.message-view-btn').forEach((btn) => {
+  btn.addEventListener('click', () => viewMessage(
+    Number(btn.dataset.messageId),
+    parseJsonDataset(btn.dataset.messageName, ''),
+    parseJsonDataset(btn.dataset.messageEmail, ''),
+    parseJsonDataset(btn.dataset.messageSubject, ''),
+    parseJsonDataset(btn.dataset.messageBody, ''),
+    parseJsonDataset(btn.dataset.messageDate, ''),
+    btn.dataset.messageRead === '1',
+    parseJsonDataset(btn.dataset.attachmentName, ''),
+    parseJsonDataset(btn.dataset.attachmentPath, ''),
+    parseJsonDataset(btn.dataset.attachmentType, '')
+  ));
+});
+
+document.getElementById('closeEditModalBtn')?.addEventListener('click', closeEdit);
+document.getElementById('cancelEditBtn')?.addEventListener('click', closeEdit);
+document.getElementById('saveEditBtn')?.addEventListener('click', saveEdit);
+document.getElementById('closeCreateModalBtn')?.addEventListener('click', closeCreate);
+document.getElementById('cancelCreateBtn')?.addEventListener('click', closeCreate);
+document.getElementById('createBtn')?.addEventListener('click', createUser);
+document.getElementById('closeResetModalBtn')?.addEventListener('click', closeReset);
+document.getElementById('cancelResetBtn')?.addEventListener('click', closeReset);
+document.getElementById('resetBtn')?.addEventListener('click', saveReset);
+document.getElementById('closeMsgModalBtn')?.addEventListener('click', () => {
+  document.getElementById('msgModal').classList.remove('open');
+});
 </script>
 {% endblock %}

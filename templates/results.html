@@ -198,12 +198,12 @@
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" onclick="sbOpen()">☰</button>
+      <button class="burger-btn" id="resultsBurgerBtn">☰</button>
       <a href="/" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
-      <button class="btn-ghost btn-sm" onclick="toggleResultsTranslate()" id="resultsTranslateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:0.95rem;">RU</button>
-      <button class="theme-btn" onclick="toggleTheme()" id="navThemeBtn">☀️</button>
+      <button class="btn-ghost btn-sm" id="resultsTranslateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:0.95rem;">RU</button>
+      <button class="theme-btn" id="navThemeBtn">☀️</button>
       {% if user %}
       <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
       {% endif %}
@@ -260,8 +260,7 @@
   <h2 style="font-size:1rem;font-weight:700;margin-bottom:16px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Question Breakdown</h2>
   <div class="result-grid">
     {% for qr in question_results %}
-    <div class="result-card {% if qr.is_correct %}correct{% else %}wrong{% endif %}"
-         onclick="openModal({{ loop.index0 }})">
+    <div class="result-card {% if qr.is_correct %}correct{% else %}wrong{% endif %}" data-modal-index="{{ loop.index0 }}">
       {% if qr.question.image_path %}
       <img src="/test-images/{{ qr.question.image_path }}" alt="" loading="lazy">
       {% else %}
@@ -323,7 +322,7 @@
           </div>
           {% endif %}
           <div style="margin-top:14px;display:flex;justify-content:flex-end;">
-            <button class="btn-ghost btn-sm" onclick="openModal({{ qr.modal_index }})">Open Detailed Review</button>
+            <button class="btn-ghost btn-sm" data-open-modal="{{ qr.modal_index }}">Open Detailed Review</button>
           </div>
         </div>
       </div>
@@ -359,9 +358,9 @@
     <div class="modal-header">
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <span style="font-size:0.82rem;color:var(--text-muted);" id="modalMeta">Question 1 of 25</span>
-        <button class="btn-ghost btn-sm" onclick="toggleResultsTranslate()" id="modalTranslateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:0.85rem;">RU</button>
+        <button class="btn-ghost btn-sm" id="modalTranslateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:0.85rem;">RU</button>
       </div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <button class="modal-close" id="modalCloseBtn">✕</button>
     </div>
     <div id="modalImgWrap" style="margin-bottom:16px;display:none;">
       <img id="modalImg" src="" alt="" style="width:100%;border-radius:8px;border:1px solid var(--border);max-height:300px;object-fit:cover;">
@@ -375,9 +374,9 @@
       <div id="modalExplanationRu" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-style:italic;"></div>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
-      <button class="btn-ghost btn-sm" onclick="modalNav(-1)" id="modalPrev">← Prev</button>
+      <button class="btn-ghost btn-sm" id="modalPrev">← Prev</button>
       <span id="modalStatus" style="font-size:0.85rem;"></span>
-      <button class="btn-ghost btn-sm" onclick="modalNav(1)" id="modalNext">Next →</button>
+      <button class="btn-ghost btn-sm" id="modalNext">Next →</button>
     </div>
   </div>
 </div>
@@ -391,6 +390,20 @@
   const nb = document.getElementById('navThemeBtn');
   if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
 })();
+
+document.getElementById('resultsBurgerBtn')?.addEventListener('click', sbOpen);
+document.getElementById('resultsTranslateBtn')?.addEventListener('click', toggleResultsTranslate);
+document.getElementById('modalTranslateBtn')?.addEventListener('click', toggleResultsTranslate);
+document.getElementById('navThemeBtn')?.addEventListener('click', toggleTheme);
+document.getElementById('modalCloseBtn')?.addEventListener('click', closeModal);
+document.getElementById('modalPrev')?.addEventListener('click', () => modalNav(-1));
+document.getElementById('modalNext')?.addEventListener('click', () => modalNav(1));
+document.querySelectorAll('[data-modal-index]').forEach((card) => {
+  card.addEventListener('click', () => openModal(Number(card.dataset.modalIndex)));
+});
+document.querySelectorAll('[data-open-modal]').forEach((btn) => {
+  btn.addEventListener('click', () => openModal(Number(btn.dataset.openModal)));
+});
 
 // Build a serialisable array (Jinja2 objects → plain JS)
 const DATA = [

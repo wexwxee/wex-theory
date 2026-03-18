@@ -54,11 +54,11 @@
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" onclick="sbOpen()">☰</button>
+      <button class="burger-btn" id="dashboardBurgerBtn">☰</button>
       <a href="/" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
-      <button class="theme-btn" onclick="toggleTheme()" id="navThemeBtn">☀️</button>
+      <button class="theme-btn" id="navThemeBtn">☀️</button>
       <a href="/profile" class="btn-ghost btn-sm">{{ user.name }}</a>
     </div>
   </div>
@@ -166,7 +166,9 @@
     {% for t in tests %}
     {% set is_locked = (t.id != 1 and not has_access) %}
     <div class="test-card {% if is_locked %}test-card-locked{% endif %}"
-         onclick="{% if is_locked %}showPaywall(){% else %}location.href='/test/{{ t.id }}'{% endif %}">
+         data-test-card
+         data-locked="{{ 'true' if is_locked else 'false' }}"
+         data-test-url="/test/{{ t.id }}">
       {% if images[t.id] %}
       <img src="/test-images/{{ images[t.id] }}" alt="Test {{ t.id }}">
       {% else %}
@@ -231,7 +233,7 @@
     </p>
     <div style="display:flex;flex-direction:column;gap:10px;max-width:240px;margin:0 auto;">
       <a href="/pricing" class="btn-primary">Unlock Full Access</a>
-      <button onclick="document.getElementById('paywallModal').classList.remove('open')" class="btn-ghost">Maybe later</button>
+      <button id="paywallCloseBtn" class="btn-ghost">Maybe later</button>
     </div>
   </div>
 </div>
@@ -249,6 +251,23 @@
 function showPaywall() {
   document.getElementById('paywallModal').classList.add('open');
 }
+
+document.getElementById('dashboardBurgerBtn')?.addEventListener('click', sbOpen);
+document.getElementById('navThemeBtn')?.addEventListener('click', toggleTheme);
+document.getElementById('paywallCloseBtn')?.addEventListener('click', function () {
+  document.getElementById('paywallModal').classList.remove('open');
+});
+document.querySelectorAll('[data-test-card]').forEach((card) => {
+  card.addEventListener('click', function () {
+    if (this.dataset.locked === 'true') {
+      showPaywall();
+      return;
+    }
+    if (this.dataset.testUrl) {
+      window.location.href = this.dataset.testUrl;
+    }
+  });
+});
 
 </script>
 {% endblock %}

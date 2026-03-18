@@ -6,11 +6,11 @@
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" onclick="sbOpen()">☰</button>
+      <button class="burger-btn" id="contactBurgerBtn">☰</button>
       <a href="/" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
-      <button class="theme-btn" onclick="toggleTheme()" id="navThemeBtn">☀️</button>
+      <button class="theme-btn" id="navThemeBtn">☀️</button>
       {% if user %}
       <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
       {% else %}
@@ -72,7 +72,7 @@
         </div>
         <div id="attachmentInfo" style="display:none;font-size:0.8rem;color:var(--text-muted);"></div>
       </div>
-      <button class="btn-primary" id="sendBtn" onclick="sendMessage()" style="width:100%;justify-content:center;">Send Message</button>
+      <button class="btn-primary" id="sendBtn" style="width:100%;justify-content:center;">Send Message</button>
     </div>
   </div>
 </div>
@@ -98,6 +98,10 @@
   const nb = document.getElementById('navThemeBtn');
   if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
 })();
+
+document.getElementById('contactBurgerBtn')?.addEventListener('click', sbOpen);
+document.getElementById('navThemeBtn')?.addEventListener('click', toggleTheme);
+document.getElementById('sendBtn')?.addEventListener('click', sendMessage);
 
 function showFormMsg(msg, type) {
   const el = document.getElementById('formMsg');

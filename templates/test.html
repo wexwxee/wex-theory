@@ -155,7 +155,7 @@
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" onclick="sbOpen()">☰</button>
+      <button class="burger-btn" id="testBurgerBtn">☰</button>
       <a href="/dashboard" class="back-btn" title="Back to Dashboard">
         <span class="back-arrow">←</span><span class="back-label"> Tests</span>
       </a>
@@ -163,9 +163,9 @@
     </div>
     <div class="nav-right" style="gap:10px;">
       <div class="timer" id="timerDisplay">45:00</div>
-      <button class="btn-ghost btn-sm" onclick="toggleTranslate()" id="translateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:1rem;">🇷🇺</button>
-      <button class="theme-btn" onclick="toggleTheme()" id="navThemeBtn">☀️</button>
-      <button class="btn-primary btn-sm" onclick="finishTest()" id="finishBtn">Finish</button>
+      <button class="btn-ghost btn-sm" id="translateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:1rem;">🇷🇺</button>
+      <button class="theme-btn" id="navThemeBtn">☀️</button>
+      <button class="btn-primary btn-sm" id="finishBtn">Finish</button>
     </div>
   </div>
 </nav>
@@ -199,7 +199,7 @@
       </div>
 
       <div style="position:relative;">
-        <button id="bookmarkBtn" onclick="toggleBookmark()" class="bookmark-btn" title="Bookmark">
+        <button id="bookmarkBtn" class="bookmark-btn" title="Bookmark">
           <svg id="bookmarkIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
         </button>
         <div style="font-size:1.2rem;font-weight:600;line-height:1.5;margin-bottom:8px;padding-right:30px;" id="questionText">
@@ -213,9 +213,9 @@
 </div>
 
 <div class="nav-buttons" id="navButtons" style="display:none;">
-  <button class="btn-ghost" onclick="prevQuestion()" id="prevBtn" disabled>← Previous</button>
+  <button class="btn-ghost" id="prevBtn" disabled>← Previous</button>
   <span style="font-size:0.85rem;color:var(--text-muted);" id="navCounter">1 / 25</span>
-  <button class="btn-primary" onclick="nextQuestion()" id="nextBtn">Next →</button>
+  <button class="btn-primary" id="nextBtn">Next →</button>
 </div>
 
 <div id="submitOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
@@ -227,12 +227,12 @@
   <div class="modal">
     <div class="modal-header">
       <h3 style="font-weight:700;font-size:1.1rem;">Submit Test?</h3>
-      <button class="modal-close" onclick="closeFinishModal()">✕</button>
+      <button class="modal-close" id="finishModalCloseBtn">✕</button>
     </div>
     <div id="finishSummary" style="color:var(--text-muted);font-size:0.9rem;margin-bottom:24px;line-height:1.6;"></div>
     <div style="display:flex;gap:12px;justify-content:flex-end;">
-      <button class="btn-ghost" onclick="closeFinishModal()">Keep going</button>
-      <button class="btn-primary" onclick="submitTest()" id="submitBtn">Submit answers</button>
+      <button class="btn-ghost" id="finishKeepGoingBtn">Keep going</button>
+      <button class="btn-primary" id="submitBtn">Submit answers</button>
     </div>
   </div>
 </div>
@@ -255,6 +255,16 @@ let isSubmitting = false;
 
 // ── Init ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('testBurgerBtn')?.addEventListener('click', sbOpen);
+  document.getElementById('translateBtn')?.addEventListener('click', toggleTranslate);
+  document.getElementById('navThemeBtn')?.addEventListener('click', toggleTheme);
+  document.getElementById('finishBtn')?.addEventListener('click', finishTest);
+  document.getElementById('bookmarkBtn')?.addEventListener('click', toggleBookmark);
+  document.getElementById('prevBtn')?.addEventListener('click', prevQuestion);
+  document.getElementById('nextBtn')?.addEventListener('click', nextQuestion);
+  document.getElementById('finishModalCloseBtn')?.addEventListener('click', closeFinishModal);
+  document.getElementById('finishKeepGoingBtn')?.addEventListener('click', closeFinishModal);
+  document.getElementById('submitBtn')?.addEventListener('click', () => submitTest());
   if (TEST_ID !== 1 && !IS_AUTHENTICATED) {
     window.location.href = '/login';
     return;
@@ -479,7 +489,10 @@ function renderDots() {
   for (let i = 0; i < max; i++) {
     const dot = document.createElement('button');
     dot.style.cssText = 'width:8px;height:8px;border-radius:50%;border:1px solid var(--border);background:var(--border);cursor:pointer;padding:0;transition:background 0.15s;';
-    dot.onclick = () => { currentIndex = i; renderQuestion(); };
+    dot.addEventListener('click', () => {
+      currentIndex = i;
+      renderQuestion();
+    });
     dot.id = `dot-${i}`;
     nav.appendChild(dot);
   }

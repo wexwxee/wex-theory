@@ -84,11 +84,11 @@
   {% block head %}{% endblock %}
 </head>
 <body>
-  <div class="sb-overlay" id="sbOverlay" onclick="sbClose()"></div>
+  <div class="sb-overlay" id="sbOverlay"></div>
   <aside class="sb" id="sidebar">
     <div class="sb-brand">
       <a href="/" class="sb-logo">WEXTheory</a>
-      <button class="sb-x" onclick="sbClose()" aria-label="Close">
+      <button class="sb-x" id="sbCloseBtn" aria-label="Close">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
@@ -164,13 +164,13 @@
     <div class="sb-foot">
       <div class="sb-foot-row">
         <span class="sb-foot-label">Theme</span>
-        <button class="sb-theme-btn theme-btn" onclick="toggleTheme()" id="sbThemeBtn" aria-label="Toggle theme">
+        <button class="sb-theme-btn theme-btn" id="sbThemeBtn" aria-label="Toggle theme">
           <span class="theme-icon-sun"><i class="fa-solid fa-sun"></i></span>
           <span class="theme-icon-moon"><i class="fa-solid fa-moon"></i></span>
         </button>
       </div>
       {% if user is defined and user %}
-      <button class="sb-item sb-item--danger" onclick="doLogout()">
+      <button class="sb-item sb-item--danger" id="sbLogoutBtn">
         <i class="fa-solid fa-right-from-bracket sb-ic"></i><span>Sign Out</span>
       </button>
       {% else %}
@@ -265,6 +265,10 @@
   }
   window.sbOpen = sbOpen;
   window.sbClose = sbClose;
+  document.getElementById('sbOverlay')?.addEventListener('click', sbClose);
+  document.getElementById('sbCloseBtn')?.addEventListener('click', sbClose);
+  document.getElementById('sbThemeBtn')?.addEventListener('click', toggleTheme);
+  document.getElementById('sbLogoutBtn')?.addEventListener('click', doLogout);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') sbClose(); });
 
   // Toast
