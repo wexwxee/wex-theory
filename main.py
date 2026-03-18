@@ -2,11 +2,9 @@ import json
 import os
 import re
 import secrets
-import smtplib
 import traceback
 from pathlib import Path
 from datetime import datetime, timedelta
-from email.message import EmailMessage
 from typing import Optional
 from fastapi import FastAPI, Request, Depends, HTTPException, Header, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
@@ -16,6 +14,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import func as sql_func, inspect as sql_inspect, text as sql_text
 from authlib.integrations.starlette_client import OAuth
+import httpx
 
 import models
 from auth import hash_password, verify_password, create_token, decode_token, get_current_user, user_has_access, SECRET_KEY
@@ -101,7 +100,7 @@ def _new_public_user_id() -> str:
 
 
 def is_email_service_configured() -> bool:
-    return all((os.environ.get(name) or "").strip() for name in ("SMTP_HOST", "SMTP_USERNAME", "SMTP_PASSWORD", "SMTP_FROM"))
+    return all((os.environ.get(name) or "").strip() for name in ("RESEND_API_KEY", "RESEND_FROM_EMAIL"))
 
 
 def _clean_env_value(name: str, default: str = "") -> str:
@@ -152,44 +151,40 @@ def send_verification_email(recipient_email: str, code: str, recipient_name: str
     if not is_email_service_configured():
         raise RuntimeError("Email verification is not configured yet")
 
-    host = _clean_env_value("SMTP_HOST")
-    port_raw = _clean_env_value("SMTP_PORT", "587")
-    username = _clean_env_value("SMTP_USERNAME")
-    password = _clean_env_value("SMTP_PASSWORD")
-    sender = _clean_env_value("SMTP_FROM")
-    use_tls_raw = _clean_env_value("SMTP_USE_TLS", "true")
+    resend_api_key = _clean_env_value("RESEND_API_KEY")
+    sender = _clean_env_value("RESEND_FROM_EMAIL")
+    resend_api_url = _clean_env_value("RESEND_API_URL", "https://api.resend.com/emails")
 
-    if not host:
-        raise RuntimeError("SMTP_HOST is empty")
-    try:
-        port = int(port_raw)
-    except ValueError:
-        raise RuntimeError(f"SMTP_PORT is invalid: {port_raw!r}")
-    use_tls = use_tls_raw.lower() in {"1", "true", "yes", "on"}
+    if not resend_api_key:
+        raise RuntimeError("RESEND_API_KEY is empty")
+    if not sender:
+        raise RuntimeError("RESEND_FROM_EMAIL is empty")
 
-    print(
-        "[SMTP] host=%r port=%s username=%r from=%r use_tls=%s" %
-        (host, port, username, sender, use_tls)
-    )
+    payload = {
+        "from": sender,
+        "to": [recipient_email],
+        "subject": "Your WEXTheory verification code",
+        "text": (
+            f"Hello {recipient_name},\n\n"
+            f"Your WEXTheory verification code is: {code}\n\n"
+            "The code expires in 10 minutes.\n"
+            "If you did not request this, you can ignore this email.\n"
+        ),
+    }
 
-    message = EmailMessage()
-    message["Subject"] = "Your WEXTheory verification code"
-    message["From"] = sender
-    message["To"] = recipient_email
-    message.set_content(
-        f"Hello {recipient_name},\n\n"
-        f"Your WEXTheory verification code is: {code}\n\n"
-        "The code expires in 10 minutes.\n"
-        "If you did not request this, you can ignore this email.\n"
-    )
+    print("[EMAIL API] provider='resend' url=%r from=%r to=%r" % (resend_api_url, sender, recipient_email))
 
-    with smtplib.SMTP(host, port, timeout=20) as smtp:
-        smtp.ehlo()
-        if use_tls:
-            smtp.starttls()
-            smtp.ehlo()
-        smtp.login(username, password)
-        smtp.send_message(message)
+    with httpx.Client(timeout=20.0) as client:
+        response = client.post(
+            resend_api_url,
+            headers={
+                "Authorization": f"Bearer {resend_api_key}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+        )
+        if response.status_code >= 400:
+            raise RuntimeError(f"Resend API error {response.status_code}: {response.text[:300]}")
 
 
 def generate_unique_public_user_id(db: Session) -> str:
