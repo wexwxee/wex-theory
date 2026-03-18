@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}Contact — WEX Theory{% endblock %}
+{% block title %}Contact РІР‚вЂќ WEX Theory{% endblock %}
 
 {% block body %}
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" id="contactBurgerBtn">☰</button>
+      <button class="burger-btn" id="contactBurgerBtn">РІВВ°</button>
       <a href="/" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
-      <button class="theme-btn" id="navThemeBtn">☀️</button>
+      <button class="theme-btn" id="navThemeBtn">РІВР‚РїС‘РЏ</button>
       {% if user %}
       <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
       {% else %}
@@ -32,7 +32,7 @@
   </p>
 
   <div id="successState" style="display:none;text-align:center;padding:48px 0;">
-    <div style="font-size:2rem;margin-bottom:16px;">✓</div>
+    <div style="font-size:2rem;margin-bottom:16px;">РІСљвЂњ</div>
     <div style="font-size:1.3rem;font-weight:700;margin-bottom:8px;">Message sent!</div>
     <p style="color:var(--text-muted);margin-bottom:24px;">We'll get back to you as soon as possible.</p>
     <a href="/" class="btn-ghost">Back to home</a>
@@ -85,88 +85,13 @@
       <a href="/faq">FAQ</a>
       <a href="/privacy">Privacy</a>
     </div>
-    <div>© 2026 WEXTheory</div>
+    <div>Р’В© 2026 WEXTheory</div>
   </div>
 </footer>
 {% endblock %}
 
 {% block scripts %}
-<script>
-(function(){
-  const t = localStorage.getItem('wex-theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', t);
-  const nb = document.getElementById('navThemeBtn');
-  if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
-})();
-
-document.getElementById('contactBurgerBtn')?.addEventListener('click', sbOpen);
-document.getElementById('navThemeBtn')?.addEventListener('click', toggleTheme);
-document.getElementById('sendBtn')?.addEventListener('click', sendMessage);
-
-function showFormMsg(msg, type) {
-  const el = document.getElementById('formMsg');
-  el.style.display = 'block';
-  el.style.background = type === 'error' ? 'var(--wrong-bg)' : 'var(--correct-bg)';
-  el.style.color = type === 'error' ? 'var(--wrong)' : 'var(--correct)';
-  el.style.border = `1px solid ${type === 'error' ? 'var(--wrong)' : 'var(--correct)'}`;
-  el.textContent = msg;
-}
-
-document.getElementById('cAttachment').addEventListener('change', () => {
-  const file = document.getElementById('cAttachment').files[0];
-  const info = document.getElementById('attachmentInfo');
-  if (!file) {
-    info.style.display = 'none';
-    info.textContent = '';
-    return;
-  }
-  info.style.display = 'block';
-  info.textContent = `Selected: ${file.name} (${Math.round(file.size / 1024)} KB)`;
-});
-
-async function sendMessage() {
-  const name = document.getElementById('cName').value.trim();
-  const email = document.getElementById('cEmail').value.trim();
-  const subject = document.getElementById('cSubject').value;
-  const message = document.getElementById('cMsg').value.trim();
-  const attachment = document.getElementById('cAttachment').files[0];
-  const btn = document.getElementById('sendBtn');
-
-  if (!name || !email || !message) { showFormMsg('Please fill all required fields', 'error'); return; }
-
-  btn.disabled = true;
-  btn.textContent = 'Sending...';
-
-  try {
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('email', email);
-    formData.append('subject', subject);
-    formData.append('message', message);
-    if (attachment) formData.append('attachment', attachment);
-
-    const res = await fetch('/api/contact', {
-      method: 'POST',
-      body: formData
-    });
-    const data = await res.json();
-    if (data.success) {
-      if (data.redirect) {
-        window.location.href = data.redirect;
-        return;
-      }
-      document.getElementById('formWrap').style.display = 'none';
-      document.getElementById('successState').style.display = 'block';
-    } else {
-      showFormMsg(data.error || 'Failed to send', 'error');
-      btn.disabled = false;
-      btn.textContent = 'Send Message';
-    }
-  } catch(e) {
-    showFormMsg('Connection error. Please try again.', 'error');
-    btn.disabled = false;
-    btn.textContent = 'Send Message';
-  }
-}
-</script>
+<script src="/static/js/contact.js"></script>
 {% endblock %}
+
+

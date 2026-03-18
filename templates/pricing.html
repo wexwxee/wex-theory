@@ -1,16 +1,16 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
-{% block title %}Pricing — WEX Theory{% endblock %}
+{% block title %}Pricing вЂ” WEX Theory{% endblock %}
 
 {% block body %}
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" onclick="sbOpen()">☰</button>
+      <button class="burger-btn" id="pricingBurgerBtn">в°</button>
       <a href="/" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
-      <button class="theme-btn" onclick="toggleTheme()" id="navThemeBtn">☀️</button>
+      <button class="theme-btn" id="navThemeBtn">вЂпёЏ</button>
       {% if user %}
       <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
       {% else %}
@@ -34,10 +34,10 @@
       <div style="font-size:2.5rem;font-weight:800;margin-bottom:4px;">0 kr</div>
       <div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:28px;">Free starter access</div>
       <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">✓</span> Test 1 without registration</li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;color:var(--text-muted);"><span>—</span> One full 25-question exam-style test</li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;color:var(--text-muted);"><span>—</span> Instant pass/fail result</li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;color:var(--text-muted);"><span>—</span> No saved progress</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">вњ“</span> Test 1 without registration</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;color:var(--text-muted);"><span>вЂ”</span> One full 25-question exam-style test</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;color:var(--text-muted);"><span>вЂ”</span> Instant pass/fail result</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;color:var(--text-muted);"><span>вЂ”</span> No saved progress</li>
       </ul>
       <a href="/test/1" class="btn-ghost" style="width:100%;text-align:center;">Start Free Test</a>
     </div>
@@ -48,16 +48,16 @@
       <div style="font-size:2.5rem;font-weight:800;margin-bottom:4px;">99 kr</div>
       <div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:28px;">30 days of access</div>
       <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">✓</span> All 13 official practice tests</li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">✓</span> 325 questions with road photos</li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">✓</span> Answer explanations and review</li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">✓</span> Saved questions and progress tracking</li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">✓</span> Works on phone, tablet, and desktop</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">вњ“</span> All 13 official practice tests</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">вњ“</span> 325 questions with road photos</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">вњ“</span> Answer explanations and review</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">вњ“</span> Saved questions and progress tracking</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">вњ“</span> Works on phone, tablet, and desktop</li>
       </ul>
       {% if user and has_access %}
-      <div style="text-align:center;padding:8px 0;color:var(--correct);font-size:0.9rem;font-weight:600;">✓ Active{% if access_expires_at %} · valid until {{ access_expires_at.strftime('%d %b %Y') }}{% endif %}</div>
+      <div style="text-align:center;padding:8px 0;color:var(--correct);font-size:0.9rem;font-weight:600;">вњ“ Active{% if access_expires_at %} В· valid until {{ access_expires_at.strftime('%d %b %Y') }}{% endif %}</div>
       {% else %}
-      <a href="#" onclick="return openTelegramPurchase({ plan: 'Premium', amount: '99 kr', duration: '30 days' })" class="btn-primary" style="width:100%;text-align:center;display:block;">{% if user and user.subscription_status != 'free' %}Renew Access{% else %}Unlock Full Access{% endif %}</a>
+      <a href="#" id="pricingPurchaseBtn" data-plan="Premium" data-amount="99 kr" data-duration="30 days" class="btn-primary" style="width:100%;text-align:center;display:block;">{% if user and user.subscription_status != 'free' %}Renew Access{% else %}Unlock Full Access{% endif %}</a>
       <div style="text-align:center;margin-top:10px;font-size:0.82rem;color:var(--text-muted);">Telegram opens with a ready-to-send access request, including your user ID.</div>
       {% endif %}
     </div>
@@ -67,11 +67,11 @@
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
       <div>
         <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Included</div>
-        <div style="font-weight:700;">13 tests · 325 questions · explanations</div>
+        <div style="font-weight:700;">13 tests В· 325 questions В· explanations</div>
       </div>
       <div>
         <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Exam format</div>
-        <div style="font-weight:700;">25 questions per test · pass at 20/25</div>
+        <div style="font-weight:700;">25 questions per test В· pass at 20/25</div>
       </div>
       <div>
         <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Activation</div>
@@ -107,18 +107,12 @@
       <a href="/contact">Contact</a>
       <a href="/privacy">Privacy</a>
     </div>
-    <div>© 2026 WEXTheory</div>
+    <div>В© 2026 WEXTheory</div>
   </div>
 </footer>
 {% endblock %}
 
 {% block scripts %}
-<script>
-(function(){
-  const t = localStorage.getItem('wex-theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', t);
-  const nb = document.getElementById('navThemeBtn');
-  if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
-})();
-</script>
+<script src="/static/js/pricing.js"></script>
 {% endblock %}
+

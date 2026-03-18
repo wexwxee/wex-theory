@@ -184,7 +184,7 @@
   </style>
 </head>
 <body>
-  <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀️</button>
+  <button class="theme-toggle" id="themeBtn">☀️</button>
   <div class="auth-wrap">
     <div class="logo-wrap">
       <a href="/" class="logo">WEXTheory</a>
@@ -208,10 +208,10 @@
         <label for="password">Password</label>
         <div class="password-wrap">
           <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
-          <button type="button" class="password-toggle" id="passwordToggle" onclick="togglePassword('password','passwordToggle')" aria-label="Show password">👁</button>
+          <button type="button" class="password-toggle" id="passwordToggle" aria-label="Show password">👁</button>
         </div>
       </div>
-      <button class="btn-primary" id="btn" onclick="handleLogin()">Sign In</button>
+      <button class="btn-primary" id="btn">Sign In</button>
 
       <div style="display:flex;align-items:center;gap:12px;margin:20px 0 4px;">
         <div style="flex:1;height:1px;background:var(--border);"></div>
@@ -243,88 +243,6 @@
     </div>
   </div>
 
-  <script>
-  (function(){
-    const t = localStorage.getItem('wex-theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', t);
-    document.getElementById('themeBtn').textContent = t === 'dark' ? '☀️' : '🌙';
-  })();
-
-  function toggleTheme() {
-    const h = document.documentElement;
-    const cur = h.getAttribute('data-theme');
-    const next = cur === 'dark' ? 'light' : 'dark';
-    h.setAttribute('data-theme', next);
-    localStorage.setItem('wex-theme', next);
-    document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
-  }
-
-  function showMsg(msg, type) {
-    const box = document.getElementById('msgBox');
-    box.className = 'msg-box ' + type;
-    box.textContent = msg;
-  }
-
-  function getCookieValue(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return '';
-  }
-
-  function csrfFetch(url, options = {}) {
-    const opts = { ...options };
-    const method = String(opts.method || 'GET').toUpperCase();
-    const headers = new Headers(opts.headers || {});
-    if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
-      const token = getCookieValue('csrf_token');
-      if (token) headers.set('X-CSRF-Token', token);
-      if (!opts.credentials) opts.credentials = 'same-origin';
-    }
-    opts.headers = headers;
-    return fetch(url, opts);
-  }
-
-  function togglePassword(inputId, buttonId) {
-    const input = document.getElementById(inputId);
-    const button = document.getElementById(buttonId);
-    if (!input || !button) return;
-    const show = input.type === 'password';
-    input.type = show ? 'text' : 'password';
-    button.textContent = show ? '🙈' : '👁';
-    button.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
-  }
-
-  async function handleLogin() {
-    const btn = document.getElementById('btn');
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    if (!email || !password) { showMsg('Please fill all fields', 'error'); return; }
-    btn.disabled = true;
-    btn.textContent = 'Signing in...';
-    try {
-      const res = await csrfFetch('/api/auth/login', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-      if (data.success) {
-        window.location.href = data.redirect || '/dashboard';
-      } else {
-        showMsg(data.error || 'Login failed', 'error');
-        btn.disabled = false;
-        btn.textContent = 'Sign In';
-      }
-    } catch(e) {
-      showMsg('Connection error', 'error');
-      btn.disabled = false;
-      btn.textContent = 'Sign In';
-    }
-  }
-
-  document.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
-  </script>
+  <script src="/static/js/login.js"></script>
 </body>
 </html>

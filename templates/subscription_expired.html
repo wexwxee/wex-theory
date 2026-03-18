@@ -1,23 +1,23 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
-{% block title %}Subscription Expired — WEX Theory{% endblock %}
+{% block title %}Subscription Expired вЂ” WEX Theory{% endblock %}
 
 {% block body %}
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" onclick="sbOpen()">☰</button>
+      <button class="burger-btn" id="expiredBurgerBtn">в°</button>
       <a href="/" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
-      <button class="theme-btn" onclick="toggleTheme()" id="navThemeBtn">☀️</button>
-      <button onclick="doLogout()" class="btn-ghost btn-sm">Sign Out</button>
+      <button class="theme-btn" id="navThemeBtn">вЂпёЏ</button>
+      <button id="expiredLogoutBtn" class="btn-ghost btn-sm">Sign Out</button>
     </div>
   </div>
 </nav>
 
 <div class="page" style="max-width:560px;text-align:center;padding-top:80px;">
-  <div style="font-size:3rem;margin-bottom:20px;">⏳</div>
+  <div style="font-size:3rem;margin-bottom:20px;">вЏі</div>
   <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:12px;">Your subscription has expired</h1>
   <p style="color:var(--text-muted);line-height:1.7;margin-bottom:32px;">
     Premium tests are now locked. Renew access to continue with Tests 2 to 13, or use Test 1 for free anytime.
@@ -27,7 +27,7 @@
     <a href="/test/1" class="btn-ghost">Try Free Test</a>
   </div>
   <p style="color:var(--text-muted);font-size:0.82rem;margin-top:32px;">
-    Test 1 is always free — no subscription required.
+    Test 1 is always free вЂ” no subscription required.
   </p>
 </div>
 
@@ -39,18 +39,12 @@
       <a href="/faq">FAQ</a>
       <a href="/privacy">Privacy</a>
     </div>
-    <div>© 2026 WEXTheory</div>
+    <div>В© 2026 WEXTheory</div>
   </div>
 </footer>
 {% endblock %}
 
 {% block scripts %}
-<script>
-(function(){
-  const t = localStorage.getItem('wex-theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', t);
-  const nb = document.getElementById('navThemeBtn');
-  if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
-})();
-</script>
+<script src="/static/js/subscription-expired.js"></script>
 {% endblock %}
+

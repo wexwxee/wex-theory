@@ -114,7 +114,7 @@ def build_content_security_policy(request: Request) -> str:
         "object-src": ["'none'"],
         "frame-ancestors": ["'self'"],
         "form-action": ["'self'"],
-        "script-src": ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+        "script-src": ["'self'"],
         "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
         "font-src": ["'self'", "data:", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
         "img-src": ["'self'", "data:", "blob:", "https:"],

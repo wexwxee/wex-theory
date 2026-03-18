@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Results — {{ test.title }} — WEX Theory{% endblock %}
+{% block title %}Results Р Р†Р вЂљРІР‚Сњ {{ test.title }} Р Р†Р вЂљРІР‚Сњ WEX Theory{% endblock %}
 
 {% block head %}
 <style>
@@ -198,12 +198,12 @@
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" id="resultsBurgerBtn">☰</button>
+      <button class="burger-btn" id="resultsBurgerBtn">Р Р†Р’ВР’В°</button>
       <a href="/" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
       <button class="btn-ghost btn-sm" id="resultsTranslateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:0.95rem;">RU</button>
-      <button class="theme-btn" id="navThemeBtn">☀️</button>
+      <button class="theme-btn" id="navThemeBtn">Р Р†Р’ВР вЂљР С—РЎвЂР РЏ</button>
       {% if user %}
       <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
       {% endif %}
@@ -216,12 +216,12 @@
     <div style="font-size:0.82rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;">{{ test.title }}</div>
     {% if attempt.passed %}
     <div style="font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;color:#22c55e;line-height:1.2;margin-bottom:8px;">
-      ✓ Congratulations! You passed!
+      Р Р†РЎС™РІР‚Сљ Congratulations! You passed!
     </div>
     <div style="font-size:1.1rem;color:#22c55e;font-weight:600;"><span id="scoreDisplay">0</span>/25 correct</div>
     {% else %}
     <div style="font-size:clamp(1.4rem,4vw,2.2rem);font-weight:800;color:#ef4444;line-height:1.2;margin-bottom:8px;">
-      ✗ Unfortunately! You did not pass.
+      Р Р†РЎС™РІР‚вЂќ Unfortunately! You did not pass.
     </div>
     <div style="font-size:1.1rem;color:#ef4444;font-weight:600;"><span id="scoreDisplay">0</span>/25 correct</div>
     {% endif %}
@@ -270,7 +270,7 @@
       <span class="rc-save">Saved</span>
       {% endif %}
       <span class="rc-num">{{ qr.question.question_index }}</span>
-      <span class="rc-icon">{% if qr.is_correct %}✓{% else %}✗{% endif %}</span>
+      <span class="rc-icon">{% if qr.is_correct %}Р Р†РЎС™РІР‚Сљ{% else %}Р Р†РЎС™РІР‚вЂќ{% endif %}</span>
     </div>
     {% endfor %}
   </div>
@@ -309,7 +309,7 @@
               <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
                 <span>{{ a.text }}</span>
                 <span style="font-size:0.72rem;font-weight:700;white-space:nowrap;">
-                  {% if was_selected and is_correct_answer %}Your answer · Correct{% elif was_selected and not is_correct_answer %}Your answer · Wrong{% elif not was_selected and is_correct_answer %}Correct answer{% endif %}
+                  {% if was_selected and is_correct_answer %}Your answer Р вЂ™Р’В· Correct{% elif was_selected and not is_correct_answer %}Your answer Р вЂ™Р’В· Wrong{% elif not was_selected and is_correct_answer %}Correct answer{% endif %}
                 </span>
               </div>
             </div>
@@ -336,7 +336,7 @@
     {% if user %}
     <a href="/dashboard" class="btn-ghost">Back to Dashboard</a>
     {% else %}
-    <a href="/register" class="btn-ghost">Create Account — Get All Tests</a>
+    <a href="/register" class="btn-ghost">Create Account Р Р†Р вЂљРІР‚Сњ Get All Tests</a>
     {% endif %}
   </div>
 </div>
@@ -349,7 +349,7 @@
       <a href="/contact">Contact</a>
       <a href="/privacy">Privacy</a>
     </div>
-    <div>© 2026 WEXTheory</div>
+    <div>Р вЂ™Р’В© 2026 WEXTheory</div>
   </div>
 </footer>
 
@@ -360,7 +360,7 @@
         <span style="font-size:0.82rem;color:var(--text-muted);" id="modalMeta">Question 1 of 25</span>
         <button class="btn-ghost btn-sm" id="modalTranslateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:0.85rem;">RU</button>
       </div>
-      <button class="modal-close" id="modalCloseBtn">✕</button>
+      <button class="modal-close" id="modalCloseBtn">Р Р†РЎС™РІР‚Сћ</button>
     </div>
     <div id="modalImgWrap" style="margin-bottom:16px;display:none;">
       <img id="modalImg" src="" alt="" style="width:100%;border-radius:8px;border:1px solid var(--border);max-height:300px;object-fit:cover;">
@@ -374,494 +374,19 @@
       <div id="modalExplanationRu" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-style:italic;"></div>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
-      <button class="btn-ghost btn-sm" id="modalPrev">← Prev</button>
+      <button class="btn-ghost btn-sm" id="modalPrev">Р Р†РІР‚В РЎвЂ™ Prev</button>
       <span id="modalStatus" style="font-size:0.85rem;"></span>
-      <button class="btn-ghost btn-sm" id="modalNext">Next →</button>
+      <button class="btn-ghost btn-sm" id="modalNext">Next Р Р†РІР‚В РІР‚в„ў</button>
     </div>
   </div>
 </div>
+<textarea id="resultsDataJson" hidden>[{% for qr in question_results %}{"index": {{ qr.question.question_index }}, "text": {{ qr.question.question_text | tojson }}, "image": {{ (qr.question.image_path or '') | tojson }}, "explanation": {{ (qr.question.explanation or '') | tojson }}, "is_correct": {{ 'true' if qr.is_correct else 'false' }}, "selected_ids": {{ qr.selected_ids | tojson }}, "correct_ids": {{ qr.correct_ids | tojson }}, "answers": [{% for a in qr.answers %}{"id": {{ a.id }}, "text": {{ a.text | tojson }}}{% if not loop.last %}, {% endif %}{% endfor %}]}{% if not loop.last %}, {% endif %}{% endfor %}]</textarea>
+<div id="resultsPageMeta" hidden data-score="{{ attempt.score }}"></div>
 {% endblock %}
 
 {% block scripts %}
-<script>
-(function(){
-  const t = localStorage.getItem('wex-theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', t);
-  const nb = document.getElementById('navThemeBtn');
-  if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
-})();
-
-document.getElementById('resultsBurgerBtn')?.addEventListener('click', sbOpen);
-document.getElementById('resultsTranslateBtn')?.addEventListener('click', toggleResultsTranslate);
-document.getElementById('modalTranslateBtn')?.addEventListener('click', toggleResultsTranslate);
-document.getElementById('navThemeBtn')?.addEventListener('click', toggleTheme);
-document.getElementById('modalCloseBtn')?.addEventListener('click', closeModal);
-document.getElementById('modalPrev')?.addEventListener('click', () => modalNav(-1));
-document.getElementById('modalNext')?.addEventListener('click', () => modalNav(1));
-document.querySelectorAll('[data-modal-index]').forEach((card) => {
-  card.addEventListener('click', () => openModal(Number(card.dataset.modalIndex)));
-});
-document.querySelectorAll('[data-open-modal]').forEach((btn) => {
-  btn.addEventListener('click', () => openModal(Number(btn.dataset.openModal)));
-});
-
-// Build a serialisable array (Jinja2 objects → plain JS)
-const DATA = [
-  {% for qr in question_results %}
-  {
-    index: {{ qr.question.question_index }},
-    text: {{ qr.question.question_text | tojson }},
-    image: {{ (qr.question.image_path or '') | tojson }},
-    explanation: {{ (qr.question.explanation or '') | tojson }},
-    is_correct: {{ 'true' if qr.is_correct else 'false' }},
-    selected_ids: {{ qr.selected_ids | tojson }},
-    correct_ids: {{ qr.correct_ids | tojson }},
-    answers: [
-      {% for a in qr.answers %}
-      { id: {{ a.id }}, text: {{ a.text | tojson }} }{% if not loop.last %},{% endif %}
-      {% endfor %}
-    ]
-  }{% if not loop.last %},{% endif %}
-  {% endfor %}
-];
-
-let currentModal = 0;
-let resultsTranslateMode = false;
-const resultsTranslateCache = {};
-const _RESULTS_STOP = new Set(['the','a','an','in','to','of','and','or','is','are','you','at','on','for',
-  'it','be','as','by','with','from','this','that','not','but','if','up','do','so','we','he',
-  'she','they','my','your','all','have','has','had','was','were','will','can','i','its','our',
-  'their','into','also','when','then','than','there','about','been','which','who','what']);
-const _RESULTS_GLOSSARY = [
-  { phrase: 'turn right', translation: 'повернуть направо', words: ['turn', 'right'] },
-  { phrase: 'turn left', translation: 'повернуть налево', words: ['turn', 'left'] },
-  { phrase: 'right turn', translation: 'поворот направо', words: ['right', 'turn'] },
-  { phrase: 'left turn', translation: 'поворот налево', words: ['left', 'turn'] },
-  { phrase: 'signal-controlled junction', translation: 'регулируемый перекресток', words: ['signal', 'controlled', 'junction'] },
-  { phrase: 'pedestrian crossing', translation: 'пешеходный переход', words: ['pedestrian', 'crossing'] },
-  { phrase: 'bus lane', translation: 'полоса для автобусов', words: ['bus', 'lane'] },
-  { phrase: 'cycle path', translation: 'велодорожка', words: ['cycle', 'path'] },
-  { phrase: 'own lane', translation: 'своя полоса', words: ['own', 'lane'] },
-  { phrase: 'keep to my own lane', translation: 'держаться своей полосы', words: ['keep', 'own', 'lane'] },
-  { phrase: 'pull in', translation: 'перестроиться ближе к краю', words: ['pull', 'in'] },
-  { phrase: 'directly behind you', translation: 'непосредственно позади вас', words: ['directly', 'behind'] },
-  { phrase: 'all the way', translation: 'до самого конца', words: ['all', 'way'] },
-  { phrase: 'remain there', translation: 'оставаться там', words: ['remain', 'there'] },
-  { phrase: 'kerb', translation: 'бордюр', words: ['kerb'] },
-  { phrase: 'lane', translation: 'полоса движения', words: ['lane'] },
-  { phrase: 'junction', translation: 'перекресток', words: ['junction'] }
-];
-let _resultsWordPopup = null;
-let _resultsPopupHideTimer = null;
-
-function _resultsTranslateUrl(text) {
-  return 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&dt=t&q=' + encodeURIComponent(text);
-}
-
-function _extractResultsTranslation(data) {
-  if (!Array.isArray(data) || !Array.isArray(data[0])) return null;
-  return data[0].map(part => Array.isArray(part) ? (part[0] || '') : '').join('').trim() || null;
-}
-
-async function _translateResultsText(text) {
-  if (!text || !text.trim()) return null;
-  const key = 'gr_' + btoa(unescape(encodeURIComponent(text.trim().slice(0, 60)))).slice(0, 36);
-  const cached = sessionStorage.getItem(key);
-  if (cached) return cached;
-  try {
-    const res = await fetch(_resultsTranslateUrl(text.slice(0, 500)));
-    const data = await res.json();
-    const translated = _extractResultsTranslation(data);
-    if (translated) {
-      try { sessionStorage.setItem(key, translated); } catch(e) {}
-      return translated;
-    }
-  } catch(e) {}
-  return null;
-}
-
-async function _translateResultsWord(word) {
-  const key = 'rw_' + word.toLowerCase();
-  const cached = sessionStorage.getItem(key);
-  if (cached) { try { return JSON.parse(cached); } catch(e) {} }
-  try {
-    const res = await fetch(_resultsTranslateUrl(word));
-    const data = await res.json();
-    const result = { main: _extractResultsTranslation(data) || '-', variants: [] };
-    try { sessionStorage.setItem(key, JSON.stringify(result)); } catch(e) {}
-    return result;
-  } catch(e) {
-    return { main: '-', variants: [] };
-  }
-}
-
-function _normalizeResultsContext(text) {
-  return (text || '').toLowerCase().replace(/[^\w\s-]/g, ' ').replace(/\s+/g, ' ').trim();
-}
-
-function _findResultsGlossaryMatch(word, contextText) {
-  const lcWord = (word || '').toLowerCase();
-  const normalized = _normalizeResultsContext(contextText);
-  return _RESULTS_GLOSSARY
-    .filter(item => item.words.includes(lcWord) && normalized.includes(item.phrase))
-    .sort((a, b) => b.phrase.length - a.phrase.length)[0] || null;
-}
-
-async function _translateResultsWordInContext(word, contextText) {
-  const glossary = _findResultsGlossaryMatch(word, contextText);
-  const base = glossary ? { main: glossary.translation, variants: [] } : await _translateResultsWord(word);
-  return {
-    main: base.main || '-',
-    variants: base.variants || [],
-    contextPhrase: glossary ? glossary.phrase : '',
-    contextTranslation: glossary ? glossary.translation : ''
-  };
-}
-
-async function _ensureResultTranslated(d) {
-  const cacheKey = 'result_translate_' + d.index;
-  if (resultsTranslateCache[cacheKey]) return resultsTranslateCache[cacheKey];
-  const cached = sessionStorage.getItem(cacheKey);
-  if (cached) {
-    try {
-      resultsTranslateCache[cacheKey] = JSON.parse(cached);
-      return resultsTranslateCache[cacheKey];
-    } catch(e) {}
-  }
-  const texts = [d.text, ...d.answers.map(a => a.text)];
-  if (d.explanation) texts.push(d.explanation);
-  const translated = await Promise.all(texts.map(_translateResultsText));
-  const payload = {
-    q: translated[0] || d.text,
-    a: translated.slice(1, 1 + d.answers.length),
-    explanation: d.explanation ? (translated[translated.length - 1] || d.explanation) : ''
-  };
-  resultsTranslateCache[cacheKey] = payload;
-  try { sessionStorage.setItem(cacheKey, JSON.stringify(payload)); } catch(e) {}
-  return payload;
-}
-
-function appendResultsWrappedText(parent, text, stopWords) {
-  const fragment = document.createDocumentFragment();
-  const regex = /\b([a-zA-Z]{3,})\b/g;
-  let lastIndex = 0;
-  let match;
-  while ((match = regex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      fragment.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
-    }
-    const word = match[0];
-    if (stopWords.has(word.toLowerCase())) {
-      fragment.appendChild(document.createTextNode(word));
-    } else {
-      const wordEl = document.createElement('span');
-      wordEl.className = 'tw';
-      wordEl.textContent = word;
-      fragment.appendChild(wordEl);
-    }
-    lastIndex = regex.lastIndex;
-  }
-  if (lastIndex < text.length) {
-    fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
-  }
-  parent.appendChild(fragment);
-}
-
-function _wrapResultsWords(el) {
-  if (!el || el.dataset.wrapped) return;
-  el.dataset.wrapped = '1';
-
-  function processNode(node) {
-    if (node.nodeType === 3) {
-      const text = node.textContent;
-      if (!/[a-zA-Z]{3,}/.test(text)) return;
-      const wrap = document.createElement('span');
-      appendResultsWrappedText(wrap, text, _RESULTS_STOP);
-      node.parentNode.replaceChild(wrap, node);
-    } else if (node.nodeType === 1 &&
-               !['SCRIPT','STYLE','INPUT','TEXTAREA'].includes(node.tagName) &&
-               !node.classList.contains('tw')) {
-      Array.from(node.childNodes).forEach(processNode);
-    }
-  }
-
-  Array.from(el.childNodes).forEach(processNode);
-}
-
-function _resultsPopupPos(popup, rect) {
-  const pw = popup.offsetWidth;
-  const ph = popup.offsetHeight;
-  const left = Math.max(4, Math.min(rect.left + rect.width / 2 - pw / 2, window.innerWidth - pw - 4));
-  const top = rect.top + window.scrollY - ph - 10;
-  popup.style.left = left + 'px';
-  popup.style.top = top + 'px';
-}
-
-function addResultBadge(parent, className, text) {
-  const badge = document.createElement('span');
-  badge.className = className;
-  badge.textContent = text;
-  parent.appendChild(badge);
-}
-
-function setResultsPopupLoading(popup, word) {
-  popup.replaceChildren();
-  const orig = document.createElement('div');
-  orig.className = 'wp-orig';
-  orig.textContent = word;
-  const loading = document.createElement('div');
-  loading.className = 'wp-load';
-  loading.textContent = '⏳';
-  popup.appendChild(orig);
-  popup.appendChild(loading);
-}
-
-function setResultsPopupResult(popup, word, result) {
-  popup.replaceChildren();
-  const orig = document.createElement('div');
-  orig.className = 'wp-orig';
-  orig.textContent = word;
-  const translation = document.createElement('div');
-  translation.className = 'wp-tr';
-  translation.textContent = result.main || '-';
-  popup.appendChild(orig);
-  popup.appendChild(translation);
-  if (result.contextPhrase) {
-    const context = document.createElement('div');
-    context.className = 'wp-context';
-    context.textContent = `Context: ${result.contextPhrase} -> ${result.contextTranslation}`;
-    popup.appendChild(context);
-  }
-  if (Array.isArray(result.variants) && result.variants.length) {
-    const variants = document.createElement('div');
-    variants.className = 'wp-variants';
-    result.variants.forEach((item) => {
-      const variant = document.createElement('span');
-      variant.className = 'wp-v';
-      variant.textContent = item;
-      variants.appendChild(variant);
-    });
-    popup.appendChild(variants);
-  }
-}
-
-async function toggleResultsTranslate() {
-  resultsTranslateMode = !resultsTranslateMode;
-  const btn = document.getElementById('resultsTranslateBtn');
-  const modalBtn = document.getElementById('modalTranslateBtn');
-  if (btn) {
-    btn.textContent = resultsTranslateMode ? 'EN' : 'RU';
-  }
-  if (modalBtn) {
-    modalBtn.textContent = resultsTranslateMode ? 'EN' : 'RU';
-  }
-  if (resultsTranslateMode && DATA[currentModal]) {
-    await _ensureResultTranslated(DATA[currentModal]);
-  }
-  if (document.getElementById('qModal').classList.contains('open')) {
-    renderModal();
-  }
-}
-
-function openModal(i) {
-  currentModal = i;
-  renderModal();
-  document.getElementById('qModal').classList.add('open');
-}
-
-function closeModal() {
-  document.getElementById('qModal').classList.remove('open');
-}
-
-function modalNav(dir) {
-  currentModal = Math.max(0, Math.min(DATA.length - 1, currentModal + dir));
-  renderModal();
-}
-
-async function renderModal() {
-  const d = DATA[currentModal];
-  const trans = resultsTranslateMode ? await _ensureResultTranslated(d) : null;
-
-  document.getElementById('modalMeta').textContent = `Question ${d.index} of ${DATA.length}`;
-  const qEl = document.getElementById('modalQuestion');
-  qEl.textContent = d.text;
-  qEl.dataset.sourceText = d.text;
-  delete qEl.dataset.wrapped;
-  const qRuEl = document.getElementById('modalQuestionRu');
-  if (resultsTranslateMode && trans?.q) {
-    qRuEl.textContent = trans.q;
-    qRuEl.style.display = 'block';
-  } else {
-    qRuEl.style.display = 'none';
-  }
-
-  // Image
-  const imgWrap = document.getElementById('modalImgWrap');
-  const img = document.getElementById('modalImg');
-  if (d.image) {
-    img.src = '/test-images/' + d.image;
-    imgWrap.style.display = 'block';
-  } else {
-    imgWrap.style.display = 'none';
-  }
-
-  // Answers
-  const answersEl = document.getElementById('modalAnswers');
-  answersEl.innerHTML = '';
-  d.answers.forEach((a, idx) => {
-    const wasSelected = d.selected_ids.includes(a.id);
-    const isCorrect = d.correct_ids.includes(a.id);
-
-    let cls;
-    if (wasSelected && isCorrect) {
-      cls = 'answer-row user-correct';
-    } else if (wasSelected && !isCorrect) {
-      cls = 'answer-row user-wrong';
-    } else if (!wasSelected && isCorrect) {
-      cls = 'answer-row missed-correct';
-    } else {
-      cls = 'answer-row neutral';
-    }
-
-    const row = document.createElement('div');
-    row.className = cls;
-
-    const textWrap = document.createElement('div');
-    textWrap.style.flex = '1';
-
-    const answerText = document.createElement('span');
-    answerText.textContent = a.text;
-    answerText.dataset.sourceText = a.text;
-    textWrap.appendChild(answerText);
-
-    if (resultsTranslateMode && trans?.a?.[idx]) {
-      const answerRu = document.createElement('div');
-      answerRu.textContent = trans.a[idx];
-      answerRu.style.cssText = 'font-size:0.82rem;color:#6b7280;font-style:italic;margin-top:6px;';
-      textWrap.appendChild(answerRu);
-    }
-
-    const badgesWrap = document.createElement('span');
-    badgesWrap.style.cssText = 'display:flex;gap:6px;flex-shrink:0;';
-    if (wasSelected && isCorrect) {
-      addResultBadge(badgesWrap, 'badge-user', '✓ Your answer');
-      addResultBadge(badgesWrap, 'badge-correct', 'Correct');
-    } else if (wasSelected && !isCorrect) {
-      addResultBadge(badgesWrap, 'badge-user', '✗ Your answer');
-      addResultBadge(badgesWrap, 'badge-wrong', 'Wrong');
-    } else if (!wasSelected && isCorrect) {
-      addResultBadge(badgesWrap, 'badge-correct', 'Correct (missed)');
-    }
-
-    row.appendChild(textWrap);
-    row.appendChild(badgesWrap);
-    answersEl.appendChild(row);
-    _wrapResultsWords(answerText);
-  });
-
-  // Explanation
-  const expl = document.getElementById('modalExplanation');
-  const explBody = document.getElementById('modalExplanationBody');
-  const explRu = document.getElementById('modalExplanationRu');
-  if (d.explanation) {
-    expl.style.display = 'block';
-    explBody.textContent = d.explanation;
-    explBody.dataset.sourceText = d.explanation;
-    delete explBody.dataset.wrapped;
-    if (resultsTranslateMode && trans?.explanation) {
-      explRu.textContent = trans.explanation;
-      explRu.style.display = 'block';
-    } else {
-      explRu.style.display = 'none';
-    }
-  } else {
-    expl.style.display = 'none';
-  }
-
-  // Status
-  const statusEl = document.getElementById('modalStatus');
-  statusEl.replaceChildren();
-  const statusText = document.createElement('span');
-  statusText.style.fontWeight = '600';
-  statusText.style.color = d.is_correct ? '#22c55e' : '#ef4444';
-  statusText.textContent = d.is_correct ? '✓ Correct' : '✗ Wrong';
-  statusEl.appendChild(statusText);
-
-  // Prev/Next buttons
-  document.getElementById('modalPrev').disabled = currentModal === 0;
-  document.getElementById('modalNext').disabled = currentModal === DATA.length - 1;
-  _wrapResultsWords(qEl);
-  if (d.explanation) _wrapResultsWords(explBody);
-}
-
-// Close on overlay click
-document.getElementById('qModal').addEventListener('click', e => {
-  if (e.target === document.getElementById('qModal')) closeModal();
-});
-// Close on Escape is handled by base.html sbClose, but we override for modal
-document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowLeft') { if(document.getElementById('qModal').classList.contains('open')) modalNav(-1); }
-  if (e.key === 'ArrowRight') { if(document.getElementById('qModal').classList.contains('open')) modalNav(1); }
-});
-
-document.addEventListener('mouseover', (e) => {
-  if (!e.target.classList.contains('tw')) return;
-  clearTimeout(_resultsPopupHideTimer);
-  const word = e.target.textContent.trim();
-  if (!word || _RESULTS_STOP.has(word.toLowerCase()) || word.length < 3) return;
-  if (_resultsWordPopup) { _resultsWordPopup.remove(); _resultsWordPopup = null; }
-
-  const popup = document.createElement('div');
-  popup.className = 'word-popup';
-  setResultsPopupLoading(popup, word);
-  document.body.appendChild(popup);
-  _resultsWordPopup = popup;
-
-  const rect = e.target.getBoundingClientRect();
-  const contextHost = e.target.closest('[data-source-text]');
-  const contextText = contextHost ? contextHost.dataset.sourceText || '' : '';
-  _resultsPopupPos(popup, rect);
-
-  _translateResultsWordInContext(word, contextText).then(result => {
-    if (_resultsWordPopup !== popup) return;
-    setResultsPopupResult(popup, word, result);
-    _resultsPopupPos(popup, rect);
-  });
-});
-
-document.addEventListener('mouseout', (e) => {
-  if (!e.target.classList.contains('tw')) return;
-  _resultsPopupHideTimer = setTimeout(() => {
-    if (_resultsWordPopup) { _resultsWordPopup.remove(); _resultsWordPopup = null; }
-  }, 120);
-});
-
-// Animate score counter
-(function(){
-  const SCORE = {{ attempt.score }};
-  const TOTAL = 25;
-  const duration = 900;
-  const start = performance.now();
-  function tick(now) {
-    const t = Math.min((now - start) / duration, 1);
-    const eased = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
-    const val = Math.round(eased * SCORE);
-    const el = document.getElementById('scoreDisplay');
-    const correct = document.getElementById('statCorrect');
-    const wrong = document.getElementById('statWrong');
-    const pct = document.getElementById('statPct');
-    if (el) el.textContent = val;
-    if (correct) correct.textContent = val;
-    if (wrong) wrong.textContent = TOTAL - val;
-    if (pct) pct.textContent = Math.round((val / TOTAL) * 100) + '%';
-    if (t < 1) requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
-  // Animate progress bar
-  setTimeout(() => {
-    const bar = document.getElementById('scoreBar');
-    if (bar) bar.style.width = ((SCORE / TOTAL) * 100) + '%';
-  }, 50);
-})();
-</script>
+<script src="/static/js/results.js"></script>
 {% endblock %}
+
+
+
