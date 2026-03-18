@@ -525,6 +525,17 @@ def ensure_support_message_columns(db: Session) -> None:
         print(f"[STARTUP] support_messages column setup skipped/error: {e}")
 
 
+def ensure_promo_codes_table(db: Session) -> None:
+    try:
+        inspector = sql_inspect(engine)
+        if "promo_codes" not in inspector.get_table_names():
+            models.PromoCode.__table__.create(bind=engine, checkfirst=True)
+            print("[STARTUP] Created promo_codes table")
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] promo_codes table setup skipped/error: {e}")
+
+
 def save_contact_attachment(upload: UploadFile) -> tuple[str, str, str]:
     original_name = os.path.basename(upload.filename or "").strip()
     if not original_name:
@@ -734,6 +745,7 @@ async def startup_init():
         ensure_all_user_public_ids(db)
         ensure_contact_attachment_columns(db)
         ensure_support_message_columns(db)
+        ensure_promo_codes_table(db)
         ensure_question_text_fixes(db)
         CONTACT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -2277,6 +2289,33 @@ async def api_admin_update_user(user_id: int, request: Request, db: Session = De
     db.commit()
     print(f"[ADMIN UPDATE] user_id={u.id} duration={data.get('duration_value', data.get('days'))} {data.get('duration_unit', 'days')} status={u.subscription_status} expires={u.expires_at}")
     return JSONResponse({"success": True})
+
+
+@app.post("/api/admin/users/{user_id}/revoke-subscription")
+async def api_admin_revoke_subscription(user_id: int, request: Request, db: Session = Depends(get_db)):
+    admin = get_current_user(request, db)
+    if not admin or not admin.is_admin:
+        return JSONResponse({"error": "Forbidden"}, status_code=403)
+    u = db.query(models.User).filter(models.User.id == user_id).first()
+    if not u:
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    if bool(getattr(u, "is_super_admin", False)):
+        return JSONResponse({"error": "The main admin account is protected"}, status_code=403)
+    if bool(u.is_admin):
+        return JSONResponse({"error": "Admin subscriptions cannot be revoked here"}, status_code=403)
+    if not user_has_access(u):
+        return JSONResponse({"error": "This user has no active subscription"}, status_code=400)
+
+    u.expires_at = datetime.utcnow()
+    u.subscription_status = "free"
+    u.current_period_end = None
+    u.stripe_subscription_id = None
+    db.commit()
+    return JSONResponse({
+        "success": True,
+        "expires_at": u.expires_at.strftime('%d %b %Y %H:%M'),
+        "status": "Expired",
+    })
 
 
 @app.delete("/api/admin/users/{user_id}")

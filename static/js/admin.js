@@ -203,6 +203,35 @@
     } catch (e) { showToast('Connection error', 'error'); }
   }
 
+  async function revokeSubscription(id, name) {
+    if (!confirm(`Are you sure you want to remove ${name}'s subscription?`)) return;
+    try {
+      const res = await fetch(`/api/admin/users/${id}/revoke-subscription`, { method: 'POST' });
+      const data = await res.json();
+      if (!data.success) {
+        showToast(data.error || 'Failed to remove subscription', 'error');
+        return;
+      }
+
+      const row = document.getElementById(`userrow-${id}`);
+      if (row) {
+        const expiresCell = row.querySelector('.user-expires-cell');
+        const statusCell = row.querySelector('.user-status-cell');
+        const revokeBtn = row.querySelector('.user-revoke-btn');
+        if (expiresCell) {
+          expiresCell.textContent = data.expires_at || 'Expired';
+        }
+        if (statusCell) {
+          statusCell.innerHTML = '<span class="badge-red">Expired</span>';
+        }
+        revokeBtn?.remove();
+      }
+      showToast('Subscription removed', 'success');
+    } catch (e) {
+      showToast('Connection error', 'error');
+    }
+  }
+
   function openResetModal(id, name) {
     document.getElementById('resetUserId').value = id;
     document.getElementById('resetUserName').textContent = name;
@@ -294,7 +323,13 @@
           expires_at: expiresAt || null
         })
       });
-      const data = await res.json();
+      const raw = await res.text();
+      let data = {};
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        data = { error: raw || 'Unexpected server response' };
+      }
       if (data.success) {
         msg.style.display = 'block';
         msg.style.background = 'var(--correct-bg)';
@@ -302,7 +337,30 @@
         msg.style.border = '1px solid var(--correct)';
         msg.textContent = `Promo code created: ${data.code}`;
         showToast(`Promo code created: ${data.code}`, 'success');
-        window.setTimeout(() => window.location.reload(), 700);
+        const emptyState = document.getElementById('promoEmptyState');
+        const promoTable = document.getElementById('promoCodesTable');
+        const promoTbody = document.getElementById('promoCodesTbody');
+        if (emptyState) emptyState.style.display = 'none';
+        if (promoTable) promoTable.style.display = '';
+        if (promoTbody) {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td style="font-weight:700;letter-spacing:0.05em;">${data.code}</td>
+            <td>${durationDays} days</td>
+            <td>0${maxUsesRaw ? `/${maxUsesRaw}` : ' / unlimited'}</td>
+            <td style="color:var(--text-muted);font-size:0.82rem;">${expiresAt || 'No expiry'}</td>
+            <td><span class="badge-green">Active</span></td>
+          `;
+          promoTbody.prepend(row);
+        }
+        const tabPromos = document.getElementById('tabPromos');
+        if (tabPromos) {
+          const current = parseInt((tabPromos.textContent.match(/\((\d+)\)/) || [])[1] || '0', 10);
+          tabPromos.textContent = `Promo Codes (${current + 1})`;
+        }
+        document.getElementById('promoDurationDays').value = '30';
+        document.getElementById('promoMaxUses').value = '';
+        document.getElementById('promoExpiresAt').value = '';
       } else {
         msg.style.display = 'block';
         msg.style.background = 'var(--wrong-bg)';
@@ -315,7 +373,7 @@
       msg.style.background = 'var(--wrong-bg)';
       msg.style.color = 'var(--wrong)';
       msg.style.border = '1px solid var(--wrong)';
-      msg.textContent = 'Connection error';
+      msg.textContent = e?.message ? `Connection error: ${e.message}` : 'Connection error';
     }
     btn.disabled = false;
     btn.textContent = 'Generate Promo Code';
@@ -375,6 +433,13 @@
 
   document.querySelectorAll('.user-delete-btn').forEach((btn) => {
     btn.addEventListener('click', () => deleteUser(
+      Number(btn.dataset.userId),
+      parseJsonDataset(btn.dataset.userName, '')
+    ));
+  });
+
+  document.querySelectorAll('.user-revoke-btn').forEach((btn) => {
+    btn.addEventListener('click', () => revokeSubscription(
       Number(btn.dataset.userId),
       parseJsonDataset(btn.dataset.userName, '')
     ));
