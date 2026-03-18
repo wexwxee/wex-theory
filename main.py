@@ -2,6 +2,7 @@ import json
 import os
 import re
 import secrets
+from collections import defaultdict, deque
 import traceback
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -32,7 +33,9 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="WEX Theory")
 AUTH_COOKIE_NAME = "token"
+CSRF_COOKIE_NAME = "csrf_token"
 AUTH_COOKIE_MAX_AGE = 86400 * 30
+CSRF_COOKIE_MAX_AGE = 86400 * 30
 PUBLIC_ID_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 BASE_DIR = Path(__file__).resolve().parent
 CONTACT_UPLOAD_DIR = BASE_DIR / "uploads" / "contact"
@@ -59,6 +62,17 @@ TEMP_EMAIL_DOMAINS = {
 }
 EMAIL_REGEX = re.compile(r"^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}$", re.IGNORECASE)
 VERIFICATION_EMAIL_SENDER = "WEXTheory <no-reply@mail.wextheory.cv>"
+RATE_LIMIT_BUCKETS: dict[str, deque] = defaultdict(deque)
+RATE_LIMIT_CONFIG = {
+    "auth_login": (8, 300),
+    "auth_register": (5, 3600),
+    "auth_register_verify": (12, 900),
+    "auth_forgot_password": (5, 3600),
+    "auth_reset_password": (8, 1800),
+    "google_login": (10, 600),
+    "contact_submit": (6, 1800),
+    "support_reply": (30, 300),
+}
 
 
 def _env_flag(name: str, default: bool = False) -> bool:
@@ -101,6 +115,62 @@ def clear_auth_cookie(response, request: Optional[Request] = None) -> None:
     )
 
 
+def set_csrf_cookie(response, token: str, request: Optional[Request] = None) -> None:
+    response.set_cookie(
+        key=CSRF_COOKIE_NAME,
+        value=token,
+        httponly=False,
+        max_age=CSRF_COOKIE_MAX_AGE,
+        expires=CSRF_COOKIE_MAX_AGE,
+        samesite="lax",
+        secure=_cookie_secure(request),
+        path="/",
+    )
+
+
+def get_client_ip(request: Request) -> str:
+    forwarded_for = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip()
+    if forwarded_for:
+        return forwarded_for
+    client = request.client.host if request.client else ""
+    return client or "unknown"
+
+
+def check_rate_limit(
+    request: Request,
+    scope: str,
+    *,
+    message: str,
+    redirect_to: Optional[str] = None,
+    redirect_param: str = "error",
+) -> Optional[JSONResponse | RedirectResponse]:
+    limit, window_seconds = RATE_LIMIT_CONFIG[scope]
+    now = datetime.utcnow().timestamp()
+    key = f"{scope}:{get_client_ip(request)}"
+    bucket = RATE_LIMIT_BUCKETS[key]
+    while bucket and now - bucket[0] > window_seconds:
+        bucket.popleft()
+    if len(bucket) >= limit:
+        if redirect_to:
+            separator = "&" if "?" in redirect_to else "?"
+            return RedirectResponse(f"{redirect_to}{separator}{redirect_param}={quote(message)}", status_code=302)
+        return JSONResponse({"error": message}, status_code=429)
+    bucket.append(now)
+    return None
+
+
+def get_or_create_csrf_token(request: Request) -> str:
+    token = (request.cookies.get(CSRF_COOKIE_NAME) or "").strip()
+    return token or secrets.token_urlsafe(32)
+
+
+def is_same_origin_request(request: Request) -> bool:
+    origin = (request.headers.get("origin") or "").strip()
+    if not origin:
+        return True
+    return origin.rstrip("/") == get_request_base_url(request).rstrip("/")
+
+
 def _new_public_user_id() -> str:
     return "WEX-" + "".join(secrets.choice(PUBLIC_ID_ALPHABET) for _ in range(8))
 
@@ -114,6 +184,10 @@ def _clean_env_value(name: str, default: str = "") -> str:
     if value is None:
         return ""
     return str(value).strip().strip('"').strip("'").strip()
+
+
+BOOTSTRAP_ADMIN_PASSWORD = _clean_env_value("BOOTSTRAP_ADMIN_PASSWORD")
+ADMIN_SETUP_TOKEN = _clean_env_value("ADMIN_SETUP_TOKEN")
 
 
 def get_public_base_url(request: Optional[Request] = None) -> str:
@@ -520,12 +594,23 @@ app.add_middleware(
 
 @app.middleware("http")
 async def refresh_auth_session(request: Request, call_next):
+    if request.method.upper() not in {"GET", "HEAD", "OPTIONS"} and request.url.path not in {"/stripe/webhook", "/api/stripe/webhook"}:
+        cookie_token = (request.cookies.get(CSRF_COOKIE_NAME) or "").strip()
+        header_token = (request.headers.get("x-csrf-token") or "").strip()
+        if not cookie_token or not header_token or cookie_token != header_token or not is_same_origin_request(request):
+            return JSONResponse({"error": "CSRF validation failed"}, status_code=403)
+
     response = await call_next(request)
     token = request.cookies.get(AUTH_COOKIE_NAME)
     payload = decode_token(token) if token else None
     if payload and payload.get("sub") and request.url.path not in {"/api/auth/logout", "/logout"}:
         refreshed = create_token(int(payload["sub"]))
         set_auth_cookie(response, refreshed, request)
+    set_csrf_cookie(response, get_or_create_csrf_token(request), request)
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
     return response
 
 # ─── Google OAuth ──────────────────────────────────────────────────────────────
@@ -600,19 +685,18 @@ async def startup_init():
             old_admin = db.query(models.User).filter(models.User.email == "admin@wex.com").first()
             if old_admin:
                 old_admin.email = _admin_email
-                old_admin.password_hash = hash_password("fruktozik22")
                 old_admin.expires_at = datetime.utcnow() + timedelta(days=3650)
                 old_admin.is_admin = True
                 old_admin.is_super_admin = True
                 old_admin.subscription_status = "active"
                 db.commit()
                 print(f"[STARTUP] Admin migrated: admin@wex.com → {_admin_email}")
-            else:
+            elif BOOTSTRAP_ADMIN_PASSWORD:
                 u = models.User(
                     name="Admin",
                     public_id=generate_unique_public_user_id(db),
                     email=_admin_email,
-                    password_hash=hash_password("fruktozik22"),
+                    password_hash=hash_password(BOOTSTRAP_ADMIN_PASSWORD),
                     created_at=datetime.utcnow(),
                     expires_at=datetime.utcnow() + timedelta(days=3650),
                     is_admin=True,
@@ -621,11 +705,13 @@ async def startup_init():
                 )
                 db.add(u)
                 db.commit()
-                print(f"[STARTUP] Admin created: {_admin_email}")
+                print(f"[STARTUP] Admin created from BOOTSTRAP_ADMIN_PASSWORD: {_admin_email}")
+            else:
+                print(f"[STARTUP] Super admin {_admin_email} not found and BOOTSTRAP_ADMIN_PASSWORD is not set")
         else:
-            # Ensure existing admin has correct password and subscription
-            existing.password_hash = hash_password("fruktozik22")
+            # Ensure existing admin keeps elevated access without forcing a password reset
             existing.subscription_status = "active"
+            existing.expires_at = max(existing.expires_at, datetime.utcnow() + timedelta(days=3650))
             existing.is_admin = True
             existing.is_super_admin = True
             db.commit()
@@ -649,11 +735,13 @@ templates = Jinja2Templates(directory="templates")
 # ─── One-time setup endpoint ───────────────────────────────────────────────────
 
 @app.get("/setup-admin-xk92")
-async def setup_admin(db: Session = Depends(get_db)):
+async def setup_admin(request: Request, db: Session = Depends(get_db)):
+    token = str(request.query_params.get("token", "")).strip()
+    if not ADMIN_SETUP_TOKEN or token != ADMIN_SETUP_TOKEN:
+        raise HTTPException(status_code=404, detail="Not found")
     _admin_email = PRIMARY_SUPER_ADMIN_EMAIL
     existing = db.query(models.User).filter(models.User.email == _admin_email).first()
     if existing:
-        existing.password_hash = hash_password("fruktozik22")
         existing.expires_at = datetime.utcnow() + timedelta(days=3650)
         existing.is_admin = True
         existing.is_super_admin = True
@@ -661,11 +749,13 @@ async def setup_admin(db: Session = Depends(get_db)):
         db.commit()
         ensure_primary_super_admin(db)
         return {"status": "updated", "email": _admin_email, "id": existing.id}
+    if not BOOTSTRAP_ADMIN_PASSWORD:
+        return JSONResponse({"error": "BOOTSTRAP_ADMIN_PASSWORD is required to create the first admin"}, status_code=400)
     u = models.User(
         name="Admin",
         public_id=generate_unique_public_user_id(db),
         email=_admin_email,
-        password_hash=hash_password("fruktozik22"),
+        password_hash=hash_password(BOOTSTRAP_ADMIN_PASSWORD),
         created_at=datetime.utcnow(),
         expires_at=datetime.utcnow() + timedelta(days=3650),
         is_admin=True,
@@ -682,6 +772,15 @@ async def setup_admin(db: Session = Depends(get_db)):
 
 @app.get("/auth/google")
 async def google_login(request: Request):
+    limited = check_rate_limit(
+        request,
+        "google_login",
+        message="too_many_google_attempts",
+        redirect_to="/login",
+        redirect_param="google_error",
+    )
+    if limited:
+        return limited
     if not _google_client_id:
         return RedirectResponse("/login?error=google_not_configured", status_code=302)
     base_url = get_request_base_url(request)
@@ -884,6 +983,13 @@ async def expired_page(request: Request):
 
 @app.post("/api/auth/register")
 async def api_register(request: Request, db: Session = Depends(get_db)):
+    limited = check_rate_limit(
+        request,
+        "auth_register",
+        message="Too many registration attempts. Please try again later.",
+    )
+    if limited:
+        return limited
     try:
         data = await request.json()
         print(f"[REGISTER] received: name={data.get('name')} email={data.get('email')}")
@@ -956,6 +1062,13 @@ async def api_register(request: Request, db: Session = Depends(get_db)):
 
 @app.post("/api/auth/register/verify")
 async def api_register_verify(request: Request, db: Session = Depends(get_db)):
+    limited = check_rate_limit(
+        request,
+        "auth_register_verify",
+        message="Too many verification attempts. Please wait a moment and try again.",
+    )
+    if limited:
+        return limited
     try:
         data = await request.json()
         email = str(data.get("email", "")).strip().lower()
@@ -982,6 +1095,13 @@ async def api_register_verify(request: Request, db: Session = Depends(get_db)):
 
 @app.post("/api/auth/forgot-password")
 async def api_forgot_password(request: Request, db: Session = Depends(get_db)):
+    limited = check_rate_limit(
+        request,
+        "auth_forgot_password",
+        message="Too many reset requests. Please try again later.",
+    )
+    if limited:
+        return limited
     try:
         data = await request.json()
         email = str(data.get("email", "")).strip().lower()
@@ -1039,6 +1159,13 @@ async def api_forgot_password(request: Request, db: Session = Depends(get_db)):
 
 @app.post("/api/auth/reset-password")
 async def api_reset_password(request: Request, db: Session = Depends(get_db)):
+    limited = check_rate_limit(
+        request,
+        "auth_reset_password",
+        message="Too many password reset attempts. Please try again later.",
+    )
+    if limited:
+        return limited
     try:
         data = await request.json()
         email = str(data.get("email", "")).strip().lower()
@@ -1083,6 +1210,13 @@ async def verify_email_link(email: str, code: str, request: Request, db: Session
 
 @app.post("/api/auth/login")
 async def api_login(request: Request, db: Session = Depends(get_db)):
+    limited = check_rate_limit(
+        request,
+        "auth_login",
+        message="Too many login attempts. Please wait a few minutes and try again.",
+    )
+    if limited:
+        return limited
     try:
         data = await request.json()
         email    = str(data.get("email", "")).strip().lower()
@@ -1732,6 +1866,13 @@ async def saved_questions_page(request: Request, db: Session = Depends(get_db)):
 
 @app.post("/api/contact")
 async def api_contact(request: Request, db: Session = Depends(get_db)):
+    limited = check_rate_limit(
+        request,
+        "contact_submit",
+        message="Too many messages sent. Please try again later.",
+    )
+    if limited:
+        return limited
     try:
         form = await request.form()
         attachment = form.get("attachment")
@@ -1794,6 +1935,13 @@ async def api_contact(request: Request, db: Session = Depends(get_db)):
 
 @app.post("/api/support/threads/{thread_id}/reply")
 async def api_support_reply(thread_id: int, request: Request, db: Session = Depends(get_db)):
+    limited = check_rate_limit(
+        request,
+        "support_reply",
+        message="Too many messages sent. Please wait a moment.",
+    )
+    if limited:
+        return limited
     user = get_current_user(request, db)
     if not user:
         return RedirectResponse("/login", status_code=302)

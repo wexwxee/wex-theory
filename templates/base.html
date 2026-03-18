@@ -212,6 +212,42 @@
   window.WEX_SUPPORT_UNREAD_URL = {% if user is defined and user %}{{ ('/api/support/threads-data?scope=admin' if user.is_admin else '/api/support/threads-data') | tojson }}{% else %}null{% endif %};
   window.WEX_SUPPORT_BANNER_MODE = {% if user is defined and user and user.is_admin %}"admin"{% elif user is defined and user %}"user"{% else %}null{% endif %};
   window.WEX_SUPPORT_TARGET_URL = {% if user is defined and user %}{{ ('/support' if user.is_admin else '/messages') | tojson }}{% else %}null{% endif %};
+  window.WEX_CSRF_COOKIE_NAME = 'csrf_token';
+
+  function getCookieValue(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return '';
+  }
+  window.getCookieValue = getCookieValue;
+
+  (function() {
+    const nativeFetch = window.fetch.bind(window);
+    window.fetch = function(resource, options) {
+      const opts = options ? { ...options } : {};
+      const method = String((opts.method || 'GET')).toUpperCase();
+      const rawUrl = typeof resource === 'string' ? resource : (resource && resource.url) || '';
+      let sameOrigin = false;
+      try {
+        const resolved = new URL(rawUrl || window.location.href, window.location.origin);
+        sameOrigin = resolved.origin === window.location.origin;
+      } catch (e) {}
+
+      if (sameOrigin && !['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+        const headers = new Headers(opts.headers || (resource instanceof Request ? resource.headers : undefined) || {});
+        const csrfToken = getCookieValue(window.WEX_CSRF_COOKIE_NAME);
+        if (csrfToken && !headers.has('X-CSRF-Token')) {
+          headers.set('X-CSRF-Token', csrfToken);
+        }
+        opts.headers = headers;
+        if (!opts.credentials) {
+          opts.credentials = 'same-origin';
+        }
+      }
+      return nativeFetch(resource, opts);
+    };
+  })();
   // Theme init — icons driven by CSS [data-theme] selector, no JS text update needed
   (function(){
     const t = localStorage.getItem('wex-theme') || 'dark';

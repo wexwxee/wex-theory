@@ -1,11 +1,15 @@
 import os
+import secrets
 import bcrypt
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
 from fastapi import Request
 from sqlalchemy.orm import Session
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "wex-theory-secret-2026")
+SECRET_KEY = (os.environ.get("SECRET_KEY") or "").strip()
+if not SECRET_KEY:
+    SECRET_KEY = secrets.token_urlsafe(48)
+    print("[SECURITY] SECRET_KEY env is missing. Generated a temporary secret for this boot.")
 ALGORITHM = "HS256"
 
 
