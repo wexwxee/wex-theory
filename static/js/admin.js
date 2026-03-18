@@ -260,12 +260,18 @@
     }
   }
 
+  const userSearch = document.getElementById('userSearch');
+  if (userSearch) {
+    userSearch.value = '';
+    userSearch.setAttribute('autocomplete', 'off');
+  }
+
   document.getElementById('adminBurgerBtn')?.addEventListener('click', sbOpen);
   document.getElementById('navThemeBtn')?.addEventListener('click', toggleTheme);
   document.getElementById('openCreateModalBtn')?.addEventListener('click', openCreateModal);
   document.getElementById('tabUsers')?.addEventListener('click', () => switchTab('users'));
   document.getElementById('tabMessages')?.addEventListener('click', () => switchTab('messages'));
-  document.getElementById('userSearch')?.addEventListener('input', filterUsers);
+  userSearch?.addEventListener('input', filterUsers);
 
   document.querySelectorAll('.user-edit-btn').forEach((btn) => {
     btn.addEventListener('click', () => openEditModal(
