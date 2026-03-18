@@ -1,8 +1,113 @@
 {% extends "base.html" %}
 
-{% block title %}Saved Questions — WEX Theory{% endblock %}
+{% block title %}Saved Questions - WEX Theory{% endblock %}
 
 {% block body %}
+<style>
+  .saved-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .saved-card {
+    padding: 0;
+    overflow: hidden;
+  }
+  .saved-grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.92fr) minmax(0, 1.08fr);
+    gap: 0;
+  }
+  .saved-media {
+    background: #050505;
+    min-height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .saved-media img {
+    width: 100%;
+    height: 100%;
+    min-height: 220px;
+    object-fit: cover;
+    display: block;
+  }
+  .saved-content {
+    padding: 24px;
+  }
+  .saved-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .saved-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .saved-chip i {
+    font-size: 0.78rem;
+  }
+  .saved-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .saved-answer {
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+  }
+  .saved-answer.correct {
+    border: 2px solid #22c55e;
+    background: rgba(34, 197, 94, 0.08);
+    color: #22c55e;
+    font-weight: 600;
+  }
+  .saved-answer.default {
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .saved-empty-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, var(--bg-card), var(--bg));
+    color: var(--text);
+    font-size: 1.35rem;
+  }
+  .saved-remove-btn.loading {
+    opacity: 0.7;
+    pointer-events: none;
+  }
+  @media (max-width: 900px) {
+    .saved-grid {
+      grid-template-columns: 1fr;
+    }
+    .saved-media,
+    .saved-media img {
+      min-height: 200px;
+    }
+  }
+</style>
+
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
@@ -18,41 +123,47 @@
 
 <div class="page">
   <div style="margin-bottom:32px;">
-    <h1 style="font-size:1.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:6px;">🔖 Saved Questions</h1>
-    <p style="color:var(--text-muted);">{{ bookmarks|length }} question{% if bookmarks|length != 1 %}s{% endif %} saved</p>
+    <div class="saved-chip" style="margin-bottom:12px;width:max-content;">
+      <i class="fa-regular fa-bookmark"></i>
+      <span>Saved Questions</span>
+    </div>
+    <h1 style="font-size:1.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:6px;">Review saved questions</h1>
+    <p style="color:var(--text-muted);" id="savedCount">{{ bookmarks|length }} question{% if bookmarks|length != 1 %}s{% endif %} saved</p>
     <p style="color:var(--text-muted);font-size:0.9rem;margin-top:10px;max-width:760px;">Questions you bookmark during a test also appear on the results page, so you can review your answer, the correct answer, and the explanation right after finishing.</p>
   </div>
 
   {% if not bookmarks %}
-  <div class="card" style="text-align:center;padding:60px 24px;">
-    <div style="font-size:3rem;margin-bottom:16px;">🔖</div>
+  <div class="card" style="text-align:center;padding:60px 24px;" id="savedEmptyState">
+    <div class="saved-empty-icon"><i class="fa-regular fa-bookmark"></i></div>
     <div style="font-weight:700;font-size:1.1rem;margin-bottom:8px;">No saved questions yet</div>
     <p style="color:var(--text-muted);margin-bottom:24px;">Bookmark questions while taking a test to review them here.</p>
     <a href="/dashboard" class="btn-primary">Go to Tests</a>
   </div>
   {% else %}
-  <div style="display:flex;flex-direction:column;gap:20px;">
+  <div class="saved-shell" id="savedList">
     {% for bm in bookmarks %}
     {% set q = bm.question %}
-    <div class="card" style="padding:0;overflow:hidden;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
-        <!-- Image -->
-        <div style="background:#000;min-height:200px;display:flex;align-items:center;justify-content:center;">
+    <div class="card saved-card" id="saved-card-{{ q.id }}">
+      <div class="saved-grid">
+        <div class="saved-media">
           {% if q.image_path %}
-          <img src="/test-images/{{ q.image_path }}" alt="" style="width:100%;object-fit:cover;display:block;">
+          <img src="/test-images/{{ q.image_path }}" alt="">
           {% else %}
           <div style="color:#333;font-size:0.8rem;">No image</div>
           {% endif %}
         </div>
-        <!-- Content -->
-        <div style="padding:24px;">
-          <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Question {{ q.question_index }}</div>
+        <div class="saved-content">
+          <div class="saved-meta">
+            <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;">Question {{ q.question_index }}</div>
+            <div class="saved-actions">
+              <button class="btn-ghost btn-sm saved-remove-btn" onclick="removeSavedQuestion({{ q.id }}, this)">Understood</button>
+              <button class="btn-ghost btn-sm saved-remove-btn" onclick="removeSavedQuestion({{ q.id }}, this)">Remove</button>
+            </div>
+          </div>
           <div style="font-weight:600;font-size:0.95rem;line-height:1.5;margin-bottom:16px;">{{ q.question_text }}</div>
           <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
             {% for a in q.answers %}
-            <div style="padding:10px 14px;border-radius:8px;font-size:0.88rem;
-              {% if a.is_correct %}border:2px solid #22c55e;background:rgba(34,197,94,0.08);color:#22c55e;font-weight:600;
-              {% else %}border:1px solid var(--border);color:var(--text-muted);{% endif %}">
+            <div class="saved-answer {% if a.is_correct %}correct{% else %}default{% endif %}">
               {% if a.is_correct %}✓ {% endif %}{{ a.text }}
             </div>
             {% endfor %}
@@ -90,5 +201,38 @@
   const nb = document.getElementById('navThemeBtn');
   if (nb) nb.textContent = t === 'dark' ? '☀️' : '🌙';
 })();
+
+async function removeSavedQuestion(questionId, btn) {
+  if (!questionId || !btn) return;
+  btn.classList.add('loading');
+  btn.disabled = true;
+  const original = btn.textContent;
+  btn.textContent = 'Removing...';
+  try {
+    const res = await fetch(`/api/bookmarks/${questionId}`, { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok || data.bookmarked !== false) {
+      throw new Error(data.error || 'Failed to remove');
+    }
+    const card = document.getElementById(`saved-card-${questionId}`);
+    if (card) card.remove();
+    const list = document.getElementById('savedList');
+    const remaining = list ? list.children.length : 0;
+    const countEl = document.getElementById('savedCount');
+    if (countEl) {
+      countEl.textContent = `${remaining} question${remaining === 1 ? '' : 's'} saved`;
+    }
+    if (remaining === 0) {
+      location.reload();
+      return;
+    }
+    showToast('Removed from saved questions', 'success');
+  } catch (e) {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    btn.textContent = original;
+    showToast(e.message || 'Failed to remove', 'error');
+  }
+}
 </script>
 {% endblock %}
