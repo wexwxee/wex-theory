@@ -93,6 +93,36 @@ def _cookie_secure(request: Optional[Request] = None) -> bool:
     return request.url.scheme == "https"
 
 
+def _session_cookie_secure_default() -> bool:
+    if "SESSION_COOKIE_SECURE" in os.environ:
+        return _env_flag("SESSION_COOKIE_SECURE")
+    base_url = _clean_env_value("BASE_URL")
+    if base_url:
+        return base_url.lower().startswith("https://")
+    render_url = _clean_env_value("RENDER_EXTERNAL_URL")
+    if render_url:
+        return render_url.lower().startswith("https://")
+    return False
+
+
+def build_content_security_policy(request: Request) -> str:
+    # Practical CSP: kept soft on inline scripts/styles because the current template system
+    # still relies on inline blocks across auth pages, dashboard, tests and admin UI.
+    directives = {
+        "default-src": ["'self'"],
+        "base-uri": ["'self'"],
+        "object-src": ["'none'"],
+        "frame-ancestors": ["'self'"],
+        "form-action": ["'self'"],
+        "script-src": ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+        "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
+        "font-src": ["'self'", "data:", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+        "img-src": ["'self'", "data:", "blob:", "https:"],
+        "connect-src": ["'self'", "https://translate.googleapis.com"],
+    }
+    return "; ".join(f"{name} {' '.join(values)}" for name, values in directives.items())
+
+
 def set_auth_cookie(response, token: str, request: Optional[Request] = None) -> None:
     response.set_cookie(
         key=AUTH_COOKIE_NAME,
@@ -587,7 +617,7 @@ app.add_middleware(
     SessionMiddleware,
     secret_key=SECRET_KEY,
     same_site="lax",
-    https_only=_env_flag("SESSION_COOKIE_SECURE", False),
+    https_only=_session_cookie_secure_default(),
     max_age=AUTH_COOKIE_MAX_AGE,
 )
 
@@ -607,10 +637,13 @@ async def refresh_auth_session(request: Request, call_next):
         refreshed = create_token(int(payload["sub"]))
         set_auth_cookie(response, refreshed, request)
     set_csrf_cookie(response, get_or_create_csrf_token(request), request)
+    response.headers.setdefault("Content-Security-Policy", build_content_security_policy(request))
     response.headers.setdefault("X-Frame-Options", "DENY")
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
     response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+    if _cookie_secure(request):
+        response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
     return response
 
 # ─── Google OAuth ──────────────────────────────────────────────────────────────
