@@ -1,6 +1,6 @@
 ﻿{% extends "base.html" %}
 
-{% block title %}Access Overview - WEX Theory{% endblock %}
+{% block title %}Pricing - WEX Theory{% endblock %}
 
 {% block body %}
 <nav>
@@ -23,16 +23,16 @@
 
 <div class="page" style="max-width:920px;margin:0 auto;">
   <div style="text-align:center;padding:60px 0 48px;">
-    <div style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px;">Access Overview</div>
-    <h1 style="font-size:clamp(1.9rem,5vw,3rem);font-weight:800;letter-spacing:-0.03em;margin-bottom:14px;">Choose the study mode that fits your practice</h1>
-    <p style="color:var(--text-muted);font-size:1rem;max-width:620px;margin:0 auto;">WEXTheory is built as a practice platform for Danish driving theory study. Start with the free exam-style test, then move into the full practice library whenever you need a broader training flow.</p>
+    <div style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px;">Pricing</div>
+    <h1 style="font-size:clamp(1.9rem,5vw,3rem);font-weight:800;letter-spacing:-0.03em;margin-bottom:14px;">Simple access for Danish theory practice</h1>
+    <p style="color:var(--text-muted);font-size:1rem;max-width:620px;margin:0 auto;">Start with Test 1 for free. Unlock the full practice library when you want all 13 tests, answer explanations, saved questions, and progress tracking.</p>
   </div>
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:28px;">
     <div class="card" style="padding:32px;">
-      <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:16px;">Starter</div>
-      <div style="font-size:2.1rem;font-weight:800;margin-bottom:4px;">Free Practice</div>
-      <div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:28px;">A simple way to try the platform and the exam format</div>
+      <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:16px;">Free</div>
+      <div style="font-size:2.5rem;font-weight:800;margin-bottom:4px;">0 kr</div>
+      <div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:28px;">Free starter access</div>
       <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
         <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">&#10003;</span> Test 1 without registration</li>
         <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;color:var(--text-muted);"><span>-</span> One full 25-question exam-style test</li>
@@ -43,10 +43,10 @@
     </div>
 
     <div class="card" style="padding:32px;border:2px solid var(--text);position:relative;">
-      <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);font-size:0.72rem;font-weight:700;padding:4px 14px;border-radius:999px;text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap;">Practice Library</div>
-      <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:16px;">Extended Study Mode</div>
-      <div style="font-size:2.1rem;font-weight:800;margin-bottom:4px;">Full Library Access</div>
-      <div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:28px;">For learners who want the full set of tests, review tools and saved progress</div>
+      <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);font-size:0.72rem;font-weight:700;padding:4px 14px;border-radius:999px;text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap;">Full Access</div>
+      <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:16px;">Premium</div>
+      <div style="font-size:2.5rem;font-weight:800;margin-bottom:4px;">99 kr</div>
+      <div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:28px;">30 days of access</div>
       <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
         <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">&#10003;</span> All 13 official practice tests</li>
         <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">&#10003;</span> 325 questions with road photos</li>
@@ -57,8 +57,8 @@
       {% if user and has_access %}
       <div style="text-align:center;padding:8px 0;color:var(--correct);font-size:0.9rem;font-weight:600;">&#10003; Active{% if access_expires_at %} &middot; valid until {{ access_expires_at.strftime('%d %b %Y') }}{% endif %}</div>
       {% else %}
-      <a href="#" id="pricingPurchaseBtn" data-plan="Practice Library" data-amount="Access request" data-duration="Extended access" class="btn-primary" style="width:100%;text-align:center;display:block;">{% if user and user.subscription_status != 'free' %}Review Access Options{% else %}Open Access Options{% endif %}</a>
-      <div style="text-align:center;margin-top:10px;font-size:0.82rem;color:var(--text-muted);">The next step opens the existing account-linked access request flow.</div>
+      <a href="#" id="pricingPurchaseBtn" data-plan="Premium" data-amount="99 kr" data-duration="30 days" class="btn-primary" style="width:100%;text-align:center;display:block;">{% if user and user.subscription_status != 'free' %}Renew Access{% else %}Unlock Full Access{% endif %}</a>
+      <div style="text-align:center;margin-top:10px;font-size:0.82rem;color:var(--text-muted);">Telegram opens with a ready-to-send access request, including your user ID.</div>
       {% endif %}
     </div>
   </div>
@@ -75,7 +75,7 @@
       </div>
       <div>
         <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Activation</div>
-        <div style="font-weight:700;">Account-linked access handled through the current request flow</div>
+        <div style="font-weight:700;">Manual activation after Telegram request</div>
       </div>
     </div>
   </div>
@@ -84,16 +84,16 @@
     <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:20px;text-align:center;">Common Questions</h2>
     <div style="display:flex;flex-direction:column;gap:12px;">
       <div class="card" style="padding:20px 24px;">
-        <div style="font-weight:600;margin-bottom:6px;">What is included in the full practice library?</div>
-        <div style="color:var(--text-muted);font-size:0.9rem;">It includes all 13 tests, 325 questions, review explanations, saved questions, and test history inside your account.</div>
+        <div style="font-weight:600;margin-bottom:6px;">What is included in full access?</div>
+        <div style="color:var(--text-muted);font-size:0.9rem;">You get all 13 tests, 325 questions, review explanations, saved questions, and your test history.</div>
       </div>
       <div class="card" style="padding:20px 24px;">
-        <div style="font-weight:600;margin-bottom:6px;">Can I try the platform first?</div>
-        <div style="color:var(--text-muted);font-size:0.9rem;">Yes. Test 1 is available for free without registration, so you can see the format before deciding whether you need the larger library.</div>
+        <div style="font-weight:600;margin-bottom:6px;">Can I try the site before paying?</div>
+        <div style="color:var(--text-muted);font-size:0.9rem;">Yes. Test 1 is free and works without registration, so you can see the format before creating an account.</div>
       </div>
       <div class="card" style="padding:20px 24px;">
-        <div style="font-weight:600;margin-bottom:6px;">How does access setup work?</div>
-        <div style="color:var(--text-muted);font-size:0.9rem;">Use the access button and follow the account-linked setup flow. Your account is then updated for the selected access period.</div>
+        <div style="font-weight:600;margin-bottom:6px;">How does activation work?</div>
+        <div style="color:var(--text-muted);font-size:0.9rem;">Use the access button, send the prepared Telegram message, and your account can then be activated for the selected period.</div>
       </div>
     </div>
   </div>
