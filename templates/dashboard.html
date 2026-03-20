@@ -50,6 +50,48 @@
     border-color: rgba(239, 68, 68, 0.35);
     background: linear-gradient(180deg, rgba(239, 68, 68, 0.08), var(--bg-card));
   }
+  .dashboard-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 36px;
+  }
+  .dashboard-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 36px;
+  }
+  @media (max-width: 900px) {
+    .dashboard-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 640px) {
+    .dashboard-head {
+      margin-bottom: 24px;
+    }
+    .dashboard-actions {
+      width: 100%;
+    }
+    .dashboard-actions a {
+      flex: 1 1 calc(50% - 6px);
+      justify-content: center;
+    }
+    .dashboard-stats {
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+  }
 </style>
 <nav>
   <div class="nav-inner">
@@ -65,7 +107,7 @@
 </nav>
 
 <div class="page">
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:36px;">
+  <div class="dashboard-head">
     <div>
       <h1 style="font-size:1.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:6px;">My Tests</h1>
       {% if user.is_admin %}
@@ -103,7 +145,7 @@
         {% endif %}
       {% endif %}
     </div>
-    <div style="display:flex;gap:10px;align-items:center;">
+    <div class="dashboard-actions">
       <a href="/profile" class="btn-ghost btn-sm">History</a>
       <a href="/saved" class="btn-ghost btn-sm saved-pill"><i class="fa-solid fa-bookmark"></i><span>Saved</span></a>
       {% if not user.is_admin and not has_access %}
@@ -112,7 +154,7 @@
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:36px;">
+  <div class="dashboard-stats">
     <div class="card" style="padding:20px;text-align:center;">
       <div style="font-size:2rem;font-weight:800;line-height:1;">{{ completed }}</div>
       <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">Completed</div>

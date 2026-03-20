@@ -3,6 +3,41 @@
 {% block title %}Activate Promo Code - WEX Theory{% endblock %}
 
 {% block body %}
+<style>
+  .promo-shell {
+    max-width: 780px;
+    margin: 0 auto;
+  }
+  .promo-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+  .promo-form-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  @media (max-width: 640px) {
+    .promo-shell {
+      max-width: 100%;
+    }
+    .promo-head .btn-ghost {
+      width: 100%;
+      justify-content: center;
+    }
+    .promo-form-row {
+      flex-direction: column;
+    }
+    .promo-form-row input,
+    .promo-form-row button {
+      width: 100%;
+    }
+  }
+</style>
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
@@ -17,8 +52,8 @@
 </nav>
 
 <div class="page">
-  <div style="max-width:780px;margin:0 auto;">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px;">
+  <div class="promo-shell">
+    <div class="promo-head">
       <div>
         <h1 style="font-size:1.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:8px;">Activate Promo Code</h1>
         <p style="color:var(--text-muted);max-width:560px;line-height:1.7;">Enter a valid promo code to add more access time to your account. If you already have access, the new days will be added on top.</p>
@@ -29,7 +64,7 @@
     <div class="card" style="padding:24px;margin-bottom:16px;">
       <div style="font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;">Promo Code</div>
       <div id="promoRedeemMsg" style="display:none;padding:10px 12px;border-radius:10px;font-size:0.84rem;margin-bottom:12px;"></div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <div class="promo-form-row">
         <input type="text" id="promoCodeInput" placeholder="Enter promo code" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1;min-width:220px;">
         <button class="btn-primary" id="promoRedeemBtn" type="button">Activate</button>
       </div>
