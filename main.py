@@ -1764,8 +1764,12 @@ async def overview_page(test_id: int, request: Request, db: Session = Depends(ge
 
 
 @app.get("/results/free", response_class=HTMLResponse)
-async def free_results_page(request: Request):
-    return templates.TemplateResponse("results_free.html", {"request": request})
+async def free_results_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    return templates.TemplateResponse("results_free.html", {
+        "request": request,
+        "user": user,
+    })
 
 
 @app.get("/test/{test_id}/results/{attempt_id}", response_class=HTMLResponse)

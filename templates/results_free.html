@@ -8,16 +8,21 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css?v=20260317-menufix">
 </head>
-<body>
+<body data-is-authenticated="{% if user %}true{% else %}false{% endif %}">
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <a href="/" class="logo">WEXTheory</a>
+      <a href="{% if user %}/dashboard{% else %}/{% endif %}" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
       <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
+      {% if user %}
+      <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
+      <a href="/profile" class="btn-primary btn-sm">{{ user.name }}</a>
+      {% else %}
       <a href="/login" class="btn-ghost btn-sm">Sign In</a>
       <a href="/register" class="btn-primary btn-sm">Create Account</a>
+      {% endif %}
     </div>
   </div>
 </nav>
