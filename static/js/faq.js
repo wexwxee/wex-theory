@@ -2,7 +2,7 @@
   const faqs = [
     {
       q: 'What is included in full access?',
-      a: 'Full access includes all 13 practice tests, 325 questions, explanations after the test, saved questions, and your progress history.'
+      a: 'The full practice library includes all 13 structured tests, 325 questions, explanations after each test, saved questions, and your progress history.'
     },
     {
       q: 'How many questions are in each test?',
@@ -10,15 +10,15 @@
     },
     {
       q: 'Do I need an account?',
-      a: 'You do not need an account for Test 1. You need an account for premium tests, saved progress, and support messages.'
+      a: 'You do not need an account for Starter Test 0. You need an account for the main practice library, saved progress, and support messages.'
     },
     {
       q: 'What is free?',
-      a: 'Test 1 is free and can be opened without registration. Premium access is needed for Tests 2 to 13.'
+      a: 'Starter Test 0 is free and can be opened without registration. The 13 main practice tests are available through account access.'
     },
     {
-      q: 'How does the subscription work?',
-      a: 'Full access is activated for a fixed access period. When that period ends, premium tests lock again until you renew.'
+      q: 'How does access work?',
+      a: 'Extended access is activated for a fixed access period. When that period ends, the main practice library locks again until access is renewed.'
     },
     {
       q: 'What if the verification email does not arrive?',

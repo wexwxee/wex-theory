@@ -97,15 +97,15 @@
   window.doLogout = doLogout;
 
   function buildTelegramPurchaseMessage(options = {}) {
-    const plan = options.plan || 'Premium';
-    const amount = options.amount || '99 kr';
+    const plan = options.plan || 'Practice Library';
+    const amount = options.amount || 'Access request';
     const duration = options.duration || '30 days';
     const orderId = 'REQ-' + Date.now().toString().slice(-10) + '-' + Math.floor(100 + Math.random() * 900);
     const user = window.wexPurchaseUser;
     return {
       orderId,
       text: [
-        'Hello! I want to buy access for WEXTheory.',
+        'Hello! I would like to request access for WEXTheory.',
         '',
         `User ID: ${user.public_id}`,
         `Order ID: ${orderId}`,
@@ -127,11 +127,11 @@
 
     const payload = buildTelegramPurchaseMessage(options);
     const confirmed = confirm(
-      'Open Telegram and copy a ready payment message?\n\n' +
+      'Open Telegram and copy a ready access message?\n\n' +
       `User ID: ${window.wexPurchaseUser.public_id}\n` +
       `Order ID: ${payload.orderId}\n` +
-      `Plan: ${options.plan || 'Premium'}\n` +
-      `Amount: ${options.amount || '99 kr'}`
+      `Plan: ${options.plan || 'Practice Library'}\n` +
+      `Amount: ${options.amount || 'Access request'}`
     );
     if (!confirmed) return false;
 

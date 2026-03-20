@@ -156,7 +156,7 @@
   <div class="nav-inner">
     <div class="nav-left">
       <button class="burger-btn" id="testBurgerBtn">&#9776;</button>
-      <a href="/dashboard" class="back-btn" title="Back to Dashboard">
+      <a href="{% if user %}/dashboard{% else %}/{% endif %}" class="back-btn" title="{% if user %}Back to Dashboard{% else %}Back to Home{% endif %}">
         <span class="back-arrow">&#8592;</span><span class="back-label"> Tests</span>
       </a>
       <span class="nav-test-title" id="navTestTitle">{{ test.title }}</span>
@@ -182,7 +182,7 @@
   <div id="errorState" style="display:none;text-align:center;padding:80px 0;">
     <div style="font-size:1.2rem;font-weight:700;margin-bottom:12px;">Unable to load test</div>
     <div style="color:var(--text-muted);margin-bottom:24px;" id="errorMsg">Please try again.</div>
-    <a href="/dashboard" class="btn-ghost">Back to Dashboard</a>
+    <a href="{% if user %}/dashboard{% else %}/{% endif %}" class="btn-ghost">{% if user %}Back to Dashboard{% else %}Back to Home{% endif %}</a>
   </div>
 
   <div id="questionArea" style="display:none;">

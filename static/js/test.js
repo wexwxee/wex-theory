@@ -1,6 +1,7 @@
 ﻿const testContainer = document.getElementById('testContainer');
 const TEST_ID = Number(testContainer?.dataset.testId || 0);
 const IS_AUTHENTICATED = testContainer?.dataset.isAuthenticated === 'true';
+const FREE_SAMPLE_TEST_ID = 0;
 
 let questions = [];
 let currentIndex = 0;
@@ -22,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('finishModalCloseBtn')?.addEventListener('click', closeFinishModal);
   document.getElementById('finishKeepGoingBtn')?.addEventListener('click', closeFinishModal);
   document.getElementById('submitBtn')?.addEventListener('click', () => submitTest());
-  if (TEST_ID !== 1 && !IS_AUTHENTICATED) {
+  if (TEST_ID !== FREE_SAMPLE_TEST_ID && !IS_AUTHENTICATED) {
     window.location.href = '/login';
     return;
   }
@@ -336,17 +337,22 @@ async function submitTest(auto = false) {
   if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
 
   try {
-    // For unauthenticated test 1, use free check
-    if (!IS_AUTHENTICATED && TEST_ID === 1) {
+    // Starter sample uses the free results flow for all users
+    if (TEST_ID === FREE_SAMPLE_TEST_ID) {
       const answers = {};
       questions.forEach(q => { answers[q.id] = selectedAnswers[q.id] || []; });
-      const res = await fetch('/api/tests/1/check/free', {
+      const res = await fetch('/api/tests/0/check/free', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ answers })
       });
       const data = await res.json();
-      sessionStorage.setItem('freeResult', JSON.stringify({ data, questions, selectedAnswers }));
+      sessionStorage.setItem('freeResult', JSON.stringify({
+        data,
+        questions,
+        selectedAnswers,
+        testMeta: { id: FREE_SAMPLE_TEST_ID, title: 'Test 0', total: questions.length }
+      }));
       window.location.href = '/results/free';
       return;
     }

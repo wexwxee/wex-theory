@@ -5,7 +5,7 @@
     event.preventDefault();
     const button = event.currentTarget;
     openTelegramPurchase({
-      plan: button.dataset.plan || 'Premium',
+      plan: button.dataset.plan || 'Practice Library',
       amount: button.dataset.amount || '99 kr',
       duration: button.dataset.duration || '30 days'
     });

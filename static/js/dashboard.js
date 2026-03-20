@@ -12,7 +12,7 @@
       const now = new Date();
       const diff = Math.floor((exp - now) / 1000);
       if (diff <= 0) {
-        el.textContent = 'Your premium access has ended.';
+        el.textContent = 'Your extended access has ended.';
         el.style.color = '#ef4444';
         return;
       }

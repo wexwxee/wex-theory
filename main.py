@@ -6,6 +6,7 @@ from collections import defaultdict, deque
 import traceback
 from pathlib import Path
 from datetime import datetime, timedelta
+from types import SimpleNamespace
 from typing import Optional
 from urllib.parse import urlencode, quote
 from fastapi import FastAPI, Request, Depends, HTTPException, Header, UploadFile
@@ -900,6 +901,58 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 templates = Jinja2Templates(directory="templates")
 templates.env.globals["asset_version"] = "20260318-adminflow-fix"
 
+FREE_SAMPLE_TEST_ID = 0
+FREE_SAMPLE_TEST_TITLE = "Test 0"
+FREE_SAMPLE_TEST_DESCRIPTION = "Starter sample with 15 fixed practice questions."
+FREE_SAMPLE_QUESTION_MAP = [
+    (1, 1),
+    (2, 3),
+    (3, 5),
+    (4, 7),
+    (5, 9),
+    (6, 11),
+    (7, 13),
+    (8, 15),
+    (9, 17),
+    (10, 19),
+    (11, 21),
+    (12, 23),
+    (13, 25),
+    (4, 12),
+    (9, 6),
+]
+
+
+def is_free_sample_test(test_id: int) -> bool:
+    return test_id == FREE_SAMPLE_TEST_ID
+
+
+def build_free_sample_test():
+    return SimpleNamespace(
+        id=FREE_SAMPLE_TEST_ID,
+        title=FREE_SAMPLE_TEST_TITLE,
+        description=FREE_SAMPLE_TEST_DESCRIPTION,
+    )
+
+
+def get_free_sample_questions(db: Session):
+    questions = []
+    for idx, (test_id, question_index) in enumerate(FREE_SAMPLE_QUESTION_MAP, start=1):
+        q = (
+            db.query(models.Question)
+            .options(selectinload(models.Question.answers))
+            .filter(
+                models.Question.test_id == test_id,
+                models.Question.question_index == question_index,
+            )
+            .first()
+        )
+        if not q:
+            continue
+        q.sample_index = idx
+        questions.append(q)
+    return questions
+
 
 # ─── One-time setup endpoint ───────────────────────────────────────────────────
 
@@ -1449,7 +1502,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
     if not user:
         return RedirectResponse("/login", status_code=302)
 
-    tests = db.query(models.Test).order_by(models.Test.id).all()
+    tests = [build_free_sample_test(), *db.query(models.Test).order_by(models.Test.id).all()]
     finished = db.query(models.UserTestAttempt).filter(
         models.UserTestAttempt.user_id == user.id,
         models.UserTestAttempt.finished_at.isnot(None),
@@ -1461,7 +1514,11 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
             best_scores[a.test_id] = a.score or 0
 
     images: dict[int, str] = {}
+    sample_questions = get_free_sample_questions(db)
+    images[FREE_SAMPLE_TEST_ID] = sample_questions[0].image_path if sample_questions else ""
     for t in tests:
+        if t.id == FREE_SAMPLE_TEST_ID:
+            continue
         q = db.query(models.Question).filter(
             models.Question.test_id == t.id,
             models.Question.question_index == 1
@@ -1628,16 +1685,14 @@ async def admin_page(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/test/1/free", response_class=HTMLResponse)
 async def free_test_page(request: Request, db: Session = Depends(get_db)):
-    return RedirectResponse("/test/1", status_code=302)
+    return RedirectResponse("/test/0", status_code=302)
 
 
 @app.get("/api/tests/1/questions/free")
 async def api_free_questions(db: Session = Depends(get_db)):
-    questions = db.query(models.Question).filter(
-        models.Question.test_id == 1
-    ).order_by(models.Question.question_index).all()
+    questions = get_free_sample_questions(db)
     return [
-        {"id": q.id, "question_index": q.question_index, "question_text": q.question_text,
+        {"id": q.id, "question_index": getattr(q, "sample_index", q.question_index), "question_text": q.question_text,
          "image_path": q.image_path, "answers": [{"id": a.id, "text": a.text} for a in q.answers]}
         for q in questions
     ]
@@ -1648,9 +1703,7 @@ async def api_free_check(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
     user_answers = body.get("answers", {})
 
-    questions = db.query(models.Question).filter(
-        models.Question.test_id == 1
-    ).order_by(models.Question.question_index).all()
+    questions = get_free_sample_questions(db)
 
     results = []
     score = 0
@@ -1661,12 +1714,23 @@ async def api_free_check(request: Request, db: Session = Depends(get_db)):
         if is_correct:
             score += 1
         results.append({
-            "question_id": q.id, "question_index": q.question_index,
+            "question_id": q.id, "question_index": getattr(q, "sample_index", q.question_index),
             "correct_ids": correct_ids, "selected_ids": selected,
             "is_correct": is_correct, "explanation": q.explanation,
             "image_path": q.image_path,
         })
-    return {"score": score, "passed": score >= 20, "total": 25, "results": results}
+    total = len(questions)
+    return {"score": score, "passed": score >= 12, "total": total, "results": results, "test_title": FREE_SAMPLE_TEST_TITLE}
+
+
+@app.get("/api/tests/0/questions/free")
+async def api_free_sample_questions_legacy(db: Session = Depends(get_db)):
+    return await api_free_questions(db)
+
+
+@app.post("/api/tests/0/check/free")
+async def api_free_sample_check(request: Request, db: Session = Depends(get_db)):
+    return await api_free_check(request, db)
 
 
 # ─── Test pages ────────────────────────────────────────────────────────────────
@@ -1674,13 +1738,13 @@ async def api_free_check(request: Request, db: Session = Depends(get_db)):
 @app.get("/test/{test_id}", response_class=HTMLResponse)
 async def test_page(test_id: int, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
-    if test_id != 1:
+    if not is_free_sample_test(test_id):
         if not user:
             return RedirectResponse("/login", status_code=302)
         if not user_has_access(user):
             return RedirectResponse("/subscription-expired" if getattr(user, "subscription_status", "free") != "free" else "/pricing", status_code=302)
 
-    test = db.query(models.Test).filter(models.Test.id == test_id).first()
+    test = build_free_sample_test() if is_free_sample_test(test_id) else db.query(models.Test).filter(models.Test.id == test_id).first()
     if not test:
         raise HTTPException(status_code=404)
     return templates.TemplateResponse("test.html", {"request": request, "user": user, "test": test})
@@ -1691,9 +1755,9 @@ async def overview_page(test_id: int, request: Request, db: Session = Depends(ge
     user = get_current_user(request, db)
     if not user:
         return RedirectResponse("/login", status_code=302)
-    if test_id != 1 and not user_has_access(user):
+    if not is_free_sample_test(test_id) and not user_has_access(user):
         return RedirectResponse("/subscription-expired" if getattr(user, "subscription_status", "free") != "free" else "/pricing", status_code=302)
-    test = db.query(models.Test).filter(models.Test.id == test_id).first()
+    test = build_free_sample_test() if is_free_sample_test(test_id) else db.query(models.Test).filter(models.Test.id == test_id).first()
     if not test:
         raise HTTPException(status_code=404)
     return templates.TemplateResponse("overview.html", {"request": request, "user": user, "test": test})
@@ -1796,17 +1860,25 @@ async def api_tests(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
     if not user:
         return JSONResponse({"error": "Unauthorized"}, status_code=401)
-    tests = db.query(models.Test).order_by(models.Test.id).all()
+    tests = [build_free_sample_test(), *db.query(models.Test).order_by(models.Test.id).all()]
     return [{"id": t.id, "title": t.title} for t in tests]
 
 
 @app.get("/api/tests/{test_id}/questions")
 async def api_questions(test_id: int, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
-    if test_id != 1 and not user:
+    if not is_free_sample_test(test_id) and not user:
         return JSONResponse({"error": "Unauthorized"}, status_code=401)
-    # Test 2+ requires active subscription
-    if test_id != 1 and not user_has_access(user):
+    if is_free_sample_test(test_id):
+        questions = get_free_sample_questions(db)
+        if not questions:
+            return JSONResponse({"error": "No questions found for this test"}, status_code=404)
+        return [
+            {"id": q.id, "question_index": getattr(q, "sample_index", q.question_index), "question_text": q.question_text,
+             "image_path": q.image_path, "answers": [{"id": a.id, "text": a.text} for a in q.answers]}
+            for q in questions
+        ]
+    if not user_has_access(user):
         return JSONResponse({"error": "Subscription required"}, status_code=403)
     questions = db.query(models.Question).filter(
         models.Question.test_id == test_id
@@ -1825,8 +1897,11 @@ async def api_start_test(test_id: int, request: Request, db: Session = Depends(g
     user = get_current_user(request, db)
     if not user:
         return JSONResponse({"error": "Unauthorized"}, status_code=401)
-    if test_id != 1 and not user_has_access(user):
+    if not is_free_sample_test(test_id) and not user_has_access(user):
         return JSONResponse({"error": "Subscription required"}, status_code=403)
+
+    if is_free_sample_test(test_id):
+        return JSONResponse({"error": "Starter test does not create attempts"}, status_code=400)
 
     test = db.query(models.Test).filter(models.Test.id == test_id).first()
     if not test:

@@ -18,17 +18,19 @@
     page.innerHTML = `<div style="text-align:center;padding:80px 0;">
       <div style="font-size:1.2rem;font-weight:700;margin-bottom:12px;">No results found</div>
       <p style="color:var(--text-muted);margin-bottom:24px;">Go back and take the test first.</p>
-      <a href="/test/1" class="btn-primary">Take Test 1</a>
+      <a href="/test/0" class="btn-primary">Open Starter Test</a>
     </div>`;
   }
 
-  function renderSummary(page, data) {
+  function renderSummary(page, data, testMeta) {
     const passed = data.passed;
     const score = data.score;
+    const total = data.total || testMeta?.total || 15;
+    const title = testMeta?.title || data.test_title || 'Test 0';
     page.innerHTML = `
       <div style="text-align:center;padding:48px 0 40px;">
-        <div style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;">Test 1 - Free Test</div>
-        <div class="results-score" style="color:${passed ? 'var(--correct)' : 'var(--wrong)'};">${score}/25</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;">${title} - Starter Sample</div>
+        <div class="results-score" style="color:${passed ? 'var(--correct)' : 'var(--wrong)'};">${score}/${total}</div>
         <div style="margin-top:16px;">
           ${passed
             ? '<span class="badge-green" style="font-size:1rem;padding:8px 20px;">&#10003; PASSED</span>'
@@ -36,12 +38,12 @@
         </div>
         <p style="color:var(--text-muted);font-size:0.9rem;margin-top:16px;">
           ${passed
-            ? `Great work! You scored ${score}/25. Register to access all 13 tests.`
-            : `You scored ${score}/25. You need at least 20 to pass. Keep practicing!`}
+            ? `Nice work. You scored ${score}/${total} in the starter sample.`
+            : `You scored ${score}/${total}. Keep practising and try again when you are ready.`}
         </p>
         <div style="display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap;">
-          <a href="/test/1" class="btn-primary">Try Again</a>
-          <a href="/pricing" class="btn-ghost">Unlock Full Access &#8594;</a>
+          <a href="/test/0" class="btn-primary">Try Again</a>
+          <a href="/pricing" class="btn-ghost">Open Practice Library &#8594;</a>
         </div>
       </div>
 
@@ -52,11 +54,11 @@
             <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Correct</div>
           </div>
           <div>
-            <div style="font-size:1.8rem;font-weight:800;color:var(--wrong);">${25 - score}</div>
+            <div style="font-size:1.8rem;font-weight:800;color:var(--wrong);">${total - score}</div>
             <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Wrong</div>
           </div>
           <div>
-            <div style="font-size:1.8rem;font-weight:800;">${Math.round((score / 25) * 100)}%</div>
+            <div style="font-size:1.8rem;font-weight:800;">${Math.round((score / total) * 100)}%</div>
             <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Score</div>
           </div>
         </div>
@@ -66,8 +68,8 @@
       <div id="questionList" style="display:flex;flex-direction:column;gap:10px;"></div>
 
       <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center;margin-top:32px;">
-        <div style="font-weight:700;margin-bottom:8px;">Want to access all 13 tests?</div>
-        <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:16px;">Create an account to track your progress and practice all official theory tests.</p>
+        <div style="font-weight:700;margin-bottom:8px;">Continue with the full practice library</div>
+        <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:16px;">Create an account to save progress, review more questions, and continue through the full study library.</p>
         <a href="/register" class="btn-primary">Create Account</a>
       </div>
     `;
@@ -105,9 +107,9 @@
       return;
     }
 
-    const { data } = JSON.parse(raw);
+    const { data, testMeta } = JSON.parse(raw);
     sessionStorage.removeItem('freeResult');
-    renderSummary(page, data);
+    renderSummary(page, data, testMeta);
     renderResultsList(data);
   });
 })();
