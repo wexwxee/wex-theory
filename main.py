@@ -899,7 +899,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/test-images", StaticFiles(directory="test-images"), name="test-images")
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260318-adminflow-fix"
+templates.env.globals["asset_version"] = "20260323-dashboard-hotfix"
 
 FREE_SAMPLE_TEST_ID = 0
 FREE_SAMPLE_TEST_TITLE = "Test 0"

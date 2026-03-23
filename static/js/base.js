@@ -14,7 +14,13 @@
   window.WEX_SUPPORT_BANNER_MODE = body.dataset.supportBannerMode || null;
   window.WEX_SUPPORT_TARGET_URL = body.dataset.supportTargetUrl || null;
   window.WEX_CSRF_COOKIE_NAME = body.dataset.csrfCookieName || 'csrf_token';
-  window.wexPurchaseUser = parseDatasetJson(body.dataset.purchaseUser, null);
+  window.wexPurchaseUser = body.dataset.purchasePublicId
+    ? {
+        public_id: body.dataset.purchasePublicId || '',
+        name: body.dataset.purchaseName || '',
+        email: body.dataset.purchaseEmail || '',
+      }
+    : null;
 
   function getCookieValue(name) {
     const value = `; ${document.cookie}`;

@@ -89,7 +89,9 @@
   data-support-banner-mode="{% if user is defined and user and user.is_admin %}admin{% elif user is defined and user %}user{% endif %}"
   data-support-target-url="{% if user is defined and user %}{{ '/support' if user.is_admin else '/messages' }}{% endif %}"
   data-csrf-cookie-name="csrf_token"
-  data-purchase-user='{{ ({"public_id": user.public_id, "name": user.name, "email": user.email} if user is defined and user else none) | tojson | forceescape }}'>
+  data-purchase-public-id="{% if user is defined and user %}{{ user.public_id }}{% endif %}"
+  data-purchase-name="{% if user is defined and user %}{{ user.name }}{% endif %}"
+  data-purchase-email="{% if user is defined and user %}{{ user.email }}{% endif %}">
   <div class="sb-overlay" id="sbOverlay"></div>
   <aside class="sb" id="sidebar">
     <div class="sb-brand">
