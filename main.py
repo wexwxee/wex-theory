@@ -1070,27 +1070,27 @@ async def index(request: Request, db: Session = Depends(get_db)):
     token = request.cookies.get("token")
     if token and decode_token(token):
         return RedirectResponse("/dashboard", status_code=302)
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html", {"request": request})
 
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request, "login.html", {"request": request})
 
 
 @app.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
+    return templates.TemplateResponse(request, "register.html", {"request": request})
 
 
 @app.get("/forgot-password", response_class=HTMLResponse)
 async def forgot_password_page(request: Request):
-    return templates.TemplateResponse("forgot_password.html", {"request": request})
+    return templates.TemplateResponse(request, "forgot_password.html", {"request": request})
 
 
 @app.get("/reset-password", response_class=HTMLResponse)
 async def reset_password_page(request: Request):
-    return templates.TemplateResponse("reset_password.html", {"request": request})
+    return templates.TemplateResponse(request, "reset_password.html", {"request": request})
 
 
 def complete_email_verification(db: Session, email: str, code: str):
@@ -1179,30 +1179,30 @@ def complete_password_reset(db: Session, email: str, code: str, new_password: st
 @app.get("/about", response_class=HTMLResponse)
 async def about_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
-    return templates.TemplateResponse("about.html", {"request": request, "user": user})
+    return templates.TemplateResponse(request, "about.html", {"request": request, "user": user})
 
 
 @app.get("/faq", response_class=HTMLResponse)
 async def faq_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
-    return templates.TemplateResponse("faq.html", {"request": request, "user": user})
+    return templates.TemplateResponse(request, "faq.html", {"request": request, "user": user})
 
 
 @app.get("/contact", response_class=HTMLResponse)
 async def contact_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
-    return templates.TemplateResponse("contact.html", {"request": request, "user": user})
+    return templates.TemplateResponse(request, "contact.html", {"request": request, "user": user})
 
 
 @app.get("/privacy", response_class=HTMLResponse)
 async def privacy_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
-    return templates.TemplateResponse("privacy.html", {"request": request, "user": user})
+    return templates.TemplateResponse(request, "privacy.html", {"request": request, "user": user})
 
 
 @app.get("/subscription-expired", response_class=HTMLResponse)
 async def expired_page(request: Request):
-    return templates.TemplateResponse("subscription_expired.html", {"request": request})
+    return templates.TemplateResponse(request, "subscription_expired.html", {"request": request})
 
 
 # ─── Auth API ──────────────────────────────────────────────────────────────────
@@ -1533,7 +1533,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
     has_full_access = user_has_access(user)
     access_expires_at = None if user.is_admin else get_user_access_expiry(user)
 
-    return templates.TemplateResponse("dashboard.html", {
+    return templates.TemplateResponse(request, "dashboard.html", {
         "request": request, "user": user, "tests": tests,
         "best_scores": best_scores, "images": images,
         "completed": completed, "has_access": has_full_access,
@@ -1557,7 +1557,7 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
         .order_by(models.UserTestAttempt.finished_at.desc())
         .all()
     )
-    return templates.TemplateResponse("profile.html", {
+    return templates.TemplateResponse(request, "profile.html", {
         "request": request, "user": user, "attempts": attempts,
         "now": datetime.utcnow(),
     })
@@ -1569,7 +1569,7 @@ async def promo_code_page(request: Request, db: Session = Depends(get_db)):
     if not user:
         return RedirectResponse("/login", status_code=302)
     access_expires_at = None if user.is_admin else get_user_access_expiry(user)
-    return templates.TemplateResponse("promo_code.html", {
+    return templates.TemplateResponse(request, "promo_code.html", {
         "request": request,
         "user": user,
         "has_access": user_has_access(user),
@@ -1605,7 +1605,7 @@ async def messages_page(request: Request, db: Session = Depends(get_db)):
             db.commit()
             active_thread.unread_count = 0
 
-    return templates.TemplateResponse("support.html", {
+    return templates.TemplateResponse(request, "support.html", {
         "request": request,
         "user": user,
         "threads": threads,
@@ -1643,7 +1643,7 @@ async def support_page(request: Request, db: Session = Depends(get_db)):
             db.commit()
             active_thread.unread_count = 0
 
-    return templates.TemplateResponse("support.html", {
+    return templates.TemplateResponse(request, "support.html", {
         "request": request,
         "user": user,
         "threads": threads,
@@ -1674,7 +1674,7 @@ async def admin_page(request: Request, db: Session = Depends(get_db)):
     if active_tab not in {"users", "messages", "promos"}:
         active_tab = "users"
 
-    return templates.TemplateResponse("admin.html", {
+    return templates.TemplateResponse(request, "admin.html", {
         "request": request, "user": user, "users": users,
         "messages": messages, "unread_count": unread_count,
         "promo_codes": promo_codes,
@@ -1751,7 +1751,7 @@ async def test_page(test_id: int, request: Request, db: Session = Depends(get_db
     test = build_free_sample_test() if is_free_sample_test(test_id) else db.query(models.Test).filter(models.Test.id == test_id).first()
     if not test:
         raise HTTPException(status_code=404)
-    return templates.TemplateResponse("test.html", {"request": request, "user": user, "test": test})
+    return templates.TemplateResponse(request, "test.html", {"request": request, "user": user, "test": test})
 
 
 @app.get("/test/{test_id}/overview", response_class=HTMLResponse)
@@ -1764,13 +1764,13 @@ async def overview_page(test_id: int, request: Request, db: Session = Depends(ge
     test = build_free_sample_test() if is_free_sample_test(test_id) else db.query(models.Test).filter(models.Test.id == test_id).first()
     if not test:
         raise HTTPException(status_code=404)
-    return templates.TemplateResponse("overview.html", {"request": request, "user": user, "test": test})
+    return templates.TemplateResponse(request, "overview.html", {"request": request, "user": user, "test": test})
 
 
 @app.get("/results/free", response_class=HTMLResponse)
 async def free_results_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
-    return templates.TemplateResponse("results_free.html", {
+    return templates.TemplateResponse(request, "results_free.html", {
         "request": request,
         "user": user,
     })
@@ -1820,7 +1820,7 @@ async def results_page(test_id: int, attempt_id: int, request: Request, db: Sess
     saved_question_results = [
         qr for qr in question_results if qr["question"].id in bookmarked_question_ids
     ]
-    return templates.TemplateResponse("results.html", {
+    return templates.TemplateResponse(request, "results.html", {
         "request": request, "user": user, "test": attempt.test,
         "attempt": attempt, "question_results": question_results,
         "bookmarked_question_ids": bookmarked_question_ids,
@@ -1857,7 +1857,7 @@ async def review_page(test_id: int, attempt_id: int, request: Request, db: Sessi
             "selected_ids": json.loads(ua.selected_answer_ids) if ua else [],
             "is_correct": ua.is_correct if ua else False,
         })
-    return templates.TemplateResponse("review.html", {
+    return templates.TemplateResponse(request, "review.html", {
         "request": request, "user": user, "test": attempt.test,
         "attempt": attempt, "review_data": review_data,
     })
@@ -2136,7 +2136,7 @@ async def saved_questions_page(request: Request, db: Session = Depends(get_db)):
         .order_by(models.Bookmark.created_at.desc())
         .all()
     )
-    return templates.TemplateResponse("saved.html", {
+    return templates.TemplateResponse(request, "saved.html", {
         "request": request, "user": user, "bookmarks": bookmarks,
     })
 
@@ -2617,7 +2617,7 @@ async def api_redeem_promo_code(request: Request, db: Session = Depends(get_db))
 @app.get("/pricing", response_class=HTMLResponse)
 async def pricing_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
-    return templates.TemplateResponse("pricing.html", {
+    return templates.TemplateResponse(request, "pricing.html", {
         "request": request,
         "user": user,
         "now": datetime.utcnow(),
@@ -2631,13 +2631,13 @@ async def success_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
     if not user:
         return RedirectResponse("/login", status_code=302)
-    return templates.TemplateResponse("success.html", {"request": request, "user": user})
+    return templates.TemplateResponse(request, "success.html", {"request": request, "user": user})
 
 
 @app.get("/cancel", response_class=HTMLResponse)
 async def cancel_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
-    return templates.TemplateResponse("cancel.html", {"request": request, "user": user})
+    return templates.TemplateResponse(request, "cancel.html", {"request": request, "user": user})
 
 
 # ─── Stripe API ─────────────────────────────────────────────────────────────
