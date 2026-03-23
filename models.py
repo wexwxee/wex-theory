@@ -49,7 +49,7 @@ class Question(Base):
     image_path = Column(String, default="")
 
     test = relationship("Test", back_populates="questions")
-    answers = relationship("Answer", back_populates="question", order_by="Answer.id")
+    answers = relationship("Answer", back_populates="question", order_by=lambda: Answer.id)
     user_answers = relationship("UserAnswer", back_populates="question")
 
 
