@@ -954,6 +954,10 @@ def get_free_sample_questions(db: Session):
     return questions
 
 
+def ordered_answers(question: models.Question):
+    return sorted(question.answers, key=lambda answer: answer.id)
+
+
 # ─── One-time setup endpoint ───────────────────────────────────────────────────
 
 @app.get("/setup-admin-xk92")
@@ -1693,7 +1697,7 @@ async def api_free_questions(db: Session = Depends(get_db)):
     questions = get_free_sample_questions(db)
     return [
         {"id": q.id, "question_index": getattr(q, "sample_index", q.question_index), "question_text": q.question_text,
-         "image_path": q.image_path, "answers": [{"id": a.id, "text": a.text} for a in q.answers]}
+         "image_path": q.image_path, "answers": [{"id": a.id, "text": a.text} for a in ordered_answers(q)]}
         for q in questions
     ]
 
@@ -1708,7 +1712,7 @@ async def api_free_check(request: Request, db: Session = Depends(get_db)):
     results = []
     score = 0
     for q in questions:
-        correct_ids = [a.id for a in q.answers if a.is_correct]
+        correct_ids = [a.id for a in ordered_answers(q) if a.is_correct]
         selected = user_answers.get(str(q.id), [])
         is_correct = set(selected) == set(correct_ids)
         if is_correct:
@@ -1795,12 +1799,13 @@ async def results_page(test_id: int, attempt_id: int, request: Request, db: Sess
     question_results = []
     for idx, q in enumerate(questions):
         ua = ua_map.get(q.id)
-        correct_ids = [a.id for a in q.answers if a.is_correct]
+        answers = ordered_answers(q)
+        correct_ids = [a.id for a in answers if a.is_correct]
         selected_ids = json.loads(ua.selected_answer_ids) if ua else []
         question_results.append({
             "modal_index": idx,
             "question": q,
-            "answers": q.answers,
+            "answers": answers,
             "is_correct": ua.is_correct if ua else False,
             "selected_ids": selected_ids,
             "correct_ids": correct_ids,
@@ -1846,8 +1851,9 @@ async def review_page(test_id: int, attempt_id: int, request: Request, db: Sessi
     review_data = []
     for q in questions:
         ua = ua_map.get(q.id)
+        answers = ordered_answers(q)
         review_data.append({
-            "question": q, "answers": q.answers,
+            "question": q, "answers": answers,
             "selected_ids": json.loads(ua.selected_answer_ids) if ua else [],
             "is_correct": ua.is_correct if ua else False,
         })
@@ -1879,7 +1885,7 @@ async def api_questions(test_id: int, request: Request, db: Session = Depends(ge
             return JSONResponse({"error": "No questions found for this test"}, status_code=404)
         return [
             {"id": q.id, "question_index": getattr(q, "sample_index", q.question_index), "question_text": q.question_text,
-             "image_path": q.image_path, "answers": [{"id": a.id, "text": a.text} for a in q.answers]}
+             "image_path": q.image_path, "answers": [{"id": a.id, "text": a.text} for a in ordered_answers(q)]}
             for q in questions
         ]
     if not user_has_access(user):
@@ -1891,7 +1897,7 @@ async def api_questions(test_id: int, request: Request, db: Session = Depends(ge
         return JSONResponse({"error": "No questions found for this test"}, status_code=404)
     return [
         {"id": q.id, "question_index": q.question_index, "question_text": q.question_text,
-         "image_path": q.image_path, "answers": [{"id": a.id, "text": a.text} for a in q.answers]}
+         "image_path": q.image_path, "answers": [{"id": a.id, "text": a.text} for a in ordered_answers(q)]}
         for q in questions
     ]
 
@@ -1948,7 +1954,7 @@ async def api_save_answer(attempt_id: int, request: Request, db: Session = Depen
     if not question:
         return JSONResponse({"error": "Not found"}, status_code=404)
 
-    correct_ids = {a.id for a in question.answers if a.is_correct}
+    correct_ids = {a.id for a in ordered_answers(question) if a.is_correct}
     is_correct  = set(answer_ids) == correct_ids
 
     existing = db.query(models.UserAnswer).filter(
@@ -1998,7 +2004,7 @@ async def api_save_answers_batch(attempt_id: int, request: Request, db: Session 
         q = q_map.get(ans["question_id"])
         if not q:
             continue
-        correct_ids = {a.id for a in q.answers if a.is_correct}
+        correct_ids = {a.id for a in ordered_answers(q) if a.is_correct}
         is_correct = set(ans.get("answer_ids", [])) == correct_ids
         db.add(models.UserAnswer(
             attempt_id=attempt_id,
@@ -2062,7 +2068,7 @@ async def api_review(attempt_id: int, request: Request, db: Session = Depends(ge
             "explanation": q.explanation,
             "is_correct": ua_map[q.id].is_correct if q.id in ua_map else False,
             "selected_ids": json.loads(ua_map[q.id].selected_answer_ids) if q.id in ua_map else [],
-            "answers": [{"id": a.id, "text": a.text, "is_correct": a.is_correct} for a in q.answers],
+            "answers": [{"id": a.id, "text": a.text, "is_correct": a.is_correct} for a in ordered_answers(q)],
         }
         for q in questions
     ]
