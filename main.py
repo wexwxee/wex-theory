@@ -1062,11 +1062,16 @@ def parse_attempt_question_ids(attempt: Optional[models.UserTestAttempt]) -> lis
     if not isinstance(raw, list):
         return []
     parsed: list[int] = []
+    seen: set[int] = set()
     for item in raw:
         try:
-            parsed.append(int(item))
+            qid = int(item)
         except (TypeError, ValueError):
             continue
+        if qid in seen:
+            continue
+        seen.add(qid)
+        parsed.append(qid)
     return parsed
 
 
@@ -1083,12 +1088,8 @@ def get_unfinished_exam_attempt(db: Session, user_id: int) -> Optional[models.Us
     )
 
 
-def get_or_create_exam_attempt(db: Session, user: models.User) -> models.UserTestAttempt:
+def create_exam_attempt(db: Session, user: models.User) -> models.UserTestAttempt:
     ensure_exam_mode_test(db)
-    existing = get_unfinished_exam_attempt(db, user.id)
-    existing_ids = parse_attempt_question_ids(existing)
-    if existing and len(existing_ids) == EXAM_MODE_QUESTION_COUNT:
-        return existing
 
     pool_ids = get_exam_mode_question_ids(db)
     if len(pool_ids) < EXAM_MODE_QUESTION_COUNT:
@@ -1105,6 +1106,16 @@ def get_or_create_exam_attempt(db: Session, user: models.User) -> models.UserTes
     db.commit()
     db.refresh(attempt)
     return attempt
+
+
+def get_or_create_exam_attempt(db: Session, user: models.User, *, fresh: bool = False) -> models.UserTestAttempt:
+    ensure_exam_mode_test(db)
+    if not fresh:
+        existing = get_unfinished_exam_attempt(db, user.id)
+        existing_ids = parse_attempt_question_ids(existing)
+        if existing and len(existing_ids) == EXAM_MODE_QUESTION_COUNT:
+            return existing
+    return create_exam_attempt(db, user)
 
 
 def get_questions_for_attempt(db: Session, attempt: models.UserTestAttempt) -> list[models.Question]:
@@ -2094,7 +2105,8 @@ async def api_start_test(test_id: int, request: Request, db: Session = Depends(g
         return JSONResponse({"error": "Starter test does not create attempts"}, status_code=400)
     if is_exam_mode_test(test_id):
         try:
-            attempt = get_or_create_exam_attempt(db, user)
+            fresh = str(request.query_params.get("fresh", "")).strip().lower() in {"1", "true", "yes"}
+            attempt = get_or_create_exam_attempt(db, user, fresh=fresh)
             return {"attempt_id": attempt.id}
         except Exception as e:
             db.rollback()

@@ -12,6 +12,19 @@ let timerSeconds = 25 * 60;
 let timerInterval = null;
 let isSubmitting = false;
 
+function getExamAttemptIdFromUrl() {
+  const raw = new URLSearchParams(window.location.search).get('attempt_id');
+  if (!raw || !/^\d+$/.test(raw)) return null;
+  return Number(raw);
+}
+
+function syncExamAttemptInUrl() {
+  if (TEST_ID !== EXAM_MODE_TEST_ID || !attemptId) return;
+  const url = new URL(window.location.href);
+  url.searchParams.set('attempt_id', String(attemptId));
+  window.history.replaceState({}, '', url.toString());
+}
+
 // в”Ђв”Ђ Init в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('testBurgerBtn')?.addEventListener('click', sbOpen);
@@ -30,7 +43,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   await loadBookmarks();
   if (TEST_ID === EXAM_MODE_TEST_ID) {
-    await ensureExamAttempt();
+    attemptId = getExamAttemptIdFromUrl();
+    if (!attemptId) {
+      await ensureExamAttempt(true);
+    }
   }
   await loadQuestions();
   startTimer();
@@ -153,8 +169,16 @@ function setWordPopupResult(popup, word, result) {
   }
 }
 
-async function ensureExamAttempt() {
-  const res = await fetch(`/api/tests/${TEST_ID}/start`, { method: 'POST' });
+async function ensureExamAttempt(forceFresh = false) {
+  if (TEST_ID === EXAM_MODE_TEST_ID && !forceFresh) {
+    const existingAttemptId = getExamAttemptIdFromUrl();
+    if (existingAttemptId) {
+      attemptId = existingAttemptId;
+      return;
+    }
+  }
+  const suffix = TEST_ID === EXAM_MODE_TEST_ID && forceFresh ? '?fresh=1' : '';
+  const res = await fetch(`/api/tests/${TEST_ID}/start${suffix}`, { method: 'POST' });
   if (res.status === 401) {
     window.location.href = '/login';
     return;
@@ -168,6 +192,7 @@ async function ensureExamAttempt() {
   }
   const data = await res.json();
   attemptId = data.attempt_id || null;
+  syncExamAttemptInUrl();
 }
 
 function renderQuestion() {
