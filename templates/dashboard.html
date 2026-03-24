@@ -185,7 +185,8 @@
          data-locked="{{ 'true' if is_locked else 'false' }}"
          data-test-url="/test/{{ t.id }}">
       {% if images[t.id] %}
-      <img src="/test-images/{{ images[t.id] }}" alt="Test {{ t.id }}">
+      {% set img_src = images[t.id] %}
+      <img src="{% if img_src.startswith('/') %}{{ img_src }}{% else %}/test-images/{{ img_src }}{% endif %}" alt="Test {{ t.id }}">
       {% else %}
       <div style="aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center;color:#333;font-size:0.8rem;">No image</div>
       {% endif %}
