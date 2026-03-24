@@ -160,7 +160,7 @@
       <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">Completed</div>
     </div>
     <div class="card" style="padding:20px;text-align:center;">
-      <div style="font-size:2rem;font-weight:800;line-height:1;">{{ 13 - completed }}</div>
+      <div style="font-size:2rem;font-weight:800;line-height:1;">{{ library_total - completed }}</div>
       <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">Remaining</div>
     </div>
     <div class="card" style="padding:20px;text-align:center;">
@@ -199,6 +199,8 @@
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           {% if t.id == 0 %}
           <span style="font-size:0.7rem;color:var(--correct);border:1px solid var(--correct);padding:2px 8px;border-radius:999px;">STARTER</span>
+          {% elif t.id == 14 %}
+          <span style="font-size:0.7rem;color:var(--text);border:1px solid var(--text);padding:2px 8px;border-radius:999px;">TEST 14</span>
           {% elif is_locked %}
             <span style="font-size:0.7rem;color:var(--text-muted);border:1px solid var(--border);padding:2px 8px;border-radius:999px;">Extended</span>
           {% endif %}
@@ -220,7 +222,7 @@
   {% if not has_access %}
   <div class="card" style="padding:32px;text-align:center;margin-top:24px;border:1px solid var(--border);">
     <div style="font-size:1.3rem;font-weight:800;margin-bottom:8px;">Continue with the full practice library</div>
-    <p style="color:var(--text-muted);margin-bottom:20px;max-width:440px;margin-left:auto;margin-right:auto;">Start with the 15-question sample, then move into the larger practice library with all 13 structured tests, explanations, and saved progress.</p>
+    <p style="color:var(--text-muted);margin-bottom:20px;max-width:440px;margin-left:auto;margin-right:auto;">Start with the 15-question sample, then move into the larger practice library with all 13 structured tests, Exam Mode, explanations, and saved progress.</p>
     <a href="/pricing" class="btn-primary">{% if user.subscription_status != 'free' %}Review Access{% else %}Open Access Overview{% endif %}</a>
   </div>
   {% endif %}

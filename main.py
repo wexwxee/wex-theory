@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import re
 import secrets
 from collections import defaultdict, deque
@@ -591,6 +592,46 @@ def ensure_promo_codes_table(db: Session) -> None:
         print(f"[STARTUP] promo_codes table setup skipped/error: {e}")
 
 
+def ensure_attempt_question_order_column(db: Session) -> None:
+    try:
+        inspector = sql_inspect(engine)
+        columns = {col["name"] for col in inspector.get_columns("user_test_attempts")}
+        if "question_order_json" not in columns:
+            db.execute(sql_text("ALTER TABLE user_test_attempts ADD COLUMN question_order_json TEXT"))
+            db.commit()
+            print("[STARTUP] Added user_test_attempts.question_order_json column")
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] attempt question order setup skipped/error: {e}")
+
+
+def ensure_exam_mode_test(db: Session) -> None:
+    try:
+        exam_test = db.query(models.Test).filter(models.Test.id == EXAM_MODE_TEST_ID).first()
+        if not exam_test:
+            db.add(models.Test(
+                id=EXAM_MODE_TEST_ID,
+                title=EXAM_MODE_TEST_TITLE,
+                description=EXAM_MODE_TEST_DESCRIPTION,
+            ))
+            db.commit()
+            print("[STARTUP] Created Exam Mode test row")
+        else:
+            updated = False
+            if exam_test.title != EXAM_MODE_TEST_TITLE:
+                exam_test.title = EXAM_MODE_TEST_TITLE
+                updated = True
+            if exam_test.description != EXAM_MODE_TEST_DESCRIPTION:
+                exam_test.description = EXAM_MODE_TEST_DESCRIPTION
+                updated = True
+            if updated:
+                db.commit()
+                print("[STARTUP] Updated Exam Mode test metadata")
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] exam mode test setup skipped/error: {e}")
+
+
 def save_contact_attachment(upload: UploadFile) -> tuple[str, str, str]:
     original_name = os.path.basename(upload.filename or "").strip()
     if not original_name:
@@ -811,6 +852,7 @@ async def startup_init():
         ensure_contact_attachment_columns(db)
         ensure_support_message_columns(db)
         ensure_promo_codes_table(db)
+        ensure_attempt_question_order_column(db)
         ensure_question_text_fixes(db)
         CONTACT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -887,6 +929,7 @@ async def startup_init():
             print(f"[STARTUP] Admin exists and refreshed: id={existing.id}")
 
         ensure_primary_super_admin(db)
+        ensure_exam_mode_test(db)
 
     except Exception as e:
         print(f"[STARTUP] Error: {e}")
@@ -899,11 +942,17 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/test-images", StaticFiles(directory="test-images"), name="test-images")
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260323-dashboard-hotfix"
+templates.env.globals["asset_version"] = "20260324-exam-mode"
 
 FREE_SAMPLE_TEST_ID = 0
 FREE_SAMPLE_TEST_TITLE = "Test 0"
 FREE_SAMPLE_TEST_DESCRIPTION = "Starter sample with 15 fixed practice questions."
+EXAM_MODE_TEST_ID = 14
+EXAM_MODE_TEST_TITLE = "Exam Mode"
+EXAM_MODE_TEST_DESCRIPTION = "Exam Mode with 25 mixed questions from the full practice library."
+EXAM_MODE_IMAGE_PATH = "ExamMode/mock-exam.png"
+EXAM_MODE_QUESTION_COUNT = 25
+EXAM_MODE_PASS_SCORE = 20
 FREE_SAMPLE_QUESTION_MAP = [
     (1, 1),
     (2, 3),
@@ -925,6 +974,10 @@ FREE_SAMPLE_QUESTION_MAP = [
 
 def is_free_sample_test(test_id: int) -> bool:
     return test_id == FREE_SAMPLE_TEST_ID
+
+
+def is_exam_mode_test(test_id: int) -> bool:
+    return test_id == EXAM_MODE_TEST_ID
 
 
 def build_free_sample_test():
@@ -954,8 +1007,116 @@ def get_free_sample_questions(db: Session):
     return questions
 
 
+def build_exam_mode_test():
+    return SimpleNamespace(
+        id=EXAM_MODE_TEST_ID,
+        title=EXAM_MODE_TEST_TITLE,
+        description=EXAM_MODE_TEST_DESCRIPTION,
+    )
+
+
 def ordered_answers(question: models.Question):
     return sorted(question.answers, key=lambda answer: answer.id)
+
+
+def serialize_test_question(question: models.Question, *, display_index: Optional[int] = None):
+    return {
+        "id": question.id,
+        "question_index": display_index or question.question_index,
+        "question_text": question.question_text,
+        "image_path": question.image_path,
+        "answers": [{"id": a.id, "text": a.text} for a in ordered_answers(question)],
+    }
+
+
+def get_exam_mode_question_ids(db: Session) -> list[int]:
+    rows = (
+        db.query(models.Question.id)
+        .filter(models.Question.test_id >= 1, models.Question.test_id <= 13)
+        .order_by(models.Question.id)
+        .all()
+    )
+    return [row[0] for row in rows]
+
+
+def load_questions_in_custom_order(db: Session, question_ids: list[int]) -> list[models.Question]:
+    if not question_ids:
+        return []
+    questions = (
+        db.query(models.Question)
+        .options(selectinload(models.Question.answers))
+        .filter(models.Question.id.in_(question_ids))
+        .all()
+    )
+    q_map = {q.id: q for q in questions}
+    return [q_map[qid] for qid in question_ids if qid in q_map]
+
+
+def parse_attempt_question_ids(attempt: Optional[models.UserTestAttempt]) -> list[int]:
+    if not attempt or not attempt.question_order_json:
+        return []
+    try:
+        raw = json.loads(attempt.question_order_json)
+    except (TypeError, ValueError):
+        return []
+    if not isinstance(raw, list):
+        return []
+    parsed: list[int] = []
+    for item in raw:
+        try:
+            parsed.append(int(item))
+        except (TypeError, ValueError):
+            continue
+    return parsed
+
+
+def get_unfinished_exam_attempt(db: Session, user_id: int) -> Optional[models.UserTestAttempt]:
+    return (
+        db.query(models.UserTestAttempt)
+        .filter(
+            models.UserTestAttempt.user_id == user_id,
+            models.UserTestAttempt.test_id == EXAM_MODE_TEST_ID,
+            models.UserTestAttempt.finished_at.is_(None),
+        )
+        .order_by(models.UserTestAttempt.started_at.desc())
+        .first()
+    )
+
+
+def get_or_create_exam_attempt(db: Session, user: models.User) -> models.UserTestAttempt:
+    ensure_exam_mode_test(db)
+    existing = get_unfinished_exam_attempt(db, user.id)
+    existing_ids = parse_attempt_question_ids(existing)
+    if existing and len(existing_ids) == EXAM_MODE_QUESTION_COUNT:
+        return existing
+
+    pool_ids = get_exam_mode_question_ids(db)
+    if len(pool_ids) < EXAM_MODE_QUESTION_COUNT:
+        raise RuntimeError("Not enough questions available for Exam Mode")
+
+    selected_ids = random.sample(pool_ids, EXAM_MODE_QUESTION_COUNT)
+    attempt = models.UserTestAttempt(
+        user_id=user.id,
+        test_id=EXAM_MODE_TEST_ID,
+        started_at=datetime.utcnow(),
+        question_order_json=json.dumps(selected_ids),
+    )
+    db.add(attempt)
+    db.commit()
+    db.refresh(attempt)
+    return attempt
+
+
+def get_questions_for_attempt(db: Session, attempt: models.UserTestAttempt) -> list[models.Question]:
+    if is_exam_mode_test(attempt.test_id):
+        return load_questions_in_custom_order(db, parse_attempt_question_ids(attempt))
+    return (
+        db.query(models.Question)
+        .options(selectinload(models.Question.answers))
+        .filter(models.Question.test_id == attempt.test_id)
+        .order_by(models.Question.question_index)
+        .all()
+    )
 
 
 # ─── One-time setup endpoint ───────────────────────────────────────────────────
@@ -1506,6 +1667,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
     if not user:
         return RedirectResponse("/login", status_code=302)
 
+    ensure_exam_mode_test(db)
     tests = [build_free_sample_test(), *db.query(models.Test).order_by(models.Test.id).all()]
     finished = db.query(models.UserTestAttempt).filter(
         models.UserTestAttempt.user_id == user.id,
@@ -1523,13 +1685,17 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
     for t in tests:
         if t.id == FREE_SAMPLE_TEST_ID:
             continue
+        if is_exam_mode_test(t.id):
+            images[t.id] = EXAM_MODE_IMAGE_PATH
+            continue
         q = db.query(models.Question).filter(
             models.Question.test_id == t.id,
             models.Question.question_index == 1
         ).first()
         images[t.id] = q.image_path if q else ""
 
-    completed = sum(1 for s in best_scores.values() if s >= 20)
+    completed = sum(1 for test_id, score in best_scores.items() if test_id != FREE_SAMPLE_TEST_ID and score >= EXAM_MODE_PASS_SCORE)
+    library_total = sum(1 for t in tests if t.id != FREE_SAMPLE_TEST_ID)
     has_full_access = user_has_access(user)
     access_expires_at = None if user.is_admin else get_user_access_expiry(user)
 
@@ -1537,6 +1703,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         "request": request, "user": user, "tests": tests,
         "best_scores": best_scores, "images": images,
         "completed": completed, "has_access": has_full_access,
+        "library_total": library_total,
         "access_expires_at": access_expires_at,
         "now": datetime.utcnow(),
     })
@@ -1748,6 +1915,8 @@ async def test_page(test_id: int, request: Request, db: Session = Depends(get_db
         if not user_has_access(user):
             return RedirectResponse("/subscription-expired" if getattr(user, "subscription_status", "free") != "free" else "/pricing", status_code=302)
 
+    if is_exam_mode_test(test_id):
+        ensure_exam_mode_test(db)
     test = build_free_sample_test() if is_free_sample_test(test_id) else db.query(models.Test).filter(models.Test.id == test_id).first()
     if not test:
         raise HTTPException(status_code=404)
@@ -1761,6 +1930,8 @@ async def overview_page(test_id: int, request: Request, db: Session = Depends(ge
         return RedirectResponse("/login", status_code=302)
     if not is_free_sample_test(test_id) and not user_has_access(user):
         return RedirectResponse("/subscription-expired" if getattr(user, "subscription_status", "free") != "free" else "/pricing", status_code=302)
+    if is_exam_mode_test(test_id):
+        ensure_exam_mode_test(db)
     test = build_free_sample_test() if is_free_sample_test(test_id) else db.query(models.Test).filter(models.Test.id == test_id).first()
     if not test:
         raise HTTPException(status_code=404)
@@ -1790,11 +1961,7 @@ async def results_page(test_id: int, attempt_id: int, request: Request, db: Sess
     if not attempt:
         raise HTTPException(status_code=404)
 
-    questions = db.query(models.Question).options(
-        selectinload(models.Question.answers)
-    ).filter(
-        models.Question.test_id == test_id
-    ).order_by(models.Question.question_index).all()
+    questions = get_questions_for_attempt(db, attempt)
     ua_map = {ua.question_id: ua for ua in attempt.user_answers}
     question_results = []
     for idx, q in enumerate(questions):
@@ -1804,6 +1971,7 @@ async def results_page(test_id: int, attempt_id: int, request: Request, db: Sess
         selected_ids = json.loads(ua.selected_answer_ids) if ua else []
         question_results.append({
             "modal_index": idx,
+            "display_index": idx + 1,
             "question": q,
             "answers": answers,
             "is_correct": ua.is_correct if ua else False,
@@ -1825,6 +1993,8 @@ async def results_page(test_id: int, attempt_id: int, request: Request, db: Sess
         "attempt": attempt, "question_results": question_results,
         "bookmarked_question_ids": bookmarked_question_ids,
         "saved_question_results": saved_question_results,
+        "is_exam_mode": is_exam_mode_test(attempt.test_id),
+        "error_count": len(question_results) - (attempt.score or 0),
     })
 
 
@@ -1842,11 +2012,7 @@ async def review_page(test_id: int, attempt_id: int, request: Request, db: Sessi
     if not attempt:
         raise HTTPException(status_code=404)
 
-    questions = db.query(models.Question).options(
-        selectinload(models.Question.answers)
-    ).filter(
-        models.Question.test_id == test_id
-    ).order_by(models.Question.question_index).all()
+    questions = get_questions_for_attempt(db, attempt)
     ua_map = {ua.question_id: ua for ua in attempt.user_answers}
     review_data = []
     for q in questions:
@@ -1870,6 +2036,7 @@ async def api_tests(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
     if not user:
         return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    ensure_exam_mode_test(db)
     tests = [build_free_sample_test(), *db.query(models.Test).order_by(models.Test.id).all()]
     return [{"id": t.id, "title": t.title} for t in tests]
 
@@ -1883,23 +2050,36 @@ async def api_questions(test_id: int, request: Request, db: Session = Depends(ge
         questions = get_free_sample_questions(db)
         if not questions:
             return JSONResponse({"error": "No questions found for this test"}, status_code=404)
-        return [
-            {"id": q.id, "question_index": getattr(q, "sample_index", q.question_index), "question_text": q.question_text,
-             "image_path": q.image_path, "answers": [{"id": a.id, "text": a.text} for a in ordered_answers(q)]}
-            for q in questions
-        ]
+        return [serialize_test_question(q, display_index=getattr(q, "sample_index", q.question_index)) for q in questions]
     if not user_has_access(user):
         return JSONResponse({"error": "Subscription required"}, status_code=403)
-    questions = db.query(models.Question).filter(
-        models.Question.test_id == test_id
-    ).order_by(models.Question.question_index).all()
+    if is_exam_mode_test(test_id):
+        attempt_id_raw = request.query_params.get("attempt_id")
+        attempt = None
+        if attempt_id_raw and attempt_id_raw.isdigit():
+            attempt = db.query(models.UserTestAttempt).filter(
+                models.UserTestAttempt.id == int(attempt_id_raw),
+                models.UserTestAttempt.user_id == user.id,
+                models.UserTestAttempt.test_id == EXAM_MODE_TEST_ID,
+            ).first()
+        if not attempt:
+            attempt = get_unfinished_exam_attempt(db, user.id)
+        if not attempt:
+            return JSONResponse({"error": "Exam session not started"}, status_code=400)
+        questions = get_questions_for_attempt(db, attempt)
+        if len(questions) != EXAM_MODE_QUESTION_COUNT:
+            return JSONResponse({"error": "Exam session is incomplete"}, status_code=500)
+        return [serialize_test_question(q, display_index=idx + 1) for idx, q in enumerate(questions)]
+    questions = (
+        db.query(models.Question)
+        .options(selectinload(models.Question.answers))
+        .filter(models.Question.test_id == test_id)
+        .order_by(models.Question.question_index)
+        .all()
+    )
     if not questions:
         return JSONResponse({"error": "No questions found for this test"}, status_code=404)
-    return [
-        {"id": q.id, "question_index": q.question_index, "question_text": q.question_text,
-         "image_path": q.image_path, "answers": [{"id": a.id, "text": a.text} for a in ordered_answers(q)]}
-        for q in questions
-    ]
+    return [serialize_test_question(q) for q in questions]
 
 
 @app.post("/api/tests/{test_id}/start")
@@ -1912,6 +2092,15 @@ async def api_start_test(test_id: int, request: Request, db: Session = Depends(g
 
     if is_free_sample_test(test_id):
         return JSONResponse({"error": "Starter test does not create attempts"}, status_code=400)
+    if is_exam_mode_test(test_id):
+        try:
+            attempt = get_or_create_exam_attempt(db, user)
+            return {"attempt_id": attempt.id}
+        except Exception as e:
+            db.rollback()
+            print(f"[START EXAM ERROR] user_id={user.id}: {e}")
+            traceback.print_exc()
+            return JSONResponse({"error": str(e)}, status_code=500)
 
     test = db.query(models.Test).filter(models.Test.id == test_id).first()
     if not test:
@@ -2032,12 +2221,14 @@ async def api_finish_attempt(attempt_id: int, request: Request, db: Session = De
 
     try:
         score = sum(1 for ua in attempt.user_answers if ua.is_correct)
-        passed = score >= 20
+        total_questions = EXAM_MODE_QUESTION_COUNT if is_exam_mode_test(attempt.test_id) else 25
+        errors = total_questions - score
+        passed = errors <= 5 if is_exam_mode_test(attempt.test_id) else score >= EXAM_MODE_PASS_SCORE
         attempt.finished_at = datetime.utcnow()
         attempt.score = score
         attempt.passed = passed
         db.commit()
-        return {"score": score, "passed": passed, "total": 25}
+        return {"score": score, "passed": passed, "total": total_questions, "errors": errors}
     except Exception as e:
         traceback.print_exc()
         return JSONResponse({"error": str(e)}, status_code=500)
@@ -2057,20 +2248,18 @@ async def api_review(attempt_id: int, request: Request, db: Session = Depends(ge
         return JSONResponse({"error": "Not found"}, status_code=404)
 
     ua_map = {ua.question_id: ua for ua in attempt.user_answers}
-    questions = db.query(models.Question).filter(
-        models.Question.test_id == attempt.test_id
-    ).order_by(models.Question.question_index).all()
+    questions = get_questions_for_attempt(db, attempt)
 
     return [
         {
-            "id": q.id, "question_index": q.question_index,
+            "id": q.id, "question_index": idx + 1 if is_exam_mode_test(attempt.test_id) else q.question_index,
             "question_text": q.question_text, "image_path": q.image_path,
             "explanation": q.explanation,
             "is_correct": ua_map[q.id].is_correct if q.id in ua_map else False,
             "selected_ids": json.loads(ua_map[q.id].selected_answer_ids) if q.id in ua_map else [],
             "answers": [{"id": a.id, "text": a.text, "is_correct": a.is_correct} for a in ordered_answers(q)],
         }
-        for q in questions
+        for idx, q in enumerate(questions)
     ]
 
 

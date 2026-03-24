@@ -2,6 +2,7 @@
 const TEST_ID = Number(testContainer?.dataset.testId || 0);
 const IS_AUTHENTICATED = testContainer?.dataset.isAuthenticated === 'true';
 const FREE_SAMPLE_TEST_ID = 0;
+const EXAM_MODE_TEST_ID = 14;
 
 let questions = [];
 let currentIndex = 0;
@@ -28,6 +29,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
   await loadBookmarks();
+  if (TEST_ID === EXAM_MODE_TEST_ID) {
+    await ensureExamAttempt();
+  }
   await loadQuestions();
   startTimer();
 });
@@ -35,7 +39,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 // в”Ђв”Ђ Load questions в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 async function loadQuestions() {
   try {
-    const res = await fetch(`/api/tests/${TEST_ID}/questions`);
+    const query = TEST_ID === EXAM_MODE_TEST_ID && attemptId ? `?attempt_id=${attemptId}` : '';
+    const res = await fetch(`/api/tests/${TEST_ID}/questions${query}`);
     if (res.status === 401) {
       window.location.href = '/login';
       return;
@@ -146,6 +151,23 @@ function setWordPopupResult(popup, word, result) {
     });
     popup.appendChild(variants);
   }
+}
+
+async function ensureExamAttempt() {
+  const res = await fetch(`/api/tests/${TEST_ID}/start`, { method: 'POST' });
+  if (res.status === 401) {
+    window.location.href = '/login';
+    return;
+  }
+  if (res.status === 403) {
+    window.location.href = '/pricing';
+    return;
+  }
+  if (!res.ok) {
+    throw new Error('Failed to start exam');
+  }
+  const data = await res.json();
+  attemptId = data.attempt_id || null;
 }
 
 function renderQuestion() {
@@ -357,12 +379,18 @@ async function submitTest(auto = false) {
       return;
     }
 
+    if (TEST_ID === EXAM_MODE_TEST_ID && !attemptId) {
+      await ensureExamAttempt();
+    }
+
     // 1. Start attempt
-    const startRes = await fetch(`/api/tests/${TEST_ID}/start`, { method: 'POST' });
-    if (startRes.status === 403) { window.location.href = '/pricing'; return; }
-    if (!startRes.ok) throw new Error('Failed to start attempt');
-    const { attempt_id } = await startRes.json();
-    attemptId = attempt_id;
+    if (TEST_ID !== EXAM_MODE_TEST_ID) {
+      const startRes = await fetch(`/api/tests/${TEST_ID}/start`, { method: 'POST' });
+      if (startRes.status === 403) { window.location.href = '/pricing'; return; }
+      if (!startRes.ok) throw new Error('Failed to start attempt');
+      const { attempt_id } = await startRes.json();
+      attemptId = attempt_id;
+    }
 
     // 2. Save all answers in a single batch request (was: 25 sequential requests)
     const answers = questions.map(q => ({

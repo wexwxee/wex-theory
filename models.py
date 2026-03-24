@@ -74,6 +74,7 @@ class UserTestAttempt(Base):
     finished_at = Column(DateTime, nullable=True)
     score = Column(Integer, nullable=True)
     passed = Column(Boolean, nullable=True)
+    question_order_json = Column(Text, nullable=True, default="[]")
 
     user = relationship("User", back_populates="attempts")
     test = relationship("Test", back_populates="attempts")
