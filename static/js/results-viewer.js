@@ -299,6 +299,8 @@
 
       const answersEl = document.getElementById('modalAnswers');
       answersEl.innerHTML = '';
+      const selectedWrongCount = d.selected_ids.filter((id) => !d.correct_ids.includes(id)).length;
+      const missedCorrectCount = d.correct_ids.filter((id) => !d.selected_ids.includes(id)).length;
       d.answers.forEach((a, idx) => {
         const wasSelected = d.selected_ids.includes(a.id);
         const isCorrect = d.correct_ids.includes(a.id);
@@ -326,15 +328,15 @@
         }
 
         const badgesWrap = document.createElement('span');
-        badgesWrap.style.cssText = 'display:flex;gap:6px;flex-shrink:0;';
+        badgesWrap.className = 'review-answer-badges';
         if (wasSelected && isCorrect) {
           addResultBadge(badgesWrap, 'badge-user', 'Your answer');
           addResultBadge(badgesWrap, 'badge-correct', 'Correct');
         } else if (wasSelected && !isCorrect) {
           addResultBadge(badgesWrap, 'badge-user', 'Your answer');
-          addResultBadge(badgesWrap, 'badge-wrong', 'Wrong');
+          addResultBadge(badgesWrap, 'badge-wrong', 'Incorrect');
         } else if (!wasSelected && isCorrect) {
-          addResultBadge(badgesWrap, 'badge-correct', 'Correct (missed)');
+          addResultBadge(badgesWrap, 'badge-correct', 'Correct answer');
         }
 
         row.appendChild(textWrap);
@@ -361,12 +363,36 @@
         expl.style.display = 'none';
       }
 
+      const statusLabel = document.getElementById('modalStatusLabel');
+      const statusHint = document.getElementById('modalStatusHint');
+      const statusPill = document.getElementById('modalStatusPill');
+      if (statusLabel && statusHint && statusPill) {
+        statusLabel.textContent = d.is_correct ? 'Correct answer' : 'Needs review';
+        statusLabel.className = `review-status-label ${d.is_correct ? 'correct' : 'wrong'}`;
+        if (d.is_correct) {
+          statusHint.textContent = 'All required answers were selected for this question.';
+          statusPill.className = 'badge-correct';
+          statusPill.textContent = 'Correct';
+        } else {
+          const parts = [];
+          if (selectedWrongCount) {
+            parts.push(`${selectedWrongCount} incorrect option${selectedWrongCount === 1 ? '' : 's'} selected`);
+          }
+          if (missedCorrectCount) {
+            parts.push(`${missedCorrectCount} correct option${missedCorrectCount === 1 ? '' : 's'} missed`);
+          }
+          statusHint.textContent = parts.join(' and ') || 'Review this question carefully before your next attempt.';
+          statusPill.className = 'badge-wrong';
+          statusPill.textContent = 'Wrong';
+        }
+      }
+
       const statusEl = document.getElementById('modalStatus');
       statusEl.replaceChildren();
       const statusText = document.createElement('span');
       statusText.style.fontWeight = '600';
-      statusText.style.color = d.is_correct ? '#22c55e' : '#ef4444';
-      statusText.textContent = d.is_correct ? 'Correct' : 'Wrong';
+      statusText.style.color = 'var(--text-muted)';
+      statusText.textContent = `Review ${currentModal + 1} / ${DATA.length}`;
       statusEl.appendChild(statusText);
 
       document.getElementById('modalPrev').disabled = currentModal === 0;

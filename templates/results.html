@@ -62,21 +62,112 @@
 /* Modal answer rows */
 .answer-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   padding: 12px 14px;
-  border-radius: 8px;
+  border-radius: 12px;
   margin-bottom: 8px;
   font-size: 0.9rem;
   line-height: 1.4;
 }
-.answer-row.user-correct   { background: #14532d; border: 2px solid #22c55e; color: #fff; }
-.answer-row.user-wrong     { background: #7f1d1d; border: 2px solid #ef4444; color: #fff; }
+.answer-row.user-correct   { background: rgba(34, 197, 94, 0.12); border: 2px solid #22c55e; color: inherit; }
+.answer-row.user-wrong     { background: rgba(239, 68, 68, 0.12); border: 2px solid #ef4444; color: inherit; }
 .answer-row.missed-correct { background: transparent; border: 2px solid #22c55e; color: inherit; }
 .answer-row.neutral        { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
 .badge-user    { background: #3b82f6; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; white-space: nowrap; flex-shrink: 0; }
 .badge-correct { background: #22c55e; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; white-space: nowrap; flex-shrink: 0; }
 .badge-wrong   { background: #ef4444; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; white-space: nowrap; flex-shrink: 0; }
+.review-modal {
+  max-width: 920px !important;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.review-modal-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 18px 24px 14px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 96%, #fff 4%), var(--bg-card));
+  border-bottom: 1px solid var(--border);
+}
+.review-modal-scroll {
+  overflow-y: auto;
+  padding: 24px 24px 0;
+}
+.review-status-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+.review-status-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.review-status-label {
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.review-status-label.correct { color: #22c55e; }
+.review-status-label.wrong { color: #ef4444; }
+.review-status-hint {
+  color: var(--text-muted);
+  font-size: 0.84rem;
+}
+.review-answer-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.review-expl-box {
+  display: none;
+  margin-top: 18px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 90%, #fff 10%), var(--bg-card));
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+.review-expl-title {
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.review-modal-footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px calc(14px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, rgba(0,0,0,0), color-mix(in srgb, var(--bg-card) 97%, #fff 3%) 28%);
+  border-top: 1px solid var(--border);
+}
+.review-footer-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
 .saved-review-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -140,9 +231,27 @@
 @media (max-width: 768px) {
   .result-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .saved-review-grid { grid-template-columns: 1fr; }
+  .review-modal-head,
+  .review-modal-footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .review-modal-scroll {
+    padding: 16px 16px 0;
+  }
+  .review-answer-badges {
+    justify-content: flex-start;
+  }
 }
 @media (max-width: 480px) {
   .result-grid { grid-template-columns: repeat(2, 1fr); }
+  .review-modal-footer {
+    flex-wrap: wrap;
+  }
+  .review-footer-center {
+    width: 100%;
+    order: -1;
+  }
 }
 .tw {
   cursor: pointer;
@@ -362,28 +471,41 @@
 </footer>
 
 <div class="modal-overlay" id="qModal">
-  <div class="modal modal-wide">
-    <div class="modal-header">
+  <div class="modal modal-wide review-modal">
+    <div class="review-modal-head">
+      <div class="modal-header" style="margin-bottom:0;">
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <span style="font-size:0.82rem;color:var(--text-muted);" id="modalMeta">Question 1 of 25</span>
         <button class="btn-ghost btn-sm" id="modalTranslateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:0.85rem;">RU</button>
       </div>
       <button class="modal-close" id="modalCloseBtn">&times;</button>
     </div>
+    </div>
+    <div class="review-modal-scroll">
     <div id="modalImgWrap" style="margin-bottom:16px;display:none;">
       <img id="modalImg" src="" alt="" style="width:100%;border-radius:8px;border:1px solid var(--border);max-height:300px;object-fit:cover;">
     </div>
     <div id="modalQuestion" style="font-size:1rem;font-weight:600;line-height:1.5;margin-bottom:16px;"></div>
     <div id="modalQuestionRu" style="display:none;font-size:0.9rem;color:#6b7280;font-style:italic;margin:-8px 0 16px;animation:fadeIn 0.25s ease both;"></div>
+    <div id="modalStatusBanner" class="review-status-banner">
+      <div class="review-status-copy">
+        <span id="modalStatusLabel" class="review-status-label">Review</span>
+        <span id="modalStatusHint" class="review-status-hint"></span>
+      </div>
+      <span id="modalStatusPill"></span>
+    </div>
     <div id="modalAnswers" style="margin-bottom:16px;"></div>
-    <div id="modalExplanation" style="display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:0.88rem;color:var(--text-muted);line-height:1.6;">
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:6px;">Explanation</div>
+    <div id="modalExplanation" class="review-expl-box">
+      <div class="review-expl-title">Explanation</div>
       <div id="modalExplanationBody"></div>
       <div id="modalExplanationRu" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-style:italic;"></div>
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
+    </div>
+    <div class="review-modal-footer">
       <button class="btn-ghost btn-sm" id="modalPrev">&#8592; Prev</button>
-      <span id="modalStatus" style="font-size:0.85rem;"></span>
+      <div class="review-footer-center">
+        <span id="modalStatus" style="font-size:0.85rem;"></span>
+      </div>
       <button class="btn-ghost btn-sm" id="modalNext">Next &#8594;</button>
     </div>
   </div>
