@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}{{ test.title }} - Choose Wording{% endblock %}
+
+{% block head %}
+<style>
+  .wording-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 22px;
+  }
+  .wording-card {
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 94%, #fff 6%), var(--bg-card));
+    padding: 24px;
+  }
+  .wording-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .wording-title {
+    font-size: 1.18rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+  }
+  .wording-copy {
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 18px;
+  }
+  .wording-list {
+    margin: 0 0 24px;
+    padding-left: 18px;
+    color: var(--text-muted);
+    line-height: 1.65;
+  }
+  .wording-note {
+    margin-top: 22px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  @media (max-width: 768px) {
+    .wording-grid {
+      grid-template-columns: 1fr;
+    }
+    .wording-card {
+      padding: 20px;
+      border-radius: 18px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="page" style="padding-top:32px;padding-bottom:48px;max-width:1040px;">
+  <div class="card" style="padding:28px;">
+    <div style="font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">{{ test.title }}</div>
+    <h1 style="font-size:clamp(1.6rem,4vw,2.25rem);line-height:1.12;margin-bottom:12px;">Choose your wording mode</h1>
+    <p style="color:var(--text-muted);font-size:1rem;line-height:1.7;max-width:760px;">
+      This only changes how the question and answer text is phrased. The pictures, question order, correct answers, scoring, review, and explanations all stay the same.
+    </p>
+
+    <div class="wording-grid">
+      <section class="wording-card">
+        <span class="wording-chip">Original wording</span>
+        <div class="wording-title">Study with the current wording</div>
+        <p class="wording-copy">
+          Uses the exact wording currently shown across the site. Best if you want the most familiar practice flow.
+        </p>
+        <ul class="wording-list">
+          <li>Current wording stays unchanged</li>
+          <li>Same questions, images, and answers</li>
+          <li>Good for everyday practice and review</li>
+        </ul>
+        <a href="/test/{{ test.id }}?wording={{ wording_original }}" class="btn-primary">Start with Original wording</a>
+      </section>
+
+      <section class="wording-card">
+        <span class="wording-chip">Exam-style wording</span>
+        <div class="wording-title">Use a more formal exam-like phrasing</div>
+        <p class="wording-copy">
+          Uses a more concise and official-feeling wording style that stays closer to how theory questions are often phrased in exam settings.
+        </p>
+        <ul class="wording-list">
+          <li>Same meaning and same correct answers</li>
+          <li>Only the phrasing changes</li>
+          <li>If no alternative wording exists yet, the original wording is used automatically</li>
+        </ul>
+        <a href="/test/{{ test.id }}?wording={{ wording_exam }}" class="btn-primary">Start with Exam-style wording</a>
+      </section>
+    </div>
+
+    <div class="wording-note">
+      You can switch wording mode the next time you start the test. Your selected mode is kept for the full attempt and results review.
+    </div>
+  </div>
+</div>
+{% endblock %}

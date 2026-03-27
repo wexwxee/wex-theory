@@ -197,6 +197,17 @@
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
           <div style="font-weight:600;font-size:0.95rem;">{{ t.title }}</div>
         </div>
+        {% if t.id >= 1 and t.id <= 13 %}
+        {% set wording_status = exam_wording_statuses.get(t.id) %}
+        {% if wording_status %}
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+          <span style="font-size:0.68rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;padding:3px 8px;border-radius:999px;{% if wording_status.label == 'Ready' %}color:#22c55e;border:1px solid rgba(34,197,94,0.4);background:rgba(34,197,94,0.08);{% elif wording_status.label == 'In Progress' %}color:#f59e0b;border:1px solid rgba(245,158,11,0.4);background:rgba(245,158,11,0.08);{% else %}color:var(--text-muted);border:1px solid var(--border);background:transparent;{% endif %}">
+            Exam wording: {{ wording_status.label }}
+          </span>
+          <span style="font-size:0.75rem;color:var(--text-muted);">{{ wording_status.filled }}/{{ wording_status.total }}</span>
+        </div>
+        {% endif %}
+        {% endif %}
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           {% if t.id == 0 %}
           <span style="font-size:0.7rem;color:var(--correct);border:1px solid var(--correct);padding:2px 8px;border-radius:999px;">STARTER</span>

@@ -605,6 +605,31 @@ def ensure_attempt_question_order_column(db: Session) -> None:
         print(f"[STARTUP] attempt question order setup skipped/error: {e}")
 
 
+def ensure_exam_wording_columns(db: Session) -> None:
+    try:
+        inspector = sql_inspect(engine)
+        question_columns = {col["name"] for col in inspector.get_columns("questions")}
+        if "exam_style_text" not in question_columns:
+            db.execute(sql_text("ALTER TABLE questions ADD COLUMN exam_style_text TEXT"))
+            db.commit()
+            print("[STARTUP] Added questions.exam_style_text column")
+
+        answer_columns = {col["name"] for col in inspector.get_columns("answers")}
+        if "exam_style_text" not in answer_columns:
+            db.execute(sql_text("ALTER TABLE answers ADD COLUMN exam_style_text TEXT"))
+            db.commit()
+            print("[STARTUP] Added answers.exam_style_text column")
+
+        attempt_columns = {col["name"] for col in inspector.get_columns("user_test_attempts")}
+        if "wording_mode" not in attempt_columns:
+            db.execute(sql_text("ALTER TABLE user_test_attempts ADD COLUMN wording_mode VARCHAR DEFAULT 'original'"))
+            db.commit()
+            print("[STARTUP] Added user_test_attempts.wording_mode column")
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] exam wording columns setup skipped/error: {e}")
+
+
 def ensure_exam_mode_test(db: Session) -> None:
     try:
         exam_test = db.query(models.Test).filter(models.Test.id == EXAM_MODE_TEST_ID).first()
@@ -853,6 +878,7 @@ async def startup_init():
         ensure_support_message_columns(db)
         ensure_promo_codes_table(db)
         ensure_attempt_question_order_column(db)
+        ensure_exam_wording_columns(db)
         ensure_question_text_fixes(db)
         CONTACT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -953,6 +979,8 @@ EXAM_MODE_TEST_DESCRIPTION = "Exam Mode with 25 mixed questions from the full pr
 EXAM_MODE_IMAGE_PATH = "Test14/screenshots/q01.jpg"
 EXAM_MODE_QUESTION_COUNT = 25
 EXAM_MODE_PASS_SCORE = 20
+WORDING_MODE_ORIGINAL = "original"
+WORDING_MODE_EXAM = "exam"
 FREE_SAMPLE_QUESTION_MAP = [
     (1, 1),
     (2, 3),
@@ -978,6 +1006,10 @@ def is_free_sample_test(test_id: int) -> bool:
 
 def is_exam_mode_test(test_id: int) -> bool:
     return test_id == EXAM_MODE_TEST_ID
+
+
+def supports_exam_style_wording(test_id: int) -> bool:
+    return 1 <= test_id <= 13
 
 
 def build_free_sample_test():
@@ -1019,13 +1051,43 @@ def ordered_answers(question: models.Question):
     return sorted(question.answers, key=lambda answer: answer.id)
 
 
-def serialize_test_question(question: models.Question, *, display_index: Optional[int] = None):
+def normalize_wording_mode(raw_value: Optional[str], *, test_id: Optional[int] = None) -> str:
+    value = str(raw_value or "").strip().lower()
+    if test_id is not None and not supports_exam_style_wording(test_id):
+        return WORDING_MODE_ORIGINAL
+    if value == WORDING_MODE_EXAM:
+        return WORDING_MODE_EXAM
+    return WORDING_MODE_ORIGINAL
+
+
+def resolve_question_text(question: models.Question, wording_mode: str) -> str:
+    if wording_mode != WORDING_MODE_EXAM:
+        return question.question_text
+    manual = (getattr(question, "exam_style_text", None) or "").strip()
+    return manual or question.question_text
+
+
+def resolve_answer_text(answer: models.Answer, wording_mode: str) -> str:
+    if wording_mode != WORDING_MODE_EXAM:
+        return answer.text
+    manual = (getattr(answer, "exam_style_text", None) or "").strip()
+    return manual or answer.text
+
+
+def apply_wording_to_question(question: models.Question, wording_mode: str) -> models.Question:
+    question.display_question_text = resolve_question_text(question, wording_mode)
+    for answer in ordered_answers(question):
+        answer.display_text = resolve_answer_text(answer, wording_mode)
+    return question
+
+
+def serialize_test_question(question: models.Question, *, display_index: Optional[int] = None, wording_mode: str = WORDING_MODE_ORIGINAL):
     return {
         "id": question.id,
         "question_index": display_index or question.question_index,
-        "question_text": question.question_text,
+        "question_text": resolve_question_text(question, wording_mode),
         "image_path": question.image_path,
-        "answers": [{"id": a.id, "text": a.text} for a in ordered_answers(question)],
+        "answers": [{"id": a.id, "text": resolve_answer_text(a, wording_mode)} for a in ordered_answers(question)],
     }
 
 
@@ -1691,8 +1753,38 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
             best_scores[a.test_id] = a.score or 0
 
     images: dict[int, str] = {}
+    exam_wording_statuses: dict[int, dict[str, int | str]] = {}
     sample_questions = get_free_sample_questions(db)
     images[FREE_SAMPLE_TEST_ID] = sample_questions[0].image_path if sample_questions else ""
+    wording_rows = (
+        db.query(models.Question.test_id, models.Question.exam_style_text)
+        .filter(models.Question.test_id >= 1, models.Question.test_id <= 13)
+        .all()
+    )
+    wording_progress: dict[int, dict[str, int]] = {
+        test_id: {"total": 0, "filled": 0}
+        for test_id in range(1, 14)
+    }
+    for test_id, exam_style_text in wording_rows:
+        wording_progress[test_id]["total"] += 1
+        if str(exam_style_text or "").strip():
+            wording_progress[test_id]["filled"] += 1
+
+    for test_id, counts in wording_progress.items():
+        total = counts["total"]
+        filled = counts["filled"]
+        if total == 0 or filled == 0:
+            label = "Not Started"
+        elif filled < total:
+            label = "In Progress"
+        else:
+            label = "Ready"
+        exam_wording_statuses[test_id] = {
+            "label": label,
+            "filled": filled,
+            "total": total,
+        }
+
     for t in tests:
         if t.id == FREE_SAMPLE_TEST_ID:
             continue
@@ -1715,6 +1807,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         "best_scores": best_scores, "images": images,
         "completed": completed, "has_access": has_full_access,
         "library_total": library_total,
+        "exam_wording_statuses": exam_wording_statuses,
         "access_expires_at": access_expires_at,
         "now": datetime.utcnow(),
     })
@@ -1931,7 +2024,18 @@ async def test_page(test_id: int, request: Request, db: Session = Depends(get_db
     test = build_free_sample_test() if is_free_sample_test(test_id) else db.query(models.Test).filter(models.Test.id == test_id).first()
     if not test:
         raise HTTPException(status_code=404)
-    return templates.TemplateResponse(request, "test.html", {"request": request, "user": user, "test": test})
+    wording_mode = WORDING_MODE_ORIGINAL
+    if supports_exam_style_wording(test_id):
+        raw_wording_mode = request.query_params.get("wording")
+        if raw_wording_mode not in {WORDING_MODE_ORIGINAL, WORDING_MODE_EXAM}:
+            return RedirectResponse(f"/test/{test_id}/overview", status_code=302)
+        wording_mode = normalize_wording_mode(raw_wording_mode, test_id=test_id)
+    return templates.TemplateResponse(request, "test.html", {
+        "request": request,
+        "user": user,
+        "test": test,
+        "wording_mode": wording_mode,
+    })
 
 
 @app.get("/test/{test_id}/overview", response_class=HTMLResponse)
@@ -1941,12 +2045,20 @@ async def overview_page(test_id: int, request: Request, db: Session = Depends(ge
         return RedirectResponse("/login", status_code=302)
     if not is_free_sample_test(test_id) and not user_has_access(user):
         return RedirectResponse("/subscription-expired" if getattr(user, "subscription_status", "free") != "free" else "/pricing", status_code=302)
+    if not supports_exam_style_wording(test_id):
+        return RedirectResponse(f"/test/{test_id}", status_code=302)
     if is_exam_mode_test(test_id):
         ensure_exam_mode_test(db)
-    test = build_free_sample_test() if is_free_sample_test(test_id) else db.query(models.Test).filter(models.Test.id == test_id).first()
+    test = db.query(models.Test).filter(models.Test.id == test_id).first()
     if not test:
         raise HTTPException(status_code=404)
-    return templates.TemplateResponse(request, "overview.html", {"request": request, "user": user, "test": test})
+    return templates.TemplateResponse(request, "overview.html", {
+        "request": request,
+        "user": user,
+        "test": test,
+        "wording_original": WORDING_MODE_ORIGINAL,
+        "wording_exam": WORDING_MODE_EXAM,
+    })
 
 
 @app.get("/results/free", response_class=HTMLResponse)
@@ -1972,10 +2084,12 @@ async def results_page(test_id: int, attempt_id: int, request: Request, db: Sess
     if not attempt:
         raise HTTPException(status_code=404)
 
+    wording_mode = normalize_wording_mode(getattr(attempt, "wording_mode", None), test_id=attempt.test_id)
     questions = get_questions_for_attempt(db, attempt)
     ua_map = {ua.question_id: ua for ua in attempt.user_answers}
     question_results = []
     for idx, q in enumerate(questions):
+        apply_wording_to_question(q, wording_mode)
         ua = ua_map.get(q.id)
         answers = ordered_answers(q)
         correct_ids = [a.id for a in answers if a.is_correct]
@@ -2006,6 +2120,7 @@ async def results_page(test_id: int, attempt_id: int, request: Request, db: Sess
         "saved_question_results": saved_question_results,
         "is_exam_mode": is_exam_mode_test(attempt.test_id),
         "error_count": len(question_results) - (attempt.score or 0),
+        "wording_mode": wording_mode,
     })
 
 
@@ -2023,10 +2138,12 @@ async def review_page(test_id: int, attempt_id: int, request: Request, db: Sessi
     if not attempt:
         raise HTTPException(status_code=404)
 
+    wording_mode = normalize_wording_mode(getattr(attempt, "wording_mode", None), test_id=attempt.test_id)
     questions = get_questions_for_attempt(db, attempt)
     ua_map = {ua.question_id: ua for ua in attempt.user_answers}
     review_data = []
     for q in questions:
+        apply_wording_to_question(q, wording_mode)
         ua = ua_map.get(q.id)
         answers = ordered_answers(q)
         review_data.append({
@@ -2036,7 +2153,7 @@ async def review_page(test_id: int, attempt_id: int, request: Request, db: Sessi
         })
     return templates.TemplateResponse(request, "review.html", {
         "request": request, "user": user, "test": attempt.test,
-        "attempt": attempt, "review_data": review_data,
+        "attempt": attempt, "review_data": review_data, "wording_mode": wording_mode,
     })
 
 
@@ -2055,6 +2172,7 @@ async def api_tests(request: Request, db: Session = Depends(get_db)):
 @app.get("/api/tests/{test_id}/questions")
 async def api_questions(test_id: int, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
+    wording_mode = normalize_wording_mode(request.query_params.get("wording"), test_id=test_id)
     if not is_free_sample_test(test_id) and not user:
         return JSONResponse({"error": "Unauthorized"}, status_code=401)
     if is_free_sample_test(test_id):
@@ -2090,12 +2208,13 @@ async def api_questions(test_id: int, request: Request, db: Session = Depends(ge
     )
     if not questions:
         return JSONResponse({"error": "No questions found for this test"}, status_code=404)
-    return [serialize_test_question(q) for q in questions]
+    return [serialize_test_question(q, wording_mode=wording_mode) for q in questions]
 
 
 @app.post("/api/tests/{test_id}/start")
 async def api_start_test(test_id: int, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
+    wording_mode = normalize_wording_mode(request.query_params.get("wording"), test_id=test_id)
     if not user:
         return JSONResponse({"error": "Unauthorized"}, status_code=401)
     if not is_free_sample_test(test_id) and not user_has_access(user):
@@ -2121,7 +2240,12 @@ async def api_start_test(test_id: int, request: Request, db: Session = Depends(g
         return JSONResponse({"error": f"Test {test_id} not found (DB has {total} tests)"}, status_code=404)
 
     try:
-        attempt = models.UserTestAttempt(user_id=user.id, test_id=test_id, started_at=datetime.utcnow())
+        attempt = models.UserTestAttempt(
+            user_id=user.id,
+            test_id=test_id,
+            started_at=datetime.utcnow(),
+            wording_mode=wording_mode,
+        )
         db.add(attempt)
         db.commit()
         db.refresh(attempt)
@@ -2261,15 +2385,16 @@ async def api_review(attempt_id: int, request: Request, db: Session = Depends(ge
 
     ua_map = {ua.question_id: ua for ua in attempt.user_answers}
     questions = get_questions_for_attempt(db, attempt)
+    wording_mode = normalize_wording_mode(getattr(attempt, "wording_mode", None), test_id=attempt.test_id)
 
     return [
         {
             "id": q.id, "question_index": idx + 1 if is_exam_mode_test(attempt.test_id) else q.question_index,
-            "question_text": q.question_text, "image_path": q.image_path,
+            "question_text": resolve_question_text(q, wording_mode), "image_path": q.image_path,
             "explanation": q.explanation,
             "is_correct": ua_map[q.id].is_correct if q.id in ua_map else False,
             "selected_ids": json.loads(ua_map[q.id].selected_answer_ids) if q.id in ua_map else [],
-            "answers": [{"id": a.id, "text": a.text, "is_correct": a.is_correct} for a in ordered_answers(q)],
+            "answers": [{"id": a.id, "text": resolve_answer_text(a, wording_mode), "is_correct": a.is_correct} for a in ordered_answers(q)],
         }
         for idx, q in enumerate(questions)
     ]

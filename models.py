@@ -45,6 +45,7 @@ class Question(Base):
     test_id = Column(Integer, ForeignKey("tests.id"), nullable=False, index=True)
     question_index = Column(Integer, nullable=False)
     question_text = Column(Text, nullable=False)
+    exam_style_text = Column(Text, nullable=True)
     explanation = Column(Text, default="")
     image_path = Column(String, default="")
 
@@ -59,6 +60,7 @@ class Answer(Base):
     id = Column(Integer, primary_key=True, index=True)
     question_id = Column(Integer, ForeignKey("questions.id"), nullable=False, index=True)
     text = Column(Text, nullable=False)
+    exam_style_text = Column(Text, nullable=True)
     is_correct = Column(Boolean, default=False)
 
     question = relationship("Question", back_populates="answers")
@@ -75,6 +77,7 @@ class UserTestAttempt(Base):
     score = Column(Integer, nullable=True)
     passed = Column(Boolean, nullable=True)
     question_order_json = Column(Text, nullable=True, default="[]")
+    wording_mode = Column(String, nullable=False, default="original")
 
     user = relationship("User", back_populates="attempts")
     test = relationship("Test", back_populates="attempts")

@@ -361,7 +361,7 @@
     </div>
 
     <div style="display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap;">
-      <a href="/test/{{ test.id }}" class="btn-primary">{% if is_exam_mode %}Retake{% else %}Try Again{% endif %}</a>
+      <a href="{% if not is_exam_mode and test.id >= 1 and test.id <= 13 %}/test/{{ test.id }}/overview{% else %}/test/{{ test.id }}{% endif %}" class="btn-primary">{% if is_exam_mode %}Retake{% else %}Try Again{% endif %}</a>
       {% if is_exam_mode %}
       <a href="#review-breakdown" class="btn-ghost">Review Answers</a>
       {% endif %}
@@ -410,7 +410,7 @@
         <div class="saved-review-head">
           <div>
             <div style="font-size:0.74rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Question {{ qr.display_index }}</div>
-            <div style="font-size:0.98rem;font-weight:700;line-height:1.45;">{{ qr.question.question_text }}</div>
+            <div style="font-size:0.98rem;font-weight:700;line-height:1.45;">{{ qr.question.display_question_text or qr.question.question_text }}</div>
           </div>
           <span class="saved-review-chip" style="{% if qr.is_correct %}color:#22c55e;border-color:rgba(34,197,94,0.35);background:rgba(34,197,94,0.08);{% else %}color:#ef4444;border-color:rgba(239,68,68,0.35);background:rgba(239,68,68,0.08);{% endif %}">
             {% if qr.is_correct %}Correct{% else %}Needs Review{% endif %}
@@ -424,7 +424,7 @@
             {% set is_correct_answer = a.id in qr.correct_ids %}
             <div class="saved-answer-row {% if was_selected and is_correct_answer %}user-correct{% elif was_selected and not is_correct_answer %}user-wrong{% elif not was_selected and is_correct_answer %}missed-correct{% else %}neutral{% endif %}">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-                <span>{{ a.text }}</span>
+                <span>{{ a.display_text or a.text }}</span>
                 <span style="font-size:0.72rem;font-weight:700;white-space:nowrap;">
                   {% if was_selected and is_correct_answer %}Your answer - Correct{% elif was_selected and not is_correct_answer %}Your answer - Wrong{% elif not was_selected and is_correct_answer %}Correct answer{% endif %}
                 </span>
@@ -449,7 +449,7 @@
   {% endif %}
 
   <div style="display:flex;gap:12px;justify-content:center;margin-bottom:40px;flex-wrap:wrap;">
-    <a href="/test/{{ test.id }}" class="btn-primary">{% if is_exam_mode %}Retake{% else %}Try Again{% endif %}</a>
+    <a href="{% if not is_exam_mode and test.id >= 1 and test.id <= 13 %}/test/{{ test.id }}/overview{% else %}/test/{{ test.id }}{% endif %}" class="btn-primary">{% if is_exam_mode %}Retake{% else %}Try Again{% endif %}</a>
     {% if user %}
     <a href="/dashboard" class="btn-ghost">Back to Dashboard</a>
     {% else %}
@@ -510,7 +510,7 @@
     </div>
   </div>
 </div>
-<textarea id="resultsDataJson" hidden>[{% for qr in question_results %}{"index": {{ qr.display_index }}, "text": {{ qr.question.question_text | tojson }}, "image": {{ (qr.question.image_path or '') | tojson }}, "explanation": {{ (qr.question.explanation or '') | tojson }}, "is_correct": {{ 'true' if qr.is_correct else 'false' }}, "selected_ids": {{ qr.selected_ids | tojson }}, "correct_ids": {{ qr.correct_ids | tojson }}, "answers": [{% for a in qr.answers %}{"id": {{ a.id }}, "text": {{ a.text | tojson }}}{% if not loop.last %}, {% endif %}{% endfor %}]}{% if not loop.last %}, {% endif %}{% endfor %}]</textarea>
+<textarea id="resultsDataJson" hidden>[{% for qr in question_results %}{"index": {{ qr.display_index }}, "text": {{ (qr.question.display_question_text or qr.question.question_text) | tojson }}, "image": {{ (qr.question.image_path or '') | tojson }}, "explanation": {{ (qr.question.explanation or '') | tojson }}, "is_correct": {{ 'true' if qr.is_correct else 'false' }}, "selected_ids": {{ qr.selected_ids | tojson }}, "correct_ids": {{ qr.correct_ids | tojson }}, "answers": [{% for a in qr.answers %}{"id": {{ a.id }}, "text": {{ (a.display_text or a.text) | tojson }}}{% if not loop.last %}, {% endif %}{% endfor %}]}{% if not loop.last %}, {% endif %}{% endfor %}]</textarea>
 <div id="resultsPageMeta" hidden data-score="{{ attempt.score }}" data-total="{{ question_results|length }}"></div>
 {% endblock %}
 

@@ -1,6 +1,7 @@
 ﻿const testContainer = document.getElementById('testContainer');
 const TEST_ID = Number(testContainer?.dataset.testId || 0);
 const IS_AUTHENTICATED = testContainer?.dataset.isAuthenticated === 'true';
+const WORDING_MODE = testContainer?.dataset.wordingMode || 'original';
 const FREE_SAMPLE_TEST_ID = 0;
 const EXAM_MODE_TEST_ID = 14;
 
@@ -55,7 +56,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 // в”Ђв”Ђ Load questions в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 async function loadQuestions() {
   try {
-    const query = TEST_ID === EXAM_MODE_TEST_ID && attemptId ? `?attempt_id=${attemptId}` : '';
+    const params = new URLSearchParams();
+    if (TEST_ID === EXAM_MODE_TEST_ID && attemptId) {
+      params.set('attempt_id', String(attemptId));
+    }
+    if (TEST_ID >= 1 && TEST_ID <= 13 && WORDING_MODE === 'exam') {
+      params.set('wording', WORDING_MODE);
+    }
+    const query = params.toString() ? `?${params.toString()}` : '';
     const res = await fetch(`/api/tests/${TEST_ID}/questions${query}`);
     if (res.status === 401) {
       window.location.href = '/login';
@@ -408,12 +416,13 @@ async function submitTest(auto = false) {
       await ensureExamAttempt();
     }
 
-    // 1. Start attempt
-    if (TEST_ID !== EXAM_MODE_TEST_ID) {
-      const startRes = await fetch(`/api/tests/${TEST_ID}/start`, { method: 'POST' });
-      if (startRes.status === 403) { window.location.href = '/pricing'; return; }
-      if (!startRes.ok) throw new Error('Failed to start attempt');
-      const { attempt_id } = await startRes.json();
+      // 1. Start attempt
+      if (TEST_ID !== EXAM_MODE_TEST_ID) {
+        const startQuery = TEST_ID >= 1 && TEST_ID <= 13 ? `?wording=${encodeURIComponent(WORDING_MODE)}` : '';
+        const startRes = await fetch(`/api/tests/${TEST_ID}/start${startQuery}`, { method: 'POST' });
+        if (startRes.status === 403) { window.location.href = '/pricing'; return; }
+        if (!startRes.ok) throw new Error('Failed to start attempt');
+        const { attempt_id } = await startRes.json();
       attemptId = attempt_id;
     }
 
@@ -604,7 +613,7 @@ async function toggleTranslate() {
 
 async function _ensureQuestionTranslated(q) {
   if (questionTransCache[q.id]) return;
-  const cacheKey = 'wx_q_' + q.id;
+  const cacheKey = 'wx_q_' + WORDING_MODE + '_' + q.id;
   const cached = sessionStorage.getItem(cacheKey);
   if (cached) {
     try { questionTransCache[q.id] = JSON.parse(cached); return; } catch(e) {}
