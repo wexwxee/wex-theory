@@ -1748,9 +1748,21 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
     ).all()
 
     best_scores: dict[int, int] = {}
+    best_scores_by_mode: dict[int, dict[str, Optional[int]]] = {
+        test_id: {
+            WORDING_MODE_ORIGINAL: None,
+            WORDING_MODE_EXAM: None,
+        }
+        for test_id in range(1, 14)
+    }
     for a in finished:
         if a.test_id not in best_scores or (a.score or 0) > best_scores[a.test_id]:
             best_scores[a.test_id] = a.score or 0
+        if supports_exam_style_wording(a.test_id):
+            wording_mode = normalize_wording_mode(getattr(a, "wording_mode", None), test_id=a.test_id)
+            current = best_scores_by_mode[a.test_id].get(wording_mode)
+            if current is None or (a.score or 0) > current:
+                best_scores_by_mode[a.test_id][wording_mode] = a.score or 0
 
     images: dict[int, str] = {}
     exam_wording_statuses: dict[int, dict[str, int | str]] = {}
@@ -1805,6 +1817,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse(request, "dashboard.html", {
         "request": request, "user": user, "tests": tests,
         "best_scores": best_scores, "images": images,
+        "best_scores_by_mode": best_scores_by_mode,
         "completed": completed, "has_access": has_full_access,
         "library_total": library_total,
         "exam_wording_statuses": exam_wording_statuses,
