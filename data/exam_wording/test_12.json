@@ -1,0 +1,30 @@
+{
+  "test_id": 12,
+  "questions": [
+    { "question_index": 1, "question_text": "When is the driver responsible for making sure passengers wear a seat belt?" },
+    { "question_index": 2, "question_text": "What are you allowed to tow behind a car?" },
+    { "question_index": 3, "question_text": "What is the legal limit for alcohol concentration in the breath when driving a car?" },
+    { "question_index": 4, "question_text": "How many penalty points must a new driver receive within 3 years to lose the licence?" },
+    { "question_index": 5, "question_text": "How can you drive in a more environmentally friendly way and reduce CO2 emissions?" },
+    { "question_index": 6, "question_text": "Why is the car's exhaust system important?" },
+    { "question_index": 7, "question_text": "Who must you show particular consideration for in traffic?" },
+    { "question_index": 8, "question_text": "What does the law say if the ABS warning light does not go out shortly after starting the car?" },
+    { "question_index": 9, "question_text": "Which of these statements about the legal requirements for car lights are correct?" },
+    { "question_index": 10, "question_text": "What applies to carrying an approved warning triangle in the car?" },
+    { "question_index": 11, "question_text": "Which general speed limits apply to cars with a trailer up to 3,500 kg?" },
+    { "question_index": 12, "question_text": "What applies to the total permitted weight of the car and trailer?" },
+    { "question_index": 13, "question_text": "Which of these statements about eco-driving requirements is correct?" },
+    { "question_index": 14, "question_text": "Which of these statements about the registration certificate are correct?" },
+    { "question_index": 15, "question_text": "When may you use rear fog lights?" },
+    { "question_index": 16, "question_text": "Which rules apply to marking a load?" },
+    { "question_index": 17, "question_text": "Which rules apply to the distance between vehicles during towing?" },
+    { "question_index": 18, "question_text": "Which rules apply to placing a warning triangle in case of breakdown or accident?" },
+    { "question_index": 19, "question_text": "Which rules apply when towing vehicles?" },
+    { "question_index": 20, "question_text": "Which of these statements is correct regarding the rules on intoxicating substances and drugs?" },
+    { "question_index": 21, "question_text": "Which rules apply in the event of an accident?" },
+    { "question_index": 22, "question_text": "Which rules apply to braking distance for motor vehicles?" },
+    { "question_index": 23, "question_text": "Which of these statements about the use of the horn and light signals are correct?" },
+    { "question_index": 24, "question_text": "Which of these statements about alcohol rules and breath tests is correct?" },
+    { "question_index": 25, "question_text": "What requirement applies to liability insurance for a motor vehicle?" }
+  ]
+}

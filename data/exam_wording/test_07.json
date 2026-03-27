@@ -1,0 +1,54 @@
+{
+  "test_id": 7,
+  "questions": [
+    { "question_index": 1, "question_text": "You have taken the wrong road and must turn around. What do you do?" },
+    { "question_index": 2, "question_text": "You have caught up with the slowly moving car ahead. What do you do?" },
+    { "question_index": 3, "question_text": "What does the police officer's hand signal mean?" },
+    { "question_index": 4, "question_text": "You are driving at about 70 km/h. What do you do?" },
+    { "question_index": 5, "question_text": "You are looking for a parking space nearby. What do you do now?" },
+    { "question_index": 6, "question_text": "What should you pay particular attention to here?" },
+    { "question_index": 7, "question_text": "What should you pay particular attention to here?" },
+    { "question_index": 8, "question_text": "You are driving at about 60 km/h and want to enter the motorway to the left. There is no traffic in your blind spot. What do you do?" },
+    { "question_index": 9, "question_text": "What should you pay particular attention to here?" },
+    { "question_index": 10, "question_text": "You have reduced speed to 20 to 30 km/h because the lane narrows. What do you do?" },
+    { "question_index": 11, "question_text": "You are driving at about 40 km/h and must continue straight ahead. What do you do?" },
+    { "question_index": 12, "question_text": "You are about to catch up with the driver ahead at about 60 km/h. There is no traffic behind you. What do you do?" },
+    { "question_index": 13, "question_text": "You are driving at about 50 km/h. There is no traffic behind you. The oncoming truck is about to turn right into the side road. What do you do?" },
+    { "question_index": 14, "question_text": "What should you pay particular attention to here?" },
+    { "question_index": 15, "question_text": "You are driving at about 50 km/h and the driver behind has caught up with you. What do you do?" },
+    { "question_index": 16, "question_text": "You are about to move off from a parking space. What should you pay particular attention to?" },
+    { "question_index": 17, "question_text": "You are driving at about 40 km/h and must continue straight ahead. What do you do here?" },
+    { "question_index": 18, "question_text": "You want to turn left at this intersection. What should you pay particular attention to?" },
+    { "question_index": 19, "question_text": "You are about to enter a motorway, but the driver ahead is hesitating about merging. There is no traffic behind you in the nearest motorway lane. What do you do?" },
+    {
+      "question_index": 20,
+      "question_text": "The driver has got out of the grey car here. Which rules apply here?",
+      "answers": {
+        "1": "I may leave the car here for up to 3 minutes.",
+        "2": "Parking is permitted here.",
+        "3": "Stopping in the viaduct is prohibited."
+      }
+    },
+    { "question_index": 21, "question_text": "You have caught up with the slowly moving lorry, and you want to get ahead quickly. There is no traffic behind you. What do you do?" },
+    { "question_index": 22, "question_text": "You need to continue straight ahead at the intersection. What do you do?" },
+    { "question_index": 23, "question_text": "You are driving at about 20 to 30 km/h. What do you do?" },
+    {
+      "question_index": 24,
+      "question_text": "You have got out of the red car. Which rule applies here?",
+      "answers": {
+        "1": "I may leave the car here for 2-3 minutes.",
+        "2": "Parking is permitted here.",
+        "3": "Stopping is prohibited here."
+      }
+    },
+    {
+      "question_index": 25,
+      "question_text": "You have got out of the red car. Which rule applies here?",
+      "answers": {
+        "1": "I may leave the car here for 2-3 minutes.",
+        "2": "Parking is permitted here.",
+        "3": "Stopping and parking are prohibited here."
+      }
+    }
+  ]
+}
