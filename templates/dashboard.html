@@ -92,58 +92,29 @@
       margin-bottom: 24px;
     }
   }
-  .wording-ready-chip {
+  .wording-meta {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: 999px;
-    color: #2563eb;
-    border: 1px solid rgba(37, 99, 235, 0.25);
-    background: rgba(37, 99, 235, 0.08);
-  }
-  .wording-ready-chip.in-progress {
-    color: #f59e0b;
-    border-color: rgba(245, 158, 11, 0.35);
-    background: rgba(245, 158, 11, 0.08);
-  }
-  .wording-ready-chip.not-started {
-    color: var(--text-muted);
-    border-color: var(--border);
-    background: transparent;
-  }
-  .wording-score-grid {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .wording-score-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    font-size: 0.75rem;
-    font-weight: 700;
-    background: var(--bg-card);
-  }
-  .wording-score-chip.label-only {
+    margin-top: 6px;
+    font-size: 0.74rem;
     color: var(--text-muted);
   }
-  .wording-score-chip.pass {
-    color: #22c55e;
-    border-color: rgba(34, 197, 94, 0.35);
-    background: rgba(34, 197, 94, 0.08);
+  .wording-meta-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: var(--border);
+    flex: 0 0 7px;
   }
-  .wording-score-chip.fail {
-    color: #ef4444;
-    border-color: rgba(239, 68, 68, 0.35);
-    background: rgba(239, 68, 68, 0.08);
+  .wording-meta.ready .wording-meta-dot {
+    background: #22c55e;
+  }
+  .wording-meta.in-progress .wording-meta-dot {
+    background: #f59e0b;
+  }
+  .wording-meta.not-started .wording-meta-dot {
+    background: var(--border);
   }
 </style>
 <nav>
@@ -247,23 +218,32 @@
       <div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);border-radius:6px;padding:4px 8px;font-size:0.8rem;">LOCKED</div>
       {% endif %}
       <div class="test-card-body">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <div style="font-weight:600;font-size:0.95rem;">{{ t.title }}</div>
-        </div>
         {% if t.id >= 1 and t.id <= 13 %}
         {% set wording_status = exam_wording_statuses.get(t.id) %}
-        {% set mode_scores = best_scores_by_mode.get(t.id, {}) %}
-        {% set original_score = mode_scores.get('original') %}
-        {% set exam_score = mode_scores.get('exam') %}
-        {% if wording_status %}
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-          <span class="wording-ready-chip {% if wording_status.label == 'In Progress' %}in-progress{% elif wording_status.label == 'Not Started' %}not-started{% endif %}">
-            Aa Exam text: {{ wording_status.label }}
-          </span>
-          <span style="font-size:0.75rem;color:var(--text-muted);">Texts {{ wording_status.filled }}/{{ wording_status.total }}</span>
+        {% endif %}
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div>
+            <div style="font-weight:600;font-size:0.95rem;">{{ t.title }}</div>
+            {% if t.id >= 1 and t.id <= 13 and wording_status %}
+              {% if wording_status.label == 'Ready' %}
+              <div class="wording-meta ready">
+                <span class="wording-meta-dot"></span>
+                <span>Exam wording ready</span>
+              </div>
+              {% elif wording_status.label == 'In Progress' %}
+              <div class="wording-meta in-progress">
+                <span class="wording-meta-dot"></span>
+                <span>Exam wording {{ wording_status.filled }}/{{ wording_status.total }}</span>
+              </div>
+              {% else %}
+              <div class="wording-meta not-started">
+                <span class="wording-meta-dot"></span>
+                <span>Exam wording not added</span>
+              </div>
+              {% endif %}
+            {% endif %}
+          </div>
         </div>
-        {% endif %}
-        {% endif %}
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           {% if t.id == 0 %}
           <span style="font-size:0.7rem;color:var(--correct);border:1px solid var(--correct);padding:2px 8px;border-radius:999px;">STARTER</span>
@@ -272,24 +252,7 @@
           {% elif is_locked %}
             <span style="font-size:0.7rem;color:var(--text-muted);border:1px solid var(--border);padding:2px 8px;border-radius:999px;">Extended</span>
           {% endif %}
-          {% if t.id >= 1 and t.id <= 13 %}
-            <div class="wording-score-grid">
-              {% if original_score is not none %}
-                <span class="wording-score-chip {% if original_score >= 20 %}pass{% else %}fail{% endif %}">
-                  Original {% if original_score >= 20 %}&#10003;{% else %}&#10005;{% endif %} {{ original_score }}/25
-                </span>
-              {% else %}
-                <span class="wording-score-chip label-only">Original not taken</span>
-              {% endif %}
-              {% if exam_score is not none %}
-                <span class="wording-score-chip {% if exam_score >= 20 %}pass{% else %}fail{% endif %}">
-                  Exam {% if exam_score >= 20 %}&#10003;{% else %}&#10005;{% endif %} {{ exam_score }}/25
-                </span>
-              {% else %}
-                <span class="wording-score-chip label-only">Exam not taken</span>
-              {% endif %}
-            </div>
-          {% elif t.id in best_scores %}
+          {% if t.id in best_scores %}
             {% if best_scores[t.id] >= 20 %}
               <span class="badge-green">&#10003; {{ best_scores[t.id] }}/25</span>
             {% else %}
