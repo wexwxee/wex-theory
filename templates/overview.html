@@ -16,6 +16,112 @@
     background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 94%, #fff 6%), var(--bg-card));
     padding: 24px;
   }
+  .wording-preview {
+    position: relative;
+    overflow: hidden;
+    min-height: 184px;
+    padding: 20px;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .wording-preview::after {
+    content: "";
+    position: absolute;
+    inset: auto -30px -36px auto;
+    width: 150px;
+    height: 150px;
+    border-radius: 999px;
+    opacity: 0.24;
+    pointer-events: none;
+  }
+  .wording-preview.original {
+    background:
+      radial-gradient(circle at top right, rgba(148, 163, 184, 0.12), transparent 42%),
+      linear-gradient(180deg, color-mix(in srgb, var(--bg) 84%, #fff 16%), color-mix(in srgb, var(--bg-card) 96%, #fff 4%));
+  }
+  .wording-preview.original::after {
+    background: rgba(148, 163, 184, 0.16);
+  }
+  .wording-preview.ai {
+    background:
+      radial-gradient(circle at top right, rgba(16, 185, 129, 0.14), transparent 40%),
+      linear-gradient(180deg, color-mix(in srgb, var(--bg) 82%, #ecfdf5 18%), color-mix(in srgb, var(--bg-card) 94%, #ecfdf5 6%));
+  }
+  .wording-preview.ai::after {
+    background: rgba(16, 185, 129, 0.16);
+  }
+  .wording-preview-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .wording-preview-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: var(--text-muted);
+  }
+  .wording-preview.ai .wording-preview-dot {
+    background: #10b981;
+  }
+  .wording-preview-copy {
+    position: relative;
+    z-index: 1;
+    max-width: 280px;
+  }
+  .wording-preview-title {
+    font-size: 1.16rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .wording-preview-text {
+    color: var(--text-muted);
+    line-height: 1.5;
+    font-size: 0.93rem;
+  }
+  .wording-preview-art {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 9px;
+  }
+  .wording-preview-line {
+    height: 12px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--border) 80%, transparent 20%);
+  }
+  .wording-preview.original .wording-preview-line:nth-child(1) {
+    width: 74%;
+  }
+  .wording-preview.original .wording-preview-line:nth-child(2) {
+    width: 58%;
+  }
+  .wording-preview.original .wording-preview-line:nth-child(3) {
+    width: 66%;
+  }
+  .wording-preview.ai .wording-preview-line {
+    background: linear-gradient(90deg, rgba(15, 23, 42, 0.14), rgba(16, 185, 129, 0.18));
+  }
+  .wording-preview.ai .wording-preview-line:nth-child(1) {
+    width: 82%;
+  }
+  .wording-preview.ai .wording-preview-line:nth-child(2) {
+    width: 62%;
+  }
+  .wording-preview.ai .wording-preview-line:nth-child(3) {
+    width: 74%;
+  }
   .wording-chip {
     display: inline-flex;
     align-items: center;
@@ -86,6 +192,11 @@
       padding: 20px;
       border-radius: 18px;
     }
+    .wording-preview {
+      min-height: 168px;
+      padding: 18px;
+      border-radius: 16px;
+    }
   }
 </style>
 {% endblock %}
@@ -94,13 +205,28 @@
 <div class="page" style="padding-top:32px;padding-bottom:48px;max-width:1040px;">
   <div class="card" style="padding:28px;">
     <div style="font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">{{ test.title }}</div>
-    <h1 style="font-size:clamp(1.6rem,4vw,2.25rem);line-height:1.12;margin-bottom:12px;">Choose your wording mode</h1>
+    <h1 style="font-size:clamp(1.6rem,4vw,2.25rem);line-height:1.12;margin-bottom:12px;">Choose your wording</h1>
     <p style="color:var(--text-muted);font-size:0.98rem;line-height:1.6;max-width:720px;">
       Same test, same answers, same score. Only the wording changes.
     </p>
 
     <div class="wording-grid">
       <section class="wording-card">
+        <div class="wording-preview original">
+          <div class="wording-preview-copy">
+            <div class="wording-preview-eyebrow">
+              <span class="wording-preview-dot"></span>
+              <span>Default mode</span>
+            </div>
+            <div class="wording-preview-title">Familiar wording you already know</div>
+            <div class="wording-preview-text">The standard version used across the site for calm, everyday practice.</div>
+          </div>
+          <div class="wording-preview-art" aria-hidden="true">
+            <span class="wording-preview-line"></span>
+            <span class="wording-preview-line"></span>
+            <span class="wording-preview-line"></span>
+          </div>
+        </div>
         <span class="wording-chip">Original wording</span>
         <div class="wording-title">The usual wording on the site</div>
         <div class="wording-best">
@@ -119,26 +245,41 @@
       </section>
 
       <section class="wording-card">
-        <span class="wording-chip">Exam-style wording</span>
-        <div class="wording-title">Wording closer to the real theory exam</div>
+        <div class="wording-preview ai">
+          <div class="wording-preview-copy">
+            <div class="wording-preview-eyebrow">
+              <span class="wording-preview-dot"></span>
+              <span>AI practice mode</span>
+            </div>
+            <div class="wording-preview-title">Alternative wording for tougher practice</div>
+            <div class="wording-preview-text">An AI-assisted practice version with the same meaning, but a different phrasing style.</div>
+          </div>
+          <div class="wording-preview-art" aria-hidden="true">
+            <span class="wording-preview-line"></span>
+            <span class="wording-preview-line"></span>
+            <span class="wording-preview-line"></span>
+          </div>
+        </div>
+        <span class="wording-chip">AI wording</span>
+        <div class="wording-title">AI-assisted alternative practice wording</div>
         <div class="wording-best">
           <span class="wording-best-dot"></span>
-          <span><strong>Best for:</strong> exam-like practice</span>
+          <span><strong>Best for:</strong> practice with different phrasing</span>
         </div>
         <p class="wording-copy">
-          Uses shorter wording closer to the real Danish theory test.
+          Uses AI-assisted wording designed to feel closer to Danish theory test style, without claiming to be the official exam text.
         </p>
         <ul class="wording-list">
           <li>Same meaning and same correct answers</li>
-          <li>Only the wording changes</li>
-          <li>If a question has no exam version yet, original wording is used</li>
+          <li>Not the official wording of the real exam</li>
+          <li>If no AI version is available yet, original wording is used</li>
         </ul>
-        <a href="/test/{{ test.id }}?wording={{ wording_exam }}" class="btn-primary">Start with Exam-style wording</a>
+        <a href="/test/{{ test.id }}?wording={{ wording_exam }}" class="btn-primary">Start with AI wording</a>
       </section>
     </div>
 
     <div class="wording-note">
-      Your choice stays the same for the full attempt and review. You can choose a different mode next time you start the test.
+      Your choice stays the same for the full attempt and review. You can choose a different wording next time you start the test.
     </div>
   </div>
 </div>

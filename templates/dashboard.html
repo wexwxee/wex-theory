@@ -116,6 +116,52 @@
   .wording-meta.not-started .wording-meta-dot {
     background: var(--border);
   }
+  .mode-progress {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .mode-progress-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg-card) 94%, #fff 6%);
+  }
+  .mode-progress-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .mode-progress-item.original {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 94%, #fff 6%), var(--bg-card));
+  }
+  .mode-progress-item.ai {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 93%, #ecfdf5 7%), var(--bg-card));
+  }
+  .mode-progress-value {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .mode-progress-empty {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    text-align: right;
+  }
+  @media (max-width: 640px) {
+    .mode-progress {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+  }
 </style>
 <nav>
   <div class="nav-inner">
@@ -220,6 +266,8 @@
       <div class="test-card-body">
         {% if t.id >= 1 and t.id <= 13 %}
         {% set wording_status = exam_wording_statuses.get(t.id) %}
+        {% set original_score = best_scores_by_mode.get(t.id, {}).get('original') %}
+        {% set ai_score = best_scores_by_mode.get(t.id, {}).get('exam') %}
         {% endif %}
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
           <div>
@@ -228,22 +276,60 @@
               {% if wording_status.label == 'Ready' %}
               <div class="wording-meta ready">
                 <span class="wording-meta-dot"></span>
-                <span>Exam wording ready</span>
+                <span>AI wording ready</span>
               </div>
               {% elif wording_status.label == 'In Progress' %}
               <div class="wording-meta in-progress">
                 <span class="wording-meta-dot"></span>
-                <span>Exam wording {{ wording_status.filled }}/{{ wording_status.total }}</span>
+                <span>AI wording {{ wording_status.filled }}/{{ wording_status.total }}</span>
               </div>
               {% else %}
               <div class="wording-meta not-started">
                 <span class="wording-meta-dot"></span>
-                <span>Exam wording not added</span>
+                <span>AI wording not added yet</span>
               </div>
               {% endif %}
             {% endif %}
           </div>
         </div>
+        {% if t.id >= 1 and t.id <= 13 %}
+        <div class="mode-progress">
+          <div class="mode-progress-item original">
+            <span class="mode-progress-label">Original</span>
+            <div class="mode-progress-value">
+              {% if original_score is not none %}
+                {% if original_score >= 20 %}
+                  <span class="badge-green">&#10003; {{ original_score }}/25</span>
+                {% else %}
+                  <span class="badge-red">&#10005; {{ original_score }}/25</span>
+                {% endif %}
+              {% elif not is_locked %}
+                <span class="mode-progress-empty">Not started</span>
+              {% else %}
+                <span style="font-size:0.7rem;color:var(--text-muted);border:1px solid var(--border);padding:2px 8px;border-radius:999px;">Extended</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="mode-progress-item ai">
+            <span class="mode-progress-label">AI</span>
+            <div class="mode-progress-value">
+              {% if wording_status and wording_status.label == 'Not Started' %}
+                <span class="mode-progress-empty">Not available</span>
+              {% elif ai_score is not none %}
+                {% if ai_score >= 20 %}
+                  <span class="badge-green">&#10003; {{ ai_score }}/25</span>
+                {% else %}
+                  <span class="badge-red">&#10005; {{ ai_score }}/25</span>
+                {% endif %}
+              {% elif is_locked %}
+                <span style="font-size:0.7rem;color:var(--text-muted);border:1px solid var(--border);padding:2px 8px;border-radius:999px;">Extended</span>
+              {% else %}
+                <span class="mode-progress-empty">Not started</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% else %}
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           {% if t.id == 0 %}
           <span style="font-size:0.7rem;color:var(--correct);border:1px solid var(--correct);padding:2px 8px;border-radius:999px;">STARTER</span>
@@ -262,6 +348,7 @@
             <span style="color:var(--text-muted);font-size:0.82rem;">Not started</span>
           {% endif %}
         </div>
+        {% endif %}
       </div>
     </div>
     {% endfor %}
