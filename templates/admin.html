@@ -38,34 +38,6 @@
     gap: 12px;
     margin-bottom: 20px;
   }
-  .admin-live-pages {
-    margin-bottom: 28px;
-  }
-  .activity-pages-list {
-    display: grid;
-    gap: 10px;
-  }
-  .activity-page-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: 14px;
-    border: 1px solid var(--border);
-    background: color-mix(in srgb, var(--bg-card) 94%, #fff 6%);
-    font-size: 0.88rem;
-  }
-  .activity-page-path {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    color: var(--text);
-    word-break: break-word;
-  }
-  .activity-page-count {
-    font-weight: 800;
-    color: var(--text-muted);
-    white-space: nowrap;
-  }
   @media (max-width: 960px) {
     .admin-summary-grid {
       grid-template-columns: repeat(2, 1fr);
@@ -245,27 +217,6 @@
     <div class="card" style="padding:18px;text-align:center;">
       <div style="font-size:1.75rem;font-weight:800;line-height:1;">{{ activity_overview.guests_now }}</div>
       <div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">Guests now</div>
-    </div>
-  </div>
-
-  <div class="card admin-live-pages">
-    <div style="padding:18px 20px 14px;">
-      <div style="font-size:0.98rem;font-weight:800;letter-spacing:-0.02em;">Top active pages</div>
-      <div style="font-size:0.82rem;color:var(--text-muted);margin-top:4px;">Current open pages aggregated across recent activity.</div>
-    </div>
-    <div style="padding:0 20px 20px;">
-      {% if activity_overview.top_pages %}
-      <div class="activity-pages-list">
-        {% for page in activity_overview.top_pages %}
-        <div class="activity-page-row">
-          <span class="activity-page-path">{{ page.path }}</span>
-          <span class="activity-page-count">{{ page.count }}</span>
-        </div>
-        {% endfor %}
-      </div>
-      {% else %}
-      <div style="color:var(--text-muted);font-size:0.86rem;">No recent live activity yet.</div>
-      {% endif %}
     </div>
   </div>
 
