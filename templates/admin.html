@@ -42,6 +42,7 @@
     position: relative;
     display: inline-flex;
     align-items: center;
+    gap: 8px;
     max-width: 100%;
     padding: 0;
     border: none;
@@ -55,6 +56,30 @@
     display: inline-block;
     max-width: 100%;
     transition: filter 0.18s ease, opacity 0.18s ease;
+  }
+  .sensitive-copy-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    height: 26px;
+    padding: 0 9px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg-card) 92%, #fff 8%);
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    flex: 0 0 auto;
+    cursor: pointer;
+  }
+  .sensitive-toggle:not(.is-hidden) .sensitive-copy-btn {
+    display: inline-flex;
+  }
+  .sensitive-copy-btn:hover {
+    color: var(--text);
+    border-color: color-mix(in srgb, var(--text) 18%, var(--border) 82%);
   }
   .sensitive-toggle.is-hidden .sensitive-toggle-text {
     filter: blur(6px);
@@ -304,12 +329,14 @@
               <button type="button" class="sensitive-toggle is-hidden" aria-label="Reveal user name" aria-pressed="false">
                 <span class="sensitive-toggle-text">{{ u.name }}</span>
                 <span class="sensitive-toggle-hint">Reveal</span>
+                <span class="sensitive-copy-btn" data-copy-value='{{ u.name | tojson | safe }}'>Copy</span>
               </button>
             </td>
             <td data-label="Email" style="color:var(--text-muted);">
               <button type="button" class="sensitive-toggle is-hidden" aria-label="Reveal user email" aria-pressed="false">
                 <span class="sensitive-toggle-text">{{ u.email }}</span>
                 <span class="sensitive-toggle-hint">Reveal</span>
+                <span class="sensitive-copy-btn" data-copy-value='{{ u.email | tojson | safe }}'>Copy</span>
               </button>
             </td>
             <td data-label="Expires" class="user-expires-cell" style="color:var(--text-muted);font-size:0.82rem;">{{ u.expires_at.strftime('%d %b %Y %H:%M') }}</td>

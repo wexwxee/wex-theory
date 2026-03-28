@@ -66,6 +66,31 @@
         button.setAttribute('aria-pressed', hidden ? 'true' : 'false');
       });
     });
+    scope.querySelectorAll('.sensitive-copy-btn').forEach((copyBtn) => {
+      if (copyBtn.dataset.boundCopy === '1') return;
+      copyBtn.dataset.boundCopy = '1';
+      copyBtn.addEventListener('click', async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const value = parseJsonDataset(copyBtn.dataset.copyValue, '');
+        if (!value) return;
+        try {
+          await navigator.clipboard.writeText(value);
+          const originalLabel = copyBtn.textContent;
+          copyBtn.textContent = 'Copied';
+          copyBtn.style.color = 'var(--correct)';
+          copyBtn.style.borderColor = 'var(--correct)';
+          showToast('Copied', 'success');
+          window.setTimeout(() => {
+            copyBtn.textContent = originalLabel;
+            copyBtn.style.color = '';
+            copyBtn.style.borderColor = '';
+          }, 1200);
+        } catch (e) {
+          showToast('Could not copy', 'error');
+        }
+      });
+    });
   }
 
   function setMessageAttachment(attachmentEl, attachmentName, attachmentPath, attachmentType) {
