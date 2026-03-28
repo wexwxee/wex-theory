@@ -3,7 +3,7 @@ import os
 import random
 import re
 import secrets
-from collections import defaultdict, deque
+from collections import Counter, defaultdict, deque
 import traceback
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -36,8 +36,14 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI(title="WEX Theory")
 AUTH_COOKIE_NAME = "token"
 CSRF_COOKIE_NAME = "csrf_token"
+ACTIVITY_COOKIE_NAME = "wex_activity_sid"
 AUTH_COOKIE_MAX_AGE = 86400 * 30
 CSRF_COOKIE_MAX_AGE = 86400 * 30
+ACTIVITY_COOKIE_MAX_AGE = 86400 * 30
+ACTIVITY_ONLINE_WINDOW = timedelta(minutes=2)
+ACTIVITY_5_MIN_WINDOW = timedelta(minutes=5)
+ACTIVITY_10_MIN_WINDOW = timedelta(minutes=10)
+ACTIVITY_RETENTION_WINDOW = timedelta(hours=24)
 PUBLIC_ID_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 BASE_DIR = Path(__file__).resolve().parent
 CONTACT_UPLOAD_DIR = BASE_DIR / "uploads" / "contact"
@@ -160,6 +166,24 @@ def set_csrf_cookie(response, token: str, request: Optional[Request] = None) -> 
     )
 
 
+def set_activity_cookie(response, session_id: str, request: Optional[Request] = None) -> None:
+    response.set_cookie(
+        key=ACTIVITY_COOKIE_NAME,
+        value=session_id,
+        httponly=True,
+        max_age=ACTIVITY_COOKIE_MAX_AGE,
+        expires=ACTIVITY_COOKIE_MAX_AGE,
+        samesite="lax",
+        secure=_cookie_secure(request),
+        path="/",
+    )
+
+
+def get_or_create_activity_session_id(request: Request) -> str:
+    current = (request.cookies.get(ACTIVITY_COOKIE_NAME) or "").strip()
+    return current or secrets.token_urlsafe(24)
+
+
 def get_client_ip(request: Request) -> str:
     forwarded_for = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip()
     if forwarded_for:
@@ -240,6 +264,83 @@ def get_request_base_url(request: Request) -> str:
     if host:
         return f"{request.url.scheme}://{host}".rstrip("/")
     return str(request.base_url).rstrip("/")
+
+
+def normalize_activity_path(path: str) -> str:
+    raw = str(path or "").strip()
+    if not raw:
+        return "/"
+    if not raw.startswith("/"):
+        raw = "/" + raw
+
+    path_only = raw.split("?", 1)[0].split("#", 1)[0].strip() or "/"
+    if path_only != "/" and path_only.endswith("/"):
+        path_only = path_only.rstrip("/")
+
+    if path_only.startswith("/api/") or path_only.startswith("/static/"):
+        return ""
+    if path_only.startswith("/test-images/") or path_only.startswith("/uploads/"):
+        return ""
+
+    parts = [part for part in path_only.split("/") if part]
+    if not parts:
+        return "/"
+
+    normalized_parts: list[str] = []
+    for index, part in enumerate(parts):
+        if index == 1 and parts[0] == "test" and part.isdigit():
+            normalized_parts.append(part)
+            continue
+        if part.isdigit():
+            normalized_parts.append(":id")
+            continue
+        if re.fullmatch(r"[0-9a-fA-F\-]{8,}", part):
+            normalized_parts.append(":id")
+            continue
+        normalized_parts.append(part)
+
+    return "/" + "/".join(normalized_parts)
+
+
+def build_live_activity_overview(db: Session) -> dict:
+    now = datetime.utcnow()
+    recent_cutoff = now - ACTIVITY_10_MIN_WINDOW
+    rows = (
+        db.query(models.LiveActivitySession)
+        .filter(models.LiveActivitySession.last_seen >= recent_cutoff)
+        .all()
+    )
+
+    online_cutoff = now - ACTIVITY_ONLINE_WINDOW
+    active_5_cutoff = now - ACTIVITY_5_MIN_WINDOW
+
+    online_rows = [row for row in rows if row.last_seen >= online_cutoff]
+    latest_online_by_session: dict[str, models.LiveActivitySession] = {}
+    for row in online_rows:
+        previous = latest_online_by_session.get(row.session_id)
+        if previous is None or row.last_seen > previous.last_seen:
+            latest_online_by_session[row.session_id] = row
+
+    online_sessions = set(latest_online_by_session.keys())
+    active_5_sessions = {row.session_id for row in rows if row.last_seen >= active_5_cutoff}
+    active_10_sessions = {row.session_id for row in rows}
+    logged_in_online = sum(1 for row in latest_online_by_session.values() if row.is_authenticated)
+    guests_online = max(len(online_sessions) - logged_in_online, 0)
+
+    page_counts = Counter(row.page_path for row in online_rows if row.page_path)
+    top_pages = [
+        {"path": path, "count": count}
+        for path, count in page_counts.most_common(6)
+    ]
+
+    return {
+        "online_now": len(online_sessions),
+        "active_5m": len(active_5_sessions),
+        "active_10m": len(active_10_sessions),
+        "logged_in_now": logged_in_online,
+        "guests_now": guests_online,
+        "top_pages": top_pages,
+    }
 
 
 def validate_registration_email(email: str) -> Optional[str]:
@@ -968,7 +1069,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/test-images", StaticFiles(directory="test-images"), name="test-images")
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260324-exam-mode"
+templates.env.globals["asset_version"] = "20260328-live-activity"
 
 FREE_SAMPLE_TEST_ID = 0
 FREE_SAMPLE_TEST_TITLE = "Test 0"
@@ -1954,6 +2055,7 @@ async def admin_page(request: Request, db: Session = Depends(get_db)):
         models.PromoCode.created_at.desc()
     ).all()
     unread_count = sum(1 for m in messages if not m.is_read)
+    activity_overview = build_live_activity_overview(db)
     active_tab = str(request.query_params.get("tab", "users") or "users").strip().lower()
     if active_tab not in {"users", "messages", "promos"}:
         active_tab = "users"
@@ -1966,7 +2068,59 @@ async def admin_page(request: Request, db: Session = Depends(get_db)):
         "active_tab": active_tab,
         "now": datetime.utcnow(),
         "can_manage_admin_roles": can_manage_admin_roles(user),
+        "activity_overview": activity_overview,
     })
+
+
+@app.post("/api/activity/ping")
+async def api_activity_ping(request: Request, db: Session = Depends(get_db)):
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+
+    raw_path = str(data.get("path", "") or "").strip()
+    tab_id = str(data.get("tab_id", "") or "").strip()
+    page_path = normalize_activity_path(raw_path)
+    if not page_path or not tab_id:
+        return JSONResponse({"success": True, "tracked": False})
+
+    if len(tab_id) > 80:
+        tab_id = tab_id[:80]
+
+    session_id = get_or_create_activity_session_id(request)
+    now = datetime.utcnow()
+    current_user = get_current_user(request, db)
+
+    existing = (
+        db.query(models.LiveActivitySession)
+        .filter(
+            models.LiveActivitySession.session_id == session_id,
+            models.LiveActivitySession.tab_id == tab_id,
+        )
+        .first()
+    )
+    if not existing:
+        existing = models.LiveActivitySession(
+            session_id=session_id,
+            tab_id=tab_id,
+            created_at=now,
+        )
+        db.add(existing)
+
+    existing.page_path = page_path
+    existing.is_authenticated = bool(current_user)
+    existing.last_seen = now
+
+    if random.random() < 0.04:
+        db.query(models.LiveActivitySession).filter(
+            models.LiveActivitySession.last_seen < (now - ACTIVITY_RETENTION_WINDOW)
+        ).delete(synchronize_session=False)
+
+    db.commit()
+    response = JSONResponse({"success": True, "tracked": True})
+    set_activity_cookie(response, session_id, request)
+    return response
 
 
 # ─── Free test (no auth) ───────────────────────────────────────────────────────

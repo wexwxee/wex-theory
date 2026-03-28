@@ -249,6 +249,55 @@
   });
 
   injectThemeIcons();
+  (function () {
+    const HEARTBEAT_INTERVAL_MS = 60000;
+    const MIN_REPEAT_MS = 15000;
+    let lastPingAt = 0;
+
+    function getActivityTabId() {
+      try {
+        const existing = window.sessionStorage.getItem('wex-activity-tab-id');
+        if (existing) return existing;
+        const created = 'tab-' + Math.random().toString(36).slice(2, 12);
+        window.sessionStorage.setItem('wex-activity-tab-id', created);
+        return created;
+      } catch (e) {
+        return 'tab-fallback';
+      }
+    }
+
+    async function sendActivityPing(reason = 'interval') {
+      const path = window.location.pathname || '/';
+      if (!path || path.startsWith('/api/') || path.startsWith('/static/')) return;
+      if (document.hidden && reason === 'interval') return;
+
+      const now = Date.now();
+      if (now - lastPingAt < MIN_REPEAT_MS) return;
+      lastPingAt = now;
+
+      try {
+        await fetch('/api/activity/ping', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            path,
+            tab_id: getActivityTabId(),
+          }),
+        });
+      } catch (error) {
+        console.debug('Activity ping skipped', error);
+      }
+    }
+
+    sendActivityPing('load');
+    window.addEventListener('pageshow', () => sendActivityPing('pageshow'));
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) sendActivityPing('visible');
+    });
+    window.setInterval(() => {
+      sendActivityPing('interval');
+    }, HEARTBEAT_INTERVAL_MS);
+  })();
   if (window.WEX_SUPPORT_UNREAD_URL) {
     refreshSupportUnreadUI();
     window.setInterval(() => {

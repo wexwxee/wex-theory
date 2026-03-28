@@ -180,3 +180,15 @@ class Bookmark(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     question = relationship("Question")
+
+
+class LiveActivitySession(Base):
+    __tablename__ = "live_activity_sessions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(String, nullable=False, index=True)
+    tab_id = Column(String, nullable=False, index=True)
+    page_path = Column(String, nullable=False, default="/")
+    is_authenticated = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    last_seen = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
