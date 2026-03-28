@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
-  <link rel="stylesheet" href="/static/style.css?v=20260317-menufix">
+  <link rel="stylesheet" href="/static/style.css?v=20260328-sidebar">
   <style>
     .sb-item-label {
       display: inline-flex;
@@ -94,6 +94,7 @@
   data-purchase-email="{% if user is defined and user %}{{ user.email }}{% endif %}">
   <div class="sb-overlay" id="sbOverlay"></div>
   <aside class="sb" id="sidebar">
+    {% set current_path = request.url.path if request is defined else '' %}
     <div class="sb-brand">
       <a href="/" class="sb-logo">WEXTheory</a>
       <button class="sb-x" id="sbCloseBtn" aria-label="Close">
@@ -120,56 +121,56 @@
 
     <div class="sb-list">
 
-      <a href="/" class="sb-item">
+      <a href="/" class="sb-item{% if current_path == '/' %} is-current{% endif %}">
         <i class="fa-solid fa-house sb-ic"></i><span>Home</span>
       </a>
 
       {% if user is defined and user %}
       <div class="sb-sep">Account</div>
-      <a href="/dashboard" class="sb-item">
-        <i class="fa-solid fa-grip sb-ic"></i><span>Dashboard</span>
+      <a href="/dashboard" class="sb-item{% if current_path.startswith('/dashboard') %} is-current{% endif %}">
+        <i class="fa-solid fa-table-cells-large sb-ic"></i><span>Dashboard</span>
       </a>
-      <a href="/profile" class="sb-item">
-        <i class="fa-regular fa-user sb-ic"></i><span>Profile</span>
+      <a href="/profile" class="sb-item{% if current_path.startswith('/profile') %} is-current{% endif %}">
+        <i class="fa-solid fa-circle-user sb-ic"></i><span>Profile</span>
       </a>
       {% if not user.is_admin %}
-      <a href="/promo-code" class="sb-item">
-        <i class="fa-solid fa-ticket sb-ic"></i><span>Activate Promo Code</span>
+      <a href="/promo-code" class="sb-item{% if current_path.startswith('/promo-code') %} is-current{% endif %}">
+        <i class="fa-solid fa-tag sb-ic"></i><span>Activate Promo Code</span>
       </a>
       {% endif %}
-      <a href="/pricing" class="sb-item">
-        <i class="fa-regular fa-credit-card sb-ic"></i><span>Access</span>
+      <a href="/pricing" class="sb-item{% if current_path.startswith('/pricing') %} is-current{% endif %}">
+        <i class="fa-solid fa-credit-card sb-ic"></i><span>Access</span>
       </a>
       {% if user.is_admin %}
-      <a href="/support" class="sb-item">
-        <i class="fa-regular fa-comments sb-ic"></i>
+      <a href="/support" class="sb-item{% if current_path.startswith('/support') %} is-current{% endif %}">
+        <i class="fa-solid fa-message sb-ic"></i>
         <span class="sb-item-label">Support Inbox <span class="sb-alert-dot" id="supportUnreadBadge"></span></span>
       </a>
       {% else %}
-      <a href="/messages" class="sb-item">
-        <i class="fa-regular fa-comments sb-ic"></i>
+      <a href="/messages" class="sb-item{% if current_path.startswith('/messages') %} is-current{% endif %}">
+        <i class="fa-solid fa-message sb-ic"></i>
         <span class="sb-item-label">Messages <span class="sb-alert-dot" id="supportUnreadBadge"></span></span>
       </a>
       {% endif %}
       {% if user.is_admin %}
-      <a href="/admin" class="sb-item">
-        <i class="fa-solid fa-sliders sb-ic"></i><span>Admin Panel</span>
+      <a href="/admin" class="sb-item{% if current_path.startswith('/admin') %} is-current{% endif %}">
+        <i class="fa-solid fa-screwdriver-wrench sb-ic"></i><span>Admin Panel</span>
       </a>
       {% endif %}
       {% endif %}
 
       <div class="sb-sep">Info</div>
-      <a href="/about" class="sb-item">
-        <i class="fa-regular fa-circle-info sb-ic"></i><span>About</span>
+      <a href="/about" class="sb-item{% if current_path.startswith('/about') %} is-current{% endif %}">
+        <i class="fa-solid fa-circle-info sb-ic"></i><span>About</span>
       </a>
-      <a href="/faq" class="sb-item">
-        <i class="fa-regular fa-circle-question sb-ic"></i><span>FAQ</span>
+      <a href="/faq" class="sb-item{% if current_path.startswith('/faq') %} is-current{% endif %}">
+        <i class="fa-solid fa-circle-question sb-ic"></i><span>FAQ</span>
       </a>
-      <a href="/contact" class="sb-item">
-        <i class="fa-regular fa-envelope sb-ic"></i><span>Contact</span>
+      <a href="/contact" class="sb-item{% if current_path.startswith('/contact') %} is-current{% endif %}">
+        <i class="fa-solid fa-paper-plane sb-ic"></i><span>Contact</span>
       </a>
-      <a href="/privacy" class="sb-item">
-        <i class="fa-solid fa-lock sb-ic"></i><span>Privacy</span>
+      <a href="/privacy" class="sb-item{% if current_path.startswith('/privacy') %} is-current{% endif %}">
+        <i class="fa-solid fa-user-shield sb-ic"></i><span>Privacy</span>
       </a>
 
     </div>
@@ -187,10 +188,10 @@
         <i class="fa-solid fa-right-from-bracket sb-ic"></i><span>Sign Out</span>
       </button>
       {% else %}
-      <a href="/login" class="sb-item">
+      <a href="/login" class="sb-item{% if current_path.startswith('/login') %} is-current{% endif %}">
         <i class="fa-solid fa-right-to-bracket sb-ic"></i><span>Sign In</span>
       </a>
-      <a href="/register" class="sb-item">
+      <a href="/register" class="sb-item{% if current_path.startswith('/register') %} is-current{% endif %}">
         <i class="fa-solid fa-user-plus sb-ic"></i><span>Register</span>
       </a>
       {% endif %}
