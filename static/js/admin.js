@@ -56,6 +56,18 @@
     });
   }
 
+  function bindSensitiveReveal(scope = document) {
+    scope.querySelectorAll('.sensitive-toggle').forEach((button) => {
+      if (button.dataset.boundReveal === '1') return;
+      button.dataset.boundReveal = '1';
+      button.addEventListener('click', () => {
+        const hidden = button.classList.contains('is-hidden');
+        button.classList.toggle('is-hidden', !hidden);
+        button.setAttribute('aria-pressed', hidden ? 'true' : 'false');
+      });
+    });
+  }
+
   function setMessageAttachment(attachmentEl, attachmentName, attachmentPath, attachmentType) {
     attachmentEl.replaceChildren();
     if (!attachmentPath) {
@@ -434,6 +446,7 @@
   }
   userSearchForm?.setAttribute('autocomplete', 'off');
   userSearchForm?.addEventListener('submit', (event) => event.preventDefault());
+  bindSensitiveReveal();
 
   document.getElementById('adminBurgerBtn')?.addEventListener('click', sbOpen);
   document.getElementById('navThemeBtn')?.addEventListener('click', toggleTheme);

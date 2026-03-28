@@ -38,6 +38,54 @@
     gap: 12px;
     margin-bottom: 20px;
   }
+  .sensitive-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .sensitive-toggle-text {
+    display: inline-block;
+    max-width: 100%;
+    transition: filter 0.18s ease, opacity 0.18s ease;
+  }
+  .sensitive-toggle.is-hidden .sensitive-toggle-text {
+    filter: blur(6px);
+    opacity: 0.82;
+    user-select: none;
+  }
+  .sensitive-toggle-hint {
+    position: absolute;
+    inset: 50% auto auto 0;
+    transform: translateY(-50%);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+  .sensitive-toggle.is-hidden .sensitive-toggle-hint {
+    opacity: 1;
+  }
+  .sensitive-toggle.is-hidden:hover .sensitive-toggle-text,
+  .sensitive-toggle.is-hidden:focus-visible .sensitive-toggle-text {
+    opacity: 0.72;
+  }
+  .sensitive-toggle:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--text) 35%, transparent 65%);
+    outline-offset: 4px;
+    border-radius: 8px;
+  }
   @media (max-width: 960px) {
     .admin-summary-grid {
       grid-template-columns: repeat(2, 1fr);
@@ -252,8 +300,18 @@
               <div style="font-weight:700;letter-spacing:0.05em;">{{ u.public_id }}</div>
               <div style="color:var(--text-muted);font-size:0.75rem;">DB #{{ u.id }}</div>
             </td>
-            <td data-label="Name" style="font-weight:500;">{{ u.name }}</td>
-            <td data-label="Email" style="color:var(--text-muted);">{{ u.email }}</td>
+            <td data-label="Name" style="font-weight:500;">
+              <button type="button" class="sensitive-toggle is-hidden" aria-label="Reveal user name" aria-pressed="false">
+                <span class="sensitive-toggle-text">{{ u.name }}</span>
+                <span class="sensitive-toggle-hint">Reveal</span>
+              </button>
+            </td>
+            <td data-label="Email" style="color:var(--text-muted);">
+              <button type="button" class="sensitive-toggle is-hidden" aria-label="Reveal user email" aria-pressed="false">
+                <span class="sensitive-toggle-text">{{ u.email }}</span>
+                <span class="sensitive-toggle-hint">Reveal</span>
+              </button>
+            </td>
             <td data-label="Expires" class="user-expires-cell" style="color:var(--text-muted);font-size:0.82rem;">{{ u.expires_at.strftime('%d %b %Y %H:%M') }}</td>
             <td data-label="Status" class="user-status-cell">
               {% if u.expires_at > now %}
