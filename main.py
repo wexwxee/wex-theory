@@ -1202,6 +1202,39 @@ def get_exam_mode_question_ids(db: Session) -> list[int]:
     return [row[0] for row in rows]
 
 
+def parse_selected_answer_ids(raw_value: Optional[str]) -> list[int]:
+    try:
+        parsed = json.loads(raw_value or "[]")
+    except Exception:
+        return []
+    if not isinstance(parsed, list):
+        return []
+    answer_ids: list[int] = []
+    for item in parsed:
+        try:
+            answer_ids.append(int(item))
+        except (TypeError, ValueError):
+            continue
+    return answer_ids
+
+
+def get_attempt_expected_question_total(db: Session, attempt: models.UserTestAttempt, *, default_total: int = 25) -> int:
+    if is_exam_mode_test(attempt.test_id):
+        return EXAM_MODE_QUESTION_COUNT
+    count = db.query(models.Question.id).filter(models.Question.test_id == attempt.test_id).count()
+    return count or default_total
+
+
+def is_full_attempt(db: Session, attempt: models.UserTestAttempt) -> bool:
+    expected_total = get_attempt_expected_question_total(db, attempt)
+    if expected_total <= 0:
+        return False
+    if len(attempt.user_answers) != expected_total:
+        return False
+    answered_count = sum(1 for ua in attempt.user_answers if parse_selected_answer_ids(ua.selected_answer_ids))
+    return answered_count == expected_total
+
+
 def load_questions_in_custom_order(db: Session, question_ids: list[int]) -> list[models.Question]:
     if not question_ids:
         return []
@@ -1843,13 +1876,19 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
 
     ensure_exam_mode_test(db)
     tests = [build_free_sample_test(), *db.query(models.Test).order_by(models.Test.id).all()]
-    finished = db.query(models.UserTestAttempt).filter(
-        models.UserTestAttempt.user_id == user.id,
-        models.UserTestAttempt.finished_at.isnot(None),
-    ).all()
+    finished = (
+        db.query(models.UserTestAttempt)
+        .options(selectinload(models.UserTestAttempt.user_answers))
+        .filter(
+            models.UserTestAttempt.user_id == user.id,
+            models.UserTestAttempt.finished_at.isnot(None),
+        )
+        .order_by(models.UserTestAttempt.finished_at.desc(), models.UserTestAttempt.id.desc())
+        .all()
+    )
 
-    best_scores: dict[int, int] = {}
-    best_scores_by_mode: dict[int, dict[str, Optional[int]]] = {
+    latest_scores: dict[int, int] = {}
+    latest_scores_by_mode: dict[int, dict[str, Optional[int]]] = {
         test_id: {
             WORDING_MODE_ORIGINAL: None,
             WORDING_MODE_EXAM: None,
@@ -1857,13 +1896,14 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         for test_id in range(1, 14)
     }
     for a in finished:
-        if a.test_id not in best_scores or (a.score or 0) > best_scores[a.test_id]:
-            best_scores[a.test_id] = a.score or 0
+        if not is_full_attempt(db, a):
+            continue
+        if a.test_id not in latest_scores:
+            latest_scores[a.test_id] = a.score or 0
         if supports_exam_style_wording(a.test_id):
             wording_mode = normalize_wording_mode(getattr(a, "wording_mode", None), test_id=a.test_id)
-            current = best_scores_by_mode[a.test_id].get(wording_mode)
-            if current is None or (a.score or 0) > current:
-                best_scores_by_mode[a.test_id][wording_mode] = a.score or 0
+            if latest_scores_by_mode[a.test_id].get(wording_mode) is None:
+                latest_scores_by_mode[a.test_id][wording_mode] = a.score or 0
 
     images: dict[int, str] = {}
     exam_wording_statuses: dict[int, dict[str, int | str]] = {}
@@ -1910,15 +1950,15 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         ).first()
         images[t.id] = q.image_path if q else ""
 
-    completed = sum(1 for test_id, score in best_scores.items() if test_id != FREE_SAMPLE_TEST_ID and score >= EXAM_MODE_PASS_SCORE)
+    completed = sum(1 for test_id, score in latest_scores.items() if test_id != FREE_SAMPLE_TEST_ID and score >= EXAM_MODE_PASS_SCORE)
     library_total = sum(1 for t in tests if t.id != FREE_SAMPLE_TEST_ID)
     has_full_access = user_has_access(user)
     access_expires_at = None if user.is_admin else get_user_access_expiry(user)
 
     return templates.TemplateResponse(request, "dashboard.html", {
         "request": request, "user": user, "tests": tests,
-        "best_scores": best_scores, "images": images,
-        "best_scores_by_mode": best_scores_by_mode,
+        "latest_scores": latest_scores, "images": images,
+        "latest_scores_by_mode": latest_scores_by_mode,
         "completed": completed, "has_access": has_full_access,
         "library_total": library_total,
         "exam_wording_statuses": exam_wording_statuses,

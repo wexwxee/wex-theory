@@ -1,8 +1,24 @@
 {
   "test_id": 2,
   "questions": [
-    { "question_index": 1, "question_text": "You have caught up with the moped. There is no traffic behind you. What do you do?" },
-    { "question_index": 2, "question_text": "You are driving at about 40 km/h and are going straight ahead at the intersection. What do you do?" },
+    {
+      "question_index": 1,
+      "question_text": "You have caught up with the moped. There is no traffic behind you. Which actions are correct?",
+      "answers": {
+        "1": "I move out towards the centre line to overtake the moped.",
+        "2": "I overtake the moped now.",
+        "4": "I remain behind the moped for the time being."
+      }
+    },
+    {
+      "question_index": 2,
+      "question_text": "You are travelling at about 40 km/h and will continue straight ahead at the intersection. Which actions are correct?",
+      "answers": {
+        "1": "I continue at about 40 km/h.",
+        "2": "I stop before the pedestrian crossing.",
+        "3": "I pay particular attention to the traffic ahead."
+      }
+    },
     { "question_index": 3, "question_text": "You are driving at about 40 km/h and are going straight ahead at the intersection. What do you do?" },
     { "question_index": 4, "question_text": "You are driving at about 50 km/h when you suddenly see an emergency vehicle behind you. What do you do?" },
     { "question_index": 5, "question_text": "What should you pay particular attention to here?" },

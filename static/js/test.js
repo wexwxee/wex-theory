@@ -12,6 +12,7 @@ let attemptId = null;
 let timerSeconds = 25 * 60;
 let timerInterval = null;
 let isSubmitting = false;
+let imageZoomOpen = false;
 
 function getExamAttemptIdFromUrl() {
   const raw = new URLSearchParams(window.location.search).get('attempt_id');
@@ -38,6 +39,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('finishModalCloseBtn')?.addEventListener('click', closeFinishModal);
   document.getElementById('finishKeepGoingBtn')?.addEventListener('click', closeFinishModal);
   document.getElementById('submitBtn')?.addEventListener('click', () => submitTest());
+  document.getElementById('questionImg')?.addEventListener('click', openQuestionImageZoom);
+  document.getElementById('openQuestionImageBtn')?.addEventListener('click', openQuestionImageZoom);
+  document.getElementById('closeImageZoomBtn')?.addEventListener('click', closeQuestionImageZoom);
+  document.getElementById('imageZoomOverlay')?.addEventListener('click', (event) => {
+    if (event.target.id === 'imageZoomOverlay') closeQuestionImageZoom();
+  });
   if (TEST_ID !== FREE_SAMPLE_TEST_ID && !IS_AUTHENTICATED) {
     window.location.href = '/login';
     return;
@@ -230,12 +237,14 @@ function renderQuestion() {
   const placeholder = document.getElementById('imgPlaceholder');
   if (q.image_path) {
     img.src = '/test-images/' + q.image_path;
+    img.alt = `Question ${currentIndex + 1} image`;
     img.style.display = 'block';
     placeholder.style.display = 'none';
   } else {
     img.style.display = 'none';
     placeholder.style.display = 'flex';
   }
+  syncQuestionImageZoomState(Boolean(q.image_path));
 
   // Answers
   const container = document.getElementById('answersContainer');
@@ -701,6 +710,46 @@ document.addEventListener('mouseout', (e) => {
   _popupHideTimer = setTimeout(() => {
     if (_wordPopup) { _wordPopup.remove(); _wordPopup = null; }
   }, 120);
+});
+
+function syncQuestionImageZoomState(hasImage) {
+  const openBtn = document.getElementById('openQuestionImageBtn');
+  if (openBtn) {
+    openBtn.hidden = !hasImage;
+  }
+  if (!hasImage && imageZoomOpen) {
+    closeQuestionImageZoom();
+  }
+}
+
+function openQuestionImageZoom() {
+  const img = document.getElementById('questionImg');
+  const overlay = document.getElementById('imageZoomOverlay');
+  const zoomImg = document.getElementById('imageZoomImg');
+  if (!img || !overlay || !zoomImg || img.style.display === 'none' || !img.src) return;
+  zoomImg.src = img.src;
+  zoomImg.alt = img.alt || 'Question image enlarged';
+  overlay.classList.add('open');
+  overlay.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  imageZoomOpen = true;
+}
+
+function closeQuestionImageZoom() {
+  const overlay = document.getElementById('imageZoomOverlay');
+  const zoomImg = document.getElementById('imageZoomImg');
+  if (!overlay || !zoomImg) return;
+  overlay.classList.remove('open');
+  overlay.setAttribute('aria-hidden', 'true');
+  zoomImg.src = '';
+  document.body.style.overflow = '';
+  imageZoomOpen = false;
+}
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && imageZoomOpen) {
+    closeQuestionImageZoom();
+  }
 });
 
 
