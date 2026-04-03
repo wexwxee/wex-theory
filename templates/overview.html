@@ -26,8 +26,8 @@
     margin-bottom: 18px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    gap: 16px;
+    justify-content: flex-start;
+    gap: 18px;
   }
   .wording-preview::after {
     content: "";
@@ -90,37 +90,32 @@
     line-height: 1.5;
     font-size: 0.93rem;
   }
-  .wording-preview-art {
+  .wording-preview-badges {
     position: relative;
     z-index: 1;
-    display: grid;
-    gap: 9px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
   }
-  .wording-preview-line {
-    height: 12px;
+  .wording-preview-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 30px;
+    padding: 0 11px;
     border-radius: 999px;
-    background: color-mix(in srgb, var(--border) 80%, transparent 20%);
+    border: 1px solid var(--border);
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: rgba(255,255,255,0.04);
   }
-  .wording-preview.original .wording-preview-line:nth-child(1) {
-    width: 74%;
+  .wording-preview-badge i {
+    font-size: 0.72rem;
   }
-  .wording-preview.original .wording-preview-line:nth-child(2) {
-    width: 58%;
-  }
-  .wording-preview.original .wording-preview-line:nth-child(3) {
-    width: 66%;
-  }
-  .wording-preview.ai .wording-preview-line {
-    background: linear-gradient(90deg, rgba(15, 23, 42, 0.14), rgba(16, 185, 129, 0.18));
-  }
-  .wording-preview.ai .wording-preview-line:nth-child(1) {
-    width: 82%;
-  }
-  .wording-preview.ai .wording-preview-line:nth-child(2) {
-    width: 62%;
-  }
-  .wording-preview.ai .wording-preview-line:nth-child(3) {
-    width: 74%;
+  .wording-preview.ai .wording-preview-badge {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.14);
   }
   .wording-chip {
     display: inline-flex;
@@ -224,10 +219,10 @@
             <div class="wording-preview-title">Familiar wording you already know</div>
             <div class="wording-preview-text">The standard version used across the site for calm, everyday practice.</div>
           </div>
-          <div class="wording-preview-art" aria-hidden="true">
-            <span class="wording-preview-line"></span>
-            <span class="wording-preview-line"></span>
-            <span class="wording-preview-line"></span>
+          <div class="wording-preview-badges" aria-hidden="true">
+            <span class="wording-preview-badge"><i class="fa-solid fa-check"></i> Default</span>
+            <span class="wording-preview-badge"><i class="fa-solid fa-book-open"></i> Familiar</span>
+            <span class="wording-preview-badge"><i class="fa-solid fa-layer-group"></i> Same logic</span>
           </div>
         </div>
         <span class="wording-chip">Original wording</span>
@@ -257,10 +252,10 @@
             <div class="wording-preview-title">Alternative wording for tougher practice</div>
             <div class="wording-preview-text">An AI-assisted practice version with the same meaning, but a different phrasing style.</div>
           </div>
-          <div class="wording-preview-art" aria-hidden="true">
-            <span class="wording-preview-line"></span>
-            <span class="wording-preview-line"></span>
-            <span class="wording-preview-line"></span>
+          <div class="wording-preview-badges" aria-hidden="true">
+            <span class="wording-preview-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> AI-assisted</span>
+            <span class="wording-preview-badge"><i class="fa-solid fa-shuffle"></i> Different phrasing</span>
+            <span class="wording-preview-badge"><i class="fa-solid fa-road"></i> Same answers</span>
           </div>
         </div>
         <span class="wording-chip">AI wording</span>
