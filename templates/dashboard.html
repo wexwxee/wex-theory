@@ -4,31 +4,44 @@
 
 {% block body %}
 <style>
-  .saved-pill {
+  .dashboard-link-btn {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    padding: 0 13px;
-    border-radius: 999px;
+    gap: 10px;
+    height: 40px;
+    padding: 0 14px;
+    border-radius: 12px;
     border: 1px solid var(--border);
-    background: color-mix(in srgb, var(--bg-card) 96%, #fff 4%);
-    box-shadow: none;
-  }
-  .saved-pill i {
-    color: var(--text-muted);
-    font-size: 0.82rem;
-  }
-  .saved-pill span {
+    background: color-mix(in srgb, var(--bg-card) 94%, #fff 6%);
+    color: var(--text);
+    font-size: 0.92rem;
     font-weight: 650;
     letter-spacing: -0.01em;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
   }
-  .saved-pill:hover {
+  .dashboard-link-btn:hover {
     border-color: var(--text-muted);
-    background: color-mix(in srgb, var(--bg-card) 92%, #fff 8%);
+    background: color-mix(in srgb, var(--bg-card) 88%, #fff 12%);
+    transform: translateY(-1px);
   }
-  .saved-pill:hover i,
-  .saved-pill:hover span {
+  .dashboard-link-btn-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--bg) 88%, #fff 12%);
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  .dashboard-link-btn:hover .dashboard-link-btn-icon {
     color: var(--text);
+    background: color-mix(in srgb, var(--bg) 82%, #fff 18%);
+  }
+  .dashboard-link-btn--saved {
+    min-width: 154px;
   }
   .sub-status-card {
     margin-top: 14px;
@@ -226,7 +239,10 @@
     </div>
     <div class="dashboard-actions">
       <a href="/profile" class="btn-ghost btn-sm">History</a>
-      <a href="/saved" class="btn-ghost btn-sm saved-pill"><i class="fa-solid fa-bookmark"></i><span>Saved</span></a>
+      <a href="/saved" class="dashboard-link-btn dashboard-link-btn--saved">
+        <span class="dashboard-link-btn-icon"><i class="fa-solid fa-book-open"></i></span>
+        <span>Saved questions</span>
+      </a>
       {% if not user.is_admin and not has_access %}
         <a href="/pricing" class="btn-primary btn-sm">{% if user.subscription_status != 'free' %}Review Access{% else %}Open Access Overview{% endif %}</a>
       {% endif %}
