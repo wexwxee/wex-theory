@@ -13,6 +13,7 @@ let timerSeconds = 25 * 60;
 let timerInterval = null;
 let isSubmitting = false;
 let imageZoomOpen = false;
+let imageMagnifierActive = false;
 
 function getExamAttemptIdFromUrl() {
   const raw = new URLSearchParams(window.location.search).get('attempt_id');
@@ -42,9 +43,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('questionImg')?.addEventListener('click', openQuestionImageZoom);
   document.getElementById('openQuestionImageBtn')?.addEventListener('click', openQuestionImageZoom);
   document.getElementById('closeImageZoomBtn')?.addEventListener('click', closeQuestionImageZoom);
+  document.getElementById('toggleImageMagnifierBtn')?.addEventListener('click', toggleImageMagnifier);
   document.getElementById('imageZoomOverlay')?.addEventListener('click', (event) => {
     if (event.target.id === 'imageZoomOverlay') closeQuestionImageZoom();
   });
+  document.getElementById('imageZoomImg')?.addEventListener('mousemove', handleMagnifierPointerMove);
+  document.getElementById('imageZoomImg')?.addEventListener('touchmove', handleMagnifierPointerMove, { passive: false });
+  document.getElementById('imageZoomImg')?.addEventListener('mouseleave', resetMagnifierFocus);
+  document.getElementById('imageZoomImg')?.addEventListener('touchend', resetMagnifierFocus);
   if (TEST_ID !== FREE_SAMPLE_TEST_ID && !IS_AUTHENTICATED) {
     window.location.href = '/login';
     return;
@@ -729,6 +735,7 @@ function openQuestionImageZoom() {
   if (!img || !overlay || !zoomImg || img.style.display === 'none' || !img.src) return;
   zoomImg.src = img.src;
   zoomImg.alt = img.alt || 'Question image enlarged';
+  setImageMagnifierActive(false);
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
@@ -739,11 +746,69 @@ function closeQuestionImageZoom() {
   const overlay = document.getElementById('imageZoomOverlay');
   const zoomImg = document.getElementById('imageZoomImg');
   if (!overlay || !zoomImg) return;
+  setImageMagnifierActive(false);
   overlay.classList.remove('open');
   overlay.setAttribute('aria-hidden', 'true');
   zoomImg.src = '';
   document.body.style.overflow = '';
   imageZoomOpen = false;
+}
+
+function setImageMagnifierActive(nextState) {
+  imageMagnifierActive = Boolean(nextState);
+  const toggleBtn = document.getElementById('toggleImageMagnifierBtn');
+  const zoomImg = document.getElementById('imageZoomImg');
+  const hint = document.getElementById('imageZoomHint');
+  if (toggleBtn) {
+    toggleBtn.classList.toggle('active', imageMagnifierActive);
+    toggleBtn.innerHTML = imageMagnifierActive
+      ? '<i class="fa-solid fa-magnifying-glass-minus"></i><span>Magnifier on</span>'
+      : '<i class="fa-solid fa-magnifying-glass-plus"></i><span>Magnifier</span>';
+  }
+  if (zoomImg) {
+    zoomImg.classList.toggle('magnifier-active', imageMagnifierActive);
+    if (!imageMagnifierActive) {
+      zoomImg.style.transformOrigin = 'center center';
+    }
+  }
+  if (hint) {
+    hint.textContent = imageMagnifierActive
+      ? 'Move over the image to inspect details more closely.'
+      : 'Open image for a closer look.';
+  }
+}
+
+function toggleImageMagnifier() {
+  if (!imageZoomOpen) return;
+  setImageMagnifierActive(!imageMagnifierActive);
+}
+
+function handleMagnifierPointerMove(event) {
+  if (!imageMagnifierActive) return;
+  const zoomImg = document.getElementById('imageZoomImg');
+  if (!zoomImg) return;
+  const rect = zoomImg.getBoundingClientRect();
+  let clientX;
+  let clientY;
+  if (event.touches && event.touches[0]) {
+    clientX = event.touches[0].clientX;
+    clientY = event.touches[0].clientY;
+    event.preventDefault();
+  } else {
+    clientX = event.clientX;
+    clientY = event.clientY;
+  }
+  const x = Math.min(Math.max(((clientX - rect.left) / rect.width) * 100, 0), 100);
+  const y = Math.min(Math.max(((clientY - rect.top) / rect.height) * 100, 0), 100);
+  zoomImg.style.transformOrigin = `${x}% ${y}%`;
+}
+
+function resetMagnifierFocus() {
+  if (!imageMagnifierActive) return;
+  const zoomImg = document.getElementById('imageZoomImg');
+  if (zoomImg) {
+    zoomImg.style.transformOrigin = 'center center';
+  }
 }
 
 document.addEventListener('keydown', (event) => {

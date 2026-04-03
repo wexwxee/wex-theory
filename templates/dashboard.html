@@ -7,15 +7,15 @@
   .dashboard-link-btn {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    height: 40px;
-    padding: 0 14px;
-    border-radius: 12px;
+    gap: 8px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 11px;
     border: 1px solid var(--border);
     background: color-mix(in srgb, var(--bg-card) 94%, #fff 6%);
     color: var(--text);
-    font-size: 0.92rem;
-    font-weight: 650;
+    font-size: 0.86rem;
+    font-weight: 620;
     letter-spacing: -0.01em;
     transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
   }
@@ -25,15 +25,15 @@
     transform: translateY(-1px);
   }
   .dashboard-link-btn-icon {
-    width: 20px;
-    height: 20px;
-    border-radius: 7px;
+    width: 18px;
+    height: 18px;
+    border-radius: 6px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     background: color-mix(in srgb, var(--bg) 88%, #fff 12%);
     color: var(--text-muted);
-    font-size: 0.74rem;
+    font-size: 0.68rem;
     transition: color 0.15s ease, background 0.15s ease;
   }
   .dashboard-link-btn:hover .dashboard-link-btn-icon {
@@ -41,7 +41,7 @@
     background: color-mix(in srgb, var(--bg) 82%, #fff 18%);
   }
   .dashboard-link-btn--saved {
-    min-width: 154px;
+    min-width: 0;
   }
   .sub-status-card {
     margin-top: 14px;
@@ -237,12 +237,12 @@
         {% endif %}
       {% endif %}
     </div>
-    <div class="dashboard-actions">
-      <a href="/profile" class="btn-ghost btn-sm">History</a>
-      <a href="/saved" class="dashboard-link-btn dashboard-link-btn--saved">
-        <span class="dashboard-link-btn-icon"><i class="fa-solid fa-book-open"></i></span>
-        <span>Saved questions</span>
-      </a>
+      <div class="dashboard-actions">
+        <a href="/profile" class="btn-ghost btn-sm">History</a>
+        <a href="/saved" class="dashboard-link-btn dashboard-link-btn--saved">
+          <span class="dashboard-link-btn-icon"><i class="fa-solid fa-book-open"></i></span>
+          <span>Saved</span>
+        </a>
       {% if not user.is_admin and not has_access %}
         <a href="/pricing" class="btn-primary btn-sm">{% if user.subscription_status != 'free' %}Review Access{% else %}Open Access Overview{% endif %}</a>
       {% endif %}

@@ -73,8 +73,49 @@
     width: min(1200px, 100%);
     max-height: calc(100vh - 48px);
     display: flex;
+    flex-direction: column;
+    gap: 14px;
     align-items: center;
     justify-content: center;
+  }
+  .image-zoom-toolbar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-right: 54px;
+  }
+  .image-zoom-hint {
+    color: rgba(255,255,255,0.72);
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+  .image-zoom-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.16);
+    background: rgba(17,17,17,0.78);
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 700;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  }
+  .image-zoom-toggle:hover {
+    background: rgba(17,17,17,0.9);
+    border-color: rgba(255,255,255,0.24);
+    transform: translateY(-1px);
+  }
+  .image-zoom-toggle.active {
+    background: rgba(34,197,94,0.18);
+    border-color: rgba(34,197,94,0.38);
+    color: #dcfce7;
   }
   .image-zoom-close {
     position: absolute;
@@ -97,6 +138,14 @@
     background: rgba(17,17,17,0.98);
     transform: scale(1.04);
   }
+  .image-zoom-viewport {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 18px;
+  }
   .image-zoom-image {
     display: block;
     width: auto;
@@ -106,6 +155,14 @@
     box-shadow: 0 24px 60px rgba(0,0,0,0.36);
     object-fit: contain;
     background: #000;
+    transform-origin: center center;
+    transition: transform 0.18s ease, transform-origin 0.08s linear;
+    cursor: zoom-in;
+    touch-action: none;
+  }
+  .image-zoom-image.magnifier-active {
+    transform: scale(2.15);
+    cursor: crosshair;
   }
   #questionText {
     font-size: 1.34rem !important;
@@ -162,9 +219,22 @@
     .image-zoom-overlay {
       padding: 12px;
     }
+    .image-zoom-toolbar {
+      padding-right: 48px;
+      align-items: flex-start;
+    }
+    .image-zoom-hint {
+      font-size: 0.76rem;
+    }
+    .image-zoom-toggle {
+      height: 34px;
+      padding: 0 12px;
+      font-size: 0.76rem;
+      flex-shrink: 0;
+    }
     .image-zoom-image {
       max-width: calc(100vw - 24px);
-      max-height: calc(100vh - 24px);
+      max-height: calc(100vh - 96px);
       border-radius: 16px;
     }
     .image-zoom-close {
@@ -344,10 +414,19 @@
 
 <div class="image-zoom-overlay" id="imageZoomOverlay" aria-hidden="true">
   <div class="image-zoom-dialog">
+    <div class="image-zoom-toolbar">
+      <div class="image-zoom-hint" id="imageZoomHint">Open image for a closer look.</div>
+      <button type="button" class="image-zoom-toggle" id="toggleImageMagnifierBtn">
+        <i class="fa-solid fa-magnifying-glass-plus"></i>
+        <span>Magnifier</span>
+      </button>
+    </div>
     <button type="button" class="image-zoom-close" id="closeImageZoomBtn" aria-label="Close image">
       <i class="fa-solid fa-xmark"></i>
     </button>
-    <img id="imageZoomImg" class="image-zoom-image" src="" alt="Question image enlarged">
+    <div class="image-zoom-viewport" id="imageZoomViewport">
+      <img id="imageZoomImg" class="image-zoom-image" src="" alt="Question image enlarged">
+    </div>
   </div>
 </div>
 
