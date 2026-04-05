@@ -109,18 +109,24 @@ async function loadQuestions() {
 // в”Ђв”Ђ Timer в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 function startTimer() {
   updateTimerDisplay();
+  maybeShowTimeWarning();
   timerInterval = setInterval(() => {
     timerSeconds--;
     updateTimerDisplay();
-    if (!timeWarningShown && timerSeconds === 5 * 60) {
-      timeWarningShown = true;
-      openTimeWarningModal();
-    }
+    maybeShowTimeWarning();
     if (timerSeconds <= 0) {
       clearInterval(timerInterval);
       submitTest(true);
     }
   }, 1000);
+}
+
+function maybeShowTimeWarning() {
+  if (timeWarningShown) return;
+  if (timerSeconds <= 5 * 60 && timerSeconds > 0) {
+    timeWarningShown = true;
+    openTimeWarningModal();
+  }
 }
 
 function updateTimerDisplay() {
