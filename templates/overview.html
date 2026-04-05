@@ -90,30 +90,37 @@
     line-height: 1.5;
     font-size: 0.93rem;
   }
-  .wording-preview-badges {
+  .wording-preview-facts {
     position: relative;
     z-index: 1;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    width: 100%;
+    max-width: 420px;
   }
-  .wording-preview-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-height: 30px;
-    padding: 0 11px;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    font-size: 0.74rem;
-    font-weight: 700;
+  .wording-preview-fact {
+    min-height: 58px;
+    padding: 11px 12px;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+    background: rgba(255,255,255,0.05);
+  }
+  .wording-preview-fact-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--text-muted);
-    background: rgba(255,255,255,0.04);
+    margin-bottom: 4px;
   }
-  .wording-preview-badge i {
-    font-size: 0.72rem;
+  .wording-preview-fact-value {
+    font-size: 0.87rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--text);
   }
-  .wording-preview.ai .wording-preview-badge {
+  .wording-preview.ai .wording-preview-fact {
     background: rgba(16, 185, 129, 0.08);
     border-color: rgba(16, 185, 129, 0.14);
   }
@@ -219,10 +226,23 @@
             <div class="wording-preview-title">Familiar wording you already know</div>
             <div class="wording-preview-text">The standard version used across the site for calm, everyday practice.</div>
           </div>
-          <div class="wording-preview-badges" aria-hidden="true">
-            <span class="wording-preview-badge"><i class="fa-solid fa-check"></i> Default</span>
-            <span class="wording-preview-badge"><i class="fa-solid fa-book-open"></i> Familiar</span>
-            <span class="wording-preview-badge"><i class="fa-solid fa-layer-group"></i> Same logic</span>
+          <div class="wording-preview-facts" aria-hidden="true">
+            <div class="wording-preview-fact">
+              <div class="wording-preview-fact-label">Mode</div>
+              <div class="wording-preview-fact-value">Default</div>
+            </div>
+            <div class="wording-preview-fact">
+              <div class="wording-preview-fact-label">Style</div>
+              <div class="wording-preview-fact-value">Familiar</div>
+            </div>
+            <div class="wording-preview-fact">
+              <div class="wording-preview-fact-label">Use</div>
+              <div class="wording-preview-fact-value">Everyday study</div>
+            </div>
+            <div class="wording-preview-fact">
+              <div class="wording-preview-fact-label">Logic</div>
+              <div class="wording-preview-fact-value">Same answers</div>
+            </div>
           </div>
         </div>
         <span class="wording-chip">Original wording</span>
@@ -252,10 +272,23 @@
             <div class="wording-preview-title">Alternative wording for tougher practice</div>
             <div class="wording-preview-text">An AI-assisted practice version with the same meaning, but a different phrasing style.</div>
           </div>
-          <div class="wording-preview-badges" aria-hidden="true">
-            <span class="wording-preview-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> AI-assisted</span>
-            <span class="wording-preview-badge"><i class="fa-solid fa-shuffle"></i> Different phrasing</span>
-            <span class="wording-preview-badge"><i class="fa-solid fa-road"></i> Same answers</span>
+          <div class="wording-preview-facts" aria-hidden="true">
+            <div class="wording-preview-fact">
+              <div class="wording-preview-fact-label">Mode</div>
+              <div class="wording-preview-fact-value">AI practice</div>
+            </div>
+            <div class="wording-preview-fact">
+              <div class="wording-preview-fact-label">Style</div>
+              <div class="wording-preview-fact-value">Different phrasing</div>
+            </div>
+            <div class="wording-preview-fact">
+              <div class="wording-preview-fact-label">Use</div>
+              <div class="wording-preview-fact-value">Tougher practice</div>
+            </div>
+            <div class="wording-preview-fact">
+              <div class="wording-preview-fact-label">Logic</div>
+              <div class="wording-preview-fact-value">Same answers</div>
+            </div>
           </div>
         </div>
         <span class="wording-chip">AI wording</span>

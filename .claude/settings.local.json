@@ -86,7 +86,11 @@
       "Bash(git rm:*)",
       "Bash(git add:*)",
       "Bash(py -c \"\nfrom import_data import import_data\nfrom database import SessionLocal\nimport models\nfrom database import engine\nmodels.Base.metadata.create_all\\(bind=engine\\)\ndb = SessionLocal\\(\\)\ncount = db.query\\(models.Test\\).count\\(\\)\nprint\\(f'Tests in DB: {count}'\\)\ndb.close\\(\\)\n\")",
-      "Bash(py -c \"import main; print\\('OK'\\)\" 2>&1)"
+      "Bash(py -c \"import main; print\\('OK'\\)\" 2>&1)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git remote:*)",
+      "Bash(grep -r \"sk_live\\\\|pk_live\\\\|api_key\\\\|password\\\\|secret\" /c/wex-theory/*.py)"
     ]
   }
 }
