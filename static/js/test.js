@@ -16,6 +16,7 @@ let imageZoomOpen = false;
 let imageMagnifierActive = false;
 let timeWarningShown = false;
 let bookmarkRequestInFlight = false;
+let testToastTimer = null;
 
 function getExamAttemptIdFromUrl() {
   const raw = new URLSearchParams(window.location.search).get('attempt_id');
@@ -501,13 +502,32 @@ async function loadBookmarks() {
 
 function clearTestToasts() {
   const container = document.getElementById('toast-container');
-  if (!container) return;
-  container.innerHTML = '';
+  if (container) container.innerHTML = '';
+  const toast = document.getElementById('testToast');
+  if (!toast) return;
+  toast.classList.remove('show', 'error');
+  toast.textContent = '';
+  if (testToastTimer) {
+    clearTimeout(testToastTimer);
+    testToastTimer = null;
+  }
 }
 
 function showSingleTestToast(message, type = 'success') {
   clearTestToasts();
-  showToast(message, type);
+  const toast = document.getElementById('testToast');
+  if (!toast) {
+    showToast(message, type);
+    return;
+  }
+  toast.textContent = message;
+  toast.classList.toggle('error', type === 'error');
+  requestAnimationFrame(() => {
+    toast.classList.add('show');
+  });
+  testToastTimer = window.setTimeout(() => {
+    toast.classList.remove('show', 'error');
+  }, 1800);
 }
 
 function updateBookmarkBtn() {

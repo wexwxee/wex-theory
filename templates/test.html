@@ -173,19 +173,36 @@
     margin-bottom: 10px;
   }
   #toast-container {
-    top: 92px !important;
-    left: 50% !important;
-    right: auto !important;
-    bottom: auto !important;
-    transform: translateX(-50%);
-    align-items: center !important;
-    width: min(92vw, 340px);
-    pointer-events: none;
+    display: none !important;
   }
-  #toast-container > div {
-    width: 100%;
-    max-width: 100% !important;
+  .test-toast {
+    position: fixed;
+    top: 74px;
+    left: 50%;
+    z-index: 10020;
+    width: min(92vw, 360px);
+    padding: 16px 18px;
+    border-radius: 16px;
+    border: 1px solid rgba(16,185,129,0.28);
+    background: linear-gradient(180deg, rgba(3,64,33,0.98), rgba(4,78,39,0.98));
+    color: #22c55e;
     text-align: center;
+    font-size: 0.98rem;
+    font-weight: 700;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -14px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  .test-toast.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  .test-toast.error {
+    border-color: rgba(248,113,113,0.32);
+    background: linear-gradient(180deg, rgba(69,10,10,0.98), rgba(127,29,29,0.98));
+    color: #fca5a5;
   }
   @media (max-width: 1200px) {
     .test-layout {
@@ -297,18 +314,11 @@
     .nav-buttons {
       padding: 12px 10px calc(12px + env(safe-area-inset-bottom, 0px)) !important;
     }
-    #toast-container {
-      top: 84px !important;
-      left: 50% !important;
-      right: auto !important;
-      bottom: auto !important;
-      transform: translateX(-50%);
-      align-items: stretch !important;
+    .test-toast {
+      top: 72px;
       width: min(92vw, 320px);
-    }
-    #toast-container > div {
-      max-width: 100% !important;
-      width: 100%;
+      padding: 14px 16px;
+      font-size: 0.94rem;
     }
     .nav-buttons .btn-ghost,
     .nav-buttons .btn-primary {
@@ -353,8 +363,8 @@
     .nav-buttons .btn-primary {
       min-width: 104px;
     }
-    #toast-container {
-      top: 82px !important;
+    .test-toast {
+      top: 70px;
       width: min(94vw, 300px);
     }
   }
@@ -443,6 +453,8 @@
   <div style="width:40px;height:40px;border:3px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
   <div style="color:#fff;font-size:0.95rem;font-weight:500;">Saving results...</div>
 </div>
+
+<div class="test-toast" id="testToast" aria-live="polite"></div>
 
 <div class="image-zoom-overlay" id="imageZoomOverlay" aria-hidden="true">
   <div class="image-zoom-dialog">
