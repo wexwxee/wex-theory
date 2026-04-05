@@ -15,6 +15,7 @@ let isSubmitting = false;
 let imageZoomOpen = false;
 let imageMagnifierActive = false;
 let timeWarningShown = false;
+let bookmarkRequestInFlight = false;
 
 function getExamAttemptIdFromUrl() {
   const raw = new URLSearchParams(window.location.search).get('attempt_id');
@@ -498,6 +499,17 @@ async function loadBookmarks() {
   } catch(e) {}
 }
 
+function clearTestToasts() {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  container.innerHTML = '';
+}
+
+function showSingleTestToast(message, type = 'success') {
+  clearTestToasts();
+  showToast(message, type);
+}
+
 function updateBookmarkBtn() {
   const q = questions[currentIndex];
   const btn = document.getElementById('bookmarkBtn');
@@ -510,14 +522,16 @@ function updateBookmarkBtn() {
 }
 
 async function toggleBookmark() {
-  if (!IS_AUTHENTICATED) { showToast('Sign in to bookmark questions', 'error'); return; }
+  if (bookmarkRequestInFlight) return;
+  if (!IS_AUTHENTICATED) { showSingleTestToast('Sign in to bookmark questions', 'error'); return; }
   const q = questions[currentIndex];
   if (!q) return;
+  bookmarkRequestInFlight = true;
   try {
     const res = await fetch(`/api/bookmarks/${q.id}`, { method: 'POST' });
     const data = await res.json();
-    if (data.bookmarked) { bookmarkedIds.add(q.id); showToast('Bookmarked', 'success'); }
-    else { bookmarkedIds.delete(q.id); showToast('Bookmark removed', 'success'); }
+    if (data.bookmarked) { bookmarkedIds.add(q.id); showSingleTestToast('Bookmarked', 'success'); }
+    else { bookmarkedIds.delete(q.id); showSingleTestToast('Bookmark removed', 'success'); }
     const btn = document.getElementById('bookmarkBtn');
     if (btn) {
       btn.classList.remove('pop');
@@ -525,7 +539,11 @@ async function toggleBookmark() {
       btn.classList.add('pop');
     }
     updateBookmarkBtn();
-  } catch(e) { showToast('Failed to bookmark', 'error'); }
+  } catch(e) {
+    showSingleTestToast('Failed to bookmark', 'error');
+  } finally {
+    bookmarkRequestInFlight = false;
+  }
 }
 
 // в”Ђв”Ђ MyMemory translation (free, no API key) в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
