@@ -14,6 +14,7 @@ let timerInterval = null;
 let isSubmitting = false;
 let imageZoomOpen = false;
 let imageMagnifierActive = false;
+let timeWarningShown = false;
 
 function getExamAttemptIdFromUrl() {
   const raw = new URLSearchParams(window.location.search).get('attempt_id');
@@ -40,6 +41,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('finishModalCloseBtn')?.addEventListener('click', closeFinishModal);
   document.getElementById('finishKeepGoingBtn')?.addEventListener('click', closeFinishModal);
   document.getElementById('submitBtn')?.addEventListener('click', () => submitTest());
+  document.getElementById('timeWarningCloseBtn')?.addEventListener('click', closeTimeWarningModal);
+  document.getElementById('timeWarningOkBtn')?.addEventListener('click', closeTimeWarningModal);
   document.getElementById('questionImg')?.addEventListener('click', openQuestionImageZoom);
   document.getElementById('openQuestionImageBtn')?.addEventListener('click', openQuestionImageZoom);
   document.getElementById('closeImageZoomBtn')?.addEventListener('click', closeQuestionImageZoom);
@@ -107,6 +110,10 @@ function startTimer() {
   timerInterval = setInterval(() => {
     timerSeconds--;
     updateTimerDisplay();
+    if (!timeWarningShown && timerSeconds === 5 * 60) {
+      timeWarningShown = true;
+      openTimeWarningModal();
+    }
     if (timerSeconds <= 0) {
       clearInterval(timerInterval);
       submitTest(true);
@@ -385,6 +392,14 @@ function closeFinishModal() {
   document.getElementById('finishModal').classList.remove('open');
 }
 
+function openTimeWarningModal() {
+  document.getElementById('timeWarningModal')?.classList.add('open');
+}
+
+function closeTimeWarningModal() {
+  document.getElementById('timeWarningModal')?.classList.remove('open');
+}
+
 // в”Ђв”Ђ Submit в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 function showSubmitOverlay() {
   const el = document.getElementById('submitOverlay');
@@ -401,6 +416,7 @@ async function submitTest(auto = false) {
   isSubmitting = true;
   clearInterval(timerInterval);
   closeFinishModal();
+  closeTimeWarningModal();
   showSubmitOverlay();
 
   const btn = document.getElementById('submitBtn');
