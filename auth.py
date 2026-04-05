@@ -1,5 +1,4 @@
 import os
-import secrets
 import bcrypt
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
@@ -8,8 +7,11 @@ from sqlalchemy.orm import Session
 
 SECRET_KEY = (os.environ.get("SECRET_KEY") or "").strip()
 if not SECRET_KEY:
-    SECRET_KEY = secrets.token_urlsafe(48)
-    print("[SECURITY] SECRET_KEY env is missing. Generated a temporary secret for this boot.")
+    raise ValueError(
+        "SECRET_KEY environment variable is not set. "
+        "The application cannot start without it. "
+        "Set SECRET_KEY in your .env file or environment."
+    )
 ALGORITHM = "HS256"
 
 
