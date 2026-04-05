@@ -182,6 +182,15 @@ class Bookmark(Base):
     question = relationship("Question")
 
 
+class StripeWebhookEvent(Base):
+    __tablename__ = "stripe_webhook_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    event_id = Column(String, unique=True, index=True, nullable=False)
+    event_type = Column(String, nullable=False)
+    processed_at = Column(DateTime, default=datetime.utcnow)
+
+
 class LiveActivitySession(Base):
     __tablename__ = "live_activity_sessions"
 

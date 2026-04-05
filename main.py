@@ -11,7 +11,7 @@ from types import SimpleNamespace
 from typing import Optional
 from urllib.parse import urlencode, quote
 from fastapi import FastAPI, Request, Depends, HTTPException, Header, UploadFile
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
@@ -50,6 +50,31 @@ CONTACT_UPLOAD_DIR = BASE_DIR / "uploads" / "contact"
 SUPPORT_UPLOAD_DIR = BASE_DIR / "uploads" / "support"
 ALLOWED_CONTACT_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".pdf", ".txt", ".log", ".json"}
 MAX_CONTACT_UPLOAD_BYTES = 10 * 1024 * 1024
+
+# Magic byte signatures for binary file types
+MAGIC_SIGNATURES: dict[str, list[bytes]] = {
+    ".png":  [b"\x89PNG\r\n\x1a\n"],
+    ".jpg":  [b"\xff\xd8\xff"],
+    ".jpeg": [b"\xff\xd8\xff"],
+    ".gif":  [b"GIF87a", b"GIF89a"],
+    ".pdf":  [b"%PDF"],
+    ".webp": [b"RIFF"],  # RIFF....WEBP
+}
+# Text-based extensions (.txt, .log, .json) are not checked by magic bytes
+
+
+def validate_file_magic(file_obj, ext: str) -> bool:
+    """Validate that the file content matches the expected magic bytes for its extension."""
+    signatures = MAGIC_SIGNATURES.get(ext)
+    if signatures is None:
+        return True  # text-based formats — no magic bytes to check
+    header = file_obj.read(12)
+    file_obj.seek(0)
+    if not header:
+        return False
+    if ext == ".webp":
+        return header[:4] == b"RIFF" and header[8:12] == b"WEBP"
+    return any(header.startswith(sig) for sig in signatures)
 CONTACT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 SUPPORT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 QUESTION_TEXT_FIXES = {
@@ -767,6 +792,9 @@ def save_contact_attachment(upload: UploadFile) -> tuple[str, str, str]:
     if ext not in ALLOWED_CONTACT_EXTENSIONS:
         raise ValueError("Allowed files: images, PDF, TXT, LOG, JSON")
 
+    if not validate_file_magic(upload.file, ext):
+        raise ValueError("File content does not match its extension")
+
     CONTACT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     stored_name = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{secrets.token_hex(6)}{ext}"
     stored_path = CONTACT_UPLOAD_DIR / stored_name
@@ -795,6 +823,9 @@ def save_support_attachment(upload: UploadFile) -> tuple[str, str, str]:
     ext = Path(original_name).suffix.lower()
     if ext not in ALLOWED_CONTACT_EXTENSIONS:
         raise ValueError("Allowed files: images, PDF, TXT, LOG, JSON")
+
+    if not validate_file_magic(upload.file, ext):
+        raise ValueError("File content does not match its extension")
 
     SUPPORT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     stored_name = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{secrets.token_hex(6)}{ext}"
@@ -1067,7 +1098,20 @@ async def startup_init():
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/test-images", StaticFiles(directory="test-images"), name="test-images")
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+# Uploads served with Content-Disposition: attachment to prevent XSS via uploaded files
+@app.get("/uploads/{subdir:path}/{filename:path}")
+async def serve_upload(subdir: str, filename: str):
+    safe_subdir = os.path.basename(subdir)
+    safe_filename = os.path.basename(filename)
+    file_path = BASE_DIR / "uploads" / safe_subdir / safe_filename
+    if not file_path.is_file():
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    return FileResponse(
+        path=str(file_path),
+        filename=safe_filename,
+        headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
+    )
 templates = Jinja2Templates(directory="templates")
 templates.env.globals["asset_version"] = "20260328-live-activity"
 
@@ -3218,9 +3262,17 @@ async def _handle_stripe_webhook(request: Request, db: Session, stripe_signature
         print(f"[WEBHOOK] Signature error: {e}")
         return JSONResponse({"error": "Invalid signature"}, status_code=400)
 
+    event_id   = event["id"]
     event_type = event["type"]
     data_obj   = event["data"]["object"]
-    print(f"[WEBHOOK] {event_type}")
+    print(f"[WEBHOOK] {event_type} (id={event_id})")
+
+    # Idempotency: skip already-processed webhook events
+    if db.query(models.StripeWebhookEvent).filter(
+        models.StripeWebhookEvent.event_id == event_id
+    ).first():
+        print(f"[WEBHOOK] Duplicate event {event_id}, skipping")
+        return JSONResponse({"received": True, "duplicate": True})
 
     if event_type == "checkout.session.completed":
         user_id = data_obj.get("metadata", {}).get("user_id")
@@ -3256,6 +3308,10 @@ async def _handle_stripe_webhook(request: Request, db: Session, stripe_signature
             u.stripe_subscription_id = None
             db.commit()
             print(f"[WEBHOOK] Subscription canceled for customer {customer_id}")
+
+    # Record processed event for idempotency
+    db.add(models.StripeWebhookEvent(event_id=event_id, event_type=event_type))
+    db.commit()
 
     return JSONResponse({"received": True})
 
