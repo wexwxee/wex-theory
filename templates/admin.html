@@ -648,7 +648,14 @@
     </div>
     <div class="form-group">
       <label class="form-label">New password (leave blank to keep)</label>
-      <input type="password" id="editPassword" placeholder="********">
+      <div style="position:relative;">
+        <input type="password" id="editPassword" placeholder="********" style="padding-right:42px;width:100%;">
+        <button type="button" class="pwd-toggle" data-target="editPassword"
+                style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);padding:6px;font-size:0.95rem;"
+                aria-label="Show password">
+          <i class="fa-regular fa-eye"></i>
+        </button>
+      </div>
     </div>
     <div class="form-group">
       <label class="form-label">Extend access by</label>
@@ -729,7 +736,14 @@
     <div id="resetMsg" style="display:none;padding:10px 14px;border-radius:8px;font-size:0.85rem;margin-bottom:14px;"></div>
     <div class="form-group">
       <label class="form-label">New password</label>
-      <input type="password" id="resetPassword" placeholder="At least 8 chars, letters + numbers">
+      <div style="position:relative;">
+        <input type="password" id="resetPassword" placeholder="At least 8 chars, letters + numbers" style="padding-right:42px;width:100%;">
+        <button type="button" class="pwd-toggle" data-target="resetPassword"
+                style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);padding:6px;font-size:0.95rem;"
+                aria-label="Show password">
+          <i class="fa-regular fa-eye"></i>
+        </button>
+      </div>
     </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
       <button class="btn-ghost" id="cancelResetBtn">Cancel</button>

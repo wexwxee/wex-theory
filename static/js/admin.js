@@ -550,4 +550,22 @@
   });
   document.getElementById('createPromoBtn')?.addEventListener('click', createPromoCode);
   bindPromoCopyButtons();
+
+  // Password visibility toggles for admin modals
+  document.querySelectorAll('.pwd-toggle').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var input = document.getElementById(btn.dataset.target);
+      if (!input) return;
+      var icon = btn.querySelector('i');
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) { icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
+        btn.setAttribute('aria-label', 'Hide password');
+      } else {
+        input.type = 'password';
+        if (icon) { icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+        btn.setAttribute('aria-label', 'Show password');
+      }
+    });
+  });
 })();
