@@ -681,12 +681,14 @@ input::placeholder, textarea::placeholder {
   background: rgba(255,255,255,0.05);
 }
 .answer-option.selected {
-  border-color: #111827;
-  background: rgba(255,255,255,0.04);
+  border-color: #3b82f6;
+  background: rgba(59,130,246,0.12);
+  box-shadow: 0 0 0 1px rgba(59,130,246,0.4);
 }
 [data-theme="light"] .answer-option.selected {
-  border-color: #111827;
-  background: #f8f8f8;
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 0 1px rgba(37,99,235,0.25);
 }
 .answer-option.correct {
   border-color: #16a34a;
@@ -1153,7 +1155,7 @@ body, nav, .sb, .modal, input, textarea, select {
   width: 22px;
   height: 22px;
   min-width: 22px;
-  border: 2px solid #d1d5db;
+  border: 2px solid var(--border);
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -1163,8 +1165,9 @@ body, nav, .sb, .modal, input, textarea, select {
   background: var(--bg-card);
 }
 .answer-option.selected .answer-checkbox {
-  background: #111827;
-  border-color: #111827;
+  background: #3b82f6;
+  border-color: #3b82f6;
+  box-shadow: 0 0 8px rgba(59,130,246,0.5);
 }
 .answer-option.selected .answer-checkbox::after {
   content: '';
