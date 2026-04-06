@@ -1190,6 +1190,11 @@ async def startup_init():
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/test-images", StaticFiles(directory="test-images"), name="test-images")
 
+@app.get("/favicon.ico")
+async def favicon():
+    return FileResponse(str(BASE_DIR / "static" / "favicon.svg"), media_type="image/svg+xml")
+
+
 # Uploads served with Content-Disposition: attachment to prevent XSS via uploaded files
 @app.get("/uploads/{subdir:path}/{filename:path}")
 async def serve_upload(subdir: str, filename: str):
