@@ -49,7 +49,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/faq.js"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/faq.js"></script>
 {% endblock %}
 
 

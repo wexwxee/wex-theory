@@ -107,6 +107,44 @@ RATE_LIMIT_CONFIG = {
     "support_reply": (30, 300),
 }
 
+# ─── Redis Rate Limiting (graceful fallback to in-memory) ─────────────────────
+_redis_client = None
+_REDIS_URL = (os.environ.get("REDIS_URL") or "").strip()
+
+if _REDIS_URL:
+    try:
+        import redis as _redis_mod
+        _redis_client = _redis_mod.Redis.from_url(
+            _REDIS_URL,
+            decode_responses=True,
+            socket_connect_timeout=3,
+            socket_timeout=2,
+        )
+        _redis_client.ping()
+        print(f"[RATE LIMIT] Connected to Redis")
+    except Exception as _e:
+        _redis_client = None
+        print(f"[RATE LIMIT] WARNING: Redis unavailable ({_e}), falling back to in-memory")
+else:
+    print("[RATE LIMIT] REDIS_URL not set, using in-memory rate limiting")
+
+
+def _rate_limit_check_redis(key: str, limit: int, window: int) -> bool:
+    """Sliding-window rate limit via Redis sorted set. Returns True if over limit."""
+    import time as _time
+    now = _time.time()
+    pipe = _redis_client.pipeline(transaction=True)
+    pipe.zremrangebyscore(key, 0, now - window)
+    pipe.zcard(key)
+    pipe.zadd(key, {f"{now}": now})
+    pipe.expire(key, window)
+    results = pipe.execute()
+    count = results[1]
+    if count >= limit:
+        _redis_client.zrem(key, f"{now}")
+        return True
+    return False
+
 
 def _env_flag(name: str, default: bool = False) -> bool:
     value = os.environ.get(name)
@@ -139,15 +177,20 @@ def _session_cookie_secure_default() -> bool:
 
 
 def build_content_security_policy(request: Request) -> str:
-    # Practical CSP: kept soft on inline scripts/styles because the current template system
-    # still relies on inline blocks across auth pages, dashboard, tests and admin UI.
+    nonce = getattr(request.state, "csp_nonce", "")
+    nonce_src = f"'nonce-{nonce}'" if nonce else ""
+    script_src = ["'self'"]
+    if nonce_src:
+        script_src.append(nonce_src)
+    # style-src keeps 'unsafe-inline' because 600+ inline style="..." attributes
+    # across templates cannot use nonces — only <style> blocks can.
     directives = {
         "default-src": ["'self'"],
         "base-uri": ["'self'"],
         "object-src": ["'none'"],
         "frame-ancestors": ["'self'"],
         "form-action": ["'self'"],
-        "script-src": ["'self'"],
+        "script-src": script_src,
         "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
         "font-src": ["'self'", "data:", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
         "img-src": ["'self'", "data:", "blob:", "https:"],
@@ -225,19 +268,40 @@ def check_rate_limit(
     redirect_to: Optional[str] = None,
     redirect_param: str = "error",
 ) -> Optional[JSONResponse | RedirectResponse]:
+    global _redis_client
     limit, window_seconds = RATE_LIMIT_CONFIG[scope]
-    now = datetime.utcnow().timestamp()
-    key = f"{scope}:{get_client_ip(request)}"
-    bucket = RATE_LIMIT_BUCKETS[key]
-    while bucket and now - bucket[0] > window_seconds:
-        bucket.popleft()
-    if len(bucket) >= limit:
+    key = f"rl:{scope}:{get_client_ip(request)}"
+    over_limit = False
+
+    # Try Redis first, fall back to in-memory on any error
+    if _redis_client is not None:
+        try:
+            over_limit = _rate_limit_check_redis(key, limit, window_seconds)
+        except Exception as e:
+            print(f"[RATE LIMIT] Redis error, falling back to in-memory: {e}")
+            _redis_client = None
+            over_limit = _rate_limit_check_memory(key, limit, window_seconds)
+    else:
+        over_limit = _rate_limit_check_memory(key, limit, window_seconds)
+
+    if over_limit:
         if redirect_to:
             separator = "&" if "?" in redirect_to else "?"
             return RedirectResponse(f"{redirect_to}{separator}{redirect_param}={quote(message)}", status_code=302)
         return JSONResponse({"error": message}, status_code=429)
-    bucket.append(now)
     return None
+
+
+def _rate_limit_check_memory(key: str, limit: int, window_seconds: int) -> bool:
+    """In-memory sliding window rate limit. Returns True if over limit."""
+    now = datetime.utcnow().timestamp()
+    bucket = RATE_LIMIT_BUCKETS[key]
+    while bucket and now - bucket[0] > window_seconds:
+        bucket.popleft()
+    if len(bucket) >= limit:
+        return True
+    bucket.append(now)
+    return False
 
 
 def get_or_create_csrf_token(request: Request) -> str:
@@ -953,6 +1017,9 @@ def should_disable_cache(request: Request) -> bool:
 
 @app.middleware("http")
 async def refresh_auth_session(request: Request, call_next):
+    # Generate per-request CSP nonce for inline scripts
+    request.state.csp_nonce = secrets.token_urlsafe(16)
+
     if request.method.upper() not in {"GET", "HEAD", "OPTIONS"} and request.url.path not in {"/stripe/webhook", "/api/stripe/webhook"}:
         cookie_token = (request.cookies.get(CSRF_COOKIE_NAME) or "").strip()
         header_token = (request.headers.get("x-csrf-token") or "").strip()

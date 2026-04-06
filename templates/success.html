@@ -43,7 +43,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/success.js"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/success.js"></script>
 {% endblock %}
 
 

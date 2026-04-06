@@ -194,7 +194,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/saved.js"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/saved.js"></script>
 {% endblock %}
 
 

@@ -38,7 +38,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/subscription-expired.js"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/subscription-expired.js"></script>
 {% endblock %}
 
 

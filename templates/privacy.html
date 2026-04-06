@@ -82,7 +82,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/privacy.js"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/privacy.js"></script>
 {% endblock %}
 
 

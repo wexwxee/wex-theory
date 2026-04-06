@@ -506,7 +506,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/test.js"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/test.js"></script>
 <style>
 /* Word click */
 .tw {

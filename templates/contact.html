@@ -91,7 +91,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/contact.js"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/contact.js"></script>
 {% endblock %}
 
 
