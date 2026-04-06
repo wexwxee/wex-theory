@@ -20,6 +20,13 @@ from sqlalchemy import func as sql_func, inspect as sql_inspect, text as sql_tex
 from authlib.integrations.starlette_client import OAuth
 import httpx
 
+# Prometheus metrics (graceful: app must not crash if package missing)
+try:
+    from prometheus_fastapi_instrumentator import Instrumentator as _PromInstrumentator
+except Exception as _e:
+    _PromInstrumentator = None
+    print(f"[METRICS] prometheus_fastapi_instrumentator unavailable: {_e}")
+
 import models
 from auth import (
     hash_password, verify_password, create_token, decode_token,
@@ -34,6 +41,23 @@ from stripe_helpers import (
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="WEX Theory")
+
+# Instrument app with Prometheus metrics. /metrics endpoint is added later
+# with an admin-only guard via a dependency.
+if _PromInstrumentator is not None:
+    try:
+        _instrumentator = _PromInstrumentator(
+            should_group_status_codes=True,
+            should_ignore_untemplated=True,
+            excluded_handlers=["/metrics", "/uploads/.*", "/static/.*"],
+        ).instrument(app)
+        print("[METRICS] Prometheus instrumentation enabled")
+    except Exception as _e:
+        _instrumentator = None
+        print(f"[METRICS] Failed to enable instrumentation: {_e}")
+else:
+    _instrumentator = None
+
 AUTH_COOKIE_NAME = "token"
 CSRF_COOKIE_NAME = "csrf_token"
 ACTIVITY_COOKIE_NAME = "wex_activity_sid"
@@ -179,7 +203,7 @@ def _session_cookie_secure_default() -> bool:
 def build_content_security_policy(request: Request) -> str:
     nonce = getattr(request.state, "csp_nonce", "")
     nonce_src = f"'nonce-{nonce}'" if nonce else ""
-    script_src = ["'self'"]
+    script_src = ["'self'", "https://cdn.jsdelivr.net"]
     if nonce_src:
         script_src.append(nonce_src)
     # style-src keeps 'unsafe-inline' because 600+ inline style="..." attributes
@@ -2977,6 +3001,89 @@ async def api_support_threads_data(request: Request, db: Session = Depends(get_d
 
 
 # ─── Admin API ─────────────────────────────────────────────────────────────────
+
+@app.get("/metrics")
+async def prometheus_metrics(request: Request, db: Session = Depends(get_db)):
+    """Prometheus metrics endpoint, restricted to authenticated admins."""
+    user = get_current_user(request, db)
+    if not user or not user.is_admin:
+        return JSONResponse({"error": "Forbidden"}, status_code=403)
+    if _instrumentator is None:
+        return JSONResponse({"error": "Metrics disabled"}, status_code=503)
+    try:
+        from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+        from starlette.responses import Response as _Resp
+        return _Resp(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@app.get("/admin/api/stats")
+async def admin_api_stats(request: Request, db: Session = Depends(get_db)):
+    """JSON statistics for admin dashboard charts."""
+    user = get_current_user(request, db)
+    if not user or not user.is_admin:
+        return JSONResponse({"error": "Forbidden"}, status_code=403)
+
+    now = datetime.utcnow()
+    today = datetime(now.year, now.month, now.day)
+
+    # 1. Registrations per day for the last 7 days
+    registrations = []
+    for i in range(6, -1, -1):
+        day_start = today - timedelta(days=i)
+        day_end = day_start + timedelta(days=1)
+        count = db.query(sql_func.count(models.User.id)).filter(
+            models.User.created_at >= day_start,
+            models.User.created_at < day_end,
+        ).scalar() or 0
+        registrations.append({
+            "date": day_start.strftime("%Y-%m-%d"),
+            "label": day_start.strftime("%a"),
+            "count": int(count),
+        })
+
+    # 2. User role distribution
+    total_users = db.query(sql_func.count(models.User.id)).scalar() or 0
+    super_admins = db.query(sql_func.count(models.User.id)).filter(
+        models.User.is_super_admin == True
+    ).scalar() or 0
+    admins = db.query(sql_func.count(models.User.id)).filter(
+        models.User.is_admin == True,
+        models.User.is_super_admin == False,
+    ).scalar() or 0
+    regular_users = max(int(total_users) - int(admins) - int(super_admins), 0)
+    roles = {
+        "users": regular_users,
+        "admins": int(admins),
+        "super_admins": int(super_admins),
+    }
+
+    # 3. Active live-activity sessions (online window from existing constant)
+    online_cutoff = now - ACTIVITY_ONLINE_WINDOW
+    try:
+        active_sessions = db.query(sql_func.count(models.LiveActivitySession.id)).filter(
+            models.LiveActivitySession.last_seen >= online_cutoff
+        ).scalar() or 0
+        authed_sessions = db.query(sql_func.count(models.LiveActivitySession.id)).filter(
+            models.LiveActivitySession.last_seen >= online_cutoff,
+            models.LiveActivitySession.is_authenticated == True,
+        ).scalar() or 0
+    except Exception:
+        active_sessions = 0
+        authed_sessions = 0
+
+    return {
+        "registrations_7d": registrations,
+        "roles": roles,
+        "active_sessions": {
+            "total": int(active_sessions),
+            "authenticated": int(authed_sessions),
+            "anonymous": max(int(active_sessions) - int(authed_sessions), 0),
+        },
+        "generated_at": now.isoformat(),
+    }
+
 
 @app.get("/api/admin/users")
 async def api_admin_users(request: Request, db: Session = Depends(get_db)):

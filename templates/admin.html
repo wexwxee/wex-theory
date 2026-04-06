@@ -263,6 +263,21 @@
     </div>
   </div>
 
+  <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:14px;margin-bottom:32px;" id="adminChartsGrid">
+    <div class="card" style="padding:18px;">
+      <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">Registrations · 7 days</div>
+      <div style="position:relative;height:220px;"><canvas id="chartRegistrations"></canvas></div>
+    </div>
+    <div class="card" style="padding:18px;">
+      <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">User Roles</div>
+      <div style="position:relative;height:220px;"><canvas id="chartRoles"></canvas></div>
+    </div>
+    <div class="card" style="padding:18px;">
+      <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">Active Sessions</div>
+      <div style="position:relative;height:220px;"><canvas id="chartSessions"></canvas></div>
+    </div>
+  </div>
+
   <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px;">
     <div>
       <h2 style="font-size:1.02rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:4px;">Live activity</h2>
@@ -748,6 +763,94 @@
 
 {% block scripts %}
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/admin.js?v={{ asset_version }}"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script nonce="{{ request.state.csp_nonce }}">
+(function() {
+  if (typeof Chart === 'undefined') {
+    console.warn('[admin charts] Chart.js failed to load');
+    return;
+  }
+  Chart.defaults.font.family = "system-ui, -apple-system, sans-serif";
+  Chart.defaults.color = getComputedStyle(document.body).getPropertyValue('--text-muted') || '#888';
+
+  fetch('/admin/api/stats', { credentials: 'same-origin' })
+    .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(data) {
+      // Registrations line chart
+      var regCtx = document.getElementById('chartRegistrations');
+      if (regCtx) {
+        new Chart(regCtx, {
+          type: 'line',
+          data: {
+            labels: data.registrations_7d.map(function(d) { return d.label; }),
+            datasets: [{
+              label: 'New users',
+              data: data.registrations_7d.map(function(d) { return d.count; }),
+              borderColor: '#3b82f6',
+              backgroundColor: 'rgba(59,130,246,0.15)',
+              borderWidth: 2,
+              tension: 0.35,
+              fill: true,
+              pointRadius: 4,
+              pointBackgroundColor: '#3b82f6'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+          }
+        });
+      }
+
+      // Roles doughnut chart
+      var rolesCtx = document.getElementById('chartRoles');
+      if (rolesCtx) {
+        new Chart(rolesCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Users', 'Admins', 'Super Admins'],
+            datasets: [{
+              data: [data.roles.users, data.roles.admins, data.roles.super_admins],
+              backgroundColor: ['#3b82f6', '#f59e0b', '#ef4444'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10 } } }
+          }
+        });
+      }
+
+      // Active sessions bar chart
+      var sessCtx = document.getElementById('chartSessions');
+      if (sessCtx) {
+        new Chart(sessCtx, {
+          type: 'bar',
+          data: {
+            labels: ['Authenticated', 'Anonymous'],
+            datasets: [{
+              label: 'Sessions',
+              data: [data.active_sessions.authenticated, data.active_sessions.anonymous],
+              backgroundColor: ['#10b981', '#94a3b8'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+          }
+        });
+      }
+    })
+    .catch(function(err) { console.warn('[admin charts] stats fetch failed:', err); });
+})();
+</script>
 {% endblock %}
 
 
