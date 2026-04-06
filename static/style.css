@@ -681,14 +681,14 @@ input::placeholder, textarea::placeholder {
   background: rgba(255,255,255,0.05);
 }
 .answer-option.selected {
-  border-color: #3b82f6;
-  background: rgba(59,130,246,0.12);
-  box-shadow: 0 0 0 1px rgba(59,130,246,0.4);
+  border-color: #ffffff;
+  background: rgba(255,255,255,0.08);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.35);
 }
 [data-theme="light"] .answer-option.selected {
-  border-color: #2563eb;
-  background: #eff6ff;
-  box-shadow: 0 0 0 1px rgba(37,99,235,0.25);
+  border-color: #0a0a0a;
+  background: #f0f0f0;
+  box-shadow: 0 0 0 1px rgba(10,10,10,0.25);
 }
 .answer-option.correct {
   border-color: #16a34a;
@@ -1165,18 +1165,24 @@ body, nav, .sb, .modal, input, textarea, select {
   background: var(--bg-card);
 }
 .answer-option.selected .answer-checkbox {
-  background: #3b82f6;
-  border-color: #3b82f6;
-  box-shadow: 0 0 8px rgba(59,130,246,0.5);
+  background: #ffffff;
+  border-color: #ffffff;
+}
+[data-theme="light"] .answer-option.selected .answer-checkbox {
+  background: #0a0a0a;
+  border-color: #0a0a0a;
 }
 .answer-option.selected .answer-checkbox::after {
   content: '';
   width: 13px;
   height: 13px;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6.5 11.5L2.5 7.5L3.91 6.09L6.5 8.67L12.09 3.08L13.5 4.5L6.5 11.5Z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='black' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6.5 11.5L2.5 7.5L3.91 6.09L6.5 8.67L12.09 3.08L13.5 4.5L6.5 11.5Z'/%3E%3C/svg%3E");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+}
+[data-theme="light"] .answer-option.selected .answer-checkbox::after {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6.5 11.5L2.5 7.5L3.91 6.09L6.5 8.67L12.09 3.08L13.5 4.5L6.5 11.5Z'/%3E%3C/svg%3E");
 }
 .answer-option.correct .answer-checkbox {
   background: #16a34a;
