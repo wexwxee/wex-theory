@@ -183,25 +183,14 @@ function setWordPopupResult(popup, word, result) {
   orig.textContent = word;
   const translation = document.createElement('div');
   translation.className = 'wp-tr';
-  translation.textContent = result.main || '-';
+  translation.textContent = result.main || '—';
   popup.appendChild(orig);
   popup.appendChild(translation);
-  if (result.contextPhrase) {
-    const context = document.createElement('div');
-    context.className = 'wp-context';
-    context.textContent = `Context: ${result.contextPhrase} -> ${result.contextTranslation}`;
-    popup.appendChild(context);
-  }
-  if (Array.isArray(result.variants) && result.variants.length) {
-    const variants = document.createElement('div');
-    variants.className = 'wp-variants';
-    result.variants.forEach((item) => {
-      const variant = document.createElement('span');
-      variant.className = 'wp-v';
-      variant.textContent = item;
-      variants.appendChild(variant);
-    });
-    popup.appendChild(variants);
+  if (result.pos) {
+    const pos = document.createElement('div');
+    pos.className = 'wp-context';
+    pos.textContent = result.pos;
+    popup.appendChild(pos);
   }
 }
 
@@ -238,17 +227,16 @@ function renderQuestion() {
   document.getElementById('questionCounter').textContent = `Question ${currentIndex + 1} of ${questions.length}`;
 
   // Question text
-  const trans = questionTransCache[q.id];
   const qTextEl = document.getElementById('questionText');
   qTextEl.textContent = q.question_text;
   qTextEl.dataset.sourceText = q.question_text;
   delete qTextEl.dataset.wrapped;
 
-  // Russian translation below
+  // Russian translation below (from pre-translated DB field)
   const qRuEl = document.getElementById('questionTextRu');
-  if (translateMode && trans) {
-    qRuEl.textContent = trans.q || '';
-    qRuEl.style.display = qRuEl.textContent ? 'block' : 'none';
+  if (translateMode && q.question_text_ru) {
+    qRuEl.textContent = q.question_text_ru;
+    qRuEl.style.display = 'block';
   } else {
     qRuEl.style.display = 'none';
   }
@@ -280,7 +268,7 @@ function renderQuestion() {
     label.className = 'answer-option-label';
     label.textContent = a.text;
     label.dataset.sourceText = a.text;
-    const ruText = (translateMode && trans?.a?.[idx]) ? trans.a[idx] : null;
+    const ruText = (translateMode && a.text_ru) ? a.text_ru : null;
     if (ruText) {
       label.appendChild(document.createElement('br'));
       const ruNode = document.createElement('span');
@@ -373,9 +361,7 @@ function prevQuestion() {
 function nextQuestion() {
   if (currentIndex < questions.length - 1) {
     currentIndex++;
-    if (translateMode) _ensureQuestionTranslated(questions[currentIndex]);
     renderQuestion();
-    _prefetchNext();
   } else {
     finishTest();
   }
@@ -573,137 +559,33 @@ async function toggleBookmark() {
 }
 
 // в”Ђв”Ђ MyMemory translation (free, no API key) в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+// ── Translation: pre-translated server-side, instant toggle ──────────────────
 let translateMode = false;
-const questionTransCache = {};
-const _TRAFFIC_GLOSSARY = [
-  { phrase: 'turn right', translation: 'повернуть направо', words: ['turn', 'right'] },
-  { phrase: 'turn left', translation: 'повернуть налево', words: ['turn', 'left'] },
-  { phrase: 'right turn', translation: 'поворот направо', words: ['right', 'turn'] },
-  { phrase: 'left turn', translation: 'поворот налево', words: ['left', 'turn'] },
-  { phrase: 'signal-controlled junction', translation: 'регулируемый перекресток', words: ['signal', 'controlled', 'junction'] },
-  { phrase: 'pedestrian crossing', translation: 'пешеходный переход', words: ['pedestrian', 'crossing'] },
-  { phrase: 'bus lane', translation: 'полоса для автобусов', words: ['bus', 'lane'] },
-  { phrase: 'cycle path', translation: 'велодорожка', words: ['cycle', 'path'] },
-  { phrase: 'own lane', translation: 'своя полоса', words: ['own', 'lane'] },
-  { phrase: 'keep to my own lane', translation: 'держаться своей полосы', words: ['keep', 'own', 'lane'] },
-  { phrase: 'pull in', translation: 'перестроиться ближе к краю', words: ['pull', 'in'] },
-  { phrase: 'directly behind you', translation: 'непосредственно позади вас', words: ['directly', 'behind'] },
-  { phrase: 'all the way', translation: 'до самого конца', words: ['all', 'way'] },
-  { phrase: 'remain there', translation: 'оставаться там', words: ['remain', 'there'] },
-  { phrase: 'kerb', translation: 'бордюр', words: ['kerb'] },
-  { phrase: 'lane', translation: 'полоса движения', words: ['lane'] },
-  { phrase: 'junction', translation: 'перекресток', words: ['junction'] }
-];
 
-function _googleTranslateUrl(text) {
-  return 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&dt=t&q=' + encodeURIComponent(text);
-}
-
-function _extractGoogleTranslation(data) {
-  if (!Array.isArray(data) || !Array.isArray(data[0])) return null;
-  const translated = data[0]
-    .map(part => Array.isArray(part) ? (part[0] || '') : '')
-    .join('')
-    .trim();
-  return translated || null;
-}
-
-// Returns plain string for sentence translation
-async function _translateText(text) {
-  if (!text || !text.trim()) return null;
-  const key = 'gt_' + btoa(unescape(encodeURIComponent(text.trim().slice(0, 60)))).slice(0, 36);
-  const cached = sessionStorage.getItem(key);
-  if (cached) return cached;
-  try {
-    const res = await fetch(_googleTranslateUrl(text.slice(0, 500)));
-    const data = await res.json();
-    const t = _extractGoogleTranslation(data);
-    if (t) {
-      try { sessionStorage.setItem(key, t); } catch(e) {}
-      return t;
-    }
-  } catch(e) {}
-  return null;
-}
-
-// Returns { main, variants[] } for word popup
-async function _translateWord(word) {
-  const key = 'wt_' + word.toLowerCase();
-  const cached = sessionStorage.getItem(key);
-  if (cached) { try { return JSON.parse(cached); } catch(e) {} }
-  try {
-    const res = await fetch(_googleTranslateUrl(word));
-    const data = await res.json();
-    const result = { main: _extractGoogleTranslation(data) || '-', variants: [] };
-    try { sessionStorage.setItem(key, JSON.stringify(result)); } catch(e) {}
-    return result;
-  } catch(e) {
-    return { main: '-', variants: [] };
-  }
-}
-
-function _normalizeContextText(text) {
-  return (text || '')
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function _findGlossaryMatch(word, contextText) {
-  const lcWord = (word || '').toLowerCase();
-  const normalized = _normalizeContextText(contextText);
-  return _TRAFFIC_GLOSSARY
-    .filter(item => item.words.includes(lcWord) && normalized.includes(item.phrase))
-    .sort((a, b) => b.phrase.length - a.phrase.length)[0] || null;
-}
-
-async function _translateWordInContext(word, contextText) {
-  const glossary = _findGlossaryMatch(word, contextText);
-  const base = glossary ? { main: glossary.translation, variants: [] } : await _translateWord(word);
-  return {
-    main: base.main || '-',
-    variants: base.variants || [],
-    contextPhrase: glossary ? glossary.phrase : '',
-    contextTranslation: glossary ? glossary.translation : ''
-  };
-}
-
-async function toggleTranslate() {
+function toggleTranslate() {
+  translateMode = !translateMode;
   const btn = document.getElementById('translateBtn');
-  if (translateMode) {
-    translateMode = false;
-    if (btn) btn.textContent = 'RU';
-    renderQuestion();
-    return;
-  }
-  translateMode = true;
-  if (btn) { btn.textContent = '...'; btn.disabled = true; }
-  if (questions[currentIndex]) {
-    await _ensureQuestionTranslated(questions[currentIndex]);
-  }
-  if (btn) { btn.textContent = 'EN'; btn.disabled = false; }
+  if (btn) btn.textContent = translateMode ? 'EN' : 'RU';
   renderQuestion();
 }
 
-async function _ensureQuestionTranslated(q) {
-  if (questionTransCache[q.id]) return;
-  const cacheKey = 'wx_q_' + WORDING_MODE + '_' + q.id;
-  const cached = sessionStorage.getItem(cacheKey);
-  if (cached) {
-    try { questionTransCache[q.id] = JSON.parse(cached); return; } catch(e) {}
+// Word-popup translations come from /api/dictionary/{word}.
+// Cached in-memory for the session so re-hovering the same word is instant.
+const _wordDictCache = {};
+async function _lookupWord(word) {
+  const key = (word || '').toLowerCase();
+  if (!key) return { main: null, pos: null };
+  if (_wordDictCache[key]) return _wordDictCache[key];
+  try {
+    const res = await fetch('/api/dictionary/' + encodeURIComponent(key));
+    if (!res.ok) throw new Error('lookup failed');
+    const data = await res.json();
+    const result = { main: data.translation || null, pos: data.pos || null };
+    _wordDictCache[key] = result;
+    return result;
+  } catch (e) {
+    return { main: null, pos: null };
   }
-  // Translate question + all answers in parallel
-  const texts = [q.question_text, ...q.answers.map(a => a.text)];
-  const results = await Promise.all(texts.map(_translateText));
-  questionTransCache[q.id] = { q: results[0] || q.question_text, a: results.slice(1) };
-  try { sessionStorage.setItem(cacheKey, JSON.stringify(questionTransCache[q.id])); } catch(e) {}
-}
-
-async function _prefetchNext() {
-  if (!translateMode || currentIndex >= questions.length - 1) return;
-  const next = questions[currentIndex + 1];
-  if (next && !questionTransCache[next.id]) _ensureQuestionTranslated(next);
 }
 
 // в”Ђв”Ђ Word-click popup (Duolingo-style) в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
@@ -760,11 +642,9 @@ document.addEventListener('mouseover', (e) => {
   _wordPopup = popup;
 
   const rect = e.target.getBoundingClientRect();
-  const contextHost = e.target.closest('[data-source-text]');
-  const contextText = contextHost ? contextHost.dataset.sourceText || '' : '';
   _popupPos(popup, rect);
 
-  _translateWordInContext(word, contextText).then(result => {
+  _lookupWord(word).then(result => {
     if (_wordPopup !== popup) return;
     setWordPopupResult(popup, word, result);
     _popupPos(popup, rect);

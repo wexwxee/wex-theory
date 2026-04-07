@@ -39,118 +39,36 @@
 
     let currentModal = 0;
     let resultsTranslateMode = false;
-    const resultsTranslateCache = {};
     const _RESULTS_STOP = new Set(['the','a','an','in','to','of','and','or','is','are','you','at','on','for',
       'it','be','as','by','with','from','this','that','not','but','if','up','do','so','we','he',
       'she','they','my','your','all','have','has','had','was','were','will','can','i','its','our',
       'their','into','also','when','then','than','there','about','been','which','who','what']);
-    const _RESULTS_GLOSSARY = [
-      { phrase: 'turn right', translation: 'повернуть направо', words: ['turn', 'right'] },
-      { phrase: 'turn left', translation: 'повернуть налево', words: ['turn', 'left'] },
-      { phrase: 'right turn', translation: 'поворот направо', words: ['right', 'turn'] },
-      { phrase: 'left turn', translation: 'поворот налево', words: ['left', 'turn'] },
-      { phrase: 'signal-controlled junction', translation: 'регулируемый перекресток', words: ['signal', 'controlled', 'junction'] },
-      { phrase: 'pedestrian crossing', translation: 'пешеходный переход', words: ['pedestrian', 'crossing'] },
-      { phrase: 'bus lane', translation: 'полоса для автобусов', words: ['bus', 'lane'] },
-      { phrase: 'cycle path', translation: 'велодорожка', words: ['cycle', 'path'] },
-      { phrase: 'own lane', translation: 'своя полоса', words: ['own', 'lane'] },
-      { phrase: 'keep to my own lane', translation: 'держаться своей полосы', words: ['keep', 'own', 'lane'] },
-      { phrase: 'pull in', translation: 'перестроиться ближе к краю', words: ['pull', 'in'] },
-      { phrase: 'directly behind you', translation: 'непосредственно позади вас', words: ['directly', 'behind'] },
-      { phrase: 'all the way', translation: 'до самого конца', words: ['all', 'way'] },
-      { phrase: 'remain there', translation: 'оставаться там', words: ['remain', 'there'] },
-      { phrase: 'kerb', translation: 'бордюр', words: ['kerb'] },
-      { phrase: 'lane', translation: 'полоса движения', words: ['lane'] },
-      { phrase: 'junction', translation: 'перекресток', words: ['junction'] }
-    ];
     let _resultsWordPopup = null;
     let _resultsPopupHideTimer = null;
 
-    function _resultsTranslateUrl(text) {
-      return 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&dt=t&q=' + encodeURIComponent(text);
-    }
-
-    function _extractResultsTranslation(data) {
-      if (!Array.isArray(data) || !Array.isArray(data[0])) return null;
-      return data[0].map(part => Array.isArray(part) ? (part[0] || '') : '').join('').trim() || null;
-    }
-
-    async function _translateResultsText(text) {
-      if (!text || !text.trim()) return null;
-      const key = 'gr_' + btoa(unescape(encodeURIComponent(text.trim().slice(0, 60)))).slice(0, 36);
-      const cached = sessionStorage.getItem(key);
-      if (cached) return cached;
+    const _resultsWordDictCache = {};
+    async function _lookupResultsWord(word) {
+      const key = (word || '').toLowerCase();
+      if (!key) return { main: null, pos: null };
+      if (_resultsWordDictCache[key]) return _resultsWordDictCache[key];
       try {
-        const res = await fetch(_resultsTranslateUrl(text.slice(0, 500)));
+        const res = await fetch('/api/dictionary/' + encodeURIComponent(key));
+        if (!res.ok) throw new Error('lookup failed');
         const data = await res.json();
-        const translated = _extractResultsTranslation(data);
-        if (translated) {
-          try { sessionStorage.setItem(key, translated); } catch(e) {}
-          return translated;
-        }
-      } catch(e) {}
-      return null;
-    }
-
-    async function _translateResultsWord(word) {
-      const key = 'rw_' + word.toLowerCase();
-      const cached = sessionStorage.getItem(key);
-      if (cached) { try { return JSON.parse(cached); } catch(e) {} }
-      try {
-        const res = await fetch(_resultsTranslateUrl(word));
-        const data = await res.json();
-        const result = { main: _extractResultsTranslation(data) || '-', variants: [] };
-        try { sessionStorage.setItem(key, JSON.stringify(result)); } catch(e) {}
+        const result = { main: data.translation || null, pos: data.pos || null };
+        _resultsWordDictCache[key] = result;
         return result;
-      } catch(e) {
-        return { main: '-', variants: [] };
+      } catch (e) {
+        return { main: null, pos: null };
       }
     }
 
-    function _normalizeResultsContext(text) {
-      return (text || '').toLowerCase().replace(/[^\w\s-]/g, ' ').replace(/\s+/g, ' ').trim();
-    }
-
-    function _findResultsGlossaryMatch(word, contextText) {
-      const lcWord = (word || '').toLowerCase();
-      const normalized = _normalizeResultsContext(contextText);
-      return _RESULTS_GLOSSARY
-        .filter(item => item.words.includes(lcWord) && normalized.includes(item.phrase))
-        .sort((a, b) => b.phrase.length - a.phrase.length)[0] || null;
-    }
-
-    async function _translateResultsWordInContext(word, contextText) {
-      const glossary = _findResultsGlossaryMatch(word, contextText);
-      const base = glossary ? { main: glossary.translation, variants: [] } : await _translateResultsWord(word);
+    function _resultTranslated(d) {
       return {
-        main: base.main || '-',
-        variants: base.variants || [],
-        contextPhrase: glossary ? glossary.phrase : '',
-        contextTranslation: glossary ? glossary.translation : ''
+        q: d.text_ru || '',
+        a: d.answers.map((a) => a.text_ru || ''),
+        explanation: d.explanation_ru || ''
       };
-    }
-
-    async function _ensureResultTranslated(d) {
-      const cacheKey = 'result_translate_' + d.index;
-      if (resultsTranslateCache[cacheKey]) return resultsTranslateCache[cacheKey];
-      const cached = sessionStorage.getItem(cacheKey);
-      if (cached) {
-        try {
-          resultsTranslateCache[cacheKey] = JSON.parse(cached);
-          return resultsTranslateCache[cacheKey];
-        } catch(e) {}
-      }
-      const texts = [d.text, ...d.answers.map(a => a.text)];
-      if (d.explanation) texts.push(d.explanation);
-      const translated = await Promise.all(texts.map(_translateResultsText));
-      const payload = {
-        q: translated[0] || d.text,
-        a: translated.slice(1, 1 + d.answers.length),
-        explanation: d.explanation ? (translated[translated.length - 1] || d.explanation) : ''
-      };
-      resultsTranslateCache[cacheKey] = payload;
-      try { sessionStorage.setItem(cacheKey, JSON.stringify(payload)); } catch(e) {}
-      return payload;
     }
 
     function appendResultsWrappedText(parent, text, stopWords) {
@@ -235,37 +153,23 @@
       orig.textContent = word;
       const translation = document.createElement('div');
       translation.className = 'wp-tr';
-      translation.textContent = result.main || '-';
+      translation.textContent = result.main || '—';
       popup.appendChild(orig);
       popup.appendChild(translation);
-      if (result.contextPhrase) {
-        const context = document.createElement('div');
-        context.className = 'wp-context';
-        context.textContent = `Context: ${result.contextPhrase} -> ${result.contextTranslation}`;
-        popup.appendChild(context);
-      }
-      if (Array.isArray(result.variants) && result.variants.length) {
-        const variants = document.createElement('div');
-        variants.className = 'wp-variants';
-        result.variants.forEach((item) => {
-          const variant = document.createElement('span');
-          variant.className = 'wp-v';
-          variant.textContent = item;
-          variants.appendChild(variant);
-        });
-        popup.appendChild(variants);
+      if (result.pos) {
+        const pos = document.createElement('div');
+        pos.className = 'wp-context';
+        pos.textContent = result.pos;
+        popup.appendChild(pos);
       }
     }
 
-    async function toggleResultsTranslate() {
+    function toggleResultsTranslate() {
       resultsTranslateMode = !resultsTranslateMode;
       const btn = document.getElementById('resultsTranslateBtn');
       const modalBtn = document.getElementById('modalTranslateBtn');
       if (btn) btn.textContent = resultsTranslateMode ? 'EN' : 'RU';
       if (modalBtn) modalBtn.textContent = resultsTranslateMode ? 'EN' : 'RU';
-      if (resultsTranslateMode && DATA[currentModal]) {
-        await _ensureResultTranslated(DATA[currentModal]);
-      }
       if (document.getElementById('qModal').classList.contains('open')) {
         renderModal();
       }
@@ -369,9 +273,9 @@
       renderModal();
     }
 
-    async function renderModal() {
+    function renderModal() {
       const d = DATA[currentModal];
-      const trans = resultsTranslateMode ? await _ensureResultTranslated(d) : null;
+      const trans = resultsTranslateMode ? _resultTranslated(d) : null;
 
       document.getElementById('modalMeta').textContent = `Question ${d.index} of ${DATA.length}`;
       updateBookmarkBtnState(d.is_bookmarked);
@@ -542,11 +446,9 @@
       _resultsWordPopup = popup;
 
       const rect = e.target.getBoundingClientRect();
-      const contextHost = e.target.closest('[data-source-text]');
-      const contextText = contextHost ? contextHost.dataset.sourceText || '' : '';
       _resultsPopupPos(popup, rect);
 
-      _translateResultsWordInContext(word, contextText).then((result) => {
+      _lookupResultsWord(word).then((result) => {
         if (_resultsWordPopup !== popup) return;
         setResultsPopupResult(popup, word, result);
         _resultsPopupPos(popup, rect);

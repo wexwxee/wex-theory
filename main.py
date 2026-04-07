@@ -218,7 +218,7 @@ def build_content_security_policy(request: Request) -> str:
         "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
         "font-src": ["'self'", "data:", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
         "img-src": ["'self'", "data:", "blob:", "https:"],
-        "connect-src": ["'self'", "https://translate.googleapis.com"],
+        "connect-src": ["'self'"],
     }
     return "; ".join(f"{name} {' '.join(values)}" for name, values in directives.items())
 
@@ -1358,8 +1358,18 @@ def serialize_test_question(question: models.Question, *, display_index: Optiona
         "id": question.id,
         "question_index": display_index or question.question_index,
         "question_text": resolve_question_text(question, wording_mode),
+        "question_text_ru": getattr(question, "question_text_ru", None),
+        "explanation": question.explanation or "",
+        "explanation_ru": getattr(question, "explanation_ru", None),
         "image_path": question.image_path,
-        "answers": [{"id": a.id, "text": resolve_answer_text(a, wording_mode)} for a in ordered_answers(question)],
+        "answers": [
+            {
+                "id": a.id,
+                "text": resolve_answer_text(a, wording_mode),
+                "text_ru": getattr(a, "text_ru", None),
+            }
+            for a in ordered_answers(question)
+        ],
     }
 
 
@@ -2793,7 +2803,31 @@ async def debug_env():
     }
 
 
-# Translation moved to frontend (MyMemory free API — no key required)
+# ─── Dictionary (curated word translations) ───────────────────────────────────
+
+@app.get("/api/dictionary/{word}")
+async def api_dictionary(word: str, db: Session = Depends(get_db)):
+    """Look up a word in the curated WordTranslation table.
+
+    Returns 200 with {word, translation, pos} if found, or 200 with
+    {word, translation: null} if not. We never call external services here —
+    if the word is missing it will be added by an admin via /admin/translations.
+    """
+    cleaned = (word or "").strip().lower()
+    if not cleaned or len(cleaned) > 64:
+        return {"word": cleaned, "translation": None, "pos": None}
+    row = (
+        db.query(models.WordTranslation)
+        .filter(models.WordTranslation.word_en == cleaned)
+        .first()
+    )
+    if not row:
+        return {"word": cleaned, "translation": None, "pos": None}
+    return {
+        "word": row.word_en,
+        "translation": row.translation_ru,
+        "pos": row.pos,
+    }
 
 
 # ─── Bookmarks ─────────────────────────────────────────────────────────────────

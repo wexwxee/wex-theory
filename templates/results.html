@@ -582,12 +582,12 @@
   <button type="button" class="lb-close" id="modalImgLightboxClose" aria-label="Close">&times;</button>
   <img id="modalImgLightboxImg" src="" alt="">
 </div>
-<textarea id="resultsDataJson" hidden>[{% for qr in question_results %}{"index": {{ qr.display_index }}, "question_id": {{ qr.question.id }}, "is_bookmarked": {{ 'true' if qr.question.id in bookmarked_question_ids else 'false' }}, "text": {{ (qr.question.display_question_text or qr.question.question_text) | tojson }}, "image": {{ (qr.question.image_path or '') | tojson }}, "explanation": {{ (qr.question.explanation or '') | tojson }}, "is_correct": {{ 'true' if qr.is_correct else 'false' }}, "selected_ids": {{ qr.selected_ids | tojson }}, "correct_ids": {{ qr.correct_ids | tojson }}, "answers": [{% for a in qr.answers %}{"id": {{ a.id }}, "text": {{ (a.display_text or a.text) | tojson }}}{% if not loop.last %}, {% endif %}{% endfor %}]}{% if not loop.last %}, {% endif %}{% endfor %}]</textarea>
+<textarea id="resultsDataJson" hidden>[{% for qr in question_results %}{"index": {{ qr.display_index }}, "question_id": {{ qr.question.id }}, "is_bookmarked": {{ 'true' if qr.question.id in bookmarked_question_ids else 'false' }}, "text": {{ (qr.question.display_question_text or qr.question.question_text) | tojson }}, "text_ru": {{ (qr.question.question_text_ru or '') | tojson }}, "image": {{ (qr.question.image_path or '') | tojson }}, "explanation": {{ (qr.question.explanation or '') | tojson }}, "explanation_ru": {{ (qr.question.explanation_ru or '') | tojson }}, "is_correct": {{ 'true' if qr.is_correct else 'false' }}, "selected_ids": {{ qr.selected_ids | tojson }}, "correct_ids": {{ qr.correct_ids | tojson }}, "answers": [{% for a in qr.answers %}{"id": {{ a.id }}, "text": {{ (a.display_text or a.text) | tojson }}, "text_ru": {{ (a.text_ru or '') | tojson }}}{% if not loop.last %}, {% endif %}{% endfor %}]}{% if not loop.last %}, {% endif %}{% endfor %}]</textarea>
 <div id="resultsPageMeta" hidden data-score="{{ attempt.score }}" data-total="{{ question_results|length }}"></div>
 {% endblock %}
 
 {% block scripts %}
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-viewer.js?v=20260407-review2"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-viewer.js?v=20260407-trans3"></script>
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/results.js?v=20260407-review2"></script>
 {% endblock %}
 
