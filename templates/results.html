@@ -92,19 +92,49 @@
 .badge-correct { background: #22c55e; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; white-space: nowrap; flex-shrink: 0; }
 .badge-wrong   { background: #ef4444; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; white-space: nowrap; flex-shrink: 0; }
 .badge-missed  { background: #f59e0b; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; white-space: nowrap; flex-shrink: 0; }
-#modalImg { cursor: zoom-in; }
-.modal-img-lightbox {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.92);
-  display: none; align-items: center; justify-content: center;
-  z-index: 10000; padding: 24px; cursor: zoom-out;
+/* Pan-Zoom image viewer (in-place, no modal) */
+.results-viewer-img-container {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-height: 320px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-soft, #f3f4f6);
+  cursor: zoom-in;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
-.modal-img-lightbox.open { display: flex; }
-.modal-img-lightbox img { max-width: 100%; max-height: 100%; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
-.modal-img-lightbox .lb-close {
-  position: absolute; top: 16px; right: 18px; background: rgba(255,255,255,0.12);
-  color: #fff; border: none; width: 38px; height: 38px; border-radius: 50%;
-  font-size: 1.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+.results-viewer-img-container.is-zoomed { cursor: grab; }
+.results-viewer-img-container.is-panning { cursor: grabbing; }
+.results-viewer-img-container img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 320px;
+  object-fit: contain;
+  transform-origin: 0 0;
+  transform: translate(0, 0) scale(1);
+  transition: transform 0.1s ease-out;
+  pointer-events: none;
+  -webkit-user-drag: none;
 }
+.results-viewer-img-container.is-gesturing img { transition: none; }
+.results-viewer-img-hint {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 12px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.results-viewer-img-container.is-zoomed .results-viewer-img-hint { opacity: 1; }
 .modal-bookmark-btn {
   background: transparent; border: 1.5px solid var(--border); color: var(--text-muted);
   height: 36px; padding: 0 12px; border-radius: 10px; cursor: pointer;
@@ -366,7 +396,7 @@
       <a href="/" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
-      <button class="btn-ghost btn-sm" id="resultsTranslateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:0.95rem;">RU</button>
+      <button type="button" class="btn-ghost btn-sm" id="resultsTranslateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:0.95rem;">RU</button>
       <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
       {% if user %}
       <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
@@ -536,7 +566,7 @@
       <div class="modal-header" style="margin-bottom:0;">
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <span style="font-size:0.82rem;color:var(--text-muted);" id="modalMeta">Question 1 of 25</span>
-        <button class="btn-ghost btn-sm" id="modalTranslateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:0.85rem;">RU</button>
+        <button type="button" class="btn-ghost btn-sm" id="modalTranslateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:0.85rem;">RU</button>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
         <button class="modal-bookmark-btn" id="modalBookmarkBtn" title="Save question" aria-label="Save question">
@@ -549,8 +579,9 @@
     </div>
     </div>
     <div class="review-modal-scroll">
-    <div id="modalImgWrap" style="margin-bottom:16px;display:none;">
-      <img id="modalImg" src="" alt="" title="Click to enlarge" style="width:100%;border-radius:8px;border:1px solid var(--border);max-height:300px;object-fit:cover;">
+    <div id="modalImgWrap" class="results-viewer-img-container" style="margin-bottom:16px;display:none;">
+      <img id="modalImg" src="" alt="">
+      <span class="results-viewer-img-hint">Drag to pan · scroll to zoom</span>
     </div>
     <div id="modalQuestion" style="font-size:1rem;font-weight:600;line-height:1.5;margin-bottom:16px;"></div>
     <div id="modalQuestionRu" style="display:none;font-size:0.9rem;color:#6b7280;font-style:italic;margin:-8px 0 16px;animation:fadeIn 0.25s ease both;"></div>
@@ -578,16 +609,12 @@
   </div>
 </div>
 
-<div class="modal-img-lightbox" id="modalImgLightbox" aria-hidden="true">
-  <button type="button" class="lb-close" id="modalImgLightboxClose" aria-label="Close">&times;</button>
-  <img id="modalImgLightboxImg" src="" alt="">
-</div>
 <textarea id="resultsDataJson" hidden>[{% for qr in question_results %}{"index": {{ qr.display_index }}, "question_id": {{ qr.question.id }}, "is_bookmarked": {{ 'true' if qr.question.id in bookmarked_question_ids else 'false' }}, "text": {{ (qr.question.display_question_text or qr.question.question_text) | tojson }}, "text_ru": {{ (qr.question.question_text_ru or '') | tojson }}, "image": {{ (qr.question.image_path or '') | tojson }}, "explanation": {{ (qr.question.explanation or '') | tojson }}, "explanation_ru": {{ (qr.question.explanation_ru or '') | tojson }}, "is_correct": {{ 'true' if qr.is_correct else 'false' }}, "selected_ids": {{ qr.selected_ids | tojson }}, "correct_ids": {{ qr.correct_ids | tojson }}, "answers": [{% for a in qr.answers %}{"id": {{ a.id }}, "text": {{ (a.display_text or a.text) | tojson }}, "text_ru": {{ (a.text_ru or '') | tojson }}}{% if not loop.last %}, {% endif %}{% endfor %}]}{% if not loop.last %}, {% endif %}{% endfor %}]</textarea>
 <div id="resultsPageMeta" hidden data-score="{{ attempt.score }}" data-total="{{ question_results|length }}"></div>
 {% endblock %}
 
 {% block scripts %}
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-viewer.js?v=20260407-trans3"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-viewer.js?v=20260408-zoom1"></script>
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/results.js?v=20260407-review2"></script>
 {% endblock %}
 
