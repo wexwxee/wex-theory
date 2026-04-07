@@ -844,6 +844,36 @@ def ensure_exam_wording_columns(db: Session) -> None:
         print(f"[STARTUP] exam wording columns setup skipped/error: {e}")
 
 
+def ensure_translation_columns(db: Session) -> None:
+    """Add Russian translation columns and word_translations table if missing."""
+    try:
+        inspector = sql_inspect(engine)
+        question_columns = {col["name"] for col in inspector.get_columns("questions")}
+        if "question_text_ru" not in question_columns:
+            db.execute(sql_text("ALTER TABLE questions ADD COLUMN question_text_ru TEXT"))
+            db.commit()
+            print("[STARTUP] Added questions.question_text_ru column")
+        if "explanation_ru" not in question_columns:
+            db.execute(sql_text("ALTER TABLE questions ADD COLUMN explanation_ru TEXT"))
+            db.commit()
+            print("[STARTUP] Added questions.explanation_ru column")
+
+        answer_columns = {col["name"] for col in inspector.get_columns("answers")}
+        if "text_ru" not in answer_columns:
+            db.execute(sql_text("ALTER TABLE answers ADD COLUMN text_ru TEXT"))
+            db.commit()
+            print("[STARTUP] Added answers.text_ru column")
+
+        # word_translations table is created by metadata.create_all on startup
+        existing_tables = set(inspector.get_table_names())
+        if "word_translations" not in existing_tables:
+            models.Base.metadata.tables["word_translations"].create(bind=engine)
+            print("[STARTUP] Created word_translations table")
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] translation columns setup skipped/error: {e}")
+
+
 def ensure_exam_mode_test(db: Session) -> None:
     try:
         exam_test = db.query(models.Test).filter(models.Test.id == EXAM_MODE_TEST_ID).first()
@@ -1102,6 +1132,7 @@ async def startup_init():
         ensure_promo_codes_table(db)
         ensure_attempt_question_order_column(db)
         ensure_exam_wording_columns(db)
+        ensure_translation_columns(db)
         ensure_question_text_fixes(db)
         CONTACT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 

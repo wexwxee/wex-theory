@@ -48,6 +48,8 @@ class Question(Base):
     exam_style_text = Column(Text, nullable=True)
     explanation = Column(Text, default="")
     image_path = Column(String, default="")
+    question_text_ru = Column(Text, nullable=True)
+    explanation_ru = Column(Text, nullable=True)
 
     test = relationship("Test", back_populates="questions")
     answers = relationship("Answer", back_populates="question")
@@ -62,6 +64,7 @@ class Answer(Base):
     text = Column(Text, nullable=False)
     exam_style_text = Column(Text, nullable=True)
     is_correct = Column(Boolean, default=False)
+    text_ru = Column(Text, nullable=True)
 
     question = relationship("Question", back_populates="answers")
 
@@ -189,6 +192,17 @@ class StripeWebhookEvent(Base):
     event_id = Column(String, unique=True, index=True, nullable=False)
     event_type = Column(String, nullable=False)
     processed_at = Column(DateTime, default=datetime.utcnow)
+
+
+class WordTranslation(Base):
+    __tablename__ = "word_translations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    word_en = Column(String, unique=True, index=True, nullable=False)  # always lowercased
+    translation_ru = Column(String, nullable=False)
+    pos = Column(String, nullable=True)  # part-of-speech / hint
+    is_curated = Column(Boolean, default=False)  # true = handcrafted, false = auto
+    updated_at = Column(DateTime, default=datetime.utcnow)
 
 
 class LiveActivitySession(Base):
