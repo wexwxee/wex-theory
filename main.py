@@ -2805,29 +2805,118 @@ async def debug_env():
 
 # ─── Dictionary (curated word translations) ───────────────────────────────────
 
+_GOOGLE_TRANSLATE_URL = (
+    "https://translate.googleapis.com/translate_a/single"
+    "?client=gtx&sl=en&tl=ru&dt=t&q={q}"
+)
+_GOOGLE_TRANSLATE_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36"
+    )
+}
+
+
+async def _google_translate_word(word: str) -> Optional[str]:
+    """Single-shot Google Translate call. Returns ru translation or None.
+    Used by the /api/dictionary smart fallback. Short timeout, no retries —
+    if it fails the user just gets null and we don't poison the cache.
+    """
+    if not word or not word.strip():
+        return None
+    url = _GOOGLE_TRANSLATE_URL.format(q=quote(word.strip()[:120]))
+    try:
+        async with httpx.AsyncClient(timeout=4.0) as client:
+            resp = await client.get(url, headers=_GOOGLE_TRANSLATE_HEADERS)
+            if resp.status_code != 200:
+                return None
+            data = resp.json()
+        if not isinstance(data, list) or not isinstance(data[0], list):
+            return None
+        parts = []
+        for chunk in data[0]:
+            if isinstance(chunk, list) and chunk and isinstance(chunk[0], str):
+                parts.append(chunk[0])
+        translated = "".join(parts).strip()
+        return translated or None
+    except Exception as e:
+        print(f"[dictionary] google translate failed for {word!r}: {e}")
+        return None
+
+
 @app.get("/api/dictionary/{word}")
 async def api_dictionary(word: str, db: Session = Depends(get_db)):
-    """Look up a word in the curated WordTranslation table.
+    """Look up a word in the WordTranslation table with smart fallback.
 
-    Returns 200 with {word, translation, pos} if found, or 200 with
-    {word, translation: null} if not. We never call external services here —
-    if the word is missing it will be added by an admin via /admin/translations.
+    Flow:
+      1. Look up the word in the DB. If found, return immediately.
+      2. If missing, call Google Translate, save the result with
+         is_curated=False, and return it.
+      3. If Google fails, return {translation: null} so the frontend just
+         shows "—" and we don't pollute the DB with garbage.
+
+    Admins can later curate any auto-added row from /admin/translations.
     """
     cleaned = (word or "").strip().lower()
     if not cleaned or len(cleaned) > 64:
         return {"word": cleaned, "translation": None, "pos": None}
+
+    # Only translate plausible English words — skip anything with digits or
+    # weird characters so we don't waste translate calls on garbage.
+    if not re.fullmatch(r"[a-z][a-z'-]{1,63}", cleaned):
+        return {"word": cleaned, "translation": None, "pos": None}
+
     row = (
         db.query(models.WordTranslation)
         .filter(models.WordTranslation.word_en == cleaned)
         .first()
     )
-    if not row:
+    if row:
+        return {
+            "word": row.word_en,
+            "translation": row.translation_ru,
+            "pos": row.pos,
+        }
+
+    # ── Smart fallback: ask Google, then persist ───────────────────────────
+    translation = await _google_translate_word(cleaned)
+    if not translation:
         return {"word": cleaned, "translation": None, "pos": None}
-    return {
-        "word": row.word_en,
-        "translation": row.translation_ru,
-        "pos": row.pos,
-    }
+
+    # Avoid storing identical-to-source "translations" (Google sometimes
+    # echoes the input for proper nouns / unknown tokens).
+    if translation.strip().lower() == cleaned:
+        return {"word": cleaned, "translation": None, "pos": None}
+
+    try:
+        new_row = models.WordTranslation(
+            word_en=cleaned,
+            translation_ru=translation,
+            pos=None,
+            is_curated=False,
+            updated_at=datetime.utcnow(),
+        )
+        db.add(new_row)
+        db.commit()
+    except Exception as e:
+        # Race condition: another request inserted the same word a moment
+        # earlier. Roll back and re-read it.
+        db.rollback()
+        print(f"[dictionary] insert race for {cleaned!r}: {e}")
+        existing = (
+            db.query(models.WordTranslation)
+            .filter(models.WordTranslation.word_en == cleaned)
+            .first()
+        )
+        if existing:
+            return {
+                "word": existing.word_en,
+                "translation": existing.translation_ru,
+                "pos": existing.pos,
+            }
+
+    return {"word": cleaned, "translation": translation, "pos": None}
 
 
 # ─── Admin: translations editor ────────────────────────────────────────────────
