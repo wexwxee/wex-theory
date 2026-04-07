@@ -18,7 +18,12 @@
       btn.addEventListener('click', () => openModal(Number(btn.dataset.openModal)));
     });
     document.getElementById('modalBookmarkBtn')?.addEventListener('click', toggleModalBookmark);
-    document.getElementById('modalImg')?.addEventListener('click', openImgLightbox);
+    const _modalImgEl = document.getElementById('modalImg');
+    if (_modalImgEl) {
+      _modalImgEl.style.cursor = 'zoom-in';
+      _modalImgEl.addEventListener('click', openImgLightbox);
+    }
+    document.getElementById('modalImgWrap')?.addEventListener('click', openImgLightbox);
     document.getElementById('modalImgLightbox')?.addEventListener('click', closeImgLightbox);
     document.getElementById('modalImgLightboxClose')?.addEventListener('click', (e) => { e.stopPropagation(); closeImgLightbox(); });
     document.querySelectorAll('[data-delete-saved]').forEach((btn) => {

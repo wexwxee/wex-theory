@@ -106,14 +106,23 @@
   font-size: 1.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
 }
 .modal-bookmark-btn {
-  background: transparent; border: 1px solid var(--border); color: var(--text-muted);
-  width: 36px; height: 36px; border-radius: 10px; cursor: pointer;
-  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: 1.5px solid var(--border); color: var(--text-muted);
+  height: 36px; padding: 0 12px; border-radius: 10px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
   transition: all 0.15s;
 }
 .modal-bookmark-btn:hover { color: var(--text); border-color: var(--text-muted); }
-.modal-bookmark-btn.active { color: #f59e0b; border-color: #f59e0b; background: rgba(245,158,11,0.1); }
-.modal-bookmark-btn svg { width: 18px; height: 18px; }
+.modal-bookmark-btn.active {
+  color: #b45309; border-color: #f59e0b; background: rgba(245,158,11,0.18);
+  box-shadow: 0 0 0 2px rgba(245,158,11,0.18);
+}
+[data-theme="dark"] .modal-bookmark-btn.active { color: #fbbf24; }
+.modal-bookmark-btn svg { width: 16px; height: 16px; }
+.modal-bookmark-btn .mb-label-save { display: inline; }
+.modal-bookmark-btn .mb-label-saved { display: none; }
+.modal-bookmark-btn.active .mb-label-save { display: none; }
+.modal-bookmark-btn.active .mb-label-saved { display: inline; }
 .saved-card-delete {
   background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); color: #ef4444;
   width: 32px; height: 32px; border-radius: 8px; cursor: pointer;
@@ -531,7 +540,9 @@
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
         <button class="modal-bookmark-btn" id="modalBookmarkBtn" title="Save question" aria-label="Save question">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          <span class="mb-label-save">Save</span>
+          <span class="mb-label-saved">Saved</span>
         </button>
         <button class="modal-close" id="modalCloseBtn">&times;</button>
       </div>
@@ -576,8 +587,8 @@
 {% endblock %}
 
 {% block scripts %}
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-viewer.js"></script>
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/results.js"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-viewer.js?v=20260407-review2"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/results.js?v=20260407-review2"></script>
 {% endblock %}
 
 
