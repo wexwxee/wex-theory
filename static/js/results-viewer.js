@@ -17,6 +17,16 @@
     document.querySelectorAll('[data-open-modal]').forEach((btn) => {
       btn.addEventListener('click', () => openModal(Number(btn.dataset.openModal)));
     });
+    document.getElementById('modalBookmarkBtn')?.addEventListener('click', toggleModalBookmark);
+    document.getElementById('modalImg')?.addEventListener('click', openImgLightbox);
+    document.getElementById('modalImgLightbox')?.addEventListener('click', closeImgLightbox);
+    document.getElementById('modalImgLightboxClose')?.addEventListener('click', (e) => { e.stopPropagation(); closeImgLightbox(); });
+    document.querySelectorAll('[data-delete-saved]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteSavedCard(Number(btn.dataset.deleteSaved), btn);
+      });
+    });
 
     const DATA = options.data || JSON.parse(document.getElementById('resultsDataJson').value);
     const SCORE = Number(options.score ?? document.getElementById('resultsPageMeta')?.dataset.score ?? 0);
@@ -266,6 +276,89 @@
       document.getElementById('qModal').classList.remove('open');
     }
 
+    function openImgLightbox() {
+      const d = DATA[currentModal];
+      if (!d || !d.image) return;
+      const lb = document.getElementById('modalImgLightbox');
+      const lbImg = document.getElementById('modalImgLightboxImg');
+      if (!lb || !lbImg) return;
+      lbImg.src = '/test-images/' + d.image;
+      lb.classList.add('open');
+    }
+
+    function closeImgLightbox() {
+      document.getElementById('modalImgLightbox')?.classList.remove('open');
+    }
+
+    function updateBookmarkBtnState(active) {
+      const btn = document.getElementById('modalBookmarkBtn');
+      if (!btn) return;
+      btn.classList.toggle('active', !!active);
+      btn.querySelector('svg')?.setAttribute('fill', active ? 'currentColor' : 'none');
+    }
+
+    async function toggleModalBookmark() {
+      const d = DATA[currentModal];
+      if (!d || !d.question_id) return;
+      const btn = document.getElementById('modalBookmarkBtn');
+      if (btn) btn.disabled = true;
+      try {
+        const res = await fetch(`/api/bookmarks/${d.question_id}`, { method: 'POST' });
+        if (!res.ok) throw new Error('failed');
+        const json = await res.json();
+        d.is_bookmarked = !!json.bookmarked;
+        updateBookmarkBtnState(d.is_bookmarked);
+        // Sync grid card "Saved" pill + saved-in-test card visibility
+        const card = document.querySelector(`[data-modal-index="${currentModal}"]`);
+        if (card) {
+          const existingPill = card.querySelector('.rc-save');
+          if (d.is_bookmarked && !existingPill) {
+            const pill = document.createElement('span');
+            pill.className = 'rc-save';
+            pill.textContent = 'Saved';
+            card.appendChild(pill);
+          } else if (!d.is_bookmarked && existingPill) {
+            existingPill.remove();
+          }
+        }
+        const savedCard = document.querySelector(`[data-saved-question-id="${d.question_id}"]`);
+        if (!d.is_bookmarked && savedCard) {
+          savedCard.classList.add('removing');
+          setTimeout(() => savedCard.remove(), 260);
+        }
+      } catch (e) {
+        // silent
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    async function deleteSavedCard(questionId, btn) {
+      btn.disabled = true;
+      try {
+        const res = await fetch(`/api/bookmarks/${questionId}`, { method: 'POST' });
+        if (!res.ok) throw new Error('failed');
+        const json = await res.json();
+        // If still bookmarked (toggle re-added), do nothing visually
+        if (json.bookmarked) { btn.disabled = false; return; }
+        const card = btn.closest('.saved-review-card');
+        if (card) {
+          card.classList.add('removing');
+          setTimeout(() => card.remove(), 260);
+        }
+        // Update DATA + grid pill
+        const target = DATA.find((x) => x.question_id === questionId);
+        if (target) target.is_bookmarked = false;
+        const idx = DATA.findIndex((x) => x.question_id === questionId);
+        if (idx >= 0) {
+          const gridCard = document.querySelector(`[data-modal-index="${idx}"]`);
+          gridCard?.querySelector('.rc-save')?.remove();
+        }
+      } catch (e) {
+        btn.disabled = false;
+      }
+    }
+
     function modalNav(dir) {
       currentModal = Math.max(0, Math.min(DATA.length - 1, currentModal + dir));
       renderModal();
@@ -276,6 +369,7 @@
       const trans = resultsTranslateMode ? await _ensureResultTranslated(d) : null;
 
       document.getElementById('modalMeta').textContent = `Question ${d.index} of ${DATA.length}`;
+      updateBookmarkBtnState(d.is_bookmarked);
       const qEl = document.getElementById('modalQuestion');
       qEl.textContent = d.text;
       qEl.dataset.sourceText = d.text;
@@ -305,12 +399,23 @@
         const wasSelected = d.selected_ids.includes(a.id);
         const isCorrect = d.correct_ids.includes(a.id);
         let cls = 'answer-row neutral';
-        if (wasSelected && isCorrect) cls = 'answer-row user-correct';
-        else if (wasSelected && !isCorrect) cls = 'answer-row user-wrong';
-        else if (!wasSelected && isCorrect) cls = 'answer-row missed-correct';
+        let statusLabelText = 'Not selected';
+        if (wasSelected && isCorrect) { cls = 'answer-row user-correct'; statusLabelText = '✓ You selected — Correct'; }
+        else if (wasSelected && !isCorrect) { cls = 'answer-row user-wrong'; statusLabelText = '✕ You selected — Wrong'; }
+        else if (!wasSelected && isCorrect) { cls = 'answer-row missed-correct'; statusLabelText = '⚠ Missed — should have selected'; }
 
         const row = document.createElement('div');
         row.className = cls;
+        row.style.flexDirection = 'column';
+        row.style.alignItems = 'stretch';
+
+        const statusLine = document.createElement('div');
+        statusLine.className = 'row-status';
+        statusLine.textContent = statusLabelText;
+        row.appendChild(statusLine);
+
+        const bodyRow = document.createElement('div');
+        bodyRow.style.cssText = 'display:flex;align-items:flex-start;gap:10px;';
 
         const textWrap = document.createElement('div');
         textWrap.style.flex = '1';
@@ -334,13 +439,14 @@
           addResultBadge(badgesWrap, 'badge-correct', 'Correct');
         } else if (wasSelected && !isCorrect) {
           addResultBadge(badgesWrap, 'badge-user', 'Your answer');
-          addResultBadge(badgesWrap, 'badge-wrong', 'Incorrect');
+          addResultBadge(badgesWrap, 'badge-wrong', 'Wrong');
         } else if (!wasSelected && isCorrect) {
-          addResultBadge(badgesWrap, 'badge-correct', 'Correct answer');
+          addResultBadge(badgesWrap, 'badge-missed', 'Missed correct');
         }
 
-        row.appendChild(textWrap);
-        row.appendChild(badgesWrap);
+        bodyRow.appendChild(textWrap);
+        bodyRow.appendChild(badgesWrap);
+        row.appendChild(bodyRow);
         answersEl.appendChild(row);
         _wrapResultsWords(answerText);
       });
@@ -405,10 +511,13 @@
       if (e.target === document.getElementById('qModal')) closeModal();
     });
     document.addEventListener('keydown', (e) => {
+      const lbOpen = document.getElementById('modalImgLightbox')?.classList.contains('open');
+      if (lbOpen && e.key === 'Escape') { closeImgLightbox(); return; }
       const open = document.getElementById('qModal')?.classList.contains('open');
       if (!open) return;
       if (e.key === 'ArrowLeft') modalNav(-1);
       if (e.key === 'ArrowRight') modalNav(1);
+      if (e.key === 'Escape') closeModal();
     });
 
     document.addEventListener('mouseover', (e) => {

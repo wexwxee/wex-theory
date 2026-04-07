@@ -90,7 +90,24 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(git remote:*)",
-      "Bash(grep -r \"sk_live\\\\|pk_live\\\\|api_key\\\\|password\\\\|secret\" /c/wex-theory/*.py)"
+      "Bash(grep -r \"sk_live\\\\|pk_live\\\\|api_key\\\\|password\\\\|secret\" /c/wex-theory/*.py)",
+      "Bash(pip freeze:*)",
+      "Bash(SECRET_KEY=test-key-for-check python -c \"import auth; print\\(''OK: SECRET_KEY loaded, len ='', len\\(auth.SECRET_KEY\\)\\)\")",
+      "Bash(python -c \"import auth\")",
+      "Bash(echo \"exit code: $?\")",
+      "Bash(SECRET_KEY=test-key-for-check python -c \"from main import app; print\\(''''FastAPI app loaded OK''''\\)\")",
+      "Bash(SECRET_KEY=test-key python -c \"from main import app; print\\(''''App loaded OK''''\\)\")",
+      "Bash(find templates/ -name \"*.html\" -not -path \"*/backups/*\" -exec sed -i 's/<script src=\"\"/<script nonce=\"\"{{ request.state.csp_nonce }}\"\" src=\"\"/g' {} +)",
+      "Bash(grep -c nonce=.*csp_nonce.*src= C:/wex-theory/templates/*.html C:/wex-theory/templates/**/*.html)",
+      "Bash(grep -v ':0$')",
+      "Bash(SECRET_KEY=test-key python -c \"from main import app; print\\(''App loaded OK''\\)\")",
+      "Bash(SECRET_KEY=test-key REDIS_URL=redis://localhost:9999 python -c \"from main import app; print\\(''App loaded OK''\\)\")",
+      "Bash(ls C:/wex-theory/render.yaml C:/wex-theory/.env*)",
+      "Bash(ls C:/wex-theory/static/favicon* C:/wex-theory/favicon*)",
+      "Bash(SECRET_KEY=test-key python -c \":*)",
+      "Bash(find templates/ -name \"*.html\" -not -path \"*/backups/*\" -exec sed -i 's|&#9776;|<svg xmlns=\"\"http://www.w3.org/2000/svg\"\" width=\"\"22\"\" height=\"\"22\"\" viewBox=\"\"0 0 24 24\"\" fill=\"\"none\"\" stroke=\"\"currentColor\"\" stroke-width=\"\"2.2\"\" stroke-linecap=\"\"round\"\" stroke-linejoin=\"\"round\"\"><line x1=\"\"3\"\" y1=\"\"7\"\" x2=\"\"21\"\" y2=\"\"7\"\"/><line x1=\"\"3\"\" y1=\"\"12\"\" x2=\"\"21\"\" y2=\"\"12\"\"/><line x1=\"\"3\"\" y1=\"\"17\"\" x2=\"\"14\"\" y2=\"\"17\"\"/></svg>|g' {} +)",
+      "Bash(git revert:*)",
+      "Bash(git stash:*)"
     ]
   }
 }
