@@ -3,6 +3,7 @@
 {% block title %}{{ test.title }} - WEX Theory{% endblock %}
 
 {% block head %}
+<link rel="stylesheet" href="/static/css/lightbox-zoom.css?v=20260408-lbz">
 <style>
   #testContainer {
     max-width: 1420px;
@@ -16,36 +17,19 @@
     grid-template-columns: minmax(540px, 1.08fr) minmax(460px, 0.92fr);
     gap: 20px;
   }
-  /* ── Pan-Zoom container for question images (in-place, no modal) ── */
   .test-image-wrap {
     position: relative;
-    overflow: hidden;
     width: 100%;
     border-radius: 18px;
+    overflow: hidden;
     background: var(--bg-soft, #f3f4f6);
     cursor: zoom-in;
-    touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
-    line-height: 0;
-  }
-  .test-image-wrap.is-zoomed { cursor: grab; }
-  .test-image-wrap.is-panning { cursor: grabbing; }
-  .question-image-stage {
-    position: relative;
-    width: 100%;
   }
   #questionImg {
     display: block;
     width: 100%;
     height: auto;
-    transform-origin: 0 0;
-    transform: translate(0, 0) scale(1);
-    transition: transform 0.1s ease-out;
-    pointer-events: none;
-    -webkit-user-drag: none;
   }
-  .test-image-wrap.is-gesturing #questionImg { transition: none; }
   .test-image-placeholder {
     display: flex;
     align-items: center;
@@ -70,7 +54,7 @@
     transition: opacity 0.2s;
     line-height: 1.2;
   }
-  .test-image-wrap.is-zoomed .test-image-hint { opacity: 1; }
+  .test-image-wrap.has-image:hover .test-image-hint { opacity: 1; }
   #questionText {
     font-size: 1.34rem !important;
     line-height: 1.42 !important;
@@ -281,11 +265,9 @@
 
     <div class="test-layout">
       <div class="test-image-wrap" id="imageWrap">
-        <div class="question-image-stage">
-          <img id="questionImg" src="" alt="" style="display:none;">
-          <div class="test-image-placeholder" id="imgPlaceholder">No image</div>
-          <span class="test-image-hint">Drag to pan · scroll to zoom</span>
-        </div>
+        <img id="questionImg" src="" alt="" style="display:none;">
+        <div class="test-image-placeholder" id="imgPlaceholder">No image</div>
+        <span class="test-image-hint">Click to enlarge</span>
       </div>
 
       <div style="position:relative;">
@@ -347,7 +329,8 @@
 {% endblock %}
 
 {% block scripts %}
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/test.js?v=20260408-zoom2"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/lightbox-zoom.js?v=20260408-lbz"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/test.js?v=20260408-lbz"></script>
 <style>
 /* Word click */
 .tw {

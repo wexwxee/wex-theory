@@ -2501,6 +2501,30 @@ async def results_page(test_id: int, attempt_id: int, request: Request, db: Sess
     saved_question_results = [
         qr for qr in question_results if qr["question"].id in bookmarked_question_ids
     ]
+    is_triumph = False
+    triumph_data = None
+    if (
+        attempt.test_id == EXAM_MODE_TEST_ID
+        and attempt.score is not None
+        and len(question_results) > 0
+        and attempt.score >= len(question_results)
+    ):
+        completed_prior = {
+            row[0] for row in db.query(models.UserTestAttempt.test_id).filter(
+                models.UserTestAttempt.user_id == user.id,
+                models.UserTestAttempt.test_id.in_(list(range(1, 14))),
+                models.UserTestAttempt.score == 25,
+                models.UserTestAttempt.finished_at.isnot(None),
+            ).distinct().all()
+        }
+        if len(completed_prior) >= 13:
+            is_triumph = True
+            triumph_data = {
+                "user_name": (user.name or user.email.split("@")[0]),
+                "date": (attempt.finished_at or datetime.utcnow()).strftime("%d %b %Y"),
+                "total_questions": 350,
+            }
+
     return templates.TemplateResponse(request, "results.html", {
         "request": request, "user": user, "test": attempt.test,
         "attempt": attempt, "question_results": question_results,
@@ -2509,6 +2533,8 @@ async def results_page(test_id: int, attempt_id: int, request: Request, db: Sess
         "is_exam_mode": is_exam_mode_test(attempt.test_id),
         "error_count": len(question_results) - (attempt.score or 0),
         "wording_mode": wording_mode,
+        "is_triumph": is_triumph,
+        "triumph_data": triumph_data,
     })
 
 

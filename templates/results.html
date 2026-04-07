@@ -3,6 +3,7 @@
 {% block title %}Results - {{ test.title }} - WEX Theory{% endblock %}
 
 {% block head %}
+<link rel="stylesheet" href="/static/css/lightbox-zoom.css?v=20260408-lbz">
 <style>
 .result-grid {
   display: grid;
@@ -92,33 +93,21 @@
 .badge-correct { background: #22c55e; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; white-space: nowrap; flex-shrink: 0; }
 .badge-wrong   { background: #ef4444; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; white-space: nowrap; flex-shrink: 0; }
 .badge-missed  { background: #f59e0b; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; white-space: nowrap; flex-shrink: 0; }
-/* Pan-Zoom image viewer (in-place, no modal) */
+/* Clickable image preview in review modal (opens shared lightbox) */
 .results-viewer-img-container {
   position: relative;
-  overflow: hidden;
   width: 100%;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--bg-soft, #f3f4f6);
+  overflow: hidden;
   cursor: zoom-in;
-  touch-action: none;
-  user-select: none;
-  -webkit-user-select: none;
-  line-height: 0; /* kill phantom whitespace under inline-block img */
 }
-.results-viewer-img-container.is-zoomed { cursor: grab; }
-.results-viewer-img-container.is-panning { cursor: grabbing; }
 .results-viewer-img-container img {
   display: block;
   width: 100%;
   height: auto;
-  transform-origin: 0 0;
-  transform: translate(0, 0) scale(1);
-  transition: transform 0.1s ease-out;
-  pointer-events: none;
-  -webkit-user-drag: none;
 }
-.results-viewer-img-container.is-gesturing img { transition: none; }
 .results-viewer-img-hint {
   position: absolute;
   top: 8px;
@@ -132,7 +121,62 @@
   opacity: 0;
   transition: opacity 0.2s;
 }
-.results-viewer-img-container.is-zoomed .results-viewer-img-hint { opacity: 1; }
+.results-viewer-img-container:hover .results-viewer-img-hint { opacity: 1; }
+/* Triumph overlay */
+.triumph-overlay {
+  position: fixed; inset: 0; z-index: 10100;
+  background: radial-gradient(ellipse at top, #1e1b4b 0%, #0b0a1f 70%);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px; overflow-y: auto;
+}
+.triumph-overlay canvas.confetti-canvas {
+  position: fixed !important; inset: 0; pointer-events: none; z-index: 1;
+}
+.triumph-inner {
+  position: relative; z-index: 2; max-width: 760px; width: 100%;
+  text-align: center; color: #fff;
+}
+.triumph-title {
+  font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 900;
+  background: linear-gradient(90deg, #fde047, #f59e0b, #ef4444);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  margin-bottom: 12px; line-height: 1.1;
+}
+.triumph-sub { font-size: 1.05rem; color: #cbd5e1; line-height: 1.55; margin-bottom: 6px; }
+.triumph-sub.en { color: #94a3b8; font-size: 0.92rem; font-style: italic; margin-bottom: 22px; }
+.triumph-card {
+  margin: 28px auto 22px;
+  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  border-radius: 22px; padding: 28px 26px;
+  max-width: 460px;
+  box-shadow: 0 30px 70px rgba(0,0,0,0.55), 0 0 0 1px rgba(251,191,36,0.15);
+}
+.triumph-card-status {
+  font-size: 0.74rem; font-weight: 800; letter-spacing: 0.16em;
+  text-transform: uppercase; color: #fbbf24; margin-bottom: 6px;
+}
+.triumph-card-name { font-size: 1.55rem; font-weight: 800; margin-bottom: 4px; color: #fff; }
+.triumph-card-date { font-size: 0.82rem; color: #94a3b8; margin-bottom: 18px; }
+.triumph-card-counter {
+  display: inline-block; padding: 10px 22px; border-radius: 999px;
+  background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.35);
+  font-weight: 800; color: #fde047; font-size: 1.1rem; letter-spacing: 0.04em;
+  margin-bottom: 18px;
+}
+.triumph-card-qr {
+  margin: 14px auto 6px; display: inline-block;
+  padding: 10px; background: #fff; border-radius: 10px;
+}
+.triumph-card-qr canvas, .triumph-card-qr img { display: block; }
+.triumph-card-foot { font-size: 0.74rem; color: #6b7280; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 8px; }
+.triumph-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+.triumph-actions button {
+  border: none; border-radius: 12px; padding: 12px 20px;
+  font-weight: 700; cursor: pointer; font-size: 0.95rem;
+}
+.triumph-btn-primary { background: linear-gradient(90deg, #fbbf24, #f59e0b); color: #1f2937; }
+.triumph-btn-ghost { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.25); }
 .modal-bookmark-btn {
   background: transparent; border: 1.5px solid var(--border); color: var(--text-muted);
   height: 36px; padding: 0 12px; border-radius: 10px; cursor: pointer;
@@ -609,10 +653,83 @@
 
 <textarea id="resultsDataJson" hidden>[{% for qr in question_results %}{"index": {{ qr.display_index }}, "question_id": {{ qr.question.id }}, "is_bookmarked": {{ 'true' if qr.question.id in bookmarked_question_ids else 'false' }}, "text": {{ (qr.question.display_question_text or qr.question.question_text) | tojson }}, "text_ru": {{ (qr.question.question_text_ru or '') | tojson }}, "image": {{ (qr.question.image_path or '') | tojson }}, "explanation": {{ (qr.question.explanation or '') | tojson }}, "explanation_ru": {{ (qr.question.explanation_ru or '') | tojson }}, "is_correct": {{ 'true' if qr.is_correct else 'false' }}, "selected_ids": {{ qr.selected_ids | tojson }}, "correct_ids": {{ qr.correct_ids | tojson }}, "answers": [{% for a in qr.answers %}{"id": {{ a.id }}, "text": {{ (a.display_text or a.text) | tojson }}, "text_ru": {{ (a.text_ru or '') | tojson }}}{% if not loop.last %}, {% endif %}{% endfor %}]}{% if not loop.last %}, {% endif %}{% endfor %}]</textarea>
 <div id="resultsPageMeta" hidden data-score="{{ attempt.score }}" data-total="{{ question_results|length }}"></div>
+
+{% if is_triumph %}
+<div id="triumphOverlay" class="triumph-overlay" data-user-name="{{ triumph_data.user_name }}" data-date="{{ triumph_data.date }}" data-total="{{ triumph_data.total_questions }}">
+  <div class="triumph-inner">
+    <div class="triumph-title">🏆 Легендарно! Theory Master 🏆</div>
+    <div class="triumph-sub">Ты прошёл ВСЁ. Все 14 тестов позади. Выспись, не забудь Provisional License — и ты готов разнести реальный экзамен DVSA.</div>
+    <div class="triumph-sub en">Legendary! You crushed all 14 tests. Get some sleep, grab your Provisional License, and go destroy the real DVSA exam.</div>
+    <div class="triumph-card" id="triumphCard">
+      <div class="triumph-card-status">🎓 Theory Master</div>
+      <div class="triumph-card-name">{{ triumph_data.user_name }}</div>
+      <div class="triumph-card-date">{{ triumph_data.date }}</div>
+      <div class="triumph-card-counter">{{ triumph_data.total_questions }} / {{ triumph_data.total_questions }} questions</div>
+      <div class="triumph-card-qr" id="triumphQr"></div>
+      <div class="triumph-card-foot">wextheory.com</div>
+    </div>
+    <div class="triumph-actions">
+      <button type="button" class="triumph-btn-primary" id="triumphDownloadBtn">📥 Поделиться / Скачать</button>
+      <button type="button" class="triumph-btn-ghost" id="triumphCloseBtn">Закрыть</button>
+    </div>
+  </div>
+</div>
+<script nonce="{{ request.state.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script nonce="{{ request.state.csp_nonce }}">
+(function () {
+  const overlay = document.getElementById('triumphOverlay');
+  if (!overlay) return;
+  document.body.style.overflow = 'hidden';
+
+  // QR code → wextheory.com
+  try {
+    new QRCode(document.getElementById('triumphQr'), {
+      text: 'https://wextheory.com',
+      width: 110, height: 110,
+      colorDark: '#111827', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch (e) { /* qrcode lib unavailable */ }
+
+  // Confetti burst
+  function fire() {
+    if (typeof confetti !== 'function') return;
+    const end = Date.now() + 2400;
+    (function frame() {
+      confetti({ particleCount: 4, angle: 60, spread: 70, origin: { x: 0 }, colors: ['#fde047','#f59e0b','#22c55e','#3b82f6'] });
+      confetti({ particleCount: 4, angle: 120, spread: 70, origin: { x: 1 }, colors: ['#fde047','#f59e0b','#22c55e','#3b82f6'] });
+      if (Date.now() < end) requestAnimationFrame(frame);
+    })();
+    confetti({ particleCount: 180, spread: 110, origin: { y: 0.4 } });
+  }
+  setTimeout(fire, 250);
+
+  document.getElementById('triumphCloseBtn')?.addEventListener('click', () => {
+    overlay.remove();
+    document.body.style.overflow = '';
+  });
+
+  document.getElementById('triumphDownloadBtn')?.addEventListener('click', async () => {
+    const card = document.getElementById('triumphCard');
+    if (!card || typeof html2canvas !== 'function') return;
+    try {
+      const canvas = await html2canvas(card, { backgroundColor: '#0b0a1f', scale: 2, useCORS: true });
+      const link = document.createElement('a');
+      link.download = 'wextheory-theory-master.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (e) { console.error(e); }
+  });
+})();
+</script>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-viewer.js?v=20260408-zoom2"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/lightbox-zoom.js?v=20260408-lbz"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-viewer.js?v=20260408-lbz"></script>
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/results.js?v=20260407-review2"></script>
 {% endblock %}
 

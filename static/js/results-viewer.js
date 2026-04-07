@@ -186,153 +186,19 @@
       document.getElementById('qModal').classList.remove('open');
     }
 
-    // ── Pan-Zoom controller (in-place, desktop wheel + touch pinch) ─────────
-    const ZOOM_MIN = 1;
-    const ZOOM_MAX = 4;
-    const ZOOM_STEP = 0.18;
-    const _pz = { scale: 1, tx: 0, ty: 0 };
-    const _activePointers = new Map(); // pointerId -> {x,y}
-    let _pinchStartDist = 0;
-    let _pinchStartScale = 1;
-    let _pinchCenter = { x: 0, y: 0 };
-    let _panLast = null;
-
-    function _pzApply() {
-      const img = document.getElementById('modalImg');
-      if (!img) return;
-      img.style.transform = `translate(${_pz.tx}px, ${_pz.ty}px) scale(${_pz.scale})`;
-      const wrap = document.getElementById('modalImgWrap');
-      if (wrap) {
-        wrap.classList.toggle('is-zoomed', _pz.scale > 1.001);
-      }
-    }
-
-    function _pzReset() {
-      _pz.scale = 1;
-      _pz.tx = 0;
-      _pz.ty = 0;
-      _activePointers.clear();
-      _pinchStartDist = 0;
-      _panLast = null;
-      const wrap = document.getElementById('modalImgWrap');
-      if (wrap) wrap.classList.remove('is-panning', 'is-gesturing');
-      _pzApply();
-    }
-
-    function _pzClampPan() {
-      // Keep image edges glued to container at high zoom (no empty borders).
-      const wrap = document.getElementById('modalImgWrap');
-      const img = document.getElementById('modalImg');
-      if (!wrap || !img) return;
-      const cw = wrap.clientWidth;
-      const ch = wrap.clientHeight;
-      const iw = img.clientWidth * _pz.scale;
-      const ih = img.clientHeight * _pz.scale;
-      const minTx = Math.min(0, cw - iw);
-      const minTy = Math.min(0, ch - ih);
-      _pz.tx = Math.min(0, Math.max(minTx, _pz.tx));
-      _pz.ty = Math.min(0, Math.max(minTy, _pz.ty));
-    }
-
-    function _pzZoomAt(targetScale, originX, originY) {
-      const next = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, targetScale));
-      // Keep the cursor/pinch point anchored on the same image pixel.
-      // Image space coord under origin: (origin - t) / scale.
-      // After scale change we want the same image coord under origin again.
-      const k = next / _pz.scale;
-      _pz.tx = originX - k * (originX - _pz.tx);
-      _pz.ty = originY - k * (originY - _pz.ty);
-      _pz.scale = next;
-      if (next === ZOOM_MIN) {
-        _pz.tx = 0;
-        _pz.ty = 0;
-      } else {
-        _pzClampPan();
-      }
-      _pzApply();
-    }
-
+    // ── Click question image to open shared lightbox ────────────────────
     function initPanZoom() {
-      const wrap = document.getElementById('modalImgWrap');
+      const wrap = document.getElementById("modalImgWrap");
       if (!wrap) return;
-
-      // ── Wheel zoom (desktop) ────────────────────────────────────────────
-      wrap.addEventListener('wheel', (e) => {
-        e.preventDefault();
-        const rect = wrap.getBoundingClientRect();
-        const ox = e.clientX - rect.left;
-        const oy = e.clientY - rect.top;
-        const dir = e.deltaY < 0 ? 1 : -1;
-        const factor = 1 + dir * ZOOM_STEP;
-        _pzZoomAt(_pz.scale * factor, ox, oy);
-      }, { passive: false });
-
-      // ── Pointer events (mouse drag pan + touch pinch/pan) ───────────────
-      wrap.addEventListener('pointerdown', (e) => {
-        wrap.setPointerCapture(e.pointerId);
-        _activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-        wrap.classList.add('is-gesturing');
-
-        if (_activePointers.size === 2) {
-          const [a, b] = Array.from(_activePointers.values());
-          _pinchStartDist = Math.hypot(b.x - a.x, b.y - a.y);
-          _pinchStartScale = _pz.scale;
-          const rect = wrap.getBoundingClientRect();
-          _pinchCenter = {
-            x: (a.x + b.x) / 2 - rect.left,
-            y: (a.y + b.y) / 2 - rect.top,
-          };
-        } else if (_activePointers.size === 1 && _pz.scale > 1.001) {
-          _panLast = { x: e.clientX, y: e.clientY };
-          wrap.classList.add('is-panning');
+      wrap.addEventListener("click", () => {
+        const img = document.getElementById("modalImg");
+        if (!img || !img.src || wrap.style.display === "none") return;
+        if (typeof window.openImageLightbox === "function") {
+          window.openImageLightbox(img.src, img.alt || "");
         }
-      });
-
-      wrap.addEventListener('pointermove', (e) => {
-        if (!_activePointers.has(e.pointerId)) return;
-        _activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-
-        if (_activePointers.size === 2 && _pinchStartDist > 0) {
-          const [a, b] = Array.from(_activePointers.values());
-          const dist = Math.hypot(b.x - a.x, b.y - a.y);
-          const nextScale = _pinchStartScale * (dist / _pinchStartDist);
-          _pzZoomAt(nextScale, _pinchCenter.x, _pinchCenter.y);
-        } else if (_activePointers.size === 1 && _panLast && _pz.scale > 1.001) {
-          const dx = e.clientX - _panLast.x;
-          const dy = e.clientY - _panLast.y;
-          _panLast = { x: e.clientX, y: e.clientY };
-          _pz.tx += dx;
-          _pz.ty += dy;
-          _pzClampPan();
-          _pzApply();
-        }
-      });
-
-      function _endPointer(e) {
-        if (_activePointers.has(e.pointerId)) {
-          _activePointers.delete(e.pointerId);
-          try { wrap.releasePointerCapture(e.pointerId); } catch (_) {}
-        }
-        if (_activePointers.size < 2) _pinchStartDist = 0;
-        if (_activePointers.size === 0) {
-          _panLast = null;
-          wrap.classList.remove('is-panning', 'is-gesturing');
-        }
-      }
-      wrap.addEventListener('pointerup', _endPointer);
-      wrap.addEventListener('pointercancel', _endPointer);
-      wrap.addEventListener('pointerleave', _endPointer);
-
-      // ── Double-click / double-tap → toggle zoom 1x ↔ 2.5x at point ──────
-      wrap.addEventListener('dblclick', (e) => {
-        e.preventDefault();
-        const rect = wrap.getBoundingClientRect();
-        const ox = e.clientX - rect.left;
-        const oy = e.clientY - rect.top;
-        if (_pz.scale > 1.001) _pzReset();
-        else _pzZoomAt(2.5, ox, oy);
       });
     }
+    function _pzReset() { /* no-op: lightbox handles its own state */ }
 
     function updateBookmarkBtnState(active) {
       const btn = document.getElementById('modalBookmarkBtn');

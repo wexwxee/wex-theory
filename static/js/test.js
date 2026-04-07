@@ -242,7 +242,6 @@ function renderQuestion() {
     placeholder.style.display = 'flex';
   }
   // Hard reset pan-zoom every render so a new question always lands at 1x
-  _qpzReset();
   document.getElementById('imageWrap')?.classList.toggle('has-image', Boolean(q.image_path));
 
   // Answers
@@ -648,154 +647,15 @@ document.addEventListener('mouseout', (e) => {
   }, 120);
 });
 
-// ── Question image Pan-Zoom (in-place, desktop wheel + touch pinch) ──────────
-const QPZ_MIN = 1;
-const QPZ_MAX = 4;
-const QPZ_STEP = 0.18;
-const _qpz = { scale: 1, tx: 0, ty: 0 };
-const _qpzPointers = new Map();
-let _qpzPinchStartDist = 0;
-let _qpzPinchStartScale = 1;
-let _qpzPinchCenter = { x: 0, y: 0 };
-let _qpzPanLast = null;
-
-function _qpzApply() {
-  const img = document.getElementById('questionImg');
-  if (!img) return;
-  img.style.transform = `translate(${_qpz.tx}px, ${_qpz.ty}px) scale(${_qpz.scale})`;
-  const wrap = document.getElementById('imageWrap');
-  if (wrap) wrap.classList.toggle('is-zoomed', _qpz.scale > 1.001);
-}
-
-function _qpzReset() {
-  _qpz.scale = 1;
-  _qpz.tx = 0;
-  _qpz.ty = 0;
-  _qpzPointers.clear();
-  _qpzPinchStartDist = 0;
-  _qpzPanLast = null;
-  const wrap = document.getElementById('imageWrap');
-  if (wrap) wrap.classList.remove('is-panning', 'is-gesturing');
-  _qpzApply();
-}
-
-function _qpzClampPan() {
-  const wrap = document.getElementById('imageWrap');
-  const img = document.getElementById('questionImg');
-  if (!wrap || !img) return;
-  const cw = wrap.clientWidth;
-  const ch = wrap.clientHeight;
-  const iw = img.clientWidth * _qpz.scale;
-  const ih = img.clientHeight * _qpz.scale;
-  const minTx = Math.min(0, cw - iw);
-  const minTy = Math.min(0, ch - ih);
-  _qpz.tx = Math.min(0, Math.max(minTx, _qpz.tx));
-  _qpz.ty = Math.min(0, Math.max(minTy, _qpz.ty));
-}
-
-function _qpzZoomAt(targetScale, originX, originY) {
-  const next = Math.min(QPZ_MAX, Math.max(QPZ_MIN, targetScale));
-  const k = next / _qpz.scale;
-  _qpz.tx = originX - k * (originX - _qpz.tx);
-  _qpz.ty = originY - k * (originY - _qpz.ty);
-  _qpz.scale = next;
-  if (next === QPZ_MIN) {
-    _qpz.tx = 0;
-    _qpz.ty = 0;
-  } else {
-    _qpzClampPan();
-  }
-  _qpzApply();
-}
-
+// ── Question image: click to open lightbox ────────────────────────────────
 function initQuestionPanZoom() {
-  const wrap = document.getElementById('imageWrap');
+  const wrap = document.getElementById("imageWrap");
   if (!wrap) return;
-
-  // Desktop wheel zoom
-  wrap.addEventListener('wheel', (e) => {
-    const img = document.getElementById('questionImg');
-    if (!img || img.style.display === 'none') return;
-    e.preventDefault();
-    const rect = wrap.getBoundingClientRect();
-    const ox = e.clientX - rect.left;
-    const oy = e.clientY - rect.top;
-    const dir = e.deltaY < 0 ? 1 : -1;
-    _qpzZoomAt(_qpz.scale * (1 + dir * QPZ_STEP), ox, oy);
-  }, { passive: false });
-
-  // Pointer events: pinch + pan
-  wrap.addEventListener('pointerdown', (e) => {
-    const img = document.getElementById('questionImg');
-    if (!img || img.style.display === 'none') return;
-    wrap.setPointerCapture(e.pointerId);
-    _qpzPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    wrap.classList.add('is-gesturing');
-
-    if (_qpzPointers.size === 2) {
-      const [a, b] = Array.from(_qpzPointers.values());
-      _qpzPinchStartDist = Math.hypot(b.x - a.x, b.y - a.y);
-      _qpzPinchStartScale = _qpz.scale;
-      const rect = wrap.getBoundingClientRect();
-      _qpzPinchCenter = {
-        x: (a.x + b.x) / 2 - rect.left,
-        y: (a.y + b.y) / 2 - rect.top,
-      };
-    } else if (_qpzPointers.size === 1 && _qpz.scale > 1.001) {
-      _qpzPanLast = { x: e.clientX, y: e.clientY };
-      wrap.classList.add('is-panning');
+  wrap.addEventListener("click", () => {
+    const img = document.getElementById("questionImg");
+    if (!img || img.style.display === "none" || !img.src) return;
+    if (typeof window.openImageLightbox === "function") {
+      window.openImageLightbox(img.src, img.alt || "");
     }
-  });
-
-  wrap.addEventListener('pointermove', (e) => {
-    if (!_qpzPointers.has(e.pointerId)) return;
-    _qpzPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-
-    if (_qpzPointers.size === 2 && _qpzPinchStartDist > 0) {
-      const [a, b] = Array.from(_qpzPointers.values());
-      const dist = Math.hypot(b.x - a.x, b.y - a.y);
-      _qpzZoomAt(
-        _qpzPinchStartScale * (dist / _qpzPinchStartDist),
-        _qpzPinchCenter.x,
-        _qpzPinchCenter.y
-      );
-    } else if (_qpzPointers.size === 1 && _qpzPanLast && _qpz.scale > 1.001) {
-      const dx = e.clientX - _qpzPanLast.x;
-      const dy = e.clientY - _qpzPanLast.y;
-      _qpzPanLast = { x: e.clientX, y: e.clientY };
-      _qpz.tx += dx;
-      _qpz.ty += dy;
-      _qpzClampPan();
-      _qpzApply();
-    }
-  });
-
-  function endPointer(e) {
-    if (_qpzPointers.has(e.pointerId)) {
-      _qpzPointers.delete(e.pointerId);
-      try { wrap.releasePointerCapture(e.pointerId); } catch (_) {}
-    }
-    if (_qpzPointers.size < 2) _qpzPinchStartDist = 0;
-    if (_qpzPointers.size === 0) {
-      _qpzPanLast = null;
-      wrap.classList.remove('is-panning', 'is-gesturing');
-    }
-  }
-  wrap.addEventListener('pointerup', endPointer);
-  wrap.addEventListener('pointercancel', endPointer);
-  wrap.addEventListener('pointerleave', endPointer);
-
-  // Double-click / double-tap toggles 1x ↔ 2.5x at the click point.
-  wrap.addEventListener('dblclick', (e) => {
-    const img = document.getElementById('questionImg');
-    if (!img || img.style.display === 'none') return;
-    e.preventDefault();
-    const rect = wrap.getBoundingClientRect();
-    const ox = e.clientX - rect.left;
-    const oy = e.clientY - rect.top;
-    if (_qpz.scale > 1.001) _qpzReset();
-    else _qpzZoomAt(2.5, ox, oy);
   });
 }
-
-
