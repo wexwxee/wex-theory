@@ -16,154 +16,61 @@
     grid-template-columns: minmax(540px, 1.08fr) minmax(460px, 0.92fr);
     gap: 20px;
   }
-  .test-image-wrap img,
-  .test-image-placeholder {
-    min-height: 390px !important;
-  }
-  .question-image-stage {
+  /* ── Pan-Zoom container for question images (in-place, no modal) ── */
+  .test-image-wrap {
     position: relative;
-  }
-  .question-image-open-btn {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    z-index: 3;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.16);
-    background: rgba(17,17,17,0.72);
-    backdrop-filter: blur(10px);
-    color: #fff;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-    cursor: pointer;
-    transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
-  }
-  .question-image-open-btn:hover {
-    transform: translateY(-1px);
-    background: rgba(17,17,17,0.84);
-    border-color: rgba(255,255,255,0.24);
-  }
-  .question-image-open-btn[hidden] {
-    display: none !important;
-  }
-  #questionImg {
-    cursor: zoom-in;
-  }
-  .image-zoom-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 1200;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    background: rgba(7,7,7,0.86);
-    backdrop-filter: blur(6px);
-  }
-  .image-zoom-overlay.open {
-    display: flex;
-  }
-  .image-zoom-dialog {
-    position: relative;
-    width: min(1200px, 100%);
-    max-height: calc(100vh - 48px);
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    align-items: center;
-    justify-content: center;
-  }
-  .image-zoom-toolbar {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding-right: 54px;
-  }
-  .image-zoom-hint {
-    color: rgba(255,255,255,0.72);
-    font-size: 0.82rem;
-    font-weight: 500;
-    line-height: 1.4;
-  }
-  .image-zoom-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    height: 38px;
-    padding: 0 14px;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.16);
-    background: rgba(17,17,17,0.78);
-    color: #fff;
-    cursor: pointer;
-    font-size: 0.82rem;
-    font-weight: 700;
-    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
-  }
-  .image-zoom-toggle:hover {
-    background: rgba(17,17,17,0.9);
-    border-color: rgba(255,255,255,0.24);
-    transform: translateY(-1px);
-  }
-  .image-zoom-toggle.active {
-    background: rgba(34,197,94,0.18);
-    border-color: rgba(34,197,94,0.38);
-    color: #dcfce7;
-  }
-  .image-zoom-close {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    width: 42px;
-    height: 42px;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.16);
-    background: rgba(17,17,17,0.88);
-    color: #fff;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background 0.15s ease, transform 0.15s ease;
-  }
-  .image-zoom-close:hover {
-    background: rgba(17,17,17,0.98);
-    transform: scale(1.04);
-  }
-  .image-zoom-viewport {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     overflow: hidden;
+    width: 100%;
     border-radius: 18px;
-  }
-  .image-zoom-image {
-    display: block;
-    width: auto;
-    max-width: min(1200px, calc(100vw - 48px));
-    max-height: calc(100vh - 72px);
-    border-radius: 18px;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.36);
-    object-fit: contain;
-    background: #000;
-    transform-origin: center center;
-    transition: transform 0.18s ease, transform-origin 0.08s linear;
+    background: var(--bg-soft, #f3f4f6);
     cursor: zoom-in;
     touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    line-height: 0;
   }
-  .image-zoom-image.magnifier-active {
-    transform: scale(2.15);
-    cursor: crosshair;
+  .test-image-wrap.is-zoomed { cursor: grab; }
+  .test-image-wrap.is-panning { cursor: grabbing; }
+  .question-image-stage {
+    position: relative;
+    width: 100%;
   }
+  #questionImg {
+    display: block;
+    width: 100%;
+    height: auto;
+    transform-origin: 0 0;
+    transform: translate(0, 0) scale(1);
+    transition: transform 0.1s ease-out;
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+  .test-image-wrap.is-gesturing #questionImg { transition: none; }
+  .test-image-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 240px;
+    color: var(--text-muted, #9ca3af);
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  .test-image-hint {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 12px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    line-height: 1.2;
+  }
+  .test-image-wrap.is-zoomed .test-image-hint { opacity: 1; }
   #questionText {
     font-size: 1.34rem !important;
     line-height: 1.42 !important;
@@ -233,50 +140,8 @@
     .test-image-wrap {
       order: 1;
     }
-    .test-image-wrap img,
-    .test-image-placeholder {
-      min-height: 210px !important;
-      max-height: 34vh;
+    .test-image-wrap {
       border-radius: 18px !important;
-    }
-    .question-image-open-btn {
-      top: 10px;
-      right: 10px;
-      padding: 7px 10px;
-      font-size: 0.74rem;
-    }
-    .question-image-open-btn span:last-child {
-      display: none;
-    }
-    .image-zoom-overlay {
-      padding: 12px;
-    }
-    .image-zoom-toolbar {
-      padding-right: 48px;
-      align-items: flex-start;
-    }
-    .image-zoom-hint {
-      font-size: 0.76rem;
-    }
-    .image-zoom-toggle {
-      height: 34px;
-      padding: 0 12px;
-      font-size: 0.76rem;
-      flex-shrink: 0;
-    }
-    .image-zoom-image {
-      max-width: calc(100vw - 24px);
-      max-height: calc(100vh - 96px);
-      border-radius: 16px;
-    }
-    .image-zoom-close {
-      top: 10px;
-      right: 10px;
-    }
-    .test-image-wrap img {
-      width: 100%;
-      object-fit: cover !important;
-      object-position: center;
     }
     .test-layout > div:last-child {
       order: 2;
@@ -341,10 +206,7 @@
     .test-layout {
       gap: 10px !important;
     }
-    .test-image-wrap img,
-    .test-image-placeholder {
-      min-height: 185px !important;
-      max-height: 29vh;
+    .test-image-wrap {
       border-radius: 16px !important;
     }
     #questionText {
@@ -420,12 +282,9 @@
     <div class="test-layout">
       <div class="test-image-wrap" id="imageWrap">
         <div class="question-image-stage">
-          <button type="button" class="question-image-open-btn" id="openQuestionImageBtn" hidden>
-            <i class="fa-solid fa-expand"></i>
-            <span>Open image</span>
-          </button>
-          <img id="questionImg" src="" alt="" style="display:none;min-height:360px;object-fit:cover;">
-          <div class="test-image-placeholder" id="imgPlaceholder" style="min-height:360px;">No image</div>
+          <img id="questionImg" src="" alt="" style="display:none;">
+          <div class="test-image-placeholder" id="imgPlaceholder">No image</div>
+          <span class="test-image-hint">Drag to pan · scroll to zoom</span>
         </div>
       </div>
 
@@ -455,24 +314,6 @@
 </div>
 
 <div class="test-toast" id="testToast" aria-live="polite"></div>
-
-<div class="image-zoom-overlay" id="imageZoomOverlay" aria-hidden="true">
-  <div class="image-zoom-dialog">
-    <div class="image-zoom-toolbar">
-      <div class="image-zoom-hint" id="imageZoomHint">Open image for a closer look.</div>
-      <button type="button" class="image-zoom-toggle" id="toggleImageMagnifierBtn">
-        <i class="fa-solid fa-magnifying-glass-plus"></i>
-        <span>Magnifier</span>
-      </button>
-    </div>
-    <button type="button" class="image-zoom-close" id="closeImageZoomBtn" aria-label="Close image">
-      <i class="fa-solid fa-xmark"></i>
-    </button>
-    <div class="image-zoom-viewport" id="imageZoomViewport">
-      <img id="imageZoomImg" class="image-zoom-image" src="" alt="Question image enlarged">
-    </div>
-  </div>
-</div>
 
 <div class="modal-overlay" id="finishModal">
   <div class="modal">
@@ -506,7 +347,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/test.js?v=20260407-trans3"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/test.js?v=20260408-zoom2"></script>
 <style>
 /* Word click */
 .tw {

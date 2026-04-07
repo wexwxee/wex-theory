@@ -12,8 +12,6 @@ let attemptId = null;
 let timerSeconds = 25 * 60;
 let timerInterval = null;
 let isSubmitting = false;
-let imageZoomOpen = false;
-let imageMagnifierActive = false;
 let timeWarningShown = false;
 let bookmarkRequestInFlight = false;
 let testToastTimer = null;
@@ -45,17 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('submitBtn')?.addEventListener('click', () => submitTest());
   document.getElementById('timeWarningCloseBtn')?.addEventListener('click', closeTimeWarningModal);
   document.getElementById('timeWarningOkBtn')?.addEventListener('click', closeTimeWarningModal);
-  document.getElementById('questionImg')?.addEventListener('click', openQuestionImageZoom);
-  document.getElementById('openQuestionImageBtn')?.addEventListener('click', openQuestionImageZoom);
-  document.getElementById('closeImageZoomBtn')?.addEventListener('click', closeQuestionImageZoom);
-  document.getElementById('toggleImageMagnifierBtn')?.addEventListener('click', toggleImageMagnifier);
-  document.getElementById('imageZoomOverlay')?.addEventListener('click', (event) => {
-    if (event.target.id === 'imageZoomOverlay') closeQuestionImageZoom();
-  });
-  document.getElementById('imageZoomImg')?.addEventListener('mousemove', handleMagnifierPointerMove);
-  document.getElementById('imageZoomImg')?.addEventListener('touchmove', handleMagnifierPointerMove, { passive: false });
-  document.getElementById('imageZoomImg')?.addEventListener('mouseleave', resetMagnifierFocus);
-  document.getElementById('imageZoomImg')?.addEventListener('touchend', resetMagnifierFocus);
+  initQuestionPanZoom();
   if (TEST_ID !== FREE_SAMPLE_TEST_ID && !IS_AUTHENTICATED) {
     window.location.href = '/login';
     return;
@@ -253,7 +241,9 @@ function renderQuestion() {
     img.style.display = 'none';
     placeholder.style.display = 'flex';
   }
-  syncQuestionImageZoomState(Boolean(q.image_path));
+  // Hard reset pan-zoom every render so a new question always lands at 1x
+  _qpzReset();
+  document.getElementById('imageWrap')?.classList.toggle('has-image', Boolean(q.image_path));
 
   // Answers
   const container = document.getElementById('answersContainer');
@@ -658,103 +648,154 @@ document.addEventListener('mouseout', (e) => {
   }, 120);
 });
 
-function syncQuestionImageZoomState(hasImage) {
-  const openBtn = document.getElementById('openQuestionImageBtn');
-  if (openBtn) {
-    openBtn.hidden = !hasImage;
-  }
-  if (!hasImage && imageZoomOpen) {
-    closeQuestionImageZoom();
-  }
-}
+// ── Question image Pan-Zoom (in-place, desktop wheel + touch pinch) ──────────
+const QPZ_MIN = 1;
+const QPZ_MAX = 4;
+const QPZ_STEP = 0.18;
+const _qpz = { scale: 1, tx: 0, ty: 0 };
+const _qpzPointers = new Map();
+let _qpzPinchStartDist = 0;
+let _qpzPinchStartScale = 1;
+let _qpzPinchCenter = { x: 0, y: 0 };
+let _qpzPanLast = null;
 
-function openQuestionImageZoom() {
+function _qpzApply() {
   const img = document.getElementById('questionImg');
-  const overlay = document.getElementById('imageZoomOverlay');
-  const zoomImg = document.getElementById('imageZoomImg');
-  if (!img || !overlay || !zoomImg || img.style.display === 'none' || !img.src) return;
-  zoomImg.src = img.src;
-  zoomImg.alt = img.alt || 'Question image enlarged';
-  setImageMagnifierActive(false);
-  overlay.classList.add('open');
-  overlay.setAttribute('aria-hidden', 'false');
-  document.body.style.overflow = 'hidden';
-  imageZoomOpen = true;
+  if (!img) return;
+  img.style.transform = `translate(${_qpz.tx}px, ${_qpz.ty}px) scale(${_qpz.scale})`;
+  const wrap = document.getElementById('imageWrap');
+  if (wrap) wrap.classList.toggle('is-zoomed', _qpz.scale > 1.001);
 }
 
-function closeQuestionImageZoom() {
-  const overlay = document.getElementById('imageZoomOverlay');
-  const zoomImg = document.getElementById('imageZoomImg');
-  if (!overlay || !zoomImg) return;
-  setImageMagnifierActive(false);
-  overlay.classList.remove('open');
-  overlay.setAttribute('aria-hidden', 'true');
-  zoomImg.src = '';
-  document.body.style.overflow = '';
-  imageZoomOpen = false;
+function _qpzReset() {
+  _qpz.scale = 1;
+  _qpz.tx = 0;
+  _qpz.ty = 0;
+  _qpzPointers.clear();
+  _qpzPinchStartDist = 0;
+  _qpzPanLast = null;
+  const wrap = document.getElementById('imageWrap');
+  if (wrap) wrap.classList.remove('is-panning', 'is-gesturing');
+  _qpzApply();
 }
 
-function setImageMagnifierActive(nextState) {
-  imageMagnifierActive = Boolean(nextState);
-  const toggleBtn = document.getElementById('toggleImageMagnifierBtn');
-  const zoomImg = document.getElementById('imageZoomImg');
-  const hint = document.getElementById('imageZoomHint');
-  if (toggleBtn) {
-    toggleBtn.classList.toggle('active', imageMagnifierActive);
-    toggleBtn.innerHTML = imageMagnifierActive
-      ? '<i class="fa-solid fa-magnifying-glass-minus"></i><span>Magnifier on</span>'
-      : '<i class="fa-solid fa-magnifying-glass-plus"></i><span>Magnifier</span>';
+function _qpzClampPan() {
+  const wrap = document.getElementById('imageWrap');
+  const img = document.getElementById('questionImg');
+  if (!wrap || !img) return;
+  const cw = wrap.clientWidth;
+  const ch = wrap.clientHeight;
+  const iw = img.clientWidth * _qpz.scale;
+  const ih = img.clientHeight * _qpz.scale;
+  const minTx = Math.min(0, cw - iw);
+  const minTy = Math.min(0, ch - ih);
+  _qpz.tx = Math.min(0, Math.max(minTx, _qpz.tx));
+  _qpz.ty = Math.min(0, Math.max(minTy, _qpz.ty));
+}
+
+function _qpzZoomAt(targetScale, originX, originY) {
+  const next = Math.min(QPZ_MAX, Math.max(QPZ_MIN, targetScale));
+  const k = next / _qpz.scale;
+  _qpz.tx = originX - k * (originX - _qpz.tx);
+  _qpz.ty = originY - k * (originY - _qpz.ty);
+  _qpz.scale = next;
+  if (next === QPZ_MIN) {
+    _qpz.tx = 0;
+    _qpz.ty = 0;
+  } else {
+    _qpzClampPan();
   }
-  if (zoomImg) {
-    zoomImg.classList.toggle('magnifier-active', imageMagnifierActive);
-    if (!imageMagnifierActive) {
-      zoomImg.style.transformOrigin = 'center center';
+  _qpzApply();
+}
+
+function initQuestionPanZoom() {
+  const wrap = document.getElementById('imageWrap');
+  if (!wrap) return;
+
+  // Desktop wheel zoom
+  wrap.addEventListener('wheel', (e) => {
+    const img = document.getElementById('questionImg');
+    if (!img || img.style.display === 'none') return;
+    e.preventDefault();
+    const rect = wrap.getBoundingClientRect();
+    const ox = e.clientX - rect.left;
+    const oy = e.clientY - rect.top;
+    const dir = e.deltaY < 0 ? 1 : -1;
+    _qpzZoomAt(_qpz.scale * (1 + dir * QPZ_STEP), ox, oy);
+  }, { passive: false });
+
+  // Pointer events: pinch + pan
+  wrap.addEventListener('pointerdown', (e) => {
+    const img = document.getElementById('questionImg');
+    if (!img || img.style.display === 'none') return;
+    wrap.setPointerCapture(e.pointerId);
+    _qpzPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    wrap.classList.add('is-gesturing');
+
+    if (_qpzPointers.size === 2) {
+      const [a, b] = Array.from(_qpzPointers.values());
+      _qpzPinchStartDist = Math.hypot(b.x - a.x, b.y - a.y);
+      _qpzPinchStartScale = _qpz.scale;
+      const rect = wrap.getBoundingClientRect();
+      _qpzPinchCenter = {
+        x: (a.x + b.x) / 2 - rect.left,
+        y: (a.y + b.y) / 2 - rect.top,
+      };
+    } else if (_qpzPointers.size === 1 && _qpz.scale > 1.001) {
+      _qpzPanLast = { x: e.clientX, y: e.clientY };
+      wrap.classList.add('is-panning');
+    }
+  });
+
+  wrap.addEventListener('pointermove', (e) => {
+    if (!_qpzPointers.has(e.pointerId)) return;
+    _qpzPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (_qpzPointers.size === 2 && _qpzPinchStartDist > 0) {
+      const [a, b] = Array.from(_qpzPointers.values());
+      const dist = Math.hypot(b.x - a.x, b.y - a.y);
+      _qpzZoomAt(
+        _qpzPinchStartScale * (dist / _qpzPinchStartDist),
+        _qpzPinchCenter.x,
+        _qpzPinchCenter.y
+      );
+    } else if (_qpzPointers.size === 1 && _qpzPanLast && _qpz.scale > 1.001) {
+      const dx = e.clientX - _qpzPanLast.x;
+      const dy = e.clientY - _qpzPanLast.y;
+      _qpzPanLast = { x: e.clientX, y: e.clientY };
+      _qpz.tx += dx;
+      _qpz.ty += dy;
+      _qpzClampPan();
+      _qpzApply();
+    }
+  });
+
+  function endPointer(e) {
+    if (_qpzPointers.has(e.pointerId)) {
+      _qpzPointers.delete(e.pointerId);
+      try { wrap.releasePointerCapture(e.pointerId); } catch (_) {}
+    }
+    if (_qpzPointers.size < 2) _qpzPinchStartDist = 0;
+    if (_qpzPointers.size === 0) {
+      _qpzPanLast = null;
+      wrap.classList.remove('is-panning', 'is-gesturing');
     }
   }
-  if (hint) {
-    hint.textContent = imageMagnifierActive
-      ? 'Move over the image to inspect details more closely.'
-      : 'Open image for a closer look.';
-  }
-}
+  wrap.addEventListener('pointerup', endPointer);
+  wrap.addEventListener('pointercancel', endPointer);
+  wrap.addEventListener('pointerleave', endPointer);
 
-function toggleImageMagnifier() {
-  if (!imageZoomOpen) return;
-  setImageMagnifierActive(!imageMagnifierActive);
+  // Double-click / double-tap toggles 1x ↔ 2.5x at the click point.
+  wrap.addEventListener('dblclick', (e) => {
+    const img = document.getElementById('questionImg');
+    if (!img || img.style.display === 'none') return;
+    e.preventDefault();
+    const rect = wrap.getBoundingClientRect();
+    const ox = e.clientX - rect.left;
+    const oy = e.clientY - rect.top;
+    if (_qpz.scale > 1.001) _qpzReset();
+    else _qpzZoomAt(2.5, ox, oy);
+  });
 }
-
-function handleMagnifierPointerMove(event) {
-  if (!imageMagnifierActive) return;
-  const zoomImg = document.getElementById('imageZoomImg');
-  if (!zoomImg) return;
-  const rect = zoomImg.getBoundingClientRect();
-  let clientX;
-  let clientY;
-  if (event.touches && event.touches[0]) {
-    clientX = event.touches[0].clientX;
-    clientY = event.touches[0].clientY;
-    event.preventDefault();
-  } else {
-    clientX = event.clientX;
-    clientY = event.clientY;
-  }
-  const x = Math.min(Math.max(((clientX - rect.left) / rect.width) * 100, 0), 100);
-  const y = Math.min(Math.max(((clientY - rect.top) / rect.height) * 100, 0), 100);
-  zoomImg.style.transformOrigin = `${x}% ${y}%`;
-}
-
-function resetMagnifierFocus() {
-  if (!imageMagnifierActive) return;
-  const zoomImg = document.getElementById('imageZoomImg');
-  if (zoomImg) {
-    zoomImg.style.transformOrigin = 'center center';
-  }
-}
-
-document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && imageZoomOpen) {
-    closeQuestionImageZoom();
-  }
-});
 
 

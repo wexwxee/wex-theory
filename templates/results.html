@@ -97,7 +97,6 @@
   position: relative;
   overflow: hidden;
   width: 100%;
-  max-height: 320px;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--bg-soft, #f3f4f6);
@@ -105,6 +104,7 @@
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
+  line-height: 0; /* kill phantom whitespace under inline-block img */
 }
 .results-viewer-img-container.is-zoomed { cursor: grab; }
 .results-viewer-img-container.is-panning { cursor: grabbing; }
@@ -112,8 +112,6 @@
   display: block;
   width: 100%;
   height: auto;
-  max-height: 320px;
-  object-fit: contain;
   transform-origin: 0 0;
   transform: translate(0, 0) scale(1);
   transition: transform 0.1s ease-out;
@@ -614,7 +612,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-viewer.js?v=20260408-zoom1"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-viewer.js?v=20260408-zoom2"></script>
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/results.js?v=20260407-review2"></script>
 {% endblock %}
 
