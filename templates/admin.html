@@ -312,6 +312,7 @@
     <a href="/admin?tab=users" class="tab-btn{% if active_tab == 'users' %} active{% endif %}" id="tabUsers">Users ({{ users|length }})</a>
     <a href="/admin?tab=messages" class="tab-btn{% if active_tab == 'messages' %} active{% endif %}" id="tabMessages">Messages ({{ messages|length }}){% if unread_count > 0 %} <span style="color:var(--wrong);">&bull;</span>{% endif %}</a>
     <a href="/admin?tab=promos" class="tab-btn{% if active_tab == 'promos' %} active{% endif %}" id="tabPromos">Promo Codes ({{ promo_codes|length }})</a>
+    <a href="/admin/translations" class="tab-btn">Translations</a>
   </div>
 
   <div id="panelUsers" style="display:{% if active_tab == 'users' %}block{% else %}none{% endif %};">

@@ -16,7 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.orm import Session, selectinload
-from sqlalchemy import func as sql_func, inspect as sql_inspect, text as sql_text
+from sqlalchemy import func as sql_func, inspect as sql_inspect, text as sql_text, or_ as sql_or
 from authlib.integrations.starlette_client import OAuth
 import httpx
 
@@ -2828,6 +2828,223 @@ async def api_dictionary(word: str, db: Session = Depends(get_db)):
         "translation": row.translation_ru,
         "pos": row.pos,
     }
+
+
+# ─── Admin: translations editor ────────────────────────────────────────────────
+
+ADMIN_TRANSLATIONS_PAGE_SIZE = 25
+ADMIN_WORDS_PAGE_SIZE = 100
+
+
+def _require_admin(request: Request, db: Session):
+    user = get_current_user(request, db)
+    if not user:
+        return None, RedirectResponse("/login", status_code=302)
+    if not user.is_admin:
+        return None, RedirectResponse("/dashboard", status_code=302)
+    return user, None
+
+
+@app.get("/admin/translations", response_class=HTMLResponse)
+async def admin_translations_page(
+    request: Request,
+    db: Session = Depends(get_db),
+    q: str = "",
+    page: int = 1,
+    tab: str = "questions",
+    wq: str = "",
+    wpage: int = 1,
+):
+    user, redirect = _require_admin(request, db)
+    if redirect:
+        return redirect
+
+    page = max(1, int(page or 1))
+    wpage = max(1, int(wpage or 1))
+    tab = (tab or "questions").strip().lower()
+    if tab not in {"questions", "words"}:
+        tab = "questions"
+
+    # Questions list with optional search
+    qq = db.query(models.Question)
+    search = (q or "").strip()
+    if search:
+        like = f"%{search}%"
+        qq = qq.filter(sql_or(
+            models.Question.question_text.ilike(like),
+            models.Question.question_text_ru.ilike(like),
+            models.Question.explanation.ilike(like),
+        ))
+    total_questions = qq.count()
+    questions = (
+        qq.options(selectinload(models.Question.answers))
+        .order_by(models.Question.id.asc())
+        .offset((page - 1) * ADMIN_TRANSLATIONS_PAGE_SIZE)
+        .limit(ADMIN_TRANSLATIONS_PAGE_SIZE)
+        .all()
+    )
+    total_pages = max(1, (total_questions + ADMIN_TRANSLATIONS_PAGE_SIZE - 1) // ADMIN_TRANSLATIONS_PAGE_SIZE)
+
+    # Word translations list
+    ww = db.query(models.WordTranslation)
+    wsearch = (wq or "").strip()
+    if wsearch:
+        wlike = f"%{wsearch.lower()}%"
+        ww = ww.filter(sql_or(
+            models.WordTranslation.word_en.ilike(wlike),
+            models.WordTranslation.translation_ru.ilike(f"%{wsearch}%"),
+        ))
+    total_words = ww.count()
+    words = (
+        ww.order_by(models.WordTranslation.word_en.asc())
+        .offset((wpage - 1) * ADMIN_WORDS_PAGE_SIZE)
+        .limit(ADMIN_WORDS_PAGE_SIZE)
+        .all()
+    )
+    total_wpages = max(1, (total_words + ADMIN_WORDS_PAGE_SIZE - 1) // ADMIN_WORDS_PAGE_SIZE)
+
+    return templates.TemplateResponse(request, "admin_translations.html", {
+        "request": request,
+        "user": user,
+        "active_tab": tab,
+        "questions": questions,
+        "q": search,
+        "page": page,
+        "total_pages": total_pages,
+        "total_questions": total_questions,
+        "words": words,
+        "wq": wsearch,
+        "wpage": wpage,
+        "total_wpages": total_wpages,
+        "total_words": total_words,
+    })
+
+
+@app.post("/api/admin/translations/question/{question_id}")
+async def api_admin_update_question_translation(
+    question_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    user, redirect = _require_admin(request, db)
+    if redirect:
+        return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+    question = db.query(models.Question).filter(models.Question.id == question_id).first()
+    if not question:
+        return JSONResponse({"success": False, "error": "not_found"}, status_code=404)
+
+    if "question_text_ru" in data:
+        question.question_text_ru = (data.get("question_text_ru") or "").strip() or None
+    if "explanation_ru" in data:
+        question.explanation_ru = (data.get("explanation_ru") or "").strip() or None
+
+    answers_payload = data.get("answers") or {}
+    if isinstance(answers_payload, dict) and answers_payload:
+        ans_rows = (
+            db.query(models.Answer)
+            .filter(models.Answer.question_id == question_id)
+            .all()
+        )
+        by_id = {a.id: a for a in ans_rows}
+        for k, v in answers_payload.items():
+            try:
+                aid = int(k)
+            except (TypeError, ValueError):
+                continue
+            row = by_id.get(aid)
+            if row is not None:
+                row.text_ru = (v or "").strip() or None
+
+    db.commit()
+    return {"success": True}
+
+
+@app.post("/api/admin/word-translations")
+async def api_admin_word_create(request: Request, db: Session = Depends(get_db)):
+    user, redirect = _require_admin(request, db)
+    if redirect:
+        return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+    word_en = (data.get("word_en") or "").strip().lower()
+    translation_ru = (data.get("translation_ru") or "").strip()
+    pos = (data.get("pos") or "").strip() or None
+    if not word_en or not translation_ru:
+        return JSONResponse({"success": False, "error": "missing_fields"}, status_code=400)
+    if len(word_en) > 64:
+        return JSONResponse({"success": False, "error": "word_too_long"}, status_code=400)
+
+    existing = (
+        db.query(models.WordTranslation)
+        .filter(models.WordTranslation.word_en == word_en)
+        .first()
+    )
+    if existing:
+        existing.translation_ru = translation_ru
+        existing.pos = pos
+        existing.is_curated = True
+        existing.updated_at = datetime.utcnow()
+    else:
+        existing = models.WordTranslation(
+            word_en=word_en,
+            translation_ru=translation_ru,
+            pos=pos,
+            is_curated=True,
+            updated_at=datetime.utcnow(),
+        )
+        db.add(existing)
+    db.commit()
+    return {
+        "success": True,
+        "id": existing.id,
+        "word_en": existing.word_en,
+        "translation_ru": existing.translation_ru,
+        "pos": existing.pos,
+    }
+
+
+@app.post("/api/admin/word-translations/{word_id}")
+async def api_admin_word_update(word_id: int, request: Request, db: Session = Depends(get_db)):
+    user, redirect = _require_admin(request, db)
+    if redirect:
+        return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+    row = db.query(models.WordTranslation).filter(models.WordTranslation.id == word_id).first()
+    if not row:
+        return JSONResponse({"success": False, "error": "not_found"}, status_code=404)
+    if "translation_ru" in data:
+        new_tr = (data.get("translation_ru") or "").strip()
+        if not new_tr:
+            return JSONResponse({"success": False, "error": "empty_translation"}, status_code=400)
+        row.translation_ru = new_tr
+    if "pos" in data:
+        row.pos = (data.get("pos") or "").strip() or None
+    row.is_curated = True
+    row.updated_at = datetime.utcnow()
+    db.commit()
+    return {"success": True}
+
+
+@app.post("/api/admin/word-translations/{word_id}/delete")
+async def api_admin_word_delete(word_id: int, request: Request, db: Session = Depends(get_db)):
+    user, redirect = _require_admin(request, db)
+    if redirect:
+        return JSONResponse({"success": False, "error": "forbidden"}, status_code=403)
+    row = db.query(models.WordTranslation).filter(models.WordTranslation.id == word_id).first()
+    if not row:
+        return JSONResponse({"success": False, "error": "not_found"}, status_code=404)
+    db.delete(row)
+    db.commit()
+    return {"success": True}
 
 
 # ─── Bookmarks ─────────────────────────────────────────────────────────────────

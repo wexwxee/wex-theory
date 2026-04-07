@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}Translations Admin - WEX Theory{% endblock %}
+
+{% block head %}
+<style nonce="{{ request.state.csp_nonce }}">
+  .tr-wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .tr-tabs { display: flex; gap: 8px; margin-bottom: 18px; border-bottom: 1px solid var(--border, #e5e7eb); }
+  .tr-tab { padding: 10px 16px; text-decoration: none; color: var(--text-muted, #6b7280); font-weight: 600; border-bottom: 2px solid transparent; }
+  .tr-tab.active { color: var(--accent, #0d6efd); border-bottom-color: var(--accent, #0d6efd); }
+  .tr-search { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tr-search input[type="text"] { flex: 1; padding: 8px 12px; border: 1px solid var(--border, #d1d5db); border-radius: 6px; }
+  .tr-search button { padding: 8px 14px; border-radius: 6px; border: 1px solid var(--accent, #0d6efd); background: var(--accent, #0d6efd); color: #fff; cursor: pointer; }
+  .tr-meta { color: var(--text-muted, #6b7280); font-size: 0.9rem; margin-bottom: 12px; }
+  .tr-card { border: 1px solid var(--border, #e5e7eb); border-radius: 10px; padding: 16px; margin-bottom: 14px; background: var(--bg-card, #fff); }
+  .tr-card h4 { margin: 0 0 8px; font-size: 0.85rem; color: var(--text-muted, #6b7280); text-transform: uppercase; letter-spacing: 0.04em; }
+  .tr-en { color: var(--text, #111827); margin-bottom: 6px; line-height: 1.45; }
+  .tr-field { margin-top: 10px; }
+  .tr-field label { display: block; font-size: 0.78rem; color: var(--text-muted, #6b7280); margin-bottom: 4px; }
+  .tr-field textarea, .tr-field input[type="text"] {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--border, #d1d5db);
+    border-radius: 6px; font-family: inherit; font-size: 0.95rem; box-sizing: border-box;
+    background: var(--bg-input, #fff); color: var(--text, #111827); resize: vertical;
+  }
+  .tr-field textarea { min-height: 56px; }
+  .tr-answers { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border, #e5e7eb); }
+  .tr-answer { padding: 8px 0; }
+  .tr-answer .tr-en { font-size: 0.92rem; }
+  .tr-actions { margin-top: 12px; display: flex; gap: 8px; align-items: center; }
+  .tr-save-btn { padding: 8px 16px; border-radius: 6px; border: 1px solid var(--accent, #0d6efd); background: var(--accent, #0d6efd); color: #fff; cursor: pointer; font-weight: 600; }
+  .tr-save-btn:disabled { opacity: 0.6; cursor: default; }
+  .tr-status { font-size: 0.85rem; color: var(--text-muted, #6b7280); }
+  .tr-status.ok { color: #059669; }
+  .tr-status.err { color: #dc2626; }
+  .tr-pagination { display: flex; gap: 6px; justify-content: center; margin: 18px 0; flex-wrap: wrap; }
+  .tr-pagination a, .tr-pagination span { padding: 6px 12px; border: 1px solid var(--border, #e5e7eb); border-radius: 6px; text-decoration: none; color: var(--text, #111827); }
+  .tr-pagination .current { background: var(--accent, #0d6efd); color: #fff; border-color: var(--accent, #0d6efd); }
+  .tr-words-table { width: 100%; border-collapse: collapse; background: var(--bg-card, #fff); border: 1px solid var(--border, #e5e7eb); border-radius: 10px; overflow: hidden; }
+  .tr-words-table th, .tr-words-table td { padding: 8px 10px; border-bottom: 1px solid var(--border, #e5e7eb); text-align: left; vertical-align: middle; }
+  .tr-words-table th { background: var(--bg-soft, #f9fafb); font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted, #6b7280); }
+  .tr-words-table input { width: 100%; padding: 6px 8px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: var(--text, #111827); }
+  .tr-words-table input:focus { border-color: var(--accent, #0d6efd); background: var(--bg-input, #fff); outline: none; }
+  .tr-words-table .tr-row-actions { white-space: nowrap; display: flex; gap: 6px; }
+  .tr-icon-btn { padding: 5px 10px; border-radius: 5px; border: 1px solid var(--border, #d1d5db); background: var(--bg-soft, #f9fafb); cursor: pointer; font-size: 0.82rem; }
+  .tr-icon-btn.danger { color: #dc2626; border-color: #fca5a5; }
+  .tr-icon-btn.primary { color: #fff; background: var(--accent, #0d6efd); border-color: var(--accent, #0d6efd); }
+  .tr-add-row td { background: var(--bg-soft, #f9fafb); }
+  .tr-curated { font-size: 0.72rem; padding: 2px 6px; border-radius: 10px; background: #fef3c7; color: #92400e; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tr-wrap">
+  <h1>Translations</h1>
+
+  <div class="tr-tabs">
+    <a class="tr-tab {% if active_tab == 'questions' %}active{% endif %}" href="/admin/translations?tab=questions">Questions</a>
+    <a class="tr-tab {% if active_tab == 'words' %}active{% endif %}" href="/admin/translations?tab=words">Word dictionary</a>
+  </div>
+
+  {% if active_tab == 'questions' %}
+    <form class="tr-search" method="get" action="/admin/translations">
+      <input type="hidden" name="tab" value="questions">
+      <input type="text" name="q" value="{{ q or '' }}" placeholder="Search English text, RU translation, or explanation...">
+      <button type="submit">Search</button>
+    </form>
+
+    <div class="tr-meta">
+      {{ total_questions }} question{{ '' if total_questions == 1 else 's' }} found
+      {% if q %}for "{{ q }}"{% endif %}
+      — page {{ page }} of {{ total_pages }}
+    </div>
+
+    {% for question in questions %}
+    <div class="tr-card" data-question-id="{{ question.id }}">
+      <h4>Question #{{ question.id }} (test {{ question.test_id }})</h4>
+      <div class="tr-en">{{ question.question_text }}</div>
+
+      <div class="tr-field">
+        <label>Russian translation (question_text_ru)</label>
+        <textarea data-field="question_text_ru">{{ question.question_text_ru or '' }}</textarea>
+      </div>
+
+      {% if question.explanation %}
+      <h4 style="margin-top:14px;">Explanation</h4>
+      <div class="tr-en">{{ question.explanation }}</div>
+      <div class="tr-field">
+        <label>Russian translation (explanation_ru)</label>
+        <textarea data-field="explanation_ru">{{ question.explanation_ru or '' }}</textarea>
+      </div>
+      {% endif %}
+
+      <div class="tr-answers">
+        <h4>Answers</h4>
+        {% for answer in question.answers %}
+        <div class="tr-answer">
+          <div class="tr-en">{{ '✓ ' if answer.is_correct }}{{ answer.text }}</div>
+          <div class="tr-field">
+            <textarea data-answer-id="{{ answer.id }}">{{ answer.text_ru or '' }}</textarea>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="tr-actions">
+        <button type="button" class="tr-save-btn" data-save-question="{{ question.id }}">Save</button>
+        <span class="tr-status" data-status-for="{{ question.id }}"></span>
+      </div>
+    </div>
+    {% endfor %}
+
+    <div class="tr-pagination">
+      {% set base_url = '/admin/translations?tab=questions' + ('&q=' + q if q else '') %}
+      {% if page > 1 %}
+        <a href="{{ base_url }}&page={{ page - 1 }}">‹ Prev</a>
+      {% endif %}
+      <span class="current">Page {{ page }} / {{ total_pages }}</span>
+      {% if page < total_pages %}
+        <a href="{{ base_url }}&page={{ page + 1 }}">Next ›</a>
+      {% endif %}
+    </div>
+
+  {% else %}
+    <form class="tr-search" method="get" action="/admin/translations">
+      <input type="hidden" name="tab" value="words">
+      <input type="text" name="wq" value="{{ wq or '' }}" placeholder="Search by English word or Russian translation...">
+      <button type="submit">Search</button>
+    </form>
+
+    <div class="tr-meta">
+      {{ total_words }} word{{ '' if total_words == 1 else 's' }} in dictionary
+      {% if wq %}— filter "{{ wq }}"{% endif %}
+      — page {{ wpage }} of {{ total_wpages }}
+    </div>
+
+    <table class="tr-words-table">
+      <thead>
+        <tr>
+          <th style="width: 25%;">English</th>
+          <th style="width: 35%;">Russian</th>
+          <th style="width: 18%;">POS / hint</th>
+          <th style="width: 10%;">Curated</th>
+          <th style="width: 12%;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="tr-add-row" id="trAddRow">
+          <td><input type="text" id="newWordEn" placeholder="new word"></td>
+          <td><input type="text" id="newWordRu" placeholder="перевод"></td>
+          <td><input type="text" id="newWordPos" placeholder="noun / verb / phrase..."></td>
+          <td></td>
+          <td><button type="button" class="tr-icon-btn primary" id="addWordBtn">Add</button></td>
+        </tr>
+        {% for w in words %}
+        <tr data-word-id="{{ w.id }}">
+          <td>{{ w.word_en }}</td>
+          <td><input type="text" data-word-field="translation_ru" value="{{ w.translation_ru }}"></td>
+          <td><input type="text" data-word-field="pos" value="{{ w.pos or '' }}"></td>
+          <td>{% if w.is_curated %}<span class="tr-curated">curated</span>{% endif %}</td>
+          <td class="tr-row-actions">
+            <button type="button" class="tr-icon-btn primary" data-save-word="{{ w.id }}">Save</button>
+            <button type="button" class="tr-icon-btn danger" data-delete-word="{{ w.id }}">×</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="tr-pagination">
+      {% set wbase_url = '/admin/translations?tab=words' + ('&wq=' + wq if wq else '') %}
+      {% if wpage > 1 %}
+        <a href="{{ wbase_url }}&wpage={{ wpage - 1 }}">‹ Prev</a>
+      {% endif %}
+      <span class="current">Page {{ wpage }} / {{ total_wpages }}</span>
+      {% if wpage < total_wpages %}
+        <a href="{{ wbase_url }}&wpage={{ wpage + 1 }}">Next ›</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+
+<script nonce="{{ request.state.csp_nonce }}">
+(function () {
+  // ── Save question/answer translations ───────────────────────────────────────
+  document.querySelectorAll('[data-save-question]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const qid = btn.dataset.saveQuestion;
+      const card = btn.closest('[data-question-id]');
+      const status = document.querySelector(`[data-status-for="${qid}"]`);
+      const payload = { answers: {} };
+      card.querySelectorAll('textarea[data-field]').forEach((t) => {
+        payload[t.dataset.field] = t.value;
+      });
+      card.querySelectorAll('textarea[data-answer-id]').forEach((t) => {
+        payload.answers[t.dataset.answerId] = t.value;
+      });
+      btn.disabled = true;
+      status.textContent = 'Saving...';
+      status.className = 'tr-status';
+      try {
+        const res = await fetch(`/api/admin/translations/question/${qid}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.error || 'failed');
+        status.textContent = 'Saved ✓';
+        status.className = 'tr-status ok';
+      } catch (e) {
+        status.textContent = 'Error: ' + e.message;
+        status.className = 'tr-status err';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  });
+
+  // ── Word dictionary: add ────────────────────────────────────────────────────
+  const addBtn = document.getElementById('addWordBtn');
+  if (addBtn) {
+    addBtn.addEventListener('click', async () => {
+      const word_en = document.getElementById('newWordEn').value.trim();
+      const translation_ru = document.getElementById('newWordRu').value.trim();
+      const pos = document.getElementById('newWordPos').value.trim();
+      if (!word_en || !translation_ru) {
+        alert('Both English and Russian fields are required');
+        return;
+      }
+      addBtn.disabled = true;
+      try {
+        const res = await fetch('/api/admin/word-translations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ word_en, translation_ru, pos }),
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.error || 'failed');
+        location.reload();
+      } catch (e) {
+        alert('Error: ' + e.message);
+        addBtn.disabled = false;
+      }
+    });
+  }
+
+  // ── Word dictionary: save row ───────────────────────────────────────────────
+  document.querySelectorAll('[data-save-word]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const wid = btn.dataset.saveWord;
+      const row = btn.closest('[data-word-id]');
+      const payload = {};
+      row.querySelectorAll('input[data-word-field]').forEach((i) => {
+        payload[i.dataset.wordField] = i.value;
+      });
+      btn.disabled = true;
+      const orig = btn.textContent;
+      btn.textContent = '...';
+      try {
+        const res = await fetch(`/api/admin/word-translations/${wid}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.error || 'failed');
+        btn.textContent = '✓';
+        setTimeout(() => { btn.textContent = orig; }, 1000);
+      } catch (e) {
+        btn.textContent = 'err';
+        alert('Error: ' + e.message);
+        setTimeout(() => { btn.textContent = orig; }, 1500);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  });
+
+  // ── Word dictionary: delete row ─────────────────────────────────────────────
+  document.querySelectorAll('[data-delete-word]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const wid = btn.dataset.deleteWord;
+      const row = btn.closest('[data-word-id]');
+      if (!confirm('Delete this word translation?')) return;
+      btn.disabled = true;
+      try {
+        const res = await fetch(`/api/admin/word-translations/${wid}/delete`, { method: 'POST' });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.error || 'failed');
+        row.remove();
+      } catch (e) {
+        alert('Error: ' + e.message);
+        btn.disabled = false;
+      }
+    });
+  });
+})();
+</script>
+{% endblock %}
