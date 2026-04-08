@@ -975,22 +975,18 @@ footer {
   align-items: start;
 }
 .test-image-wrap {
-  position: sticky;
-  top: 80px;
+  position: relative;
 }
 .test-image-wrap img {
   width: 100%;
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  aspect-ratio: 16/9;
-  object-fit: cover;
-  background: #000;
+  height: auto;
   display: block;
+  border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.18);
 }
 .test-image-placeholder {
   width: 100%;
-  aspect-ratio: 16/9;
+  padding: 60px 16px;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 10px;
