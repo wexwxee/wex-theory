@@ -2961,6 +2961,24 @@ def _require_admin(request: Request, db: Session):
     return user, None
 
 
+@app.get("/admin/triumph-preview", response_class=HTMLResponse)
+async def admin_triumph_preview(request: Request, db: Session = Depends(get_db)):
+    """Admin-only visual preview of the Triumph Screen.
+    Reads no test progress, writes nothing to the DB — pure UI sandbox."""
+    user, redirect = _require_admin(request, db)
+    if redirect:
+        return redirect
+    triumph_data = {
+        "user_name": user.name or "Admin Test",
+        "user_email": user.email,
+        "date": datetime.utcnow().strftime("%d %b %Y"),
+        "total_questions": 350,
+    }
+    return templates.TemplateResponse(request, "triumph_preview.html", {
+        "request": request, "user": user, "triumph_data": triumph_data,
+    })
+
+
 @app.get("/admin/translations", response_class=HTMLResponse)
 async def admin_translations_page(
     request: Request,

@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Triumph Preview - WEX Theory{% endblock %}
+{% block head %}
+<style>
+.triumph-overlay {
+  position: fixed; inset: 0; z-index: 10100;
+  background: radial-gradient(ellipse at top, #1e1b4b 0%, #0b0a1f 70%);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px; overflow-y: auto;
+}
+.triumph-overlay canvas.confetti-canvas {
+  position: fixed !important; inset: 0; pointer-events: none; z-index: 1;
+}
+.triumph-inner {
+  position: relative; z-index: 2; max-width: 760px; width: 100%;
+  text-align: center; color: #fff;
+}
+.triumph-title {
+  font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 900;
+  background: linear-gradient(90deg, #fde047, #f59e0b, #ef4444);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  margin-bottom: 12px; line-height: 1.1;
+}
+.triumph-sub { font-size: 1.05rem; color: #cbd5e1; line-height: 1.55; margin-bottom: 6px; }
+.triumph-sub.en { color: #94a3b8; font-size: 0.92rem; font-style: italic; margin-bottom: 22px; }
+.triumph-card {
+  position: relative; overflow: hidden;
+  margin: 28px auto 22px;
+  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  border-radius: 22px; padding: 28px 26px;
+  max-width: 460px;
+  box-shadow: 0 30px 70px rgba(0,0,0,0.55), 0 0 0 1px rgba(251,191,36,0.15);
+}
+.triumph-card::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle at 20% 0%, rgba(251,191,36,0.18), transparent 55%);
+  pointer-events: none; border-radius: 22px;
+}
+.triumph-card-status {
+  font-size: 0.74rem; font-weight: 800; letter-spacing: 0.16em;
+  text-transform: uppercase; color: #fbbf24; margin-bottom: 6px;
+}
+.triumph-card-name { font-size: 1.55rem; font-weight: 800; margin-bottom: 4px; color: #fff; }
+.triumph-card-date { font-size: 0.82rem; color: #94a3b8; margin-bottom: 18px; }
+.triumph-card-counter {
+  display: inline-block; padding: 10px 22px; border-radius: 999px;
+  background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.35);
+  font-weight: 800; color: #fde047; font-size: 1.1rem; letter-spacing: 0.04em;
+  margin-bottom: 18px;
+}
+.triumph-card-qr { margin: 14px auto 6px; display: inline-block; padding: 10px; background: #fff; border-radius: 10px; }
+.triumph-card-qr canvas, .triumph-card-qr img { display: block; }
+.triumph-card-foot { font-size: 0.74rem; color: #6b7280; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 8px; }
+.triumph-tips {
+  margin: 6px auto 22px; max-width: 540px;
+  text-align: left; background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px; padding: 18px 20px;
+  color: #cbd5e1; font-size: 0.92rem; line-height: 1.55;
+}
+.triumph-tips-title { font-size: 0.74rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: #fbbf24; margin-bottom: 10px; }
+.triumph-tips ul { margin: 0; padding-left: 18px; }
+.triumph-tips li { margin-bottom: 6px; }
+.triumph-tips li:last-child { margin-bottom: 0; }
+.triumph-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+.triumph-actions button { border: none; border-radius: 12px; padding: 12px 20px; font-weight: 700; cursor: pointer; font-size: 0.95rem; }
+.triumph-btn-primary { background: linear-gradient(90deg, #fbbf24, #f59e0b); color: #1f2937; }
+.triumph-btn-ghost { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.25); }
+.triumph-preview-badge {
+  position: fixed; top: 14px; left: 14px; z-index: 10200;
+  background: rgba(239, 68, 68, 0.92); color: #fff; padding: 6px 12px;
+  border-radius: 999px; font-size: 0.74rem; font-weight: 800;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+</style>
+{% endblock %}
+{% block body %}
+<div class="triumph-preview-badge">Admin preview · no DB writes</div>
+<div id="triumphOverlay" class="triumph-overlay">
+  <div class="triumph-inner">
+    <div class="triumph-title">🏆 Легендарно! Theory Master 🏆</div>
+    <div class="triumph-sub">Ты прошёл ВСЁ. Все 14 тестов позади. Теперь ты официально готов разнести реальный экзамен DVSA.</div>
+    <div class="triumph-sub en">Legendary! You crushed all 14 tests. You're officially ready to destroy the real DVSA exam.</div>
+
+    <div class="triumph-tips">
+      <div class="triumph-tips-title">💡 Советы от WexTheory · Tips before the real test</div>
+      <ul>
+        <li><strong>Выспись.</strong> 7–8 часов сна работают лучше, чем ещё одна ночная зубрёжка. Мозг на экзамене должен быть свежим.</li>
+        <li><strong>Приди заранее.</strong> Будь в центре за 20 минут до начала — без спешки, без стресса в дороге.</li>
+        <li><strong>Документы.</strong> Provisional License + любой второй ID. Без них тебя просто не пустят.</li>
+        <li><strong>Читай вопрос дважды.</strong> На реальном экзамене формулировки иногда хитрее — не торопись с первым кликом.</li>
+        <li><strong>Флагай сложные.</strong> Используй кнопку «Flag for review» и возвращайся к ним в конце с холодной головой.</li>
+        <li><strong>Hazard Perception.</strong> Кликай на ранние признаки опасности, не жди, пока ситуация развернётся полностью.</li>
+        <li><strong>Дыши.</strong> Если занервничал — 4 секунды вдох, 6 секунд выдох. Серьёзно работает.</li>
+      </ul>
+    </div>
+
+    <div class="triumph-card" id="triumphCard">
+      <div class="triumph-card-status">🎓 Certified Theory Master</div>
+      <div class="triumph-card-name">{{ triumph_data.user_name }}</div>
+      <div class="triumph-card-date">{{ triumph_data.user_email }} · {{ triumph_data.date }}</div>
+      <div class="triumph-card-counter">{{ triumph_data.total_questions }} / {{ triumph_data.total_questions }} questions · 14 / 14 tests</div>
+      <div style="font-size:0.78rem;color:#94a3b8;line-height:1.5;margin-bottom:14px;">
+        Completed every official UK Driving Theory test on WexTheory<br>with a perfect score.
+      </div>
+      <div class="triumph-card-qr" id="triumphQr"></div>
+      <div class="triumph-card-foot">wextheory.com · DVSA prep</div>
+    </div>
+    <div class="triumph-actions">
+      <button type="button" class="triumph-btn-primary" id="triumphDownloadBtn">📥 Поделиться / Скачать</button>
+      <a href="/dashboard" class="triumph-btn-ghost" style="text-decoration:none;display:inline-block;line-height:normal;padding:12px 20px;border-radius:12px;font-weight:700;font-size:0.95rem;">← Назад в Dashboard</a>
+    </div>
+  </div>
+</div>
+<script nonce="{{ request.state.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script nonce="{{ request.state.csp_nonce }}">
+(function () {
+  document.body.style.overflow = 'hidden';
+  try {
+    new QRCode(document.getElementById('triumphQr'), {
+      text: 'https://wextheory.com', width: 110, height: 110,
+      colorDark: '#111827', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch (e) {}
+  function fire() {
+    if (typeof confetti !== 'function') return;
+    const gold = ['#fde047','#facc15','#f59e0b','#fbbf24','#fff7c2'];
+    const end = Date.now() + 3200;
+    (function frame() {
+      confetti({ particleCount: 5, angle: 60, spread: 75, origin: { x: 0 }, colors: gold });
+      confetti({ particleCount: 5, angle: 120, spread: 75, origin: { x: 1 }, colors: gold });
+      if (Date.now() < end) requestAnimationFrame(frame);
+    })();
+    confetti({ particleCount: 220, spread: 120, origin: { y: 0.35 }, colors: gold });
+    setTimeout(() => confetti({ particleCount: 140, spread: 140, startVelocity: 45, origin: { y: 0.5 }, colors: gold }), 600);
+  }
+  setTimeout(fire, 250);
+  document.getElementById('triumphDownloadBtn')?.addEventListener('click', async () => {
+    const card = document.getElementById('triumphCard');
+    if (!card || typeof html2canvas !== 'function') return;
+    try {
+      const canvas = await html2canvas(card, { backgroundColor: '#0b0a1f', scale: 2, useCORS: true });
+      const link = document.createElement('a');
+      link.download = 'wextheory-theory-master-preview.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (e) { console.error(e); }
+  });
+})();
+</script>
+{% endblock %}

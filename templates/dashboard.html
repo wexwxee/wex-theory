@@ -207,6 +207,7 @@
       <h1 style="font-size:1.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:6px;">My Tests</h1>
       {% if user.is_admin %}
         <span style="font-size:0.75rem;color:var(--correct);border:1px solid var(--correct);padding:2px 10px;border-radius:999px;display:inline-block;">Admin</span>
+        <a href="/admin/triumph-preview" style="margin-left:8px;font-size:0.75rem;color:#fbbf24;border:1px solid #fbbf24;padding:2px 10px;border-radius:999px;display:inline-block;text-decoration:none;font-weight:700;" title="Preview Triumph Screen (admin only, no DB writes)">🏆 Preview Triumph</a>
       {% elif has_access %}
         <span style="font-size:0.75rem;color:var(--correct);border:1px solid var(--correct);padding:2px 10px;border-radius:999px;display:inline-block;">Extended Access</span>
       {% else %}
