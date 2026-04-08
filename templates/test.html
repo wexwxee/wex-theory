@@ -16,11 +16,15 @@
   .test-layout {
     grid-template-columns: minmax(0, 62fr) minmax(0, 38fr);
     gap: 20px;
+    align-items: start;
   }
   .test-image-wrap {
     position: relative;
     width: 100%;
+    margin: 0;
+    padding: 0;
     cursor: zoom-in;
+    align-self: start;
   }
   #questionImg {
     display: block;
@@ -224,7 +228,7 @@
   <div class="progress-fill" id="progressBar" style="width:0%;"></div>
 </div>
 
-<div class="page" style="padding-top:28px;padding-bottom:90px;" id="testContainer" data-test-id="{{ test.id }}" data-is-authenticated="{% if user %}true{% else %}false{% endif %}" data-wording-mode="{{ wording_mode or 'original' }}">
+<div class="page" style="padding-top:14px;padding-bottom:90px;" id="testContainer" data-test-id="{{ test.id }}" data-is-authenticated="{% if user %}true{% else %}false{% endif %}" data-wording-mode="{{ wording_mode or 'original' }}">
   <div id="loadingState" style="text-align:center;padding:80px 0;">
     <div style="color:var(--text-muted);font-size:0.9rem;">Loading questions...</div>
   </div>
@@ -236,7 +240,7 @@
   </div>
 
   <div id="questionArea" style="display:none;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:12px;">
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <span style="font-size:0.85rem;color:var(--text-muted);" id="questionCounter">Question 1 of 25</span>
         {% if test.id >= 1 and test.id <= 13 %}
