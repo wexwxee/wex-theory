@@ -2521,6 +2521,7 @@ async def results_page(test_id: int, attempt_id: int, request: Request, db: Sess
             is_triumph = True
             triumph_data = {
                 "user_name": (user.name or user.email.split("@")[0]),
+                "user_email": user.email,
                 "date": (attempt.finished_at or datetime.utcnow()).strftime("%d %b %Y"),
                 "total_questions": 350,
             }
