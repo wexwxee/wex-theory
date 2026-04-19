@@ -35,39 +35,24 @@ def create_token(user_id: int) -> str:
 def decode_token(token: str):
     try:
         return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    except JWTError as e:
-        print(f"[DECODE_TOKEN] JWTError: {e!r}, token_len={len(token) if token else 0}, secret_len={len(SECRET_KEY)}")
-        return None
-    except Exception as e:
-        print(f"[DECODE_TOKEN] Unexpected: {type(e).__name__}: {e!r}")
+    except JWTError:
         return None
 
 
 def get_current_user(request: Request, db: Session):
     token = request.cookies.get("token")
     if not token:
-        print(f"[GET_USER] no token cookie")
         return None
     payload = decode_token(token)
     if not payload:
-        print(f"[GET_USER] decode_token returned None")
         return None
     sub = payload.get("sub")
-    print(f"[GET_USER] payload keys={list(payload.keys())}, sub={sub!r}")
-    from models import User
     try:
         user_id = int(sub)
-    except (TypeError, ValueError) as e:
-        print(f"[GET_USER] sub not int-convertible: {e!r}")
+    except (TypeError, ValueError):
         return None
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        # Show what IS in the DB for diagnosis
-        all_ids = [u.id for u in db.query(User).all()]
-        print(f"[GET_USER] no user with id={user_id}; existing user ids in DB: {all_ids}")
-    else:
-        print(f"[GET_USER] resolved user id={user.id} email={user.email}")
-    return user
+    from models import User
+    return db.query(User).filter(User.id == user_id).first()
 
 
 def get_user_access_expiry(user):

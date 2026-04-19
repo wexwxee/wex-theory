@@ -1081,11 +1081,39 @@ async def refresh_auth_session(request: Request, call_next):
             return JSONResponse({"error": "CSRF validation failed"}, status_code=403)
 
     response = await call_next(request)
+    # Skip auth-refresh on routes that explicitly manage the auth cookie themselves
+    # (login sets a fresh token; logout clears it). Refreshing here would overwrite
+    # the route's Set-Cookie with a stale-payload refresh built from the request's
+    # *previous* cookie — which can resurrect a token for a user that no longer
+    # exists (e.g. after a DB swap).
+    auth_managed_paths = {
+        "/api/auth/logout",
+        "/logout",
+        "/api/auth/login",
+        "/api/auth/register",
+        "/api/auth/google/callback",
+    }
     token = request.cookies.get(AUTH_COOKIE_NAME)
     payload = decode_token(token) if token else None
-    if payload and payload.get("sub") and request.url.path not in {"/api/auth/logout", "/logout"}:
-        refreshed = create_token(int(payload["sub"]))
-        set_auth_cookie(response, refreshed, request)
+    if payload and payload.get("sub") and request.url.path not in auth_managed_paths:
+        sub = payload.get("sub")
+        try:
+            user_id = int(sub)
+        except (TypeError, ValueError):
+            user_id = None
+        # Only refresh if the user still exists — otherwise clear the stale cookie
+        if user_id is not None:
+            from models import User
+            db_for_check = SessionLocal()
+            try:
+                exists = db_for_check.query(User.id).filter(User.id == user_id).first()
+            finally:
+                db_for_check.close()
+            if exists:
+                refreshed = create_token(user_id)
+                set_auth_cookie(response, refreshed, request)
+            else:
+                clear_auth_cookie(response, request)
     set_csrf_cookie(response, get_or_create_csrf_token(request), request)
     response.headers.setdefault("Content-Security-Policy", build_content_security_policy(request))
     response.headers.setdefault("X-Frame-Options", "DENY")
@@ -2261,12 +2289,7 @@ async def support_page(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_page(request: Request, db: Session = Depends(get_db)):
-    cookie_keys = list(request.cookies.keys())
-    token_present = "token" in request.cookies
-    print(f"[ADMIN] cookies received: {cookie_keys}, token present: {token_present}")
-    print(f"[ADMIN] x-forwarded-proto: {request.headers.get('x-forwarded-proto')!r}, host: {request.headers.get('host')!r}")
     user = get_current_user(request, db)
-    print(f"[ADMIN] user resolved: {user.email if user else None}")
     if not user:
         return RedirectResponse("/login", status_code=302)
     if not user.is_admin:
