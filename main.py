@@ -32,7 +32,7 @@ from auth import (
     hash_password, verify_password, create_token, decode_token,
     get_current_user, user_has_access, get_user_access_expiry, SECRET_KEY,
 )
-from database import engine, get_db
+from database import engine, get_db, SessionLocal
 from stripe_helpers import (
     get_or_create_customer, create_checkout_session,
     create_portal_session, construct_webhook_event,
