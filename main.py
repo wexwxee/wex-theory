@@ -1200,12 +1200,23 @@ async def startup_init():
         # Only writes exam_style_text columns on questions/answers — original
         # wording, scoring, Test 0 and Test 14 are untouched. Idempotent:
         # safe to run on every deploy.
+        print("[STARTUP] Exam wording import: starting...")
         try:
-            from import_exam_wording import import_exam_wording_for_test, EXAM_WORDING_DIR
+            from import_exam_wording import (
+                import_exam_wording_for_test,
+                ensure_exam_wording_columns,
+                EXAM_WORDING_DIR,
+            )
+            ensure_exam_wording_columns()
+            _imported = 0
             for _t_id in range(1, 14):
                 _f = EXAM_WORDING_DIR / f"test_{_t_id:02d}.json"
                 if _f.exists():
                     import_exam_wording_for_test(_t_id)
+                    _imported += 1
+                else:
+                    print(f"[STARTUP] Exam wording: missing file {_f.name}, skipped")
+            print(f"[STARTUP] Exam wording import: done ({_imported}/13 tests processed)")
         except Exception as ie:
             print(f"[STARTUP] Exam wording import error: {ie}")
             traceback.print_exc()
