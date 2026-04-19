@@ -3,60 +3,244 @@
   "questions": [
     {
       "question_index": 1,
-      "question_text": "You have caught up with the moped. There is no traffic behind you. Which actions are correct?",
+      "question_text": "You have caught up with the moped and there are no road users behind you. How will you continue?",
       "answers": {
-        "1": "I move out towards the centre line to overtake the moped.",
-        "2": "I overtake the moped now.",
+        "1": "I move out towards the broken line in order to overtake the moped.",
+        "2": "I overtake the moped immediately.",
+        "3": "I reduce my speed.",
         "4": "I remain behind the moped for the time being."
       }
     },
     {
       "question_index": 2,
-      "question_text": "You are travelling at about 40 km/h and will continue straight ahead at the intersection. Which actions are correct?",
+      "question_text": "You are driving at approximately 40 km/h and are continuing straight ahead through the intersection. How will you continue?",
       "answers": {
-        "1": "I continue at about 40 km/h.",
-        "2": "I stop before the pedestrian crossing.",
-        "3": "I pay particular attention to the traffic ahead."
+        "1": "I am particularly mindful of whether the moped rider is holding back.",
+        "2": "I continue across the intersection at an unchanged speed of approximately 40 km/h.",
+        "3": "I move my foot over to the brake pedal.",
+        "4": "I am ready to hold back for vehicles approaching from the right side of the intersection."
       }
     },
-    { "question_index": 3, "question_text": "You are driving at about 40 km/h and are going straight ahead at the intersection. What do you do?" },
-    { "question_index": 4, "question_text": "You are driving at about 50 km/h when you suddenly see an emergency vehicle behind you. What do you do?" },
-    { "question_index": 5, "question_text": "What should you pay particular attention to here?" },
-    { "question_index": 6, "question_text": "You want to overtake the slowly moving car ahead. What do you do here?" },
-    { "question_index": 7, "question_text": "You are driving at about 50 km/h. There is no traffic behind you. What do you do?" },
-    { "question_index": 8, "question_text": "You want to turn right at the intersection, like the car ahead. It has stopped. What should you pay particular attention to?" },
-    { "question_index": 9, "question_text": "The car on the left has stopped. You must continue straight ahead. What do you do?" },
-    { "question_index": 10, "question_text": "You are driving at about 30 to 40 km/h, the same speed as the driver ahead. What do you do?" },
-    { "question_index": 11, "question_text": "You need to continue straight ahead. What do you do?" },
-    { "question_index": 12, "question_text": "You have caught up with the car ahead. It is travelling at about 50 km/h. What do you do?" },
-    { "question_index": 13, "question_text": "You need to drive through this town. What do you do?" },
-    { "question_index": 14, "question_text": "What should you pay particular attention to here?" },
-    { "question_index": 15, "question_text": "You are driving at about 40 km/h and are going straight ahead at the intersection. What do you do?" },
-    { "question_index": 16, "question_text": "You are driving at 40 km/h and are going straight ahead at the intersection. What do you do?" },
-    { "question_index": 17, "question_text": "You are driving at about 40 km/h, the same speed as the car ahead. You must continue straight ahead. What do you do?" },
-    { "question_index": 18, "question_text": "You want to turn right at this intersection. What do you do?" },
-    { "question_index": 19, "question_text": "You want to turn right at this intersection. There are no cyclists or pedestrians behind you on the cycle path. What do you do?" },
-    { "question_index": 20, "question_text": "You are driving at about 80 km/h and must continue straight ahead. What do you do?" },
-    { "question_index": 21, "question_text": "You are driving at about 80 km/h and are about to enter the motorway. What do you do?" },
+    {
+      "question_index": 3,
+      "question_text": "You are driving at approximately 40 km/h and are continuing straight ahead through the intersection. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of approximately 40 km/h.",
+        "2": "I stop before the crosswalk.",
+        "3": "I am particularly mindful of the traffic ahead.",
+        "4": "I pull over to the right side of the traffic lane."
+      }
+    },
+    {
+      "question_index": 4,
+      "question_text": "You are driving at approximately 50 km/h when, in the rear view mirror, you suddenly notice an emergency vehicle responding to a call. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of approximately 50 km/h.",
+        "2": "I reduce my speed and keep to the left.",
+        "3": "I reduce my speed, stop if necessary and let the emergency vehicle pass.",
+        "4": "I increase my speed."
+      }
+    },
+    {
+      "question_index": 5,
+      "question_text": "What must you be particularly mindful of in this situation?",
+      "answers": {
+        "1": "I am particularly mindful of the shape of the road.",
+        "2": "I am particularly mindful that I must change to the far left lane as soon as possible.",
+        "3": "I proceed in accordance with the merge rule.",
+        "4": "I proceed in accordance with the rule for changing traffic lanes."
+      }
+    },
+    {
+      "question_index": 6,
+      "question_text": "You wish to overtake the vehicle in front, which is driving slowly. How do you proceed?",
+      "answers": {
+        "1": "I give a flashing light signal with my high-beam headlights.",
+        "2": "I overtake the vehicle in front.",
+        "3": "I move my foot over to the brake pedal."
+      }
+    },
+    {
+      "question_index": 7,
+      "question_text": "You are driving at approximately 50 km/h. There are no road users behind you. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of approximately 50 km/h.",
+        "2": "I reduce my speed.",
+        "3": "I stop before the crosswalk."
+      }
+    },
+    {
+      "question_index": 8,
+      "question_text": "You intend to turn right at the intersection, just like the vehicle in front. It has stopped. What must you be particularly mindful of?",
+      "answers": {
+        "1": "I have a duty to give way to all traffic at the intersection.",
+        "2": "I stop for traffic from both sides of the intersection.",
+        "3": "I have a duty to stop at the stopline before driving out into the intersection.",
+        "4": "If I am able to follow the vehicle in front, I am permitted to do so without stopping at the stopline."
+      }
+    },
+    {
+      "question_index": 9,
+      "question_text": "The passenger car on the left has stopped. You are to continue straight ahead. How will you continue?",
+      "answers": {
+        "1": "I proceed slowly.",
+        "2": "I stop.",
+        "3": "I pull over as far as possible to the right of the roadway."
+      }
+    },
+    {
+      "question_index": 10,
+      "question_text": "You are driving at approximately 30 to 40 km/h, the same as the vehicle in front. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of approximately 30 to 40 km/h.",
+        "2": "I am particularly mindful of the shape of the road ahead.",
+        "3": "I brake gently."
+      }
+    },
+    {
+      "question_index": 11,
+      "question_text": "You are required to continue straight ahead. How will you continue?",
+      "answers": {
+        "1": "I am particularly mindful of the traffic sign.",
+        "2": "I continue slowly straight ahead on the road.",
+        "3": "I stop.",
+        "4": "I reverse or turn around and find another route."
+      }
+    },
+    {
+      "question_index": 12,
+      "question_text": "You have caught up with the passenger car. It is driving at approximately 50 km/h. How will you continue?",
+      "answers": {
+        "1": "I reduce my speed.",
+        "2": "I give a flashing light signal with my high-beam headlights.",
+        "3": "I increase my speed and overtake the passenger car immediately.",
+        "4": "I remain behind the passenger car for the time being."
+      }
+    },
+    {
+      "question_index": 13,
+      "question_text": "You need to pass through this town. How will you continue?",
+      "answers": {
+        "1": "I am particularly mindful of the traffic lights.",
+        "2": "I continue straight ahead into the intersection.",
+        "3": "I turn either right or left at the intersection.",
+        "4": "Entry is prohibited for motor vehicles here."
+      }
+    },
+    {
+      "question_index": 14,
+      "question_text": "What must you be particularly mindful of in this situation?",
+      "answers": {
+        "1": "I have a duty to give way to all traffic.",
+        "2": "There is a priority to the right rule at this T-junction.",
+        "3": "I can count on the vehicle from the left holding back.",
+        "4": "I hold back for the sake of safety."
+      }
+    },
+    {
+      "question_index": 15,
+      "question_text": "You are driving at approximately 40 km/h and are continuing straight ahead through the intersection. How will you continue?",
+      "answers": {
+        "1": "I count on the bicyclist holding back.",
+        "2": "I increase my speed.",
+        "3": "I hold back for the bicyclist.",
+        "4": "I look to see what is happening on both sides before I drive into the intersection."
+      }
+    },
+    {
+      "question_index": 16,
+      "question_text": "You are driving at 40 km/h and are continuing straight ahead through the intersection. How will you continue?",
+      "answers": {
+        "1": "I continue across the intersection at an unchanged speed of approximately 40 km/h.",
+        "2": "I count on the bicyclist from the right side holding back for me.",
+        "3": "I hold back for the bicyclist.",
+        "4": "I look to see what is happening on both sides before I drive into the intersection."
+      }
+    },
+    {
+      "question_index": 17,
+      "question_text": "You are driving at approximately 40 km/h, the same as the vehicle in front. You are to continue straight ahead. How do you proceed?",
+      "answers": {
+        "1": "I continue at an unchanged speed of approximately 40 km/h.",
+        "2": "I follow the vehicle in front.",
+        "3": "I stop before the crosswalk."
+      }
+    },
+    {
+      "question_index": 18,
+      "question_text": "You intend to turn right at this intersection. How will you proceed?",
+      "answers": {
+        "1": "I hold back at the yield line if there is traffic crossing.",
+        "2": "I turn right if the lane is clear of traffic.",
+        "3": "I must turn left at this intersection instead."
+      }
+    },
+    {
+      "question_index": 19,
+      "question_text": "You intend to turn right here at the intersection. There are no bicyclists or pedestrians behind you on the bicycle path. How will you continue?",
+      "answers": {
+        "1": "I follow the bicyclist who is turning.",
+        "2": "I am particularly mindful of the traffic lights.",
+        "3": "I stop before the crosswalk on the side road."
+      }
+    },
+    {
+      "question_index": 20,
+      "question_text": "You are driving at approximately 80 km/h and are continuing straight ahead. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of approximately 80 km/h.",
+        "2": "I increase my speed from approximately 100 to 130 km/h.",
+        "3": "I change to the right traffic lane immediately.",
+        "4": "I remain in my own traffic lane for the time being."
+      }
+    },
+    {
+      "question_index": 21,
+      "question_text": "You are driving at approximately 80 km/h and are about to enter the motorway. How do you proceed?",
+      "answers": {
+        "1": "I drive onto the motorway immediately.",
+        "2": "I turn my head to check what is happening behind me.",
+        "3": "I enter when the roadway behind me is clear.",
+        "4": "I proceed in accordance with the merge rule."
+      }
+    },
     {
       "question_index": 22,
-      "question_text": "You have got out of the red car. Which rule applies here?",
+      "question_text": "You have stepped out of the red passenger car. According to the legal provisions, which of the following applies here?",
       "answers": {
-        "1": "Parking is permitted here.",
-        "2": "I may leave the car here for 2-3 minutes.",
+        "1": "I am permitted to park the passenger car here.",
+        "2": "I am permitted to stop the passenger car here for 2 to 3 minutes.",
         "3": "Stopping is prohibited here."
       }
     },
     {
       "question_index": 23,
-      "question_text": "You have got out of the red car. Which rule applies here?",
+      "question_text": "You have stepped out of the red passenger car. According to the legal provisions, which of the following applies here?",
       "answers": {
-        "1": "Parking is permitted here.",
-        "2": "I may leave the car here for 2-3 minutes.",
-        "3": "Stopping and parking on this side of the road are prohibited."
+        "1": "I am permitted to park the passenger car here.",
+        "2": "I am permitted to stop the passenger car here for 2 to 3 minutes.",
+        "3": "Stopping and parking are both prohibited on this side of the road."
       }
     },
-    { "question_index": 24, "question_text": "You are driving at about 30 km/h. What do you do?" },
-    { "question_index": 25, "question_text": "Which speed limit should you pay particular attention to here?" }
+    {
+      "question_index": 24,
+      "question_text": "You are driving at approximately 30 km/h. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of approximately 30 km/h.",
+        "2": "I move my foot over to the brake pedal.",
+        "3": "I pull over as far as possible to the right of the roadway.",
+        "4": "I warn the young children with a short horn signal."
+      }
+    },
+    {
+      "question_index": 25,
+      "question_text": "Which speed limit must you be particularly mindful of here?",
+      "answers": {
+        "1": "The maximum speed limit of 50 km/h begins here.",
+        "2": "The maximum speed limit of 50 km/h ends here.",
+        "3": "The maximum speed limit of 80 km/h begins here.",
+        "4": "I am particularly mindful of the traffic sign."
+      }
+    }
   ]
 }

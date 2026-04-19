@@ -1,53 +1,250 @@
 {
   "test_id": 7,
   "questions": [
-    { "question_index": 1, "question_text": "You have taken the wrong road and must turn around. What do you do?" },
-    { "question_index": 2, "question_text": "You have caught up with the slowly moving car ahead. What do you do?" },
-    { "question_index": 3, "question_text": "What does the police officer's hand signal mean?" },
-    { "question_index": 4, "question_text": "You are driving at about 70 km/h. What do you do?" },
-    { "question_index": 5, "question_text": "You are looking for a parking space nearby. What do you do now?" },
-    { "question_index": 6, "question_text": "What should you pay particular attention to here?" },
-    { "question_index": 7, "question_text": "What should you pay particular attention to here?" },
-    { "question_index": 8, "question_text": "You are driving at about 60 km/h and want to enter the motorway to the left. There is no traffic in your blind spot. What do you do?" },
-    { "question_index": 9, "question_text": "What should you pay particular attention to here?" },
-    { "question_index": 10, "question_text": "You have reduced speed to 20 to 30 km/h because the lane narrows. What do you do?" },
-    { "question_index": 11, "question_text": "You are driving at about 40 km/h and must continue straight ahead. What do you do?" },
-    { "question_index": 12, "question_text": "You are about to catch up with the driver ahead at about 60 km/h. There is no traffic behind you. What do you do?" },
-    { "question_index": 13, "question_text": "You are driving at about 50 km/h. There is no traffic behind you. The oncoming truck is about to turn right into the side road. What do you do?" },
-    { "question_index": 14, "question_text": "What should you pay particular attention to here?" },
-    { "question_index": 15, "question_text": "You are driving at about 50 km/h and the driver behind has caught up with you. What do you do?" },
-    { "question_index": 16, "question_text": "You are about to move off from a parking space. What should you pay particular attention to?" },
-    { "question_index": 17, "question_text": "You are driving at about 40 km/h and must continue straight ahead. What do you do here?" },
-    { "question_index": 18, "question_text": "You want to turn left at this intersection. What should you pay particular attention to?" },
-    { "question_index": 19, "question_text": "You are about to enter a motorway, but the driver ahead is hesitating about merging. There is no traffic behind you in the nearest motorway lane. What do you do?" },
+    {
+      "question_index": 1,
+      "question_text": "You have taken the wrong road and are required to turn around. How do you proceed?",
+      "answers": {
+        "1": "I am particularly mindful of the oncoming traffic.",
+        "2": "I drive up to the opening in the central reservation and hold back for any oncoming drivers.",
+        "3": "I turn immediately to the left through the opening in the central reservation.",
+        "4": "I continue straight ahead at the intersection and find another place to turn left."
+      }
+    },
+    {
+      "question_index": 2,
+      "question_text": "You have caught up with the slowly moving passenger car in front. How will you continue?",
+      "answers": {
+        "1": "I give a flashing light signal with my high-beam headlights.",
+        "2": "I increase my speed and overtake.",
+        "3": "I remain behind the vehicle in front.",
+        "4": "I increase my safety distance to the vehicle in front."
+      }
+    },
+    {
+      "question_index": 3,
+      "question_text": "What does the hand signal given by the police officer mean for you?",
+      "answers": {
+        "1": "I have a duty to stop.",
+        "2": "I am permitted to turn left at the intersection.",
+        "3": "I am permitted to turn right at the intersection.",
+        "4": "I am permitted to drive straight ahead at the intersection."
+      }
+    },
+    {
+      "question_index": 4,
+      "question_text": "You are driving at approximately 70 km/h. How will you continue?",
+      "answers": {
+        "1": "I reduce my speed.",
+        "2": "I am ready to brake quickly.",
+        "3": "I pull over as far as possible to the right of the traffic lane.",
+        "4": "I am particularly mindful of possible obstacles on the other side of the hilltop."
+      }
+    },
+    {
+      "question_index": 5,
+      "question_text": "You are looking for a parking space nearby. How do you proceed now?",
+      "answers": {
+        "1": "I drive up to the intersection and look to my side.",
+        "2": "If the lane is clear, I continue straight ahead at the intersection.",
+        "3": "When the lane is clear, I have to turn left at the intersection.",
+        "4": "I hope that there is another parking space nearby."
+      }
+    },
+    {
+      "question_index": 6,
+      "question_text": "What must you be particularly mindful of in this situation?",
+      "answers": {
+        "1": "I may drive at a maximum of 50 km/h in the centre lane.",
+        "2": "If I am driving at less than 50 km/h, I must use the far right lane.",
+        "3": "If I am driving at more than 50 km/h, I must use the far right lane.",
+        "4": "It is prohibited to use the lane on the right, as it is reserved for trucks and buses."
+      }
+    },
+    {
+      "question_index": 7,
+      "question_text": "What must you be particularly mindful of in this situation?",
+      "answers": {
+        "1": "I am particularly mindful of the shape of the road.",
+        "2": "I am particularly mindful of a railroad crossing with barriers ahead.",
+        "3": "I am particularly mindful of a railroad crossing without barriers ahead.",
+        "4": "I am particularly mindful of a dead-end road."
+      }
+    },
+    {
+      "question_index": 8,
+      "question_text": "You are driving at approximately 60 km/h and wish to enter the motorway to the left. There is no traffic in your blind spot. How will you continue?",
+      "answers": {
+        "1": "I increase my speed.",
+        "2": "I activate my left indicator.",
+        "3": "I merge into the motorway in front of the truck.",
+        "4": "I brake and wait before changing traffic lanes."
+      }
+    },
+    {
+      "question_index": 9,
+      "question_text": "What must you be particularly mindful of in this situation?",
+      "answers": {
+        "1": "I am particularly mindful of buses.",
+        "2": "I am particularly mindful of the shape of the road.",
+        "3": "I am particularly mindful of the condition of the traffic lane.",
+        "4": "I am particularly mindful of the traffic lights."
+      }
+    },
+    {
+      "question_index": 10,
+      "question_text": "You have reduced your speed to 20 to 30 km/h because the traffic lane narrows. How will you continue?",
+      "answers": {
+        "1": "I continue at the same speed or at a slightly higher speed.",
+        "2": "I stop and wait for the oncoming traffic.",
+        "3": "I am particularly mindful of whether the oncoming driver is waiting for me.",
+        "4": "The oncoming traffic should hold back for me."
+      }
+    },
+    {
+      "question_index": 11,
+      "question_text": "You are driving at approximately 40 km/h and are required to continue straight ahead. How will you continue?",
+      "answers": {
+        "1": "I pull over to the left side of the road.",
+        "2": "I continue at an unchanged speed of approximately 40 km/h.",
+        "3": "I reduce my speed.",
+        "4": "I hold back for the oncoming traffic."
+      }
+    },
+    {
+      "question_index": 12,
+      "question_text": "You are about to catch up with the driver in front, who is travelling at approximately 60 km/h. There are no road users behind you. How will you continue?",
+      "answers": {
+        "1": "I give a flashing light signal with my high-beam headlights.",
+        "2": "I overtake the passenger car.",
+        "3": "I reduce my speed.",
+        "4": "I wait a little longer before overtaking the driver in front."
+      }
+    },
+    {
+      "question_index": 13,
+      "question_text": "You are driving at approximately 50 km/h. There are no road users behind you. The oncoming truck is about to turn right into the side road. How will you continue?",
+      "answers": {
+        "1": "I am particularly mindful of the oncoming truck.",
+        "2": "I pull further over to the right of the traffic lane.",
+        "3": "I reduce my speed.",
+        "4": "I hold back for the oncoming traffic."
+      }
+    },
+    {
+      "question_index": 14,
+      "question_text": "What must you be particularly mindful of in this situation?",
+      "answers": {
+        "1": "I am permitted to turn right at the intersection.",
+        "2": "It is prohibited to turn right at the intersection.",
+        "3": "I am permitted to turn left at the intersection.",
+        "4": "It is prohibited to turn left at the intersection."
+      }
+    },
+    {
+      "question_index": 15,
+      "question_text": "You are driving at approximately 50 km/h and the driver behind has caught up with you. How will you continue?",
+      "answers": {
+        "1": "I increase my speed.",
+        "2": "I pull over to the right.",
+        "3": "I reduce my speed.",
+        "4": "I stop completely."
+      }
+    },
+    {
+      "question_index": 16,
+      "question_text": "You are about to move off from a parking space. What must you be particularly mindful of?",
+      "answers": {
+        "1": "I must wait for the tractor coming from the left.",
+        "2": "The tractor from the left must wait for me.",
+        "3": "I must wait for any traffic coming from the right.",
+        "4": "I must wait for any traffic coming from the left."
+      }
+    },
+    {
+      "question_index": 17,
+      "question_text": "You are driving at approximately 40 km/h and are required to continue straight ahead. How will you continue here?",
+      "answers": {
+        "1": "I continue at an unchanged speed of approximately 40 km/h.",
+        "2": "I pull further over to the right of the traffic lane.",
+        "3": "I stop before the crosswalk."
+      }
+    },
+    {
+      "question_index": 18,
+      "question_text": "You intend to turn left at this intersection. What must you be particularly mindful of?",
+      "answers": {
+        "1": "I wait for passenger cars and motorcycles coming from the right.",
+        "2": "I wait for passenger cars and motorcycles coming from the left.",
+        "3": "I wait for bicyclists coming from the right.",
+        "4": "I wait for bicyclists coming from the left."
+      }
+    },
+    {
+      "question_index": 19,
+      "question_text": "You are about to enter a motorway, but the driver in front is hesitating about merging. There are no road users behind you in the nearest motorway lane. How will you continue?",
+      "answers": {
+        "1": "I apply my service brake.",
+        "2": "I remain behind the drivers in front for the time being.",
+        "3": "I drive into the motorway across the broken lines immediately.",
+        "4": "I continue in the access lane for a while longer."
+      }
+    },
     {
       "question_index": 20,
-      "question_text": "The driver has got out of the grey car here. Which rules apply here?",
+      "question_text": "The driver has stepped out of the grey passenger car here. According to the legal provisions on stopping and parking, which of the following applies here?",
       "answers": {
-        "1": "I may leave the car here for up to 3 minutes.",
+        "1": "I am permitted to stop the passenger car here for up to 3 minutes.",
         "2": "Parking is permitted here.",
         "3": "Stopping in the viaduct is prohibited."
       }
     },
-    { "question_index": 21, "question_text": "You have caught up with the slowly moving lorry, and you want to get ahead quickly. There is no traffic behind you. What do you do?" },
-    { "question_index": 22, "question_text": "You need to continue straight ahead at the intersection. What do you do?" },
-    { "question_index": 23, "question_text": "You are driving at about 20 to 30 km/h. What do you do?" },
+    {
+      "question_index": 21,
+      "question_text": "You have caught up with the slowly moving truck, and you want to get ahead quickly. There are no road users behind you. How will you continue?",
+      "answers": {
+        "1": "I give a signal for overtaking with the horn.",
+        "2": "I give a flashing light signal with my high-beam headlights.",
+        "3": "I overtake.",
+        "4": "I reduce my speed and remain behind the truck."
+      }
+    },
+    {
+      "question_index": 22,
+      "question_text": "You are required to continue straight ahead at the intersection. How will you continue?",
+      "answers": {
+        "1": "I am particularly mindful of the pedestrian.",
+        "2": "I look to see what is happening on both sides before I drive into the intersection.",
+        "3": "There is a duty to give way to all traffic at the intersection.",
+        "4": "I am particularly mindful that I am driving into an area with speed suppression measures."
+      }
+    },
+    {
+      "question_index": 23,
+      "question_text": "You are driving at approximately 20 to 30 km/h. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of 20 to 30 km/h.",
+        "2": "I am particularly mindful of the bicyclist in front.",
+        "3": "I brake hard immediately.",
+        "4": "I pull further over to the left of the traffic lane."
+      }
+    },
     {
       "question_index": 24,
-      "question_text": "You have got out of the red car. Which rule applies here?",
+      "question_text": "You have stepped out of the red passenger car. According to the legal provisions, which of the following applies here?",
       "answers": {
-        "1": "I may leave the car here for 2-3 minutes.",
+        "1": "I am permitted to stop the passenger car here for 2 to 3 minutes.",
         "2": "Parking is permitted here.",
         "3": "Stopping is prohibited here."
       }
     },
     {
       "question_index": 25,
-      "question_text": "You have got out of the red car. Which rule applies here?",
+      "question_text": "You have stepped out of the red passenger car. According to the legal provisions, which of the following applies here?",
       "answers": {
-        "1": "I may leave the car here for 2-3 minutes.",
+        "1": "I am permitted to stop the passenger car here for 2 to 3 minutes.",
         "2": "Parking is permitted here.",
-        "3": "Stopping and parking are prohibited here."
+        "3": "Stopping and parking the passenger car are prohibited here."
       }
     }
   ]

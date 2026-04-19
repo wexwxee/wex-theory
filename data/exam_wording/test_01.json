@@ -3,238 +3,238 @@
   "questions": [
     {
       "question_index": 1,
-      "question_text": "You are going to turn right at the intersection. There is no traffic behind you. What do you do?",
+      "question_text": "You are to turn right at the traffic light-controlled intersection. There are no road users directly behind you. How do you proceed?",
       "answers": {
-        "1": "I remain in my lane up to the pedestrian crossing.",
-        "2": "I move into the bus lane and stay there up to the pedestrian crossing.",
-        "3": "I cross the bus lane and pull in close to the kerb before the cycle path."
+        "1": "I stay in my own traffic lane all the way up to the crosswalk.",
+        "2": "I pull into the bus lane and remain in it all the way up to the crosswalk.",
+        "3": "I cross the bus lane and position myself close to the kerb in front of the bicycle path."
       }
     },
     {
       "question_index": 2,
-      "question_text": "You are driving at the maximum permitted speed. What should you pay particular attention to here?",
+      "question_text": "You are driving at the maximum permitted speed. What must you be particularly mindful of in this situation?",
       "answers": {
-        "1": "That the motorway is ending.",
-        "2": "That the expressway is ending.",
-        "3": "That cars are prohibited here.",
-        "4": "That I may continue at 80 km/h after the sign."
+        "1": "I am particularly mindful that the motorway is coming to an end.",
+        "2": "I am particularly mindful that the expressway is coming to an end.",
+        "3": "I am particularly mindful that driving a passenger car here is prohibited.",
+        "4": "I continue at a maximum of 80 km/h after passing the traffic sign."
       }
     },
     {
       "question_index": 3,
-      "question_text": "You are going to turn right here. There are no cyclists behind you on the cycle path. What do you do?",
+      "question_text": "You are to turn right here. There are no bicyclists on the bicycle path behind you. How do you proceed?",
       "answers": {
         "1": "I turn right immediately.",
-        "2": "I flash my headlights.",
-        "3": "I wait for the oncoming cyclist to pass.",
-        "4": "I pay particular attention to the fact that I am crossing a two-lane cycle path."
+        "2": "I give a flashing light signal with my high-beam headlights.",
+        "3": "I hold back for the oncoming bicyclist before turning.",
+        "4": "I am particularly mindful that I am about to cross a double-lane bicycle path."
       }
     },
     {
       "question_index": 4,
-      "question_text": "You are travelling at about 50 km/h, the same speed as the driver ahead. What do you do?",
+      "question_text": "You are driving at approximately 50 km/h, the same as the vehicle in front. How will you continue?",
       "answers": {
-        "1": "I continue at about 50 km/h.",
-        "2": "I increase my distance from the vehicle ahead.",
-        "3": "I pay particular attention to the condition of the carriageway."
+        "1": "I continue at an unchanged speed of approximately 50 km/h.",
+        "2": "I increase my safety distance to the vehicle in front.",
+        "3": "I am particularly mindful of the condition of the roadway."
       }
     },
     {
       "question_index": 5,
-      "question_text": "What should you pay particular attention to here?",
+      "question_text": "According to the legal provisions, what must you be particularly mindful of in this situation?",
       "answers": {
-        "1": "The risk of animals on the road.",
-        "2": "That overtaking is prohibited.",
-        "3": "A rider ahead on the road.",
-        "4": "The direction of the road."
+        "1": "I am particularly mindful of the danger of animals on the roadway.",
+        "2": "I am particularly mindful that overtaking is prohibited here.",
+        "3": "I am particularly mindful of a rider on the roadway ahead.",
+        "4": "I am particularly mindful of the shape of the road ahead."
       }
     },
     {
       "question_index": 6,
-      "question_text": "You are going to turn left at the intersection. What do you do?",
+      "question_text": "You are to turn left here at the intersection. How will you continue?",
       "answers": {
-        "1": "I pay particular attention to oncoming traffic.",
-        "2": "I move forward to the centre of the intersection.",
+        "1": "I am particularly mindful of the oncoming traffic.",
+        "2": "I proceed forward to the centre of the intersection.",
         "3": "I turn left immediately.",
-        "4": "I wait for oncoming traffic."
+        "4": "I hold back for any oncoming traffic."
       }
     },
     {
       "question_index": 7,
-      "question_text": "Which lights must you use here?",
+      "question_text": "Which lights are you required to drive with here according to the legal provisions?",
       "answers": {
-        "1": "I may drive without lights.",
-        "2": "I must use parking lights and indicators.",
-        "3": "I must use dipped headlights or main beam.",
-        "4": "Automatic daytime running lights are sufficient."
+        "1": "I drive without any lights.",
+        "2": "I drive with position lights and indicators.",
+        "3": "I drive with low-beam headlights or high beam.",
+        "4": "I drive with automatic daytime driving lights."
       }
     },
     {
       "question_index": 8,
-      "question_text": "You are stationary at the roadside and are about to move off. What do you do?",
+      "question_text": "You are stationary and are about to set off from the kerb. How do you proceed?",
       "answers": {
-        "1": "I move off immediately.",
-        "2": "I pay particular attention to oncoming traffic.",
-        "3": "I turn my head and check whether the road is clear behind me.",
-        "4": "I wait a moment before moving off."
+        "1": "I set off immediately.",
+        "2": "I am particularly mindful of the oncoming traffic.",
+        "3": "I turn my head and check that the roadway is clear behind me.",
+        "4": "I hold back for a while before setting off."
       }
     },
     {
       "question_index": 9,
-      "question_text": "You must continue straight ahead. There is no traffic behind you. What do you do?",
+      "question_text": "You are to continue straight ahead. There are no road users behind you. How will you continue?",
       "answers": {
-        "1": "I drive around the lorry when the oncoming traffic has passed.",
-        "2": "I wait until the lorry has finished unloading and driven away.",
-        "3": "I choose another route."
+        "1": "I drive around the truck once the oncoming traffic has passed.",
+        "2": "I hold back until the truck has unloaded and driven off.",
+        "3": "I find another route that is not obstructed."
       }
     },
     {
       "question_index": 10,
-      "question_text": "You are travelling at about 50 km/h. What do you do?",
+      "question_text": "You are driving at approximately 50 km/h. How will you continue?",
       "answers": {
-        "1": "I continue at about 50 km/h.",
-        "2": "I pay particular attention to reduced grip ahead.",
-        "3": "I place my foot over the brake."
+        "1": "I continue at an unchanged speed of approximately 50 km/h.",
+        "2": "I am particularly mindful of reduced traction ahead.",
+        "3": "I move my foot over to the brake pedal."
       }
     },
     {
       "question_index": 11,
-      "question_text": "You have caught up with two slowly moving caravans. There is no traffic behind you. What do you do?",
+      "question_text": "You have caught up with two caravans that are driving slowly ahead of you. There are no road users behind you. How will you continue?",
       "answers": {
         "1": "I overtake both caravans immediately.",
-        "2": "I overtake only the nearest caravan and pull in ahead of it.",
-        "3": "I reduce speed and stay behind.",
-        "4": "I keep as far to the right as possible."
+        "2": "I overtake the nearest caravan and pull in in front of it.",
+        "3": "I reduce my speed.",
+        "4": "I pull over to the right side of the traffic lane."
       }
     },
     {
       "question_index": 12,
-      "question_text": "You have caught up with a slowly moving car. There is no traffic behind you. What do you do?",
+      "question_text": "You have caught up with the vehicle in front, which is driving slowly. There are no road users behind you. How will you continue?",
       "answers": {
-        "1": "I overtake the car.",
-        "2": "I move my foot over to the brake.",
-        "3": "I pay particular attention to the course of the road."
+        "1": "I overtake the vehicle in front.",
+        "2": "I move my foot over to the brake pedal.",
+        "3": "I am particularly mindful of the shape of the road ahead."
       }
     },
     {
       "question_index": 13,
-      "question_text": "You are stationary and want to move off from the roadside. What do you do?",
+      "question_text": "You are stationary and are about to set off from the kerb. How do you proceed?",
       "answers": {
-        "1": "I move off immediately.",
-        "2": "I pay particular attention to the black car that has just passed.",
-        "3": "I turn my head and check what is happening behind me.",
-        "4": "I remain stationary a little longer."
+        "1": "I set off immediately.",
+        "2": "I am particularly mindful of the black passenger car that has just passed.",
+        "3": "I turn my head to check what is happening behind me.",
+        "4": "I remain stationary for a while longer."
       }
     },
     {
       "question_index": 14,
-      "question_text": "You are driving at 50 km/h in a built-up area and are about to overtake the slowly moving grey car. What do you do?",
+      "question_text": "You are driving at 50 km/h in a built-up area and are about to overtake the grey passenger car driving slowly ahead of you. How will you continue?",
       "answers": {
-        "1": "I increase speed and overtake the car.",
-        "2": "I continue at 50 km/h and overtake the car.",
-        "3": "I reduce speed and abandon the overtaking manoeuvre.",
-        "4": "I pull in behind the grey car."
+        "1": "I increase my speed and overtake the passenger car.",
+        "2": "I continue at an unchanged speed of 50 km/h and overtake the passenger car.",
+        "3": "I reduce my speed and abandon the overtaking manoeuvre.",
+        "4": "I pull in behind the grey passenger car I was about to overtake."
       }
     },
     {
       "question_index": 15,
-      "question_text": "You are driving at about 70 km/h. What do you do?",
+      "question_text": "You are driving at approximately 70 km/h. How will you continue?",
       "answers": {
-        "1": "I continue at about 60-70 km/h.",
-        "2": "I keep close to the edge line on the right.",
-        "3": "I drive over the edge line on the right."
+        "1": "I continue at an unchanged speed between 60 and 70 km/h.",
+        "2": "I move out to the solid side line on the right-hand side of the roadway.",
+        "3": "I cross over the solid side line on the right-hand side of the roadway."
       }
     },
     {
       "question_index": 16,
-      "question_text": "You are driving at about 40 km/h. What do you do?",
+      "question_text": "You are driving at approximately 40 km/h. How will you continue?",
       "answers": {
-        "1": "I continue at about 40 km/h.",
-        "2": "I increase speed.",
-        "3": "I stop before the pedestrian crossing."
+        "1": "I continue at an unchanged speed of approximately 40 km/h.",
+        "2": "I increase my speed.",
+        "3": "I stop before the crosswalk."
       }
     },
     {
       "question_index": 17,
-      "question_text": "You are driving at about 40 km/h. What do you do?",
+      "question_text": "You are driving at approximately 40 km/h. How will you continue?",
       "answers": {
-        "1": "I continue at about 40 km/h.",
-        "2": "I flash my headlights.",
-        "3": "I keep as far to the right in the lane as possible.",
-        "4": "I brake."
+        "1": "I continue at an unchanged speed of approximately 40 km/h.",
+        "2": "I give a flashing light signal with my high-beam headlights.",
+        "3": "I pull over as far as possible to the right of the roadway.",
+        "4": "I apply my service brake."
       }
     },
     {
       "question_index": 18,
-      "question_text": "You are driving at about 40 km/h and must continue straight ahead. What do you do?",
+      "question_text": "You are driving at approximately 40 km/h and are required to continue straight ahead. How will you continue?",
       "answers": {
-        "1": "I continue at about 40 km/h.",
-        "2": "I increase speed.",
-        "3": "I brake hard."
+        "1": "I continue at an unchanged speed of approximately 40 km/h.",
+        "2": "I increase my speed.",
+        "3": "I brake firmly."
       }
     },
     {
       "question_index": 19,
-      "question_text": "You are driving at about 50 km/h. What do you do?",
+      "question_text": "You are driving at approximately 50 km/h. How will you continue?",
       "answers": {
-        "1": "I continue at about 50 km/h.",
-        "2": "I reduce speed.",
-        "3": "I move further to the right in the lane."
+        "1": "I continue at an unchanged speed of approximately 50 km/h.",
+        "2": "I reduce my speed.",
+        "3": "I pull further over to the right of the roadway."
       }
     },
     {
       "question_index": 20,
-      "question_text": "You are driving on a one-way road and are catching up with a slowly moving truck. What do you do?",
+      "question_text": "You are driving on a one-way road and are about to catch up with the truck driving slowly ahead of you. How will you continue?",
       "answers": {
-        "1": "I pass the truck on the right.",
+        "1": "I overtake the truck on its right side.",
         "2": "I remain behind the truck.",
-        "3": "I pay particular attention to the course of the road.",
-        "4": "I prepare to move into the left traffic lane."
+        "3": "I am particularly mindful of the shape of the road ahead.",
+        "4": "I prepare to change to the far left lane."
       }
     },
     {
       "question_index": 21,
-      "question_text": "You want to pass the slow-moving tractor, but there has been oncoming traffic the whole time. There is no traffic behind you. What do you do?",
+      "question_text": "You wish to overtake the slow-moving tractor, but there has been oncoming traffic the entire way. There are no road users behind you. How do you proceed?",
       "answers": {
-        "1": "I pay particular attention to oncoming traffic.",
-        "2": "I overtake if there is nothing behind me.",
-        "3": "I stay behind the tractor."
+        "1": "I am particularly mindful of the oncoming traffic.",
+        "2": "I overtake the tractor since there are no road users behind me.",
+        "3": "I remain behind the tractor."
       }
     },
     {
       "question_index": 22,
-      "question_text": "What does the police officer's hand signal mean?",
+      "question_text": "What does the hand signal given by the police officer mean for you?",
       "answers": {
-        "1": "I may drive straight through the intersection.",
-        "2": "I must stop.",
-        "3": "I may turn left in the intersection.",
-        "4": "I may turn right in the intersection."
+        "1": "I am permitted to drive straight through the intersection.",
+        "2": "I have a duty to stop.",
+        "3": "I am permitted to turn left at the intersection.",
+        "4": "I am permitted to turn right at the intersection."
       }
     },
     {
       "question_index": 23,
-      "question_text": "What should you pay particular attention to here?",
+      "question_text": "What must you be particularly mindful of in this situation?",
       "answers": {
-        "1": "The course of the road.",
-        "2": "The surroundings of the road.",
-        "3": "A slippery road surface ahead."
+        "1": "I am particularly mindful of the shape of the road.",
+        "2": "I am particularly mindful of the surroundings of the road.",
+        "3": "I am particularly mindful of a slippery roadway ahead."
       }
     },
     {
       "question_index": 24,
-      "question_text": "You have got out of the red car. Which rule applies here?",
+      "question_text": "You have stepped out of the red passenger car. According to the legal provisions, which of the following applies here?",
       "answers": {
-        "1": "Parking is permitted here.",
-        "2": "I may leave the car here for 2-3 minutes."
+        "1": "I am permitted to park the passenger car here.",
+        "2": "I am permitted to stop the passenger car here for 2 to 3 minutes."
       }
     },
     {
       "question_index": 25,
-      "question_text": "You have got out of the red car. Which rule applies here?",
+      "question_text": "You have stepped out of the red passenger car. According to the legal provisions, which of the following applies here?",
       "answers": {
-        "1": "Parking is permitted here.",
-        "2": "I may leave the car here for 2-3 minutes.",
-        "3": "Stopping and parking are prohibited here."
+        "1": "I am permitted to park the passenger car here.",
+        "2": "I am permitted to stop the passenger car here for 2 to 3 minutes.",
+        "3": "I am not permitted to either stop or park here."
       }
     }
   ]

@@ -1,30 +1,241 @@
 {
   "test_id": 13,
   "questions": [
-    { "question_index": 1, "question_text": "What does this sign warn of?" },
-    { "question_index": 2, "question_text": "What applies when driving in the crawler lane?" },
-    { "question_index": 3, "question_text": "What does this sign mean?" },
-    { "question_index": 4, "question_text": "What applies when you pass this sign?" },
-    { "question_index": 5, "question_text": "What does the main sign with the supplementary sign mean?" },
-    { "question_index": 6, "question_text": "What does this railway crossing sign mean?" },
-    { "question_index": 7, "question_text": "What does this sign mean?" },
-    { "question_index": 8, "question_text": "What does this sign warn of?" },
-    { "question_index": 9, "question_text": "What does the main sign with the supplementary sign mean?" },
-    { "question_index": 10, "question_text": "What does this sign mean?" },
-    { "question_index": 11, "question_text": "What does this sign mean?" },
-    { "question_index": 12, "question_text": "What does this sign mean?" },
-    { "question_index": 13, "question_text": "What does this sign mean?" },
-    { "question_index": 14, "question_text": "What does this sign mean?" },
-    { "question_index": 15, "question_text": "What does this sign mean?" },
-    { "question_index": 16, "question_text": "What does this sign mean?" },
-    { "question_index": 17, "question_text": "What does this sign mean?" },
-    { "question_index": 18, "question_text": "What does this sign warn of?" },
-    { "question_index": 19, "question_text": "What does this sign mean?" },
-    { "question_index": 20, "question_text": "What does this sign mean?" },
-    { "question_index": 21, "question_text": "What should you pay particular attention to if you see this sign?" },
-    { "question_index": 22, "question_text": "What does this sign mean?" },
-    { "question_index": 23, "question_text": "What does this sign warn of?" },
-    { "question_index": 24, "question_text": "What applies when you pass this sign?" },
-    { "question_index": 25, "question_text": "What should you pay particular attention to if you see this sign?" }
+    {
+      "question_index": 1,
+      "question_text": "What does this sign warn of?",
+      "answers": {
+        "1": "A steep downhill gradient.",
+        "2": "A road slope on the right-hand side.",
+        "3": "A steep uphill gradient."
+      }
+    },
+    {
+      "question_index": 2,
+      "question_text": "What applies when driving in the crawler lane?",
+      "answers": {
+        "1": "The rightmost lane must be used if I am driving more slowly than the speed shown on the sign.",
+        "2": "Stopping or parking in the crawler lane is permitted if necessary.",
+        "3": "Leaving the crawler lane is regarded as changing traffic lanes.",
+        "4": "The merge rule applies when leaving the crawler lane."
+      }
+    },
+    {
+      "question_index": 3,
+      "question_text": "What does this sign mean?",
+      "answers": {
+        "1": "There may be oncoming traffic.",
+        "2": "I am driving on a one-way road with no oncoming traffic.",
+        "3": "Traffic flows in one direction only."
+      }
+    },
+    {
+      "question_index": 4,
+      "question_text": "What applies when I pass this sign?",
+      "answers": {
+        "1": "I am entering a motorway.",
+        "2": "I am entering a carriageway.",
+        "3": "The maximum speed for passenger cars and motorcycles is 130 km/h.",
+        "4": "The maximum speed for passenger cars and motorcycles is 110 km/h."
+      }
+    },
+    {
+      "question_index": 5,
+      "question_text": "What does the main sign with the supplementary sign mean?",
+      "answers": {
+        "1": "Stopping on the carriageway is prohibited unless stopping is necessary because of traffic conditions.",
+        "2": "Parking on the verge is permitted.",
+        "3": "Parking on the verge is prohibited, but stopping is permitted.",
+        "4": "Parking is permitted both on the carriageway and on the verge."
+      }
+    },
+    {
+      "question_index": 6,
+      "question_text": "What does this railway crossing sign mean?",
+      "answers": {
+        "1": "A multi-track railway crossing.",
+        "2": "A single-track railway crossing.",
+        "3": "Stopping is prohibited."
+      }
+    },
+    {
+      "question_index": 7,
+      "question_text": "What does this sign mean?",
+      "answers": {
+        "1": "Two traffic lanes merge, and drivers must cooperate.",
+        "2": "Crossing traffic ahead.",
+        "3": "The traffic lanes become wider further ahead."
+      }
+    },
+    {
+      "question_index": 8,
+      "question_text": "What does this sign warn of?",
+      "answers": {
+        "1": "A slow lane ahead.",
+        "2": "A mandatory direction past an obstacle.",
+        "3": "The road narrows on the right-hand side."
+      }
+    },
+    {
+      "question_index": 9,
+      "question_text": "What does the main sign with the supplementary sign mean?",
+      "answers": {
+        "1": "Stopping and parking are prohibited on the road section after the sign.",
+        "2": "Stopping is prohibited on the road section before the sign.",
+        "3": "It is permitted to stop briefly to pick up or set down a passenger on the road section before the sign."
+      }
+    },
+    {
+      "question_index": 10,
+      "question_text": "What does this sign mean?",
+      "answers": {
+        "1": "Passenger cars are prohibited.",
+        "2": "I am leaving a motorway.",
+        "3": "I am leaving a carriageway.",
+        "4": "After passing the sign, I continue on an ordinary road where the normal traffic rules apply."
+      }
+    },
+    {
+      "question_index": 11,
+      "question_text": "What does this sign mean?",
+      "answers": {
+        "1": "No through traffic.",
+        "2": "End of restriction.",
+        "3": "Traffic in both directions is prohibited."
+      }
+    },
+    {
+      "question_index": 12,
+      "question_text": "What does this sign mean?",
+      "answers": {
+        "1": "Traffic lane layout with changing traffic lanes.",
+        "2": "Traffic lane layout with merging.",
+        "3": "Crawler lane.",
+        "4": "There is a duty to give way to all traffic further ahead."
+      }
+    },
+    {
+      "question_index": 13,
+      "question_text": "What does this sign mean?",
+      "answers": {
+        "1": "Entry is prohibited for all vehicles.",
+        "2": "I may enter by passenger car, but not by bicycle or moped.",
+        "3": "Passenger cars are prohibited, but bicycles and mopeds are permitted."
+      }
+    },
+    {
+      "question_index": 14,
+      "question_text": "What does this sign mean?",
+      "answers": {
+        "1": "I may drive only in the direction shown by the arrow.",
+        "2": "Turning left is prohibited.",
+        "3": "I may drive in both directions."
+      }
+    },
+    {
+      "question_index": 15,
+      "question_text": "What does this sign mean?",
+      "answers": {
+        "1": "It is prohibited to drive faster than 40 km/h.",
+        "2": "I should not exceed the recommended speed.",
+        "3": "I must always drive at the indicated speed.",
+        "4": "I should expect speed bumps or other speed-reducing measures on the road."
+      }
+    },
+    {
+      "question_index": 16,
+      "question_text": "What does this sign mean?",
+      "answers": {
+        "1": "A dangerous intersection where crossing traffic must give way to all traffic.",
+        "2": "I have a duty to stop at the intersection ahead.",
+        "3": "I have a duty to give way to all traffic at the intersection ahead.",
+        "4": "I am driving on a main road."
+      }
+    },
+    {
+      "question_index": 17,
+      "question_text": "What does this sign mean?",
+      "answers": {
+        "1": "Only motor vehicles are permitted on this road.",
+        "2": "Overtaking is prohibited here.",
+        "3": "I may overtake trucks but not passenger cars.",
+        "4": "I am permitted to overtake a two-wheeled bicycle or a small two-wheeled moped."
+      }
+    },
+    {
+      "question_index": 18,
+      "question_text": "What does this sign warn of?",
+      "answers": {
+        "1": "Loose chippings on the roadway that may damage the passenger car.",
+        "2": "A slippery road when it hails.",
+        "3": "Risk of rockslides and falling rocks on the roadway."
+      }
+    },
+    {
+      "question_index": 19,
+      "question_text": "What does this sign mean?",
+      "answers": {
+        "1": "Turning left at the intersection is prohibited.",
+        "2": "I am permitted to make a U-turn at the intersection.",
+        "3": "Turning left is prohibited only if there is oncoming traffic.",
+        "4": "I must continue straight ahead unless another direction is permitted."
+      }
+    },
+    {
+      "question_index": 20,
+      "question_text": "What does this sign mean?",
+      "answers": {
+        "1": "I may choose my own speed as long as I do not create danger or inconvenience.",
+        "2": "I am entering an open area and play area. When leaving the area, I have a duty to give way to all traffic.",
+        "3": "I may park anywhere in the area as long as I do not inconvenience others.",
+        "4": "I must not drive faster than 15 km/h in the area."
+      }
+    },
+    {
+      "question_index": 21,
+      "question_text": "What must I be particularly mindful of if I see this sign?",
+      "answers": {
+        "1": "Roadworks that may create dangerous conditions along the verge.",
+        "2": "A slippery verge.",
+        "3": "A dangerous verge that may make it difficult to control the passenger car, such as a soft verge or a high drop."
+      }
+    },
+    {
+      "question_index": 22,
+      "question_text": "What does this sign mean?",
+      "answers": {
+        "1": "Previous prohibitions on the road section no longer apply, except for stopping and parking prohibitions.",
+        "2": "All prohibitions on the preceding road section no longer apply.",
+        "3": "Speed-reducing measures in the area come to an end."
+      }
+    },
+    {
+      "question_index": 23,
+      "question_text": "What does this sign warn of?",
+      "answers": {
+        "1": "A railway crossing without barriers.",
+        "2": "A railway crossing with barriers.",
+        "3": "A railway station ahead."
+      }
+    },
+    {
+      "question_index": 24,
+      "question_text": "What applies when I pass this sign?",
+      "answers": {
+        "1": "I am entering a carriageway.",
+        "2": "I am entering a motorway.",
+        "3": "I am entering a parking area for passenger cars.",
+        "4": "I am entering a cul-de-sac."
+      }
+    },
+    {
+      "question_index": 25,
+      "question_text": "What must I be particularly mindful of if I see this sign?",
+      "answers": {
+        "1": "Wild animals may cross the roadway, so I should be especially cautious.",
+        "2": "The sign warns of livestock on the roadway, so I should be especially cautious.",
+        "3": "The sign warns of dangerous animals that may cross the roadway, so I should be especially cautious."
+      }
+    }
   ]
 }

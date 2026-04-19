@@ -1,44 +1,245 @@
 {
   "test_id": 4,
   "questions": [
-    { "question_index": 1, "question_text": "You are in a hurry and are driving at 70 km/h. What do you do?" },
-    { "question_index": 2, "question_text": "You are driving at about 40 km/h, the same speed as the oncoming traffic. What do you do?" },
-    { "question_index": 3, "question_text": "You are driving at 30 to 40 km/h and must continue straight ahead. What do you do here?" },
-    { "question_index": 4, "question_text": "You are driving at about 50 km/h and suddenly see an oncoming car. What do you do?" },
-    { "question_index": 5, "question_text": "You are driving at about 80 km/h. What do you do?" },
-    { "question_index": 6, "question_text": "When may you use the emergency telephone on a motorway?" },
-    { "question_index": 7, "question_text": "You have reduced speed to about 30 km/h because you want to turn right at the intersection. There is no traffic behind you. What do you do?" },
-    { "question_index": 8, "question_text": "You are driving at about 40 km/h. What do you do?" },
-    { "question_index": 9, "question_text": "You are driving at about 80 km/h. What do you do?" },
-    { "question_index": 10, "question_text": "You are driving on the right-hand side of a one-way road. What should you pay particular attention to a little further ahead?" },
-    { "question_index": 11, "question_text": "You are driving at about 40 km/h and need to pass the stationary vehicle. There is no traffic behind you. What do you do?" },
-    { "question_index": 12, "question_text": "You must continue straight ahead on the road with a bend. The two cars are stationary at the roadside. What do you do?" },
-    { "question_index": 13, "question_text": "You are driving at about 50 km/h. There is no traffic behind you. What do you do?" },
-    { "question_index": 14, "question_text": "You have caught up with the two slowly moving cars with caravans. There is no traffic behind you. What do you do?" },
-    { "question_index": 15, "question_text": "You must continue straight ahead at the intersection. What do you do?" },
-    { "question_index": 16, "question_text": "You want to turn right into the side road. The lane to the right is clear. What do you do?" },
-    { "question_index": 17, "question_text": "You want to turn left here. There is no traffic coming from the right. What do you do?" },
-    { "question_index": 18, "question_text": "You are driving at about 30 to 40 km/h and must go straight ahead at the intersection. What do you do?" },
-    { "question_index": 19, "question_text": "You want to turn right at this intersection. The lane to the left is clear and there are no cyclists behind you. What do you do?" },
-    { "question_index": 20, "question_text": "You need to continue straight ahead at the intersection. There are no cyclists behind you. What do you do?" },
-    { "question_index": 21, "question_text": "What is the maximum permitted length of a vehicle including its load?" },
     {
-      "question_index": 22,
-      "question_text": "You have just got out of the car here. Which stopping and parking rules apply?",
+      "question_index": 1,
+      "question_text": "You are in a hurry and driving at 70 km/h. How will you continue?",
       "answers": {
-        "1": "I may park the car here for one hour on Saturday morning at 7 a.m.",
-        "2": "I may leave the car here for 2-3 minutes on Saturday morning at 7 a.m."
+        "1": "I continue at an unchanged speed of approximately 70 km/h.",
+        "2": "I increase my speed to approximately 80 km/h.",
+        "3": "I reduce my speed to a maximum of 60 km/h.",
+        "4": "I reduce my speed to a maximum of 50 km/h."
       }
     },
-    { "question_index": 23, "question_text": "The car ahead is moving so slowly that the lorry overtakes it. What do you do?" },
-    { "question_index": 24, "question_text": "What does the police officer's hand signal mean?" },
+    {
+      "question_index": 2,
+      "question_text": "You are driving at approximately 40 km/h, the same as the oncoming traffic. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of approximately 40 km/h.",
+        "2": "I pull over as far as possible to the right of the roadway.",
+        "3": "I apply my service brake.",
+        "4": "I give a flashing light signal with my high-beam headlights or a short horn signal."
+      }
+    },
+    {
+      "question_index": 3,
+      "question_text": "You are driving at 30 to 40 km/h and are required to continue straight ahead on the road. How do you proceed?",
+      "answers": {
+        "1": "I continue at an unchanged speed between 30 and 40 km/h.",
+        "2": "I give a signal with the horn or a flashing light signal with my high-beam headlights.",
+        "3": "I apply my service brake."
+      }
+    },
+    {
+      "question_index": 4,
+      "question_text": "You are driving at approximately 50 km/h when the oncoming passenger car suddenly appears. How will you continue?",
+      "answers": {
+        "1": "I pull over to the left side of the traffic lane.",
+        "2": "I brake hard.",
+        "3": "I brake gently.",
+        "4": "I hold back for the oncoming traffic."
+      }
+    },
+    {
+      "question_index": 5,
+      "question_text": "You are driving at approximately 80 km/h. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of approximately 80 km/h.",
+        "2": "I reduce my speed.",
+        "3": "I am particularly mindful of the traffic signs.",
+        "4": "I am particularly mindful of the shape of the road ahead."
+      }
+    },
+    {
+      "question_index": 6,
+      "question_text": "Which legal provisions apply to the use of the emergency telephone on a motorway?",
+      "answers": {
+        "1": "The emergency telephone is permitted to be used for particularly important messages to family members or to the workplace.",
+        "2": "The emergency telephone is permitted to be used only to call for assistance, for example in the event of a crash or similar incident.",
+        "3": "The emergency telephone is permitted to be used if my own mobile phone is not working.",
+        "4": "When I use the emergency telephone lawfully, I have a duty to stop the passenger car outside the traffic lane wherever possible."
+      }
+    },
+    {
+      "question_index": 7,
+      "question_text": "You have reduced your speed to approximately 30 km/h in order to turn right at the intersection. There are no road users behind you. How will you continue?",
+      "answers": {
+        "1": "I am particularly mindful of the road condition in the traffic lane.",
+        "2": "I turn right at an unchanged speed of approximately 30 km/h.",
+        "3": "I am particularly mindful of the reduced traction.",
+        "4": "I reduce my speed further before turning right."
+      }
+    },
+    {
+      "question_index": 8,
+      "question_text": "You are driving at approximately 40 km/h. How will you continue?",
+      "answers": {
+        "1": "I am particularly mindful of the pedestrian.",
+        "2": "I continue at an unchanged speed of approximately 40 km/h.",
+        "3": "I warn the pedestrian with a short horn signal.",
+        "4": "I stop before the crosswalk."
+      }
+    },
+    {
+      "question_index": 9,
+      "question_text": "You are driving at approximately 80 km/h. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of approximately 80 km/h.",
+        "2": "I reduce my speed.",
+        "3": "I am particularly mindful of wild animals.",
+        "4": "I am particularly mindful of horseback riders."
+      }
+    },
+    {
+      "question_index": 10,
+      "question_text": "You are driving on the right-hand side of a road with one-way traffic. What must you be particularly mindful of a bit further ahead?",
+      "answers": {
+        "1": "Oncoming traffic may appear.",
+        "2": "I hold back for the oncoming traffic.",
+        "3": "The oncoming traffic has a duty to hold back for me.",
+        "4": "I am particularly mindful of the oncoming traffic."
+      }
+    },
+    {
+      "question_index": 11,
+      "question_text": "You are driving at approximately 40 km/h and are required to pass the stationary vehicle. There are no road users behind you. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of approximately 40 km/h.",
+        "2": "I drive past the stationary vehicle immediately.",
+        "3": "I apply my service brake.",
+        "4": "I hold back for the bicyclists."
+      }
+    },
+    {
+      "question_index": 12,
+      "question_text": "You are required to continue straight ahead on the road, which contains a bend. The two passenger cars are parked at the roadside. How will you continue?",
+      "answers": {
+        "1": "I drive past the two passenger cars immediately.",
+        "2": "I drive in between the two passenger cars and make space for the oncoming traffic.",
+        "3": "I stop before the two passenger cars and hold back for the oncoming traffic."
+      }
+    },
+    {
+      "question_index": 13,
+      "question_text": "You are driving at approximately 50 km/h. There are no road users behind you. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of approximately 50 km/h.",
+        "2": "I overtake the bicyclist.",
+        "3": "I reduce my speed.",
+        "4": "I remain behind the bicyclist for the time being."
+      }
+    },
+    {
+      "question_index": 14,
+      "question_text": "You have caught up with the two passenger cars with caravans that are driving slowly. There are no road users behind you. How will you continue?",
+      "answers": {
+        "1": "I overtake both caravans immediately.",
+        "2": "I overtake the first caravan and pull in in front of it.",
+        "3": "I remain behind both caravans and wait before overtaking.",
+        "4": "I pull over as far as possible to the right of the roadway."
+      }
+    },
+    {
+      "question_index": 15,
+      "question_text": "You are required to continue straight ahead through the intersection. How will you continue?",
+      "answers": {
+        "1": "I am particularly mindful of the pedestrian.",
+        "2": "I give a signal with the horn or a flashing light signal with my high-beam headlights.",
+        "3": "I increase my speed slightly.",
+        "4": "I brake and hold back for the pedestrian."
+      }
+    },
+    {
+      "question_index": 16,
+      "question_text": "You intend to turn right onto the side road. The lane on the right is clear. How do you proceed?",
+      "answers": {
+        "1": "I count on the bicyclist holding back for me.",
+        "2": "I turn right immediately.",
+        "3": "I hold back for the bicyclist."
+      }
+    },
+    {
+      "question_index": 17,
+      "question_text": "You intend to turn left here. There are no road users approaching from the right. How will you continue?",
+      "answers": {
+        "1": "I increase my speed.",
+        "2": "I turn left immediately.",
+        "3": "I hold back for the tractor approaching from the left."
+      }
+    },
+    {
+      "question_index": 18,
+      "question_text": "You are driving at approximately 30 to 40 km/h and are required to continue straight ahead through the intersection. How will you continue?",
+      "answers": {
+        "1": "I am particularly mindful of whether the grey passenger car is holding back for me.",
+        "2": "I continue across the intersection at an unchanged speed between 30 and 40 km/h.",
+        "3": "I move my foot over to the brake pedal.",
+        "4": "I am ready to hold back for vehicles approaching from the right side of the intersection."
+      }
+    },
+    {
+      "question_index": 19,
+      "question_text": "You intend to turn right at this intersection. The lane on the left is clear and there are no bicyclists behind you. How will you continue?",
+      "answers": {
+        "1": "I am particularly mindful of the bicyclist approaching from the right.",
+        "2": "I warn the bicyclist with a short horn signal or a flashing light signal with my high-beam headlights.",
+        "3": "I turn right immediately.",
+        "4": "I hold back for the bicyclist approaching from the right."
+      }
+    },
+    {
+      "question_index": 20,
+      "question_text": "You are required to continue straight ahead through the intersection. There are no bicyclists behind you. How will you continue?",
+      "answers": {
+        "1": "I drive up to the stopline and stop.",
+        "2": "I drive forward to the passenger car at the intersection and wait behind it.",
+        "3": "I overtake the passenger car at the intersection on the right, going around it."
+      }
+    },
+    {
+      "question_index": 21,
+      "question_text": "According to the statutory requirements, what is the maximum permitted length of a vehicle with its load?",
+      "answers": {
+        "1": "A maximum length of 10 metres.",
+        "2": "A maximum length of 12 metres.",
+        "3": "A maximum length of 15 metres."
+      }
+    },
+    {
+      "question_index": 22,
+      "question_text": "You have stepped out of the passenger car here. According to the legal provisions on stopping and parking, which of the following applies here on a Saturday morning at 7 a.m.?",
+      "answers": {
+        "1": "I am permitted to park the passenger car here for one hour.",
+        "2": "I am permitted to stop the passenger car here for 2 to 3 minutes."
+      }
+    },
+    {
+      "question_index": 23,
+      "question_text": "The passenger car in front of you is driving so slowly that the truck overtakes it. How do you proceed?",
+      "answers": {
+        "1": "I am particularly mindful of the shape of the road ahead.",
+        "2": "I give a flashing light signal with my high-beam headlights.",
+        "3": "I remain behind the passenger car.",
+        "4": "I follow the truck and overtake together with it."
+      }
+    },
+    {
+      "question_index": 24,
+      "question_text": "What does the hand signal given by the police officer mean for you?",
+      "answers": {
+        "1": "I am permitted to drive straight through the intersection.",
+        "2": "I have a duty to turn right at the intersection immediately.",
+        "3": "I have a duty to turn left at the intersection immediately.",
+        "4": "I have a duty to stop."
+      }
+    },
     {
       "question_index": 25,
-      "question_text": "You have just got out of the car. Which stopping and parking rule applies here?",
+      "question_text": "You have stepped out of the passenger car here. According to the legal provisions, which of the following applies here?",
       "answers": {
-        "1": "Parking is permitted here.",
-        "2": "I may leave the car here for 2-3 minutes.",
-        "3": "Stopping and parking are prohibited here."
+        "1": "I am permitted to park the passenger car here.",
+        "2": "I am permitted to stop the passenger car here for 2 to 3 minutes.",
+        "3": "Stopping and parking are both prohibited here."
       }
     }
   ]

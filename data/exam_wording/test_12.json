@@ -1,30 +1,246 @@
 {
   "test_id": 12,
   "questions": [
-    { "question_index": 1, "question_text": "When is the driver responsible for making sure passengers wear a seat belt?" },
-    { "question_index": 2, "question_text": "What are you allowed to tow behind a car?" },
-    { "question_index": 3, "question_text": "What is the legal limit for alcohol concentration in the breath when driving a car?" },
-    { "question_index": 4, "question_text": "How many penalty points must a new driver receive within 3 years to lose the licence?" },
-    { "question_index": 5, "question_text": "How can you drive in a more environmentally friendly way and reduce CO2 emissions?" },
-    { "question_index": 6, "question_text": "Why is the car's exhaust system important?" },
-    { "question_index": 7, "question_text": "Who must you show particular consideration for in traffic?" },
-    { "question_index": 8, "question_text": "What does the law say if the ABS warning light does not go out shortly after starting the car?" },
-    { "question_index": 9, "question_text": "Which of these statements about the legal requirements for car lights are correct?" },
-    { "question_index": 10, "question_text": "What applies to carrying an approved warning triangle in the car?" },
-    { "question_index": 11, "question_text": "Which general speed limits apply to cars with a trailer up to 3,500 kg?" },
-    { "question_index": 12, "question_text": "What applies to the total permitted weight of the car and trailer?" },
-    { "question_index": 13, "question_text": "Which of these statements about eco-driving requirements is correct?" },
-    { "question_index": 14, "question_text": "Which of these statements about the registration certificate are correct?" },
-    { "question_index": 15, "question_text": "When may you use rear fog lights?" },
-    { "question_index": 16, "question_text": "Which rules apply to marking a load?" },
-    { "question_index": 17, "question_text": "Which rules apply to the distance between vehicles during towing?" },
-    { "question_index": 18, "question_text": "Which rules apply to placing a warning triangle in case of breakdown or accident?" },
-    { "question_index": 19, "question_text": "Which rules apply when towing vehicles?" },
-    { "question_index": 20, "question_text": "Which of these statements is correct regarding the rules on intoxicating substances and drugs?" },
-    { "question_index": 21, "question_text": "Which rules apply in the event of an accident?" },
-    { "question_index": 22, "question_text": "Which rules apply to braking distance for motor vehicles?" },
-    { "question_index": 23, "question_text": "Which of these statements about the use of the horn and light signals are correct?" },
-    { "question_index": 24, "question_text": "Which of these statements about alcohol rules and breath tests is correct?" },
-    { "question_index": 25, "question_text": "What requirement applies to liability insurance for a motor vehicle?" }
+    {
+      "question_index": 1,
+      "question_text": "When is the driver responsible for ensuring that passengers are wearing seat belts?",
+      "answers": {
+        "1": "I am responsible for ensuring that all passengers under 15 years of age are correctly fastened with a seat belt.",
+        "2": "I am responsible only for passengers in the front seat.",
+        "3": "If a seat belt is not used, the risk of being thrown out of the vehicle in an accident increases.",
+        "4": "While driving, the airbag may be directly life-threatening if a seat belt is not used."
+      }
+    },
+    {
+      "question_index": 2,
+      "question_text": "What am I permitted to tow behind a passenger car?",
+      "answers": {
+        "1": "I may tow a sled.",
+        "2": "I may tow a caravan.",
+        "3": "I may tow a cart.",
+        "4": "I may tow a trailer."
+      }
+    },
+    {
+      "question_index": 3,
+      "question_text": "What is the highest permitted alcohol concentration in the breath when driving a passenger car?",
+      "answers": {
+        "1": "0.25 milligrams per litre of breath.",
+        "2": "0.50 milligrams per litre of breath.",
+        "3": "0.75 milligrams per litre of breath.",
+        "4": "1.0 milligrams per litre of breath."
+      }
+    },
+    {
+      "question_index": 4,
+      "question_text": "How many penalty points must a new driver receive within 3 years to lose the licence?",
+      "answers": {
+        "1": "1 penalty point.",
+        "2": "2 penalty points.",
+        "3": "3 penalty points."
+      }
+    },
+    {
+      "question_index": 5,
+      "question_text": "How can I drive in a more environmentally friendly manner and reduce CO2 emissions?",
+      "answers": {
+        "1": "I switch off the air conditioning when it is not necessary.",
+        "2": "I start the engine immediately before driving.",
+        "3": "Driving with low tyre pressure reduces energy consumption."
+      }
+    },
+    {
+      "question_index": 6,
+      "question_text": "Why is the exhaust system of the passenger car important?",
+      "answers": {
+        "1": "It makes the passenger car faster.",
+        "2": "It reduces fuel consumption.",
+        "3": "It reduces the pollution from exhaust gases.",
+        "4": "Leaks in the exhaust system may allow dangerous, odourless carbon monoxide to enter the passenger car."
+      }
+    },
+    {
+      "question_index": 7,
+      "question_text": "Who must I show special consideration for in traffic?",
+      "answers": {
+        "1": "Only children, because they have less experience in traffic.",
+        "2": "Only elderly and disabled persons.",
+        "3": "Children, school patrols, elderly persons, and disabled persons.",
+        "4": "I need to show special consideration only for bicyclists and pedestrians."
+      }
+    },
+    {
+      "question_index": 8,
+      "question_text": "What applies if the ABS warning light does not go out shortly after starting the passenger car?",
+      "answers": {
+        "1": "There may be a fault in the ABS braking system, and I may drive only to the nearest workshop.",
+        "2": "The ABS braking system is functioning correctly, and there is no cause for concern.",
+        "3": "The ABS braking system is temporarily deactivated because of low battery voltage."
+      }
+    },
+    {
+      "question_index": 9,
+      "question_text": "Which of the following statements about the legal requirements for car lights are correct?",
+      "answers": {
+        "1": "The high-beam headlights must illuminate the road at least 100 metres ahead of the passenger car.",
+        "2": "The high-beam headlights must illuminate the road at least 200 metres ahead of the passenger car.",
+        "3": "The low-beam headlights must illuminate the road at least 30 metres ahead of the passenger car without dazzling others.",
+        "4": "The low-beam headlights must illuminate the road at least 50 metres ahead of the passenger car without dazzling others."
+      }
+    },
+    {
+      "question_index": 10,
+      "question_text": "Which rules apply to carrying an approved warning triangle in the passenger car?",
+      "answers": {
+        "1": "I have a duty to carry an approved warning triangle in the passenger car at all times.",
+        "2": "A warning triangle is necessary only when driving outside built-up areas.",
+        "3": "A warning triangle is required only when driving a truck or a bus.",
+        "4": "While driving, I should carry an approved warning triangle for situations where I have a duty to place it."
+      }
+    },
+    {
+      "question_index": 11,
+      "question_text": "Which general speed limits apply to passenger cars with a trailer up to 3,500 kg?",
+      "answers": {
+        "1": "In built-up areas, the maximum speed is normally 30 km/h.",
+        "2": "In built-up areas, the maximum speed is normally 50 km/h.",
+        "3": "Outside built-up areas, the maximum speed is normally 80 km/h.",
+        "4": "With special approval, a passenger car with a trailer may be permitted to drive at 100 km/h on the motorway."
+      }
+    },
+    {
+      "question_index": 12,
+      "question_text": "What applies to the total permitted weight of the passenger car and trailer?",
+      "answers": {
+        "1": "It must not exceed 3,500 kg.",
+        "2": "It must not exceed 2,800 kg.",
+        "3": "It must not exceed 4,500 kg."
+      }
+    },
+    {
+      "question_index": 13,
+      "question_text": "Which of the following statements about eco-driving is correct?",
+      "answers": {
+        "1": "I must operate the passenger car in a manner that avoids unnecessary noise and excessive exhaust fumes.",
+        "2": "Driving fast in a fuel-consuming passenger car can save fuel.",
+        "3": "Letting the passenger car idle while waiting is good practice."
+      }
+    },
+    {
+      "question_index": 14,
+      "question_text": "Which of the following statements about the registration certificate are correct?",
+      "answers": {
+        "1": "The passenger car's curb weight or ready-to-drive weight is stated.",
+        "2": "The maximum weight the passenger car is allowed to carry is stated.",
+        "3": "The permitted total weight is stated.",
+        "4": "The permitted trailer weight is stated."
+      }
+    },
+    {
+      "question_index": 15,
+      "question_text": "When may I use rear fog lights?",
+      "answers": {
+        "1": "I may use them when it is very foggy and only if this does not inconvenience other road users.",
+        "2": "I may use them in all weather conditions to increase the visibility of the passenger car.",
+        "3": "I may use them during heavy rain or snowfall."
+      }
+    },
+    {
+      "question_index": 16,
+      "question_text": "Which rules apply to marking a load?",
+      "answers": {
+        "1": "A load extending more than 1 metre beyond the front or rear of the vehicle must be clearly marked with a cloth or in another visible way.",
+        "2": "A load extending more than 15 cm beyond the sides must be clearly marked with a cloth or in another visible way.",
+        "3": "During lighting-up time, the load must be marked with a white cylinder and lights - red at the rear and white at the front.",
+        "4": "During lighting-up time, the load must be marked with lights, but not necessarily with a cylinder."
+      }
+    },
+    {
+      "question_index": 17,
+      "question_text": "Which rules apply to the distance between vehicles during towing?",
+      "answers": {
+        "1": "The maximum distance between vehicles during towing is 4 metres.",
+        "2": "If the distance between the vehicles exceeds 2 metres, the rope must be clearly marked.",
+        "3": "The law permits a distance of up to 5 metres between vehicles during towing.",
+        "4": "The distance between the vehicles must not exceed 3 metres."
+      }
+    },
+    {
+      "question_index": 18,
+      "question_text": "Which rules apply to placing a warning triangle in the event of a breakdown or accident?",
+      "answers": {
+        "1": "On motorways, the warning triangle must be placed at least 50 metres before the vehicle in the event of a breakdown or accident.",
+        "2": "On motorways, the warning triangle must be placed at least 100 metres before the vehicle in the event of a breakdown or accident.",
+        "3": "On ordinary roads, the warning triangle must be placed at least 50 metres before the vehicle if it poses a danger or obstruction.",
+        "4": "On ordinary roads, the warning triangle must be placed at least 100 metres before the vehicle if it poses a danger."
+      }
+    },
+    {
+      "question_index": 19,
+      "question_text": "Which rules apply when towing vehicles?",
+      "answers": {
+        "1": "It is permitted to tow a vehicle when the person in the towed vehicle is at least 18 years old, even if that person does not hold the required driving licence.",
+        "2": "The driver of the towed vehicle must hold a valid driving licence for that vehicle.",
+        "3": "The maximum speed while towing must not exceed 30 km/h.",
+        "4": "If the towed vehicle has functioning brakes, the speed may be increased to 50 km/h if necessary."
+      }
+    },
+    {
+      "question_index": 20,
+      "question_text": "Which of the following statements is correct regarding the rules on intoxicating substances and drugs?",
+      "answers": {
+        "1": "It is illegal to let someone drive my passenger car if that person has taken intoxicating substances.",
+        "2": "The police may require saliva or sweat tests and an eye examination only if they suspect drug influence.",
+        "3": "The police may require a driver to take saliva or sweat tests or undergo an eye examination at any time."
+      }
+    },
+    {
+      "question_index": 21,
+      "question_text": "Which rules apply in the event of an accident?",
+      "answers": {
+        "1": "I must stop immediately and assist injured persons if I am involved in a traffic accident, regardless of fault.",
+        "2": "I need to stop and assist only if the accident was my fault.",
+        "3": "I must provide my name and address to others involved if requested.",
+        "4": "I need to provide my name and address only to the police or other authorities if requested."
+      }
+    },
+    {
+      "question_index": 22,
+      "question_text": "Which rules apply to braking distance for motor vehicles?",
+      "answers": {
+        "1": "The braking distance is the distance the passenger car travels from the moment braking begins until it comes to a complete stop.",
+        "2": "The braking distance depends, among other things, on how hard I press the brake pedal.",
+        "3": "If the speed is doubled, the braking distance will also double.",
+        "4": "If the speed is doubled, the braking distance will become four times as long."
+      }
+    },
+    {
+      "question_index": 23,
+      "question_text": "Which of the following statements about the use of the horn and light signals are correct?",
+      "answers": {
+        "1": "I may use the horn or flash the headlights to warn of danger.",
+        "2": "During lighting-up time, I must use light signals instead of the horn unless the danger is immediate.",
+        "3": "I may use the horn to attract attention even if there is no emergency.",
+        "4": "The horn may be used only as a warning of danger."
+      }
+    },
+    {
+      "question_index": 24,
+      "question_text": "Which of the following statements about alcohol rules and breath tests is correct?",
+      "answers": {
+        "1": "It is illegal to let someone drive my passenger car if that person has consumed so much alcohol that safe driving is not possible.",
+        "2": "The police may require a breath test from a driver at any time, but only if alcohol consumption is suspected.",
+        "3": "The police may require a breath test from a driver at any time."
+      }
+    },
+    {
+      "question_index": 25,
+      "question_text": "What requirement applies to liability insurance for a motor vehicle?",
+      "answers": {
+        "1": "The owner of the passenger car must have mandatory liability insurance covering damage caused to others.",
+        "2": "Mandatory liability insurance is not required if the passenger car is used only for private driving.",
+        "3": "Mandatory liability insurance is required only if the passenger car is used for work, such as a taxi."
+      }
+    }
   ]
 }

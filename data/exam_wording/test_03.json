@@ -1,52 +1,248 @@
 {
   "test_id": 3,
   "questions": [
-    { "question_index": 1, "question_text": "What is the highest permitted blood alcohol level when driving a vehicle?" },
-    { "question_index": 2, "question_text": "The car ahead is travelling at about 40 km/h. There is no traffic behind you. What do you do?" },
-    { "question_index": 3, "question_text": "You are driving at 50 km/h and are approaching a built-up area and a bus. What do you do?" },
-    { "question_index": 4, "question_text": "You are driving at about 40 km/h. There is no traffic behind you. What do you do here?" },
-    { "question_index": 5, "question_text": "You want to continue straight ahead. What do you do now?" },
-    { "question_index": 6, "question_text": "What should you pay particular attention to here?" },
-    { "question_index": 7, "question_text": "You are driving at about 50 km/h. There is no traffic behind you. What do you do?" },
-    { "question_index": 8, "question_text": "You have reduced speed to about 20 km/h and moved your foot to the brake before the difficult bend. There is no traffic behind you. What do you do?" },
-    { "question_index": 9, "question_text": "You are driving at about 50 km/h. What do you do?" },
-    { "question_index": 10, "question_text": "You are driving at 40 km/h and the road is very slippery. What do you do?" },
-    { "question_index": 11, "question_text": "You are driving at 50 km/h and have caught up with the very slowly moving car ahead. What do you do?" },
-    { "question_index": 12, "question_text": "You have caught up with the cyclists. There is no traffic behind you. What do you do?" },
-    { "question_index": 13, "question_text": "You are driving at about 40 km/h and must continue straight ahead. There is no traffic behind you. What do you do?" },
-    { "question_index": 14, "question_text": "You want to turn left as soon as possible. What do you do here?" },
-    { "question_index": 15, "question_text": "You are driving at 30 to 40 km/h and must continue straight ahead. There is no traffic behind you. What do you do?" },
-    { "question_index": 16, "question_text": "You have reduced your speed to 30 km/h in order to turn right. What do you do?" },
-    { "question_index": 17, "question_text": "What should you pay particular attention to a little further ahead?" },
-    { "question_index": 18, "question_text": "You are driving on a motorway. What should you pay particular attention to a little further ahead?" },
-    { "question_index": 19, "question_text": "What should you pay particular attention to here?" },
-    { "question_index": 20, "question_text": "You are driving at about 60 km/h and are about to enter the motorway. What do you do?" },
     {
-      "question_index": 21,
-      "question_text": "You have got out of the red car. Which rule applies here?",
+      "question_index": 1,
+      "question_text": "What is the highest permitted blood alcohol concentration when you drive a vehicle?",
       "answers": {
-        "1": "Parking is permitted here.",
-        "2": "I may leave the car here for 2-3 minutes.",
-        "3": "Stopping is prohibited here."
+        "1": "A blood alcohol concentration of 0.2.",
+        "2": "A blood alcohol concentration of 0.5.",
+        "3": "A blood alcohol concentration of 1.2.",
+        "4": "A blood alcohol concentration of 2.0."
       }
     },
-    { "question_index": 22, "question_text": "You have stopped and want to move off from the kerb. What do you do?" },
-    { "question_index": 23, "question_text": "You are driving at about 20 to 30 km/h, the same speed as the motorcyclist ahead. You must continue straight ahead on a road with a bend. What do you do?" },
+    {
+      "question_index": 2,
+      "question_text": "The vehicle in front is driving at approximately 40 km/h. There are no road users behind you. How will you continue?",
+      "answers": {
+        "1": "I am particularly mindful of the road markings on the traffic lane.",
+        "2": "I remain behind the vehicle in front.",
+        "3": "I give a flashing light signal with my high-beam headlights.",
+        "4": "I overtake the vehicle in front immediately."
+      }
+    },
+    {
+      "question_index": 3,
+      "question_text": "You are driving at 50 km/h when you enter a built-up area and are approaching a bus. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of 50 km/h.",
+        "2": "I reduce my speed and hold back for the bus.",
+        "3": "I warn the bus driver with a short horn signal.",
+        "4": "I increase my speed and drive around the bus."
+      }
+    },
+    {
+      "question_index": 4,
+      "question_text": "You are driving at approximately 40 km/h and there are no road users behind you. How do you proceed?",
+      "answers": {
+        "1": "I give a signal with the horn.",
+        "2": "I continue at an unchanged speed of approximately 40 km/h.",
+        "3": "I move my foot over to the brake pedal.",
+        "4": "I pull towards the centre of the traffic lane."
+      }
+    },
+    {
+      "question_index": 5,
+      "question_text": "You are required to continue straight ahead on the road. How do you proceed?",
+      "answers": {
+        "1": "I continue driving slowly.",
+        "2": "I turn around, as the road is too narrow for passenger cars.",
+        "3": "I am particularly mindful of whether any oncoming traffic appears.",
+        "4": "I am particularly mindful of the shape of the road ahead."
+      }
+    },
+    {
+      "question_index": 6,
+      "question_text": "What must you be particularly mindful of in this situation?",
+      "answers": {
+        "1": "I am particularly mindful of bicyclists in the traffic lane.",
+        "2": "I am particularly mindful of pedestrians crossing ahead.",
+        "3": "I am particularly mindful of the oncoming traffic."
+      }
+    },
+    {
+      "question_index": 7,
+      "question_text": "You are driving at approximately 50 km/h. There are no road users behind you. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of approximately 50 km/h.",
+        "2": "I reduce my speed.",
+        "3": "I pull towards the centre of the traffic lane.",
+        "4": "I am particularly mindful of the pedestrian."
+      }
+    },
+    {
+      "question_index": 8,
+      "question_text": "You have reduced your speed to approximately 20 km/h and moved your foot onto the brake pedal before the difficult bend. There are no road users behind you. How will you continue?",
+      "answers": {
+        "1": "I am particularly mindful of the oncoming truck.",
+        "2": "I increase my speed.",
+        "3": "I brake in order to give the turning truck space.",
+        "4": "I pull over as far as possible to the right of the roadway."
+      }
+    },
+    {
+      "question_index": 9,
+      "question_text": "You are driving at approximately 50 km/h. How will you continue?",
+      "answers": {
+        "1": "I give a flashing light signal with my high-beam headlights.",
+        "2": "I continue at an unchanged speed of approximately 50 km/h.",
+        "3": "I pull all the way out to the kerb on the right-hand side.",
+        "4": "I apply my service brake."
+      }
+    },
+    {
+      "question_index": 10,
+      "question_text": "You are driving at 40 km/h and the roadway is very slippery. How will you continue?",
+      "answers": {
+        "1": "I am particularly mindful of the oncoming traffic.",
+        "2": "I am particularly mindful of the shape of the road ahead.",
+        "3": "I pull over as far as possible to the right of the roadway.",
+        "4": "I move my foot over to the brake pedal."
+      }
+    },
+    {
+      "question_index": 11,
+      "question_text": "You are driving at 50 km/h and have caught up with the passenger car that is driving very slowly. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of approximately 50 km/h.",
+        "2": "I overtake the passenger car.",
+        "3": "I am particularly mindful of the side road.",
+        "4": "I move my foot over to the brake pedal."
+      }
+    },
+    {
+      "question_index": 12,
+      "question_text": "You have caught up with the bicyclists and there are no road users behind you. How will you continue?",
+      "answers": {
+        "1": "I give a signal with the horn.",
+        "2": "I cross the centre line and begin overtaking the first bicyclist.",
+        "3": "I overtake immediately without crossing the centre line.",
+        "4": "I reduce my speed and remain behind the bicyclists for the time being."
+      }
+    },
+    {
+      "question_index": 13,
+      "question_text": "You are driving at approximately 40 km/h and are required to continue straight ahead. There are no road users behind you. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of approximately 40 km/h.",
+        "2": "I overtake the passenger car on the right immediately.",
+        "3": "I pull out towards the kerb on the right-hand side.",
+        "4": "I brake and remain behind the passenger car."
+      }
+    },
+    {
+      "question_index": 14,
+      "question_text": "You wish to turn left as soon as possible. How do you proceed?",
+      "answers": {
+        "1": "I activate my left-turn indicator immediately.",
+        "2": "I wait a while before signalling with my indicator.",
+        "3": "I turn left at the first side road once the lane is clear.",
+        "4": "I wait until the next side road before turning."
+      }
+    },
+    {
+      "question_index": 15,
+      "question_text": "You are driving at 30 to 40 km/h and are required to continue straight ahead on the road. There are no road users behind you. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed between 30 and 40 km/h.",
+        "2": "I keep my foot ready on the brake pedal.",
+        "3": "I am particularly mindful of the pedestrians.",
+        "4": "I apply my service brake."
+      }
+    },
+    {
+      "question_index": 16,
+      "question_text": "You have reduced your speed to 30 km/h in order to turn right. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of approximately 30 km/h.",
+        "2": "I reduce my speed.",
+        "3": "I turn right immediately.",
+        "4": "I hold back for the bicyclist and check my blind spot before turning."
+      }
+    },
+    {
+      "question_index": 17,
+      "question_text": "What must you be particularly mindful of a bit further ahead?",
+      "answers": {
+        "1": "I am particularly mindful of a dangerous bend in the road.",
+        "2": "I am particularly mindful of the merge rule where the traffic lanes come together.",
+        "3": "I am particularly mindful of the rule for changing traffic lanes.",
+        "4": "I am particularly mindful that the motorway is coming to an end."
+      }
+    },
+    {
+      "question_index": 18,
+      "question_text": "You are driving on a motorway. What must you be particularly mindful of a bit further ahead?",
+      "answers": {
+        "1": "Drivers wishing to enter the motorway have a duty to give way to all traffic.",
+        "2": "I have a duty to give way to all traffic.",
+        "3": "Drivers are having difficulty entering the motorway.",
+        "4": "I can assist them by changing to the far left lane."
+      }
+    },
+    {
+      "question_index": 19,
+      "question_text": "What must you be particularly mindful of in this situation?",
+      "answers": {
+        "1": "I am particularly mindful of areas with speed bumps.",
+        "2": "I am particularly mindful that this is a residential area.",
+        "3": "I am particularly mindful that young children are permitted to play in the roadway."
+      }
+    },
+    {
+      "question_index": 20,
+      "question_text": "You are driving at approximately 60 km/h and are about to enter the motorway. How will you continue?",
+      "answers": {
+        "1": "I increase my speed.",
+        "2": "I merge in immediately after the black passenger car.",
+        "3": "I move my foot over to the brake pedal.",
+        "4": "I hold back until the roadway behind me is clear before entering the motorway."
+      }
+    },
+    {
+      "question_index": 21,
+      "question_text": "You have stepped out of the red passenger car. According to the legal provisions, which of the following applies here?",
+      "answers": {
+        "1": "I am permitted to park the passenger car here.",
+        "2": "I am permitted to stop the passenger car here for 2 to 3 minutes.",
+        "3": "Stopping the passenger car is prohibited here."
+      }
+    },
+    {
+      "question_index": 22,
+      "question_text": "You are stationary and are about to set off from the kerb. How do you proceed?",
+      "answers": {
+        "1": "I set off immediately.",
+        "2": "I turn my head and check that the roadway is clear behind me.",
+        "3": "Once the lane behind me is clear, I drive out from the kerb slowly.",
+        "4": "I am particularly mindful of the oncoming traffic."
+      }
+    },
+    {
+      "question_index": 23,
+      "question_text": "You are driving at approximately 20 to 30 km/h, the same as the motorcyclist in front. You are required to continue straight ahead on the road, which contains a bend. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed between 20 and 30 km/h.",
+        "2": "I increase my speed.",
+        "3": "I brake gently.",
+        "4": "I am particularly mindful of the road condition."
+      }
+    },
     {
       "question_index": 24,
-      "question_text": "You have got out of the red car. Which rule applies here?",
+      "question_text": "You have stepped out of the red passenger car. According to the legal provisions, which of the following applies here?",
       "answers": {
-        "1": "Parking is permitted here.",
-        "2": "I may leave the car here for 2-3 minutes.",
-        "3": "Stopping and parking are prohibited here."
+        "1": "I am permitted to park the passenger car here.",
+        "2": "I am permitted to stop the passenger car here for 2 to 3 minutes.",
+        "3": "Stopping and parking are both prohibited here."
       }
     },
     {
       "question_index": 25,
-      "question_text": "You have got out of the red car to run an errand. Which rule applies here?",
+      "question_text": "You have stepped out of the red passenger car to run an errand. According to the legal provisions on stopping and parking, which of the following applies here?",
       "answers": {
-        "1": "Parking is permitted here.",
-        "2": "I may leave the car here for 2-3 minutes.",
+        "1": "I am permitted to park the passenger car here.",
+        "2": "I am permitted to stop the passenger car here for 2 to 3 minutes.",
         "3": "Stopping is prohibited here."
       }
     }

@@ -1,37 +1,251 @@
 {
   "test_id": 11,
   "questions": [
-    { "question_index": 1, "question_text": "You want to use the shortcut and continue straight ahead. What do you do?" },
-    { "question_index": 2, "question_text": "You are driving at 40 km/h and must continue straight ahead. What do you do?" },
-    { "question_index": 3, "question_text": "You have reduced speed in order to turn right at the intersection. What do you do?" },
-    { "question_index": 4, "question_text": "You are driving at about 50 km/h and must continue straight ahead at the intersection. You have caught up with the braking red car. What do you do?" },
-    { "question_index": 5, "question_text": "You are driving at 30 to 40 km/h and must continue straight ahead. There is no traffic behind you. What do you do?" },
-    { "question_index": 6, "question_text": "You are driving at 20 to 30 km/h. What do you do?" },
-    { "question_index": 7, "question_text": "You are driving at 30 km/h in a built-up area. What should you pay particular attention to here?" },
-    { "question_index": 8, "question_text": "You are entering a built-up area and need to continue straight ahead. What do you do?" },
-    { "question_index": 9, "question_text": "You want to turn right as soon as possible. There is no traffic in your blind spots. What do you do?" },
-    { "question_index": 10, "question_text": "You are driving at 50 km/h and are about to overtake the lorry on your right. What do you do?" },
-    { "question_index": 11, "question_text": "You are driving at 60 to 70 km/h and must continue straight ahead. What do you do?" },
-    { "question_index": 12, "question_text": "You are driving at about 60 km/h and want to enter the motorway to the left. There is no traffic in your blind spot. What do you do?" },
-    { "question_index": 13, "question_text": "You are driving at about 70 km/h. What do you do?" },
-    { "question_index": 14, "question_text": "You are driving at 60 to 70 km/h. What do you do?" },
-    { "question_index": 15, "question_text": "You are going to turn right here. There are no cyclists behind you on the cycle path. What do you do?" },
-    { "question_index": 16, "question_text": "The oncoming lorry has just appeared. What do you do?" },
-    { "question_index": 17, "question_text": "You are driving at 80 km/h and must continue straight ahead. What do you do?" },
-    { "question_index": 18, "question_text": "You are driving at about 70 km/h. What do you do?" },
-    { "question_index": 19, "question_text": "You want to turn right at this intersection. There are no cyclists or pedestrians behind you on the cycle path. What do you do?" },
-    { "question_index": 20, "question_text": "You want to turn right at this intersection. The lane to the left is clear and there are no cyclists behind you. What do you do?" },
-    { "question_index": 21, "question_text": "You want to turn right at the intersection. There is no traffic behind you. What do you do?" },
-    { "question_index": 22, "question_text": "You want to turn left at this intersection. What should you pay particular attention to?" },
     {
-      "question_index": 23,
-      "question_text": "The driver has got out of the grey car here. Which rules apply here?",
+      "question_index": 1,
+      "question_text": "You intend to take the shortcut and continue straight ahead. How will you continue?",
       "answers": {
-        "1": "I may leave the car here for up to 3 minutes.",
-        "2": "Parking is permitted here."
+        "1": "I am particularly mindful of the traffic sign.",
+        "2": "I proceed with caution.",
+        "3": "I stop in order to turn around or reverse and find another route.",
+        "4": "I have a duty to give way to all traffic when I leave the area."
       }
     },
-    { "question_index": 24, "question_text": "When is the driver responsible for making sure passengers are wearing seat belts?" },
-    { "question_index": 25, "question_text": "What should you pay particular attention to a little further ahead?" }
+    {
+      "question_index": 2,
+      "question_text": "You are driving at 40 km/h and are required to continue straight ahead. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of 40 km/h.",
+        "2": "I am particularly mindful of the pedestrian.",
+        "3": "I pull slightly to the left in the traffic lane.",
+        "4": "I move my foot over to the brake pedal."
+      }
+    },
+    {
+      "question_index": 3,
+      "question_text": "You have reduced your speed in order to turn right at the intersection. How will you continue?",
+      "answers": {
+        "1": "I turn right immediately.",
+        "2": "I stop at the stop line.",
+        "3": "I apply my brakes.",
+        "4": "In the first instance, I drive a little way into the intersection, stop at the bicycle path, and wait until the lane is clear before turning."
+      }
+    },
+    {
+      "question_index": 4,
+      "question_text": "You are driving at approximately 50 km/h and are required to continue straight ahead at the intersection. You have caught up with the braking red passenger car. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of 50 km/h.",
+        "2": "I overtake the red passenger car immediately.",
+        "3": "I am particularly mindful of the white passenger car waiting at the intersection.",
+        "4": "I wait before overtaking and remain behind the red passenger car for the time being."
+      }
+    },
+    {
+      "question_index": 5,
+      "question_text": "You are driving at 30 to 40 km/h and are required to continue straight ahead. There is no traffic behind you. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of 30 to 40 km/h.",
+        "2": "I warn the pedestrian with the horn.",
+        "3": "I apply my brakes.",
+        "4": "I am particularly mindful of pedestrians."
+      }
+    },
+    {
+      "question_index": 6,
+      "question_text": "You are driving at 20 to 30 km/h. How will you continue?",
+      "answers": {
+        "1": "I overtake the bicyclists immediately.",
+        "2": "I warn them with the horn.",
+        "3": "I wait until the bicyclists have passed the parked passenger car before overtaking them.",
+        "4": "I reduce my speed."
+      }
+    },
+    {
+      "question_index": 7,
+      "question_text": "You are driving at 30 km/h in a built-up area. What must you be particularly mindful of in this situation?",
+      "answers": {
+        "1": "I am particularly mindful of the traffic sign.",
+        "2": "I continue at 30 km/h after the traffic sign.",
+        "3": "After the traffic sign, I increase my speed and continue at a maximum of 50 km/h.",
+        "4": "There is a duty to give way to all traffic at the intersection."
+      }
+    },
+    {
+      "question_index": 8,
+      "question_text": "You are entering a built-up area and are required to continue straight ahead. How will you continue?",
+      "answers": {
+        "1": "I am particularly mindful of the traffic sign.",
+        "2": "After the traffic sign, I may drive at a maximum of 80 km/h.",
+        "3": "After the traffic sign, I may drive at a maximum of 50 km/h.",
+        "4": "I have a duty to give way to all traffic when I leave the area."
+      }
+    },
+    {
+      "question_index": 9,
+      "question_text": "You want to turn right as soon as possible. There is no traffic in your blind spots. How will you continue?",
+      "answers": {
+        "1": "I am particularly mindful of the traffic lane lines.",
+        "2": "I move into the traffic lane to my right.",
+        "3": "I wait before moving into the traffic lane on the right until the passenger car behind has passed me.",
+        "4": "I continue in my own traffic lane."
+      }
+    },
+    {
+      "question_index": 10,
+      "question_text": "You are driving at 50 km/h and are about to overtake the truck on your right. How will you continue?",
+      "answers": {
+        "1": "I increase my speed and overtake the truck.",
+        "2": "I reduce my speed and abandon the idea of overtaking the truck.",
+        "3": "I follow the rule on changing traffic lanes where my traffic lane ends.",
+        "4": "I follow the merge rule where my traffic lane ends."
+      }
+    },
+    {
+      "question_index": 11,
+      "question_text": "You are driving at 60 to 70 km/h and are required to continue straight ahead. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of 60 to 70 km/h.",
+        "2": "I reduce my speed.",
+        "3": "I count on the tractor holding back for me.",
+        "4": "I apply my brakes."
+      }
+    },
+    {
+      "question_index": 12,
+      "question_text": "You are driving at approximately 60 km/h and want to enter the motorway to the left. There is no traffic in your blind spot. How will you continue?",
+      "answers": {
+        "1": "I increase my speed.",
+        "2": "I activate the left indicator.",
+        "3": "I merge onto the motorway in front of the truck.",
+        "4": "I brake and wait before changing traffic lanes."
+      }
+    },
+    {
+      "question_index": 13,
+      "question_text": "You are driving at approximately 70 km/h. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of approximately 70 km/h.",
+        "2": "I reduce my speed.",
+        "3": "I am particularly mindful of the drivers in front.",
+        "4": "I am particularly mindful of the traffic signs."
+      }
+    },
+    {
+      "question_index": 14,
+      "question_text": "You are driving at 60 to 70 km/h. How will you continue?",
+      "answers": {
+        "1": "I am particularly mindful of the shape of the road.",
+        "2": "I am particularly mindful of a dangerous bend in the road.",
+        "3": "I reduce my speed and continue carefully further along the road.",
+        "4": "I increase my speed slightly."
+      }
+    },
+    {
+      "question_index": 15,
+      "question_text": "You are required to turn right here. There are no bicyclists behind you on the bicycle path. How will you continue?",
+      "answers": {
+        "1": "I turn right immediately.",
+        "2": "I flash my headlights or give a brief horn signal.",
+        "3": "I wait for the oncoming bicyclist to pass.",
+        "4": "I am particularly mindful that I am about to cross a two-lane bicycle path."
+      }
+    },
+    {
+      "question_index": 16,
+      "question_text": "The oncoming truck has just appeared. How will you continue?",
+      "answers": {
+        "1": "I continue further along the road.",
+        "2": "I pull over as far as possible to the right of the traffic lane.",
+        "3": "I increase my speed.",
+        "4": "I stop and wait for the oncoming traffic."
+      }
+    },
+    {
+      "question_index": 17,
+      "question_text": "You are driving at 80 km/h and are required to continue straight ahead. How will you continue?",
+      "answers": {
+        "1": "I reduce my speed.",
+        "2": "I am particularly mindful of the traffic lane lines.",
+        "3": "I am particularly mindful of the traffic further ahead.",
+        "4": "I stop at the stop line."
+      }
+    },
+    {
+      "question_index": 18,
+      "question_text": "You are driving at approximately 70 km/h. How will you continue?",
+      "answers": {
+        "1": "I continue at an unchanged speed of approximately 70 km/h.",
+        "2": "I reduce my speed.",
+        "3": "I am particularly mindful of riders.",
+        "4": "I am particularly mindful of wild animals."
+      }
+    },
+    {
+      "question_index": 19,
+      "question_text": "You want to turn right at this intersection. There are no bicyclists or pedestrians behind you on the bicycle path. How will you continue?",
+      "answers": {
+        "1": "I follow the bicyclist who is turning.",
+        "2": "I am particularly mindful of the traffic lights.",
+        "3": "I stop in front of the crosswalk on the side street."
+      }
+    },
+    {
+      "question_index": 20,
+      "question_text": "You want to turn right at this intersection. The traffic lane to the left is clear, and there are no bicyclists behind you. How will you continue?",
+      "answers": {
+        "1": "I am particularly mindful of the pedestrian.",
+        "2": "I stop in front of the crosswalk on the side street.",
+        "3": "I increase my speed."
+      }
+    },
+    {
+      "question_index": 21,
+      "question_text": "You want to turn right at the intersection. There is no traffic behind you. How will you continue?",
+      "answers": {
+        "1": "I hold back at the Give Way sign if there is crossing traffic.",
+        "2": "I turn right if the lane is clear of traffic.",
+        "3": "I have to turn left at this intersection.",
+        "4": "It is prohibited to turn left at the intersection."
+      }
+    },
+    {
+      "question_index": 22,
+      "question_text": "You want to turn left at this intersection. What must you be particularly mindful of?",
+      "answers": {
+        "1": "I move forward to the centre of the intersection.",
+        "2": "I am particularly mindful of oncoming traffic.",
+        "3": "I turn left immediately.",
+        "4": "I hold back for oncoming traffic."
+      }
+    },
+    {
+      "question_index": 23,
+      "question_text": "The driver has stepped out of the grey passenger car here. According to the legal provisions on stopping and parking, which of the following apply here?",
+      "answers": {
+        "1": "I am permitted to stop the passenger car here for up to 3 minutes.",
+        "2": "I am permitted to park the passenger car here."
+      }
+    },
+    {
+      "question_index": 24,
+      "question_text": "When is the driver responsible for ensuring that passengers are wearing seat belts?",
+      "answers": {
+        "1": "The driver is responsible for ensuring that all passengers under 15 years of age are correctly fastened with a seat belt.",
+        "2": "The driver is responsible only for passengers in the front seat.",
+        "3": "Without a seat belt, the risk of being thrown out of the passenger car in an accident increases.",
+        "4": "While driving, the airbag may be directly life-threatening if the seat belt is not used."
+      }
+    },
+    {
+      "question_index": 25,
+      "question_text": "What must you be particularly mindful of a little further ahead?",
+      "answers": {
+        "1": "I am particularly mindful of the shape of the road.",
+        "2": "I am particularly mindful of a dangerous bend in the road.",
+        "3": "I hold back for traffic from the side roads.",
+        "4": "I am particularly mindful that crossing traffic at the intersection further ahead has a duty to give way to all traffic."
+      }
+    }
   ]
 }
