@@ -35,7 +35,11 @@ def create_token(user_id: int) -> str:
 def decode_token(token: str):
     try:
         return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    except JWTError:
+    except JWTError as e:
+        print(f"[DECODE_TOKEN] JWTError: {e!r}, token_len={len(token) if token else 0}, secret_len={len(SECRET_KEY)}")
+        return None
+    except Exception as e:
+        print(f"[DECODE_TOKEN] Unexpected: {type(e).__name__}: {e!r}")
         return None
 
 
