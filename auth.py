@@ -46,12 +46,28 @@ def decode_token(token: str):
 def get_current_user(request: Request, db: Session):
     token = request.cookies.get("token")
     if not token:
+        print(f"[GET_USER] no token cookie")
         return None
     payload = decode_token(token)
     if not payload:
+        print(f"[GET_USER] decode_token returned None")
         return None
+    sub = payload.get("sub")
+    print(f"[GET_USER] payload keys={list(payload.keys())}, sub={sub!r}")
     from models import User
-    return db.query(User).filter(User.id == int(payload["sub"])).first()
+    try:
+        user_id = int(sub)
+    except (TypeError, ValueError) as e:
+        print(f"[GET_USER] sub not int-convertible: {e!r}")
+        return None
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        # Show what IS in the DB for diagnosis
+        all_ids = [u.id for u in db.query(User).all()]
+        print(f"[GET_USER] no user with id={user_id}; existing user ids in DB: {all_ids}")
+    else:
+        print(f"[GET_USER] resolved user id={user.id} email={user.email}")
+    return user
 
 
 def get_user_access_expiry(user):
