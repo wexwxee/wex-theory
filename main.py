@@ -2261,7 +2261,12 @@ async def support_page(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_page(request: Request, db: Session = Depends(get_db)):
+    cookie_keys = list(request.cookies.keys())
+    token_present = "token" in request.cookies
+    print(f"[ADMIN] cookies received: {cookie_keys}, token present: {token_present}")
+    print(f"[ADMIN] x-forwarded-proto: {request.headers.get('x-forwarded-proto')!r}, host: {request.headers.get('host')!r}")
     user = get_current_user(request, db)
+    print(f"[ADMIN] user resolved: {user.email if user else None}")
     if not user:
         return RedirectResponse("/login", status_code=302)
     if not user.is_admin:
