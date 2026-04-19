@@ -1196,6 +1196,20 @@ async def startup_init():
         else:
             print("[STARTUP] Image paths OK (already .jpg)")
 
+        # 2.5. Sync exam-style wording from data/exam_wording/*.json into DB.
+        # Only writes exam_style_text columns on questions/answers — original
+        # wording, scoring, Test 0 and Test 14 are untouched. Idempotent:
+        # safe to run on every deploy.
+        try:
+            from import_exam_wording import import_exam_wording_for_test, EXAM_WORDING_DIR
+            for _t_id in range(1, 14):
+                _f = EXAM_WORDING_DIR / f"test_{_t_id:02d}.json"
+                if _f.exists():
+                    import_exam_wording_for_test(_t_id)
+        except Exception as ie:
+            print(f"[STARTUP] Exam wording import error: {ie}")
+            traceback.print_exc()
+
         # 3. Create default admin if not exists; migrate old admin@wex.com if present
         _admin_email = PRIMARY_SUPER_ADMIN_EMAIL
         existing = db.query(models.User).filter(models.User.email == _admin_email).first()
