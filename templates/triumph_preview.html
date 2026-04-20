@@ -1,255 +1,157 @@
 {% extends "base.html" %}
-{% block title %}Triumph Preview - WEX Theory{% endblock %}
+{% block title %}Theory Master · WEX Theory{% endblock %}
 {% block head %}
 <style>
-/* ============ CYBERPUNK TRIUMPH ============ */
+/* ============ MONOLITH TRIUMPH (Rick Owens vibe) ============ */
 .triumph-overlay {
   position: fixed; inset: 0; z-index: 10100;
-  background-color: #000;
-  background-image:
-    linear-gradient(rgba(0, 242, 254, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 242, 254, 0.08) 1px, transparent 1px),
-    radial-gradient(ellipse at 50% 0%, rgba(79, 172, 254, 0.18), transparent 60%),
-    radial-gradient(ellipse at 50% 100%, rgba(190, 251, 44, 0.10), transparent 60%);
-  background-size: 44px 44px, 44px 44px, 100% 100%, 100% 100%;
-  animation: tg-grid-pan 18s linear infinite;
-  display: flex; align-items: center; justify-content: center;
-  padding: 24px; overflow-y: auto;
-  font-family: 'Inter', system-ui, sans-serif;
-}
-@keyframes tg-grid-pan {
-  from { background-position: 0 0, 0 0, 0 0, 0 0; }
-  to   { background-position: 0 440px, 440px 0, 0 0, 0 0; }
-}
-.triumph-overlay::before {
-  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(0,0,0,0.85) 100%);
+  background: #050505;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 56px 24px; overflow-y: auto;
+  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  color: #c8c4ba;
 }
 .triumph-overlay canvas.confetti-canvas {
   position: fixed !important; inset: 0; pointer-events: none; z-index: 1;
 }
 .triumph-inner {
-  position: relative; z-index: 2; max-width: 780px; width: 100%;
-  text-align: center; color: #e2e8f0;
+  position: relative; z-index: 2; max-width: 560px; width: 100%;
+  text-align: center;
 }
 
 /* Lang toggle */
 .triumph-lang {
-  display: inline-flex; gap: 0; margin: 0 auto 18px;
-  border: 1px solid rgba(0, 242, 254, 0.4);
-  border-radius: 999px; padding: 3px;
-  background: rgba(0, 242, 254, 0.05);
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  display: inline-flex; gap: 0; margin: 0 auto 56px;
+  border: 1px solid #2a2826; padding: 0;
 }
 .triumph-lang button {
   background: transparent; border: none; cursor: pointer;
-  color: #94a3b8; font-weight: 800; font-size: 0.72rem;
-  letter-spacing: 0.18em; padding: 6px 16px; border-radius: 999px;
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  transition: all 0.2s;
+  color: #6b665e; font-weight: 400; font-size: 0.66rem;
+  letter-spacing: 0.36em; padding: 10px 22px;
+  text-transform: uppercase; font-family: inherit;
+  transition: color 0.4s ease, background 0.4s ease;
 }
-.triumph-lang button.active {
-  background: linear-gradient(90deg, #00f2fe, #4facfe);
-  color: #000; box-shadow: 0 0 18px rgba(0, 242, 254, 0.5);
-}
+.triumph-lang button.active { background: #e8e4dc; color: #050505; }
 
-/* Glitch title */
+/* Title */
 .triumph-title {
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-size: clamp(2rem, 6vw, 3.6rem); font-weight: 900;
-  color: #fff; letter-spacing: 0.06em;
-  text-transform: uppercase; line-height: 1.05;
-  margin: 4px 0 14px;
-  text-shadow:
-    0 0 8px rgba(0, 242, 254, 0.9),
-    0 0 24px rgba(0, 242, 254, 0.6),
-    0 0 48px rgba(79, 172, 254, 0.45);
-  position: relative;
-  animation: tg-flicker 4.2s infinite;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: clamp(2.2rem, 7.5vw, 4.6rem); font-weight: 200;
+  color: #f0ece2; letter-spacing: 0.34em;
+  text-transform: uppercase; line-height: 1;
+  margin: 0 0 28px; padding-left: 0.34em;
 }
-.triumph-title::before,
-.triumph-title::after {
-  content: attr(data-text);
-  position: absolute; left: 0; top: 0; width: 100%;
-  pointer-events: none;
-}
-.triumph-title::before {
-  color: #00f2fe; mix-blend-mode: screen;
-  animation: tg-glitch-1 3.5s infinite steps(1);
-}
-.triumph-title::after {
-  color: #ff00aa; mix-blend-mode: screen;
-  animation: tg-glitch-2 3.5s infinite steps(1);
-}
-@keyframes tg-glitch-1 {
-  0%, 92%, 100% { transform: translate(0,0); clip-path: inset(0 0 0 0); }
-  93% { transform: translate(-2px, 1px); clip-path: inset(10% 0 60% 0); }
-  95% { transform: translate(2px, -1px); clip-path: inset(40% 0 30% 0); }
-  97% { transform: translate(-1px, 2px); clip-path: inset(70% 0 5% 0); }
-}
-@keyframes tg-glitch-2 {
-  0%, 92%, 100% { transform: translate(0,0); clip-path: inset(0 0 0 0); }
-  94% { transform: translate(2px, 0); clip-path: inset(20% 0 50% 0); }
-  96% { transform: translate(-2px, 1px); clip-path: inset(55% 0 20% 0); }
-  98% { transform: translate(1px, -1px); clip-path: inset(80% 0 5% 0); }
-}
-@keyframes tg-flicker {
-  0%, 96%, 100% { opacity: 1; }
-  97% { opacity: 0.85; }
-  98% { opacity: 1; }
-  98.5% { opacity: 0.7; }
-  99% { opacity: 1; }
-}
-.triumph-sub {
-  font-size: 1rem; color: #cbd5e1; line-height: 1.6;
-  margin: 0 auto 22px; max-width: 600px;
-}
-.triumph-sub strong { color: #befb2c; font-weight: 700; }
 
-/* Glassmorphism panels */
-.triumph-tips {
-  margin: 6px auto 24px; max-width: 560px;
-  text-align: left;
-  background: rgba(10, 14, 26, 0.55);
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 242, 254, 0.35);
-  border-radius: 18px; padding: 20px 22px;
-  color: #cbd5e1; font-size: 0.92rem; line-height: 1.6;
-  box-shadow: 0 0 0 1px rgba(0,242,254,0.1), 0 0 30px rgba(0,242,254,0.12);
-  animation: tg-pulse-border 3.5s ease-in-out infinite;
+.triumph-sub {
+  font-size: 0.9rem; color: #8a847a; line-height: 1.85;
+  margin: 0 auto 44px; max-width: 440px;
+  font-weight: 300; letter-spacing: 0.04em;
 }
-@keyframes tg-pulse-border {
-  0%, 100% { box-shadow: 0 0 0 1px rgba(0,242,254,0.15), 0 0 22px rgba(0,242,254,0.10); }
-  50%      { box-shadow: 0 0 0 1px rgba(0,242,254,0.45), 0 0 42px rgba(0,242,254,0.28); }
+.triumph-sub strong { color: #e8e4dc; font-weight: 400; }
+
+/* Thin vertical divider */
+.triumph-divider {
+  width: 1px; height: 56px; background: #2a2826;
+  margin: 0 auto 44px;
+}
+
+/* Tips */
+.triumph-tips {
+  margin: 0 auto 56px; max-width: 460px; text-align: left;
+  border-top: 1px solid #1a1a18; border-bottom: 1px solid #1a1a18;
+  padding: 28px 0;
+  color: #8a847a; font-size: 0.82rem; line-height: 1.7;
+  font-weight: 300;
 }
 .triumph-tips-title {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.74rem; font-weight: 800;
-  letter-spacing: 0.18em; text-transform: uppercase;
-  color: #00f2fe; margin-bottom: 12px;
-  text-shadow: 0 0 10px rgba(0,242,254,0.5);
+  font-family: inherit;
+  font-size: 0.62rem; font-weight: 400;
+  letter-spacing: 0.42em; text-transform: uppercase;
+  color: #6b665e; margin-bottom: 22px; text-align: center;
 }
-.triumph-tips ul { margin: 0; padding-left: 18px; }
-.triumph-tips li { margin-bottom: 7px; }
-.triumph-tips li:last-child { margin-bottom: 0; }
-.triumph-tips li strong { color: #befb2c; }
+.triumph-tips ul { margin: 0; padding: 0; list-style: none; }
+.triumph-tips li { padding: 11px 0; border-bottom: 1px solid #141412; }
+.triumph-tips li:last-child { border-bottom: none; }
+.triumph-tips li strong { color: #e8e4dc; font-weight: 500; letter-spacing: 0.02em; }
 
-/* ID-token card */
+/* ID card */
 .triumph-card {
-  position: relative; overflow: hidden;
-  margin: 28px auto 24px; max-width: 480px;
-  padding: 30px 28px 26px;
-  background:
-    linear-gradient(135deg, rgba(0, 242, 254, 0.08), rgba(79, 172, 254, 0.04) 50%, rgba(190, 251, 44, 0.05)),
-    rgba(5, 8, 18, 0.85);
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(0, 242, 254, 0.5);
-  clip-path: polygon(
-    24px 0, calc(100% - 24px) 0, 100% 24px,
-    100% calc(100% - 24px), calc(100% - 24px) 100%,
-    24px 100%, 0 calc(100% - 24px), 0 24px
-  );
-  box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 60px rgba(0, 242, 254, 0.25);
-  animation: tg-card-pulse 4s ease-in-out infinite;
-}
-@keyframes tg-card-pulse {
-  0%, 100% { box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 35px rgba(0, 242, 254, 0.18); }
-  50%      { box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 75px rgba(0, 242, 254, 0.42); }
-}
-.triumph-card::before {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background:
-    linear-gradient(120deg, transparent 30%, rgba(0,242,254,0.18) 50%, transparent 70%);
-  background-size: 200% 200%;
-  animation: tg-holo 6s linear infinite;
-}
-@keyframes tg-holo {
-  0% { background-position: -100% -100%; }
-  100% { background-position: 200% 200%; }
+  position: relative;
+  margin: 0 auto 44px; max-width: 400px;
+  padding: 44px 30px 30px;
+  background: #0a0a0a;
+  border: 1px solid #2a2826;
+  text-align: center;
 }
 .triumph-card-status {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem; font-weight: 800;
-  letter-spacing: 0.22em; text-transform: uppercase;
-  color: #00f2fe; margin-bottom: 8px;
-  text-shadow: 0 0 12px rgba(0,242,254,0.55);
-  position: relative;
+  font-family: inherit;
+  font-size: 0.6rem; font-weight: 400;
+  letter-spacing: 0.42em; text-transform: uppercase;
+  color: #6b665e; margin-bottom: 22px;
 }
 .triumph-card-name {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 1.6rem; font-weight: 800; color: #fff;
-  margin-bottom: 4px; letter-spacing: 0.02em;
-  position: relative;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 1.35rem; font-weight: 300; color: #f0ece2;
+  margin-bottom: 6px; letter-spacing: 0.06em;
 }
 .triumph-card-date {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.78rem; color: #94a3b8;
-  margin-bottom: 18px; letter-spacing: 0.05em;
-  position: relative;
+  font-family: inherit;
+  font-size: 0.7rem; color: #6b665e;
+  margin-bottom: 26px; letter-spacing: 0.14em; text-transform: uppercase;
 }
 .triumph-card-counter {
-  font-family: 'JetBrains Mono', monospace;
-  display: inline-block; padding: 10px 20px; border-radius: 6px;
-  background: rgba(0, 242, 254, 0.08);
-  border: 1px solid rgba(0, 242, 254, 0.5);
-  color: #befb2c; font-size: 1rem; font-weight: 800;
-  letter-spacing: 0.06em; margin-bottom: 18px;
-  text-shadow: 0 0 10px rgba(190,251,44,0.4);
-  position: relative;
+  font-family: inherit;
+  display: inline-block; padding: 13px 26px;
+  background: transparent;
+  border: 1px solid #3a3835;
+  color: #e8e4dc; font-size: 0.78rem; font-weight: 400;
+  letter-spacing: 0.22em; margin-bottom: 26px;
+  text-transform: uppercase;
 }
 .triumph-card-tag {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.74rem; color: #cbd5e1;
-  line-height: 1.6; margin-bottom: 14px;
-  position: relative;
+  font-family: inherit;
+  font-size: 0.74rem; color: #8a847a;
+  line-height: 1.8; margin-bottom: 24px;
+  font-weight: 300; letter-spacing: 0.03em;
 }
 .triumph-card-qr {
-  margin: 14px auto 8px; display: inline-block;
-  padding: 8px; background: #000;
-  border: 1px solid rgba(0, 242, 254, 0.5);
-  border-radius: 4px; position: relative;
-  box-shadow: 0 0 18px rgba(0,242,254,0.3);
+  margin: 24px auto 14px; display: inline-block;
+  padding: 10px; background: #f0ece2;
 }
 .triumph-card-qr canvas, .triumph-card-qr img { display: block; }
 .triumph-card-foot {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.68rem; color: #4facfe;
-  letter-spacing: 0.18em; text-transform: uppercase;
-  margin-top: 10px; position: relative;
+  font-family: inherit;
+  font-size: 0.58rem; color: #6b665e;
+  letter-spacing: 0.32em; text-transform: uppercase;
+  margin-top: 14px;
 }
 
 /* Buttons */
-.triumph-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+.triumph-actions {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 8px;
+}
 .triumph-btn {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: inherit;
   background: transparent; cursor: pointer;
-  border: 1px solid #00f2fe; color: #00f2fe;
-  padding: 13px 24px; border-radius: 4px;
-  font-weight: 800; font-size: 0.84rem;
-  letter-spacing: 0.14em; text-transform: uppercase;
+  border: 1px solid #3a3835; color: #c8c4ba;
+  padding: 14px 28px;
+  font-weight: 400; font-size: 0.7rem;
+  letter-spacing: 0.28em; text-transform: uppercase;
   text-decoration: none; display: inline-block;
-  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
-  transition: all 0.2s;
-  text-shadow: 0 0 8px rgba(0,242,254,0.4);
-  box-shadow: 0 0 18px rgba(0,242,254,0.15), inset 0 0 18px rgba(0,242,254,0.05);
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
-.triumph-btn:hover {
-  background: #00f2fe; color: #000;
-  text-shadow: none;
-  box-shadow: 0 0 30px rgba(0,242,254,0.7);
-}
-.triumph-btn.lime { border-color: #befb2c; color: #befb2c; text-shadow: 0 0 8px rgba(190,251,44,0.4); box-shadow: 0 0 18px rgba(190,251,44,0.15); }
-.triumph-btn.lime:hover { background: #befb2c; color: #000; box-shadow: 0 0 30px rgba(190,251,44,0.7); }
+.triumph-btn:hover { background: #e8e4dc; color: #050505; border-color: #e8e4dc; }
+.triumph-btn.lime { border-color: #c8c4ba; color: #f0ece2; }
+.triumph-btn.lime:hover { background: #f0ece2; color: #050505; border-color: #f0ece2; }
 
 .triumph-preview-badge {
-  position: fixed; top: 14px; left: 14px; z-index: 10200;
-  font-family: 'JetBrains Mono', monospace;
-  background: rgba(255, 0, 100, 0.15); color: #ff4081;
-  border: 1px solid #ff4081;
-  padding: 6px 14px; border-radius: 4px;
-  font-size: 0.7rem; font-weight: 800;
-  letter-spacing: 0.14em; text-transform: uppercase;
-  box-shadow: 0 0 18px rgba(255,64,129,0.4);
+  position: fixed; top: 16px; left: 16px; z-index: 10200;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: transparent; color: #6b665e;
+  border: 1px solid #2a2826;
+  padding: 7px 14px;
+  font-size: 0.6rem; font-weight: 400;
+  letter-spacing: 0.38em; text-transform: uppercase;
 }
 </style>
 {% endblock %}
@@ -262,45 +164,47 @@
       <button type="button" data-lang="ua">UA</button>
     </div>
 
-    <div class="triumph-title" data-text="THEORY MASTER">THEORY MASTER</div>
+    <div class="triumph-title">Theory Master</div>
     <div class="triumph-sub"
-         data-en="System unlocked. All <strong>14 official tests</strong> cleared with a perfect score. You are now calibrated to terminate the real DVSA exam."
-         data-ua="Систему розблоковано. Усі <strong>14 офіційних тестів</strong> пройдено на максимум. Тебе відкалібровано знищити справжній іспит DVSA.">
-      System unlocked. All <strong>14 official tests</strong> cleared with a perfect score. You are now calibrated to terminate the real DVSA exam.
+         data-en="All <strong>14 official theory tests</strong> cleared with a perfect score. You are ready for the real Danish driving theory test."
+         data-ua="Усі <strong>14 офіційних теоретичних тестів</strong> пройдено з ідеальним результатом. Ти готовий до справжнього датського теоретичного іспиту.">
+      All <strong>14 official theory tests</strong> cleared with a perfect score. You are ready for the real Danish driving theory test.
     </div>
 
+    <div class="triumph-divider"></div>
+
     <div class="triumph-tips">
-      <div class="triumph-tips-title" data-en="// Tips before the real test" data-ua="// Поради перед справжнім іспитом">// Tips before the real test</div>
+      <div class="triumph-tips-title" data-en="Before the real test" data-ua="Перед справжнім іспитом">Before the real test</div>
       <ul>
         <li data-en="<strong>Sleep.</strong> 7–8 hours beats one more cram session. Show up rested." data-ua="<strong>Сон.</strong> 7–8 годин краще, ніж ще одна нічна зубрячка. Прийди відпочившим."><strong>Sleep.</strong> 7–8 hours beats one more cram session. Show up rested.</li>
-        <li data-en="<strong>Arrive early.</strong> Be at the test centre 20 minutes before the slot. No rush, no stress." data-ua="<strong>Прийди заздалегідь.</strong> Будь у центрі за 20 хвилин — без поспіху."><strong>Arrive early.</strong> Be at the test centre 20 minutes before the slot. No rush, no stress.</li>
-        <li data-en="<strong>Documents.</strong> Provisional Licence + a second photo ID. No ID = no entry." data-ua="<strong>Документи.</strong> Provisional Licence + другий ID. Без них не пустять."><strong>Documents.</strong> Provisional Licence + a second photo ID. No ID = no entry.</li>
-        <li data-en="<strong>Read twice.</strong> The real exam phrasing can be sneaky. Don't rush the first click." data-ua="<strong>Читай двічі.</strong> Формулювання на справжньому іспиті бувають хитрими. Не поспішай із кліком."><strong>Read twice.</strong> The real exam phrasing can be sneaky. Don't rush the first click.</li>
-        <li data-en="<strong>Flag the hard ones.</strong> Use the <em>Flag for review</em> button and revisit them at the end." data-ua="<strong>Познач складні.</strong> Використовуй <em>Flag for review</em> і повертайся в кінці."><strong>Flag the hard ones.</strong> Use the <em>Flag for review</em> button and revisit them at the end.</li>
-        <li data-en="<strong>Hazard Perception.</strong> Click on the early signs of danger. Don't wait for the full scene to unfold." data-ua="<strong>Hazard Perception.</strong> Клікай на ранні ознаки небезпеки. Не чекай, поки ситуація розгорнеться."><strong>Hazard Perception.</strong> Click on the early signs of danger. Don't wait for the full scene to unfold.</li>
+        <li data-en="<strong>Arrive early.</strong> Be at the prøvested 20 minutes before your slot. No rush, no stress." data-ua="<strong>Прийди заздалегідь.</strong> Будь у prøvested за 20 хвилин до слоту — без поспіху."><strong>Arrive early.</strong> Be at the prøvested 20 minutes before your slot. No rush, no stress.</li>
+        <li data-en="<strong>Documents.</strong> Photo ID (passport or Danish CPR card) and your lektionsplan. No documents, no exam." data-ua="<strong>Документи.</strong> Фото-ID (паспорт або CPR-карта) та lektionsplan. Без них не пустять."><strong>Documents.</strong> Photo ID (passport or Danish CPR card) and your lektionsplan. No documents, no exam.</li>
+        <li data-en="<strong>Read twice.</strong> The official Danish phrasing can be sneaky. Don't rush the first click." data-ua="<strong>Читай двічі.</strong> Офіційні датські формулювання бувають хитрими. Не поспішай із першим кліком."><strong>Read twice.</strong> The official Danish phrasing can be sneaky. Don't rush the first click.</li>
+        <li data-en="<strong>Listen carefully.</strong> Each question is read aloud once. Use the time on screen to re-read it yourself." data-ua="<strong>Слухай уважно.</strong> Кожне питання зачитують один раз. Використай час на екрані, щоб перечитати самому."><strong>Listen carefully.</strong> Each question is read aloud once. Use the time on screen to re-read it yourself.</li>
+        <li data-en="<strong>One pass only.</strong> The official test does not let you go back. Decide and commit." data-ua="<strong>Один прохід.</strong> Офіційний іспит не дозволяє повертатися. Обери відповідь і йди далі."><strong>One pass only.</strong> The official test does not let you go back. Decide and commit.</li>
         <li data-en="<strong>Breathe.</strong> Nervous? 4 seconds in, 6 seconds out. It works." data-ua="<strong>Дихай.</strong> Нервуєш? 4 секунди вдих, 6 секунд видих. Це працює."><strong>Breathe.</strong> Nervous? 4 seconds in, 6 seconds out. It works.</li>
       </ul>
     </div>
 
     <div class="triumph-card" id="triumphCard">
-      <div class="triumph-card-status" data-en="// CERTIFIED THEORY MASTER" data-ua="// СЕРТИФІКОВАНИЙ THEORY MASTER">// CERTIFIED THEORY MASTER</div>
+      <div class="triumph-card-status" data-en="Certified Theory Master" data-ua="Сертифікований Theory Master">Certified Theory Master</div>
       <div class="triumph-card-name">{{ triumph_data.user_name }}</div>
       <div class="triumph-card-date">{{ triumph_data.user_email }} · {{ triumph_data.date }}</div>
-      <div class="triumph-card-counter">{{ triumph_data.total_questions }}/{{ triumph_data.total_questions }} · 14/14 TESTS</div>
+      <div class="triumph-card-counter">{{ triumph_data.total_questions }} / {{ triumph_data.total_questions }} · 14 / 14 Tests</div>
       <div class="triumph-card-tag"
-           data-en="Cleared every official UK Driving Theory test<br>on WexTheory with a perfect score."
-           data-ua="Пройдено всі офіційні тести UK Driving Theory<br>на WexTheory з ідеальним результатом.">
-        Cleared every official UK Driving Theory test<br>on WexTheory with a perfect score.
+           data-en="Cleared every official Danish driving theory test<br>on WexTheory with a perfect score."
+           data-ua="Пройдено всі офіційні датські теоретичні тести<br>на WexTheory з ідеальним результатом.">
+        Cleared every official Danish driving theory test<br>on WexTheory with a perfect score.
       </div>
       <div class="triumph-card-qr" id="triumphQr"></div>
-      <div class="triumph-card-foot">wextheory.com · DVSA prep</div>
+      <div class="triumph-card-foot">wextheory.cv · Færdselsstyrelsen prep</div>
     </div>
 
     <div class="triumph-actions">
       <button type="button" class="triumph-btn lime" id="triumphDownloadBtn"
-              data-en="↓ Download card" data-ua="↓ Завантажити картку">↓ Download card</button>
+              data-en="Download card" data-ua="Завантажити картку">Download card</button>
       <a href="/dashboard" class="triumph-btn"
-         data-en="← Back to dashboard" data-ua="← На головну">← Back to dashboard</a>
+         data-en="Back to dashboard" data-ua="На головну">Back to dashboard</a>
     </div>
   </div>
 </div>
@@ -311,11 +215,11 @@
 (function () {
   document.body.style.overflow = 'hidden';
 
-  // Cyan QR code
+  // Monochrome QR code on bone-paper background
   try {
     new QRCode(document.getElementById('triumphQr'), {
-      text: 'https://wextheory.com', width: 110, height: 110,
-      colorDark: '#00f2fe', colorLight: '#000000', correctLevel: QRCode.CorrectLevel.M
+      text: 'https://wextheory.cv', width: 108, height: 108,
+      colorDark: '#050505', colorLight: '#f0ece2', correctLevel: QRCode.CorrectLevel.M
     });
   } catch (e) {}
 
@@ -330,36 +234,25 @@
   }
   langBtns.forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
 
-  // Custom confetti shapes: digital bits 0/1
-  function makeBitShape(ch) {
-    if (typeof confetti === 'undefined' || !confetti.shapeFromText) return null;
-    try { return confetti.shapeFromText({ text: ch, scalar: 2 }); } catch (e) { return null; }
-  }
+  // Subtle monochrome confetti — ash/bone/stone falling slowly
   function fire() {
     if (typeof confetti !== 'function') return;
-    const palette = ['#00f2fe', '#4facfe', '#befb2c', '#ffffff', '#c0c0c0'];
-    const shapes = [];
-    const s0 = makeBitShape('0'); if (s0) shapes.push(s0);
-    const s1 = makeBitShape('1'); if (s1) shapes.push(s1);
-    const sCar = makeBitShape('🚗'); if (sCar) shapes.push(sCar);
-    const opts = shapes.length ? { shapes, scalar: 1.4 } : {};
-    const end = Date.now() + 3400;
+    const palette = ['#f0ece2', '#c8c4ba', '#8a847a', '#6b665e', '#3a3835'];
+    const end = Date.now() + 2600;
     (function frame() {
-      confetti(Object.assign({ particleCount: 5, angle: 60, spread: 80, origin: { x: 0 }, colors: palette }, opts));
-      confetti(Object.assign({ particleCount: 5, angle: 120, spread: 80, origin: { x: 1 }, colors: palette }, opts));
+      confetti({ particleCount: 2, angle: 70, spread: 45, origin: { x: 0, y: 0.15 }, colors: palette, gravity: 0.42, scalar: 0.75, ticks: 320, startVelocity: 32 });
+      confetti({ particleCount: 2, angle: 110, spread: 45, origin: { x: 1, y: 0.15 }, colors: palette, gravity: 0.42, scalar: 0.75, ticks: 320, startVelocity: 32 });
       if (Date.now() < end) requestAnimationFrame(frame);
     })();
-    confetti(Object.assign({ particleCount: 200, spread: 130, origin: { y: 0.35 }, colors: palette }, opts));
-    setTimeout(() => confetti(Object.assign({ particleCount: 140, spread: 150, startVelocity: 45, origin: { y: 0.5 }, colors: palette }, opts)), 600);
   }
-  setTimeout(fire, 250);
+  setTimeout(fire, 260);
 
   document.getElementById('triumphDownloadBtn')?.addEventListener('click', async (e) => {
     e.preventDefault();
     const card = document.getElementById('triumphCard');
     if (!card || typeof html2canvas !== 'function') return;
     try {
-      const canvas = await html2canvas(card, { backgroundColor: '#000000', scale: 2, useCORS: true });
+      const canvas = await html2canvas(card, { backgroundColor: '#0a0a0a', scale: 2, useCORS: true });
       const link = document.createElement('a');
       link.download = 'wextheory-theory-master.png';
       link.href = canvas.toDataURL('image/png');
