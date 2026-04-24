@@ -1458,6 +1458,7 @@ async def startup_init():
     db = next(get_db())
     try:
         ensure_user_public_id_column(db)
+        ensure_user_referral_columns(db)
         ensure_super_admin_column(db)
         ensure_all_user_public_ids(db)
         ensure_contact_attachment_columns(db)
@@ -1469,7 +1470,6 @@ async def startup_init():
         ensure_question_text_fixes(db)
         ensure_certificates_table(db)
         ensure_referrals_table(db)
-        ensure_user_referral_columns(db)
         ensure_all_user_referral_codes(db)
         CONTACT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
