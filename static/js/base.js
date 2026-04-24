@@ -244,6 +244,9 @@
   document.getElementById('sbCloseBtn')?.addEventListener('click', sbClose);
   document.getElementById('sbThemeBtn')?.addEventListener('click', toggleTheme);
   document.getElementById('sbLogoutBtn')?.addEventListener('click', doLogout);
+  document.querySelectorAll('.burger-btn').forEach((btn) => {
+    btn.addEventListener('click', sbOpen);
+  });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') sbClose();
   });

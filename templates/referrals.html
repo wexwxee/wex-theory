@@ -11,6 +11,19 @@
     border-radius: 22px;
     padding: 30px 28px;
     box-shadow: 0 18px 50px rgba(0,0,0,0.35);
+    color: #f5f5f5;
+  }
+  .ref-hero b { color: #f5f5f5 !important; }
+  .ref-hero .btn-primary {
+    background: #f5f5f5;
+    border-color: #f5f5f5;
+    color: #050505;
+  }
+  .ref-hero .btn-ghost,
+  .ref-hero .ref-share-btn {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.18);
+    color: #f5f5f5;
   }
   .ref-link-row {
     display: flex;
@@ -25,7 +38,7 @@
     border-radius: 12px;
     border: 1px solid var(--border, #2a2a2a);
     background: #0d0d0d;
-    color: var(--text, #f5f5f5);
+    color: #f5f5f5;
     font-family: 'JetBrains Mono','Courier New',monospace;
     font-size: 0.92rem;
     letter-spacing: 0.04em;
@@ -47,13 +60,14 @@
     font-weight: 800;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--text-muted, #9ca3af);
+    color: #8d8d8d;
   }
   .ref-stat-value {
     font-size: 1.6rem;
     font-weight: 800;
     margin-top: 6px;
     letter-spacing: -0.02em;
+    color: #f5f5f5;
   }
   .ref-share-row {
     display: flex;
@@ -69,7 +83,7 @@
     border-radius: 12px;
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.10);
-    color: var(--text, #f5f5f5);
+    color: #f5f5f5;
     font-size: 0.85rem;
     font-weight: 700;
     text-decoration: none;
@@ -102,6 +116,7 @@
     border: 1px solid var(--border, #242424);
     border-radius: 18px;
     overflow: hidden;
+    color: #f5f5f5;
   }
   .ref-table-row {
     display: grid;
@@ -117,7 +132,7 @@
     font-weight: 800;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--text-muted, #9ca3af);
+    color: #8d8d8d;
   }
   .ref-table-row:last-child { border-bottom: none; }
   .ref-pill {
@@ -182,7 +197,7 @@
     </div>
 
     <div class="ref-hero">
-      <div style="font-size:0.72rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);">Your personal link</div>
+      <div style="font-size:0.72rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#8d8d8d;">Your personal link</div>
       <div class="ref-link-row">
         <input type="text" class="ref-link-input" id="refLinkInput" value="{{ referral_link }}" readonly>
         <button class="btn-primary" id="refCopyBtn" type="button">Copy link</button>
@@ -221,8 +236,8 @@
         {% if _pct > 100 %}{% set _pct = 100 %}{% endif %}
         <div class="ref-cap-fill" style="width: {{ _pct }}%;"></div>
       </div>
-      <div style="margin-top:8px;font-size:0.78rem;color:var(--text-muted);">
-        Annual reward cap: <b style="color:var(--text);">{{ annual_cap }} days</b>. Friends still get their +{{ reward_days_referred }} bonus once you hit the cap, but no more days are added to your account until next year.
+      <div style="margin-top:8px;font-size:0.78rem;color:#9a9a9a;">
+        Annual reward cap: <b style="color:#f5f5f5;">{{ annual_cap }} days</b>. Friends still get their +{{ reward_days_referred }} bonus once you hit the cap, but no more days are added to your account until next year.
       </div>
     </div>
 
