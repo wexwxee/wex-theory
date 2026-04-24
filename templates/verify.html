@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Certificate - WEXTheory{% endblock %}
+
+{% block body %}
+<style>
+  .verify-shell {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  .verify-card {
+    background: linear-gradient(180deg, #141414 0%, #101010 100%);
+    border: 1px solid var(--border, #242424);
+    border-radius: 22px;
+    padding: 32px 28px;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.35);
+  }
+  .verify-eyebrow {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted, #9ca3af);
+  }
+  .verify-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .verify-status-pill.is-valid {
+    background: rgba(34, 197, 94, 0.12);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.32);
+  }
+  .verify-status-pill.is-invalid {
+    background: rgba(239, 68, 68, 0.12);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.32);
+  }
+  .verify-status-pill.is-revoked {
+    background: rgba(234, 179, 8, 0.10);
+    color: #facc15;
+    border: 1px solid rgba(234, 179, 8, 0.32);
+  }
+  .verify-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 18px;
+    margin-top: 22px;
+  }
+  .verify-cell-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted, #9ca3af);
+    margin-bottom: 4px;
+  }
+  .verify-cell-value {
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: var(--text, #f5f5f5);
+    word-break: break-word;
+  }
+  .verify-form {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .verify-form input {
+    flex: 1;
+    min-width: 220px;
+    padding: 13px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border, #2a2a2a);
+    background: #0d0d0d;
+    color: var(--text, #f5f5f5);
+    font-family: inherit;
+    font-size: 0.95rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .verify-form input:focus {
+    outline: none;
+    border-color: rgba(255,255,255,0.35);
+  }
+  .verify-cta {
+    margin-top: 26px;
+    padding: 16px 18px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px dashed rgba(255,255,255,0.10);
+    color: var(--text-muted, #9ca3af);
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+  .verify-cta b {
+    color: var(--text, #f5f5f5);
+    letter-spacing: 0.04em;
+  }
+  @media (max-width: 640px) {
+    .verify-grid { grid-template-columns: 1fr; }
+    .verify-form input, .verify-form button { width: 100%; }
+  }
+</style>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" id="verifyBurgerBtn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
+      <a href="/" class="logo">WEXTheory</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
+      {% if user %}
+      <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
+      {% else %}
+      <a href="/login" class="btn-ghost btn-sm">Sign In</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="verify-shell">
+    <p class="verify-eyebrow" style="margin-bottom:14px;">Certificate Verification</p>
+    <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.04em;margin-bottom:8px;">Verify a Theory Master certificate</h1>
+    <p style="color:var(--text-muted);max-width:580px;line-height:1.7;margin-bottom:28px;">
+      Every WEXTheory Theory Master certificate carries a unique serial number. Enter the serial below to confirm authenticity, or scan the QR code printed on the certificate.
+    </p>
+
+    {% if mode == "form" %}
+      <div class="verify-card">
+        <div class="verify-cell-label">Serial number</div>
+        <div class="verify-form">
+          <input type="text" id="verifySerialInput" placeholder="WEX-XIV-001" autocomplete="off" autocapitalize="characters" spellcheck="false">
+          <button class="btn-primary" id="verifySerialBtn" type="button">Verify</button>
+        </div>
+        <div id="verifyMsg" style="display:none;margin-top:12px;font-size:0.84rem;color:#f87171;"></div>
+      </div>
+    {% else %}
+      {% if valid and certificate %}
+        <div class="verify-card" style="border-color:rgba(34,197,94,0.32);">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+            <span class="verify-status-pill is-valid">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Verified
+            </span>
+            <span style="font-size:0.78rem;color:var(--text-muted);letter-spacing:0.08em;text-transform:uppercase;font-weight:800;">Theory Master · WEXTheory</span>
+          </div>
+
+          <div style="margin-top:18px;font-size:1.4rem;font-weight:800;letter-spacing:-0.02em;">
+            {% set _name_parts = (owner.name or owner.email).split(' ') %}
+            {{ _name_parts[0] }}{% if _name_parts|length > 1 %} {{ _name_parts[-1][:1] }}.{% endif %}
+          </div>
+          <div style="color:var(--text-muted);font-size:0.92rem;margin-top:4px;">
+            Awarded for clearing all 14 official Danish driving theory tests with a perfect score.
+          </div>
+
+          <div class="verify-grid">
+            <div>
+              <div class="verify-cell-label">Serial</div>
+              <div class="verify-cell-value">{{ certificate.serial }}</div>
+            </div>
+            <div>
+              <div class="verify-cell-label">Issued</div>
+              <div class="verify-cell-value">{{ certificate.issued_at.strftime('%d %b %Y') }}</div>
+            </div>
+            <div>
+              <div class="verify-cell-label">Total Questions</div>
+              <div class="verify-cell-value">{{ certificate.total_questions }}</div>
+            </div>
+            <div>
+              <div class="verify-cell-label">Total Tests</div>
+              <div class="verify-cell-value">{{ certificate.total_tests }}</div>
+            </div>
+          </div>
+
+          {% if referrer_code %}
+          <div class="verify-cta">
+            Start your own driving theory prep at <b>wextheory.cv</b> — sign up with code
+            <b style="font-family:'JetBrains Mono','Courier New',monospace;letter-spacing:0.12em;">{{ referrer_code }}</b>
+            for <b>+{{ reward_days_referred }} bonus days</b> on us.
+          </div>
+          {% endif %}
+        </div>
+
+      {% elif certificate and certificate.is_revoked %}
+        <div class="verify-card" style="border-color:rgba(234,179,8,0.32);">
+          <span class="verify-status-pill is-revoked">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+            Revoked
+          </span>
+          <h2 style="margin:16px 0 8px;font-size:1.3rem;font-weight:800;">Certificate revoked</h2>
+          <p style="color:var(--text-muted);line-height:1.7;">
+            This certificate ({{ certificate.serial }}) has been revoked by WEXTheory and is no longer considered valid.
+          </p>
+        </div>
+
+      {% else %}
+        <div class="verify-card" style="border-color:rgba(239,68,68,0.32);">
+          <span class="verify-status-pill is-invalid">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
+            Not Verified
+          </span>
+          <h2 style="margin:16px 0 8px;font-size:1.3rem;font-weight:800;">No certificate found</h2>
+          <p style="color:var(--text-muted);line-height:1.7;">
+            We couldn't find a certificate with serial <b style="color:var(--text);font-family:'JetBrains Mono','Courier New',monospace;">{{ serial_requested }}</b>.
+            Double-check the spelling, or try entering the serial below.
+          </p>
+          <div style="margin-top:18px;">
+            <a href="/verify-certificate" class="btn-ghost btn-sm">Try again</a>
+          </div>
+        </div>
+      {% endif %}
+
+      <div style="margin-top:18px;">
+        <a href="/verify-certificate" style="font-size:0.88rem;color:var(--text-muted);text-decoration:underline;">Verify another certificate</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/faq">FAQ</a>
+      <a href="/contact">Contact</a>
+      <a href="/pricing">Access</a>
+    </div>
+    <div>&copy; 2026 WEXTheory</div>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ request.state.csp_nonce }}">
+  (function () {
+    const input = document.getElementById('verifySerialInput');
+    const btn = document.getElementById('verifySerialBtn');
+    const msg = document.getElementById('verifyMsg');
+    if (!input || !btn) return;
+    function go() {
+      const raw = (input.value || '').trim().toUpperCase();
+      if (!raw) {
+        msg.style.display = 'block';
+        msg.textContent = 'Enter a certificate serial number.';
+        return;
+      }
+      window.location.href = '/verify/' + encodeURIComponent(raw);
+    }
+    btn.addEventListener('click', go);
+    input.addEventListener('keydown', function (e) { if (e.key === 'Enter') go(); });
+  })();
+</script>
+{% endblock %}

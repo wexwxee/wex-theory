@@ -136,6 +136,9 @@
       <a href="/profile" class="sb-item{% if current_path.startswith('/profile') %} is-current{% endif %}">
         <svg class="sb-ic" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg><span>Profile</span>
       </a>
+      <a href="/referrals" class="sb-item{% if current_path.startswith('/referrals') %} is-current{% endif %}">
+        <svg class="sb-ic" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span>Invite Friends</span>
+      </a>
       {% if not user.is_admin %}
       <a href="/promo-code" class="sb-item{% if current_path.startswith('/promo-code') %} is-current{% endif %}">
         <svg class="sb-ic" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V4a1 1 0 0 1 1-1h9l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="8" cy="8" r="1.5"/></svg><span>Activate Promo Code</span>
@@ -174,6 +177,9 @@
       </a>
       <a href="/privacy" class="sb-item{% if current_path.startswith('/privacy') %} is-current{% endif %}">
         <svg class="sb-ic" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 9.3-8 10-4.5-.7-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg><span>Privacy</span>
+      </a>
+      <a href="/verify-certificate" class="sb-item{% if current_path.startswith('/verify') %} is-current{% endif %}">
+        <svg class="sb-ic" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 9.3-8 10-4.5-.7-8-5-8-10V6l8-4z"/><polyline points="8.5 12 11 14.5 15.5 10"/></svg><span>Verify Certificate</span>
       </a>
 
     </div>

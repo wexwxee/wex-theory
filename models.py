@@ -23,8 +23,14 @@ class User(Base):
     subscription_status    = Column(String, default="free")   # free/active/past_due/canceled/incomplete
     current_period_end     = Column(DateTime, nullable=True)
 
+    # Referral fields
+    referral_code            = Column(String, unique=True, index=True, nullable=True)
+    referred_by_user_id      = Column(Integer, ForeignKey("users.id"), nullable=True)
+    referral_rewards_granted = Column(Integer, nullable=False, default=0)
+
     attempts = relationship("UserTestAttempt", back_populates="user")
     support_threads = relationship("SupportThread", back_populates="user")
+    certificates = relationship("Certificate", back_populates="user", foreign_keys="Certificate.user_id")
 
 
 class Test(Base):
@@ -215,3 +221,37 @@ class LiveActivitySession(Base):
     is_authenticated = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     last_seen = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+
+
+class Certificate(Base):
+    __tablename__ = "certificates"
+
+    id = Column(Integer, primary_key=True, index=True)
+    serial = Column(String, unique=True, index=True, nullable=False)  # e.g. WEX-XIV-001
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    verification_hash = Column(String, nullable=False)  # HMAC-SHA256(...)[:16]
+    issued_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    is_revoked = Column(Boolean, default=False, nullable=False)
+    revoked_at = Column(DateTime, nullable=True)
+    revoked_reason = Column(String, nullable=True)
+    total_questions = Column(Integer, nullable=False, default=350)
+    total_tests = Column(Integer, nullable=False, default=14)
+
+    user = relationship("User", back_populates="certificates", foreign_keys=[user_id])
+
+
+class Referral(Base):
+    __tablename__ = "referrals"
+
+    id = Column(Integer, primary_key=True, index=True)
+    referrer_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    referred_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    status = Column(String, nullable=False, default="rewarded")  # rewarded / blocked
+    source = Column(String, nullable=False, default="link")       # link / code
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    reward_days_referrer = Column(Integer, nullable=False, default=14)
+    reward_days_referred = Column(Integer, nullable=False, default=7)
+    blocked_reason = Column(String, nullable=True)  # self_referral / cap_exceeded / admin_blocked / null
+
+    referrer = relationship("User", foreign_keys=[referrer_id])
+    referred = relationship("User", foreign_keys=[referred_id])

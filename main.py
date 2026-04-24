@@ -1,3 +1,5 @@
+import hmac
+import hashlib
 import json
 import os
 import random
@@ -513,6 +515,240 @@ def apply_subscription_days(user: models.User, duration_days: int) -> datetime:
     return new_expiry
 
 
+# ─── Certificate helpers ──────────────────────────────────────────────────────
+
+CERT_SERIAL_PREFIX = "WEX-XIV-"
+CERT_TOTAL_QUESTIONS = 350
+CERT_TOTAL_TESTS = 14
+
+
+def _next_certificate_serial(db: Session) -> str:
+    latest = db.query(models.Certificate).order_by(models.Certificate.id.desc()).first()
+    next_num = (latest.id + 1) if latest else 1
+    return f"{CERT_SERIAL_PREFIX}{next_num:03d}"
+
+
+def _cert_verification_hash(serial: str, user_id: int, issued_at: datetime) -> str:
+    payload = f"{serial}|{user_id}|{issued_at.isoformat()}".encode("utf-8")
+    key = SECRET_KEY.encode("utf-8")
+    return hmac.new(key, payload, hashlib.sha256).hexdigest()[:16]
+
+
+def issue_or_get_certificate(db: Session, user: models.User) -> models.Certificate:
+    """Return existing Certificate for user, or issue a new one with the next serial."""
+    existing = (
+        db.query(models.Certificate)
+        .filter(models.Certificate.user_id == user.id)
+        .order_by(models.Certificate.id.asc())
+        .first()
+    )
+    if existing:
+        return existing
+    issued_at = datetime.utcnow()
+    # Retry loop handles rare race on unique(serial)
+    for _ in range(5):
+        serial = _next_certificate_serial(db)
+        vhash = _cert_verification_hash(serial, user.id, issued_at)
+        cert = models.Certificate(
+            serial=serial,
+            user_id=user.id,
+            verification_hash=vhash,
+            issued_at=issued_at,
+            is_revoked=False,
+            total_questions=CERT_TOTAL_QUESTIONS,
+            total_tests=CERT_TOTAL_TESTS,
+        )
+        try:
+            db.add(cert)
+            db.commit()
+            db.refresh(cert)
+            return cert
+        except Exception:
+            db.rollback()
+            continue
+    # Final failure — return something harmless in-memory rather than crashing the page
+    raise RuntimeError("Unable to issue certificate serial after retries")
+
+
+# ─── Referral helpers ─────────────────────────────────────────────────────────
+
+REFERRAL_COOKIE_NAME = "wex_ref"
+REFERRAL_COOKIE_MAX_AGE = 86400 * 30
+REFERRAL_DAYS_REFERRER = 14
+REFERRAL_DAYS_REFERRED = 7
+REFERRAL_ANNUAL_CAP_DAYS = 180
+
+
+def _sign_referral_cookie(code: str) -> str:
+    sig = hmac.new(SECRET_KEY.encode("utf-8"), code.encode("utf-8"), hashlib.sha256).hexdigest()[:16]
+    return f"{code}.{sig}"
+
+
+def _read_signed_referral_cookie(request: Request) -> Optional[str]:
+    raw = request.cookies.get(REFERRAL_COOKIE_NAME) or ""
+    if not raw or "." not in raw:
+        return None
+    code, _, sig = raw.partition(".")
+    expected = hmac.new(SECRET_KEY.encode("utf-8"), code.encode("utf-8"), hashlib.sha256).hexdigest()[:16]
+    if not hmac.compare_digest(sig, expected):
+        return None
+    return code
+
+
+def _referral_days_used_this_year(db: Session, user_id: int) -> int:
+    one_year_ago = datetime.utcnow() - timedelta(days=365)
+    rows = (
+        db.query(models.Referral)
+        .filter(
+            models.Referral.referrer_id == user_id,
+            models.Referral.status == "rewarded",
+            models.Referral.created_at >= one_year_ago,
+        )
+        .all()
+    )
+    return sum(int(r.reward_days_referrer or 0) for r in rows)
+
+
+def get_referral_badge(rewarded_count: int) -> Optional[str]:
+    if rewarded_count >= 15:
+        return "Legend"
+    if rewarded_count >= 5:
+        return "Ambassador"
+    if rewarded_count >= 1:
+        return "Messenger"
+    return None
+
+
+def _find_referrer_by_code(db: Session, raw_code: str) -> Optional[models.User]:
+    code = (raw_code or "").strip().upper()
+    if not code or not code.startswith("WEXR-"):
+        return None
+    return db.query(models.User).filter(models.User.referral_code == code).first()
+
+
+def bind_referral_for_new_user(
+    db: Session,
+    new_user: models.User,
+    raw_code: str,
+    source: str = "link",
+) -> tuple[bool, str]:
+    """Attempt to bind a referral to a freshly-registered user. Returns (ok, message)."""
+    if not raw_code:
+        return False, "no_code"
+    if new_user.referred_by_user_id:
+        return False, "already_bound"
+
+    referrer = _find_referrer_by_code(db, raw_code)
+    if not referrer:
+        return False, "invalid_code"
+    if referrer.id == new_user.id:
+        db.add(models.Referral(
+            referrer_id=referrer.id, referred_id=new_user.id,
+            status="blocked", source=source,
+            reward_days_referrer=0, reward_days_referred=0,
+            blocked_reason="self_referral",
+        ))
+        db.commit()
+        return False, "self_referral"
+    if (referrer.email or "").lower() == (new_user.email or "").lower():
+        db.add(models.Referral(
+            referrer_id=referrer.id, referred_id=new_user.id,
+            status="blocked", source=source,
+            reward_days_referrer=0, reward_days_referred=0,
+            blocked_reason="self_referral",
+        ))
+        db.commit()
+        return False, "self_referral"
+
+    used = _referral_days_used_this_year(db, referrer.id)
+    cap_exceeded = (used + REFERRAL_DAYS_REFERRER) > REFERRAL_ANNUAL_CAP_DAYS
+
+    new_user.referred_by_user_id = referrer.id
+    apply_subscription_days(new_user, REFERRAL_DAYS_REFERRED)
+
+    if cap_exceeded:
+        db.add(models.Referral(
+            referrer_id=referrer.id, referred_id=new_user.id,
+            status="blocked", source=source,
+            reward_days_referrer=0, reward_days_referred=REFERRAL_DAYS_REFERRED,
+            blocked_reason="cap_exceeded",
+        ))
+        db.commit()
+        return True, "rewarded_referred_only"
+
+    apply_subscription_days(referrer, REFERRAL_DAYS_REFERRER)
+    referrer.referral_rewards_granted = int(referrer.referral_rewards_granted or 0) + 1
+    db.add(models.Referral(
+        referrer_id=referrer.id, referred_id=new_user.id,
+        status="rewarded", source=source,
+        reward_days_referrer=REFERRAL_DAYS_REFERRER,
+        reward_days_referred=REFERRAL_DAYS_REFERRED,
+    ))
+    db.commit()
+    try:
+        send_referral_emails(referrer, new_user)
+    except Exception as e:
+        print(f"[REFERRAL EMAIL ERROR] {e}")
+    return True, "rewarded"
+
+
+def process_referral_after_registration(db: Session, new_user: models.User, request: Request) -> str:
+    """Checks query param ?ref= and wex_ref cookie, attempts to bind, returns outcome."""
+    q_ref = (request.query_params.get("ref") or "").strip().upper()
+    c_ref = _read_signed_referral_cookie(request) or ""
+    code = q_ref or c_ref
+    if not code:
+        return "no_code"
+    _, outcome = bind_referral_for_new_user(db, new_user, code, source="link")
+    return outcome
+
+
+def send_referral_emails(referrer: models.User, referred: models.User) -> None:
+    """Best-effort email both sides about a successful referral."""
+    if not is_email_service_configured():
+        return
+    resend_api_key = _clean_env_value("RESEND_API_KEY")
+    resend_api_url = _clean_env_value("RESEND_API_URL", "https://api.resend.com/emails")
+    sender = VERIFICATION_EMAIL_SENDER
+    if not resend_api_key:
+        return
+    try:
+        html_referrer = templates.env.get_template("emails/referral_rewarded_referrer.html").render(
+            recipient_name=referrer.name or "Friend",
+            invitee_first_name=(referred.name or referred.email.split("@")[0]).split(" ")[0],
+            reward_days=REFERRAL_DAYS_REFERRER,
+        )
+        html_referred = templates.env.get_template("emails/referral_welcome_referred.html").render(
+            recipient_name=referred.name or "Friend",
+            reward_days=REFERRAL_DAYS_REFERRED,
+        )
+    except Exception as e:
+        print(f"[REFERRAL EMAIL TEMPLATE ERROR] {e}")
+        return
+
+    with httpx.Client(timeout=20.0) as client:
+        for to_email, subject, html in (
+            (referrer.email, f"+{REFERRAL_DAYS_REFERRER} days — a friend joined with your invite",  html_referrer),
+            (referred.email, f"Welcome — you got +{REFERRAL_DAYS_REFERRED} bonus days on WEXTheory",  html_referred),
+        ):
+            try:
+                client.post(
+                    resend_api_url,
+                    headers={
+                        "Authorization": f"Bearer {resend_api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "from": sender,
+                        "to": [to_email],
+                        "subject": subject,
+                        "html": html,
+                    },
+                )
+            except Exception as e:
+                print(f"[REFERRAL EMAIL SEND ERROR] {e}")
+
+
 def get_promo_status(promo: models.PromoCode) -> str:
     now = datetime.utcnow()
     if not promo.is_active:
@@ -874,6 +1110,75 @@ def ensure_translation_columns(db: Session) -> None:
         print(f"[STARTUP] translation columns setup skipped/error: {e}")
 
 
+def ensure_certificates_table(db: Session) -> None:
+    try:
+        inspector = sql_inspect(engine)
+        if "certificates" not in inspector.get_table_names():
+            models.Certificate.__table__.create(bind=engine, checkfirst=True)
+            print("[STARTUP] Created certificates table")
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] certificates table setup skipped/error: {e}")
+
+
+def ensure_referrals_table(db: Session) -> None:
+    try:
+        inspector = sql_inspect(engine)
+        if "referrals" not in inspector.get_table_names():
+            models.Referral.__table__.create(bind=engine, checkfirst=True)
+            print("[STARTUP] Created referrals table")
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] referrals table setup skipped/error: {e}")
+
+
+def ensure_user_referral_columns(db: Session) -> None:
+    try:
+        inspector = sql_inspect(engine)
+        columns = {col["name"] for col in inspector.get_columns("users")}
+        if "referral_code" not in columns:
+            db.execute(sql_text("ALTER TABLE users ADD COLUMN referral_code VARCHAR"))
+            db.commit()
+            print("[STARTUP] Added users.referral_code column")
+        if "referred_by_user_id" not in columns:
+            db.execute(sql_text("ALTER TABLE users ADD COLUMN referred_by_user_id INTEGER"))
+            db.commit()
+            print("[STARTUP] Added users.referred_by_user_id column")
+        if "referral_rewards_granted" not in columns:
+            db.execute(sql_text("ALTER TABLE users ADD COLUMN referral_rewards_granted INTEGER DEFAULT 0"))
+            db.commit()
+            print("[STARTUP] Added users.referral_rewards_granted column")
+        db.execute(sql_text("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_referral_code ON users (referral_code)"))
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] user referral columns setup skipped/error: {e}")
+
+
+def _new_referral_code() -> str:
+    return "WEXR-" + "".join(secrets.choice(PUBLIC_ID_ALPHABET) for _ in range(6))
+
+
+def generate_unique_referral_code(db: Session) -> str:
+    while True:
+        candidate = _new_referral_code()
+        exists = db.query(models.User).filter(models.User.referral_code == candidate).first()
+        if not exists:
+            return candidate
+
+
+def ensure_all_user_referral_codes(db: Session) -> None:
+    missing = db.query(models.User).filter(
+        (models.User.referral_code.is_(None)) | (models.User.referral_code == "")
+    ).all()
+    if not missing:
+        return
+    for u in missing:
+        u.referral_code = generate_unique_referral_code(db)
+    db.commit()
+    print(f"[STARTUP] Assigned referral codes to {len(missing)} users")
+
+
 def ensure_exam_mode_test(db: Session) -> None:
     try:
         exam_test = db.query(models.Test).filter(models.Test.id == EXAM_MODE_TEST_ID).first()
@@ -1162,6 +1467,10 @@ async def startup_init():
         ensure_exam_wording_columns(db)
         ensure_translation_columns(db)
         ensure_question_text_fixes(db)
+        ensure_certificates_table(db)
+        ensure_referrals_table(db)
+        ensure_user_referral_columns(db)
+        ensure_all_user_referral_codes(db)
         CONTACT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
         # 1. Import test data if DB is empty
@@ -1729,6 +2038,7 @@ def complete_email_verification(db: Session, email: str, code: str):
         expires_at=datetime.utcnow(),
         is_admin=False,
         subscription_status="free",
+        referral_code=generate_unique_referral_code(db),
     )
     db.add(user)
     db.flush()
@@ -1909,10 +2219,20 @@ async def api_register_verify(request: Request, db: Session = Depends(get_db)):
             status_code = 404 if "not found" in error.lower() else 400
             return JSONResponse({"error": error}, status_code=status_code)
 
+        try:
+            referral_outcome = process_referral_after_registration(db, user, request)
+        except Exception as rex:
+            print(f"[REFERRAL BIND ERROR] {rex}")
+            referral_outcome = "error"
         token = create_token(user.id)
-        resp = JSONResponse({"success": True, "redirect": "/dashboard"})
+        resp = JSONResponse({
+            "success": True,
+            "redirect": "/dashboard",
+            "referral_outcome": referral_outcome,
+        })
         set_auth_cookie(resp, token, request)
-        print(f"[REGISTER VERIFY] success: id={user.id} email={email}")
+        resp.delete_cookie(REFERRAL_COOKIE_NAME, path="/")
+        print(f"[REGISTER VERIFY] success: id={user.id} email={email} ref={referral_outcome}")
         return resp
     except Exception as e:
         db.rollback()
@@ -2029,10 +2349,16 @@ async def verify_email_link(email: str, code: str, request: Request, db: Session
             status_code=302,
         )
 
+    try:
+        referral_outcome = process_referral_after_registration(db, user, request)
+    except Exception as rex:
+        print(f"[REFERRAL BIND ERROR] {rex}")
+        referral_outcome = "error"
     token = create_token(user.id)
     resp = RedirectResponse("/dashboard?verified=1", status_code=302)
     set_auth_cookie(resp, token, request)
-    print(f"[VERIFY LINK] success: id={user.id} email={email}")
+    resp.delete_cookie(REFERRAL_COOKIE_NAME, path="/")
+    print(f"[VERIFY LINK] success: id={user.id} email={email} ref={referral_outcome}")
     return resp
 
 
@@ -2572,11 +2898,24 @@ async def results_page(test_id: int, attempt_id: int, request: Request, db: Sess
         }
         if len(completed_prior) >= 13:
             is_triumph = True
+            try:
+                cert = issue_or_get_certificate(db, user)
+                cert_serial = cert.serial
+                cert_hash = cert.verification_hash
+                cert_issued_at = cert.issued_at
+            except Exception as ce:
+                print(f"[CERT ISSUE ERROR] {ce}")
+                cert_serial = ""
+                cert_hash = ""
+                cert_issued_at = attempt.finished_at or datetime.utcnow()
             triumph_data = {
                 "user_name": (user.name or user.email.split("@")[0]),
                 "user_email": user.email,
-                "date": (attempt.finished_at or datetime.utcnow()).strftime("%d %b %Y"),
-                "total_questions": 350,
+                "date": (cert_issued_at or datetime.utcnow()).strftime("%d %b %Y"),
+                "total_questions": CERT_TOTAL_QUESTIONS,
+                "certificate_serial": cert_serial,
+                "certificate_hash": cert_hash,
+                "referral_code": user.referral_code or "",
             }
 
     return templates.TemplateResponse(request, "results.html", {
@@ -3025,7 +3364,10 @@ async def admin_triumph_preview(request: Request, db: Session = Depends(get_db))
         "user_name": user.name or "Admin Test",
         "user_email": user.email,
         "date": datetime.utcnow().strftime("%d %b %Y"),
-        "total_questions": 350,
+        "total_questions": CERT_TOTAL_QUESTIONS,
+        "certificate_serial": "WEX-XIV-PREVIEW",
+        "certificate_hash": "",
+        "referral_code": user.referral_code or "",
     }
     return templates.TemplateResponse(request, "triumph_preview.html", {
         "request": request, "user": user, "triumph_data": triumph_data,
@@ -3810,6 +4152,35 @@ async def api_redeem_promo_code(request: Request, db: Session = Depends(get_db))
         if not code:
             return JSONResponse({"error": "Enter a promo code"}, status_code=400)
 
+        # Referral code path (WEXR-XXXXXX)
+        if code.startswith("WEXR-"):
+            if user.referred_by_user_id:
+                return JSONResponse({"error": "You've already used an invite code"}, status_code=400)
+            referrer = _find_referrer_by_code(db, code)
+            if not referrer:
+                return JSONResponse({"error": "Invite code not found"}, status_code=404)
+            if referrer.id == user.id:
+                return JSONResponse({"error": "You can't invite yourself"}, status_code=400)
+            ok, outcome = bind_referral_for_new_user(db, user, code, source="code")
+            if not ok:
+                msg_map = {
+                    "self_referral": "You can't invite yourself",
+                    "already_bound": "You've already used an invite code",
+                    "invalid_code": "Invite code not found",
+                }
+                return JSONResponse({"error": msg_map.get(outcome, "Could not apply invite code")}, status_code=400)
+            reward_msg = (
+                f"Invite applied. {REFERRAL_DAYS_REFERRED} days added."
+                if outcome in ("rewarded", "rewarded_referred_only") else
+                "Invite applied."
+            )
+            return JSONResponse({
+                "success": True,
+                "message": reward_msg,
+                "duration_days": REFERRAL_DAYS_REFERRED,
+                "expires_at": (user.expires_at.isoformat() if user.expires_at else None),
+            })
+
         promo = db.query(models.PromoCode).filter(models.PromoCode.code == code).first()
         if not promo:
             return JSONResponse({"error": "Promo code not found"}, status_code=404)
@@ -3831,6 +4202,131 @@ async def api_redeem_promo_code(request: Request, db: Session = Depends(get_db))
             "message": f"Promo code applied. {promo.duration_days} days added.",
             "duration_days": promo.duration_days,
             "expires_at": new_expiry.isoformat(),
+        })
+    except Exception as e:
+        db.rollback()
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+# ─── Certificate Verification + Referrals ────────────────────────────────────
+
+@app.get("/verify-certificate", response_class=HTMLResponse)
+async def verify_certificate_form(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    return templates.TemplateResponse(request, "verify.html", {
+        "request": request, "user": user,
+        "mode": "form", "certificate": None, "valid": False,
+    })
+
+
+@app.get("/verify/{serial}", response_class=HTMLResponse)
+async def verify_certificate(serial: str, request: Request, db: Session = Depends(get_db), h: Optional[str] = None):
+    user = get_current_user(request, db)
+    serial_clean = (serial or "").strip().upper()
+    cert = db.query(models.Certificate).filter(models.Certificate.serial == serial_clean).first()
+    valid = False
+    owner = None
+    if cert:
+        hash_ok = True
+        if h:
+            hash_ok = hmac.compare_digest(h.strip(), cert.verification_hash or "")
+        valid = hash_ok and not cert.is_revoked
+        if valid:
+            owner = db.query(models.User).filter(models.User.id == cert.user_id).first()
+    # Referral tie-in — show the owner's code on verified page (soft upsell)
+    referrer_code = ""
+    if valid and owner:
+        referrer_code = owner.referral_code or ""
+    return templates.TemplateResponse(request, "verify.html", {
+        "request": request, "user": user,
+        "mode": "result",
+        "certificate": cert, "valid": valid, "owner": owner,
+        "serial_requested": serial_clean,
+        "referrer_code": referrer_code,
+        "reward_days_referred": REFERRAL_DAYS_REFERRED,
+    })
+
+
+@app.get("/r/{code}")
+async def referral_landing(code: str, request: Request, db: Session = Depends(get_db)):
+    code_clean = (code or "").strip().upper()
+    referrer = _find_referrer_by_code(db, code_clean) if code_clean.startswith("WEXR-") else None
+    if not referrer:
+        return RedirectResponse("/register?ref_error=invalid", status_code=302)
+    resp = RedirectResponse(f"/register?ref={quote(code_clean)}", status_code=302)
+    resp.set_cookie(
+        REFERRAL_COOKIE_NAME,
+        _sign_referral_cookie(code_clean),
+        max_age=REFERRAL_COOKIE_MAX_AGE,
+        httponly=True,
+        samesite="lax",
+        path="/",
+    )
+    return resp
+
+
+@app.get("/referrals", response_class=HTMLResponse)
+async def referrals_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        return RedirectResponse("/login?next=/referrals", status_code=302)
+    if not user.referral_code:
+        user.referral_code = generate_unique_referral_code(db)
+        db.commit()
+    referred_rows = (
+        db.query(models.Referral)
+        .filter(models.Referral.referrer_id == user.id)
+        .order_by(models.Referral.created_at.desc())
+        .all()
+    )
+    enriched = []
+    for r in referred_rows:
+        u = db.query(models.User).filter(models.User.id == r.referred_id).first()
+        enriched.append({
+            "id": r.id,
+            "status": r.status,
+            "source": r.source,
+            "blocked_reason": r.blocked_reason,
+            "created_at": r.created_at,
+            "reward_days_referrer": r.reward_days_referrer,
+            "referred_first_name": (u.name.split(" ")[0] if u and u.name else "—"),
+        })
+    rewarded_count = sum(1 for r in referred_rows if r.status == "rewarded")
+    days_used = _referral_days_used_this_year(db, user.id)
+    days_remaining = max(0, REFERRAL_ANNUAL_CAP_DAYS - days_used)
+    badge = get_referral_badge(rewarded_count)
+    base_url = get_public_base_url(request)
+    link = f"{base_url}/r/{user.referral_code}"
+    return templates.TemplateResponse(request, "referrals.html", {
+        "request": request, "user": user,
+        "referral_code": user.referral_code,
+        "referral_link": link,
+        "referred_list": enriched,
+        "total_invited": len(referred_rows),
+        "rewarded_count": rewarded_count,
+        "days_earned_this_year": days_used,
+        "days_remaining": days_remaining,
+        "annual_cap": REFERRAL_ANNUAL_CAP_DAYS,
+        "badge": badge,
+        "reward_days_referrer": REFERRAL_DAYS_REFERRER,
+        "reward_days_referred": REFERRAL_DAYS_REFERRED,
+    })
+
+
+@app.post("/api/referrals/regenerate")
+async def api_regenerate_referral_code(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    try:
+        new_code = generate_unique_referral_code(db)
+        user.referral_code = new_code
+        db.commit()
+        base_url = get_public_base_url(request)
+        return JSONResponse({
+            "success": True,
+            "referral_code": new_code,
+            "referral_link": f"{base_url}/r/{new_code}",
         })
     except Exception as e:
         db.rollback()

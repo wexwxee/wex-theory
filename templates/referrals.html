@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block title %}Invite Friends - WEXTheory{% endblock %}
+
+{% block body %}
+<style>
+  .ref-shell { max-width: 920px; margin: 0 auto; }
+  .ref-hero {
+    background: linear-gradient(180deg, #141414 0%, #101010 100%);
+    border: 1px solid var(--border, #242424);
+    border-radius: 22px;
+    padding: 30px 28px;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.35);
+  }
+  .ref-link-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+  .ref-link-input {
+    flex: 1;
+    min-width: 260px;
+    padding: 13px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border, #2a2a2a);
+    background: #0d0d0d;
+    color: var(--text, #f5f5f5);
+    font-family: 'JetBrains Mono','Courier New',monospace;
+    font-size: 0.92rem;
+    letter-spacing: 0.04em;
+  }
+  .ref-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 22px;
+  }
+  .ref-stat {
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 14px 14px;
+  }
+  .ref-stat-label {
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted, #9ca3af);
+  }
+  .ref-stat-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin-top: 6px;
+    letter-spacing: -0.02em;
+  }
+  .ref-share-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+  }
+  .ref-share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.10);
+    color: var(--text, #f5f5f5);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .ref-share-btn:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.18);
+  }
+  .ref-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: linear-gradient(120deg, #c5a45f, #8c7239);
+    color: #1a1408;
+    border: 1px solid rgba(0,0,0,0.20);
+  }
+  .ref-badge.tier-Messenger { background: linear-gradient(120deg, #6e7c8a, #444f5a); color:#fff; }
+  .ref-badge.tier-Ambassador { background: linear-gradient(120deg, #c5a45f, #8c7239); color:#1a1408; }
+  .ref-badge.tier-Legend { background: linear-gradient(120deg, #f5d782, #b88c2c); color:#1a1408; }
+  .ref-table {
+    margin-top: 24px;
+    background: linear-gradient(180deg, #141414 0%, #101010 100%);
+    border: 1px solid var(--border, #242424);
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  .ref-table-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 0.9fr;
+    gap: 10px;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    align-items: center;
+  }
+  .ref-table-row.is-head {
+    background: rgba(255,255,255,0.025);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted, #9ca3af);
+  }
+  .ref-table-row:last-child { border-bottom: none; }
+  .ref-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .ref-pill.is-rewarded { background: rgba(34, 197, 94, 0.12); color: #22c55e; }
+  .ref-pill.is-blocked { background: rgba(239, 68, 68, 0.12); color: #f87171; }
+  .ref-cap-bar {
+    margin-top: 10px;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    overflow: hidden;
+  }
+  .ref-cap-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e, #84cc16);
+    border-radius: 999px;
+  }
+  @media (max-width: 720px) {
+    .ref-stats { grid-template-columns: repeat(2, 1fr); }
+    .ref-table-row { grid-template-columns: 1.2fr 1fr; }
+    .ref-table-row > div:nth-child(3),
+    .ref-table-row > div:nth-child(4) { display: none; }
+  }
+</style>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" id="referralsBurgerBtn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
+      <a href="/" class="logo">WEXTheory</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
+      <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="ref-shell">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;align-items:flex-start;margin-bottom:18px;">
+      <div>
+        <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.04em;margin-bottom:6px;">Invite friends, earn days</h1>
+        <p style="color:var(--text-muted);max-width:560px;line-height:1.7;">
+          Share your link. Each friend who signs up gets <b style="color:var(--text);">+{{ reward_days_referred }} bonus days</b> on their account, and you get <b style="color:var(--text);">+{{ reward_days_referrer }} days</b> per successful sign-up.
+        </p>
+      </div>
+      {% if badge %}
+      <span class="ref-badge tier-{{ badge }}">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        {{ badge }}
+      </span>
+      {% endif %}
+    </div>
+
+    <div class="ref-hero">
+      <div style="font-size:0.72rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);">Your personal link</div>
+      <div class="ref-link-row">
+        <input type="text" class="ref-link-input" id="refLinkInput" value="{{ referral_link }}" readonly>
+        <button class="btn-primary" id="refCopyBtn" type="button">Copy link</button>
+        <button class="btn-ghost btn-sm" id="refRegenBtn" type="button" title="Generate a new code (the old link stops working)">Regenerate</button>
+      </div>
+      <div id="refCopyMsg" style="display:none;margin-top:10px;font-size:0.84rem;color:#22c55e;"></div>
+
+      <div class="ref-share-row">
+        <a class="ref-share-btn" id="refShareWA" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="ref-share-btn" id="refShareTG" target="_blank" rel="noopener">Telegram</a>
+        <a class="ref-share-btn" id="refShareX" target="_blank" rel="noopener">X / Twitter</a>
+        <a class="ref-share-btn" id="refShareMail">Email</a>
+      </div>
+
+      <div class="ref-stats">
+        <div class="ref-stat">
+          <div class="ref-stat-label">Total invited</div>
+          <div class="ref-stat-value">{{ total_invited }}</div>
+        </div>
+        <div class="ref-stat">
+          <div class="ref-stat-label">Rewarded</div>
+          <div class="ref-stat-value">{{ rewarded_count }}</div>
+        </div>
+        <div class="ref-stat">
+          <div class="ref-stat-label">Days earned (year)</div>
+          <div class="ref-stat-value">{{ days_earned_this_year }}</div>
+        </div>
+        <div class="ref-stat">
+          <div class="ref-stat-label">Cap remaining</div>
+          <div class="ref-stat-value">{{ days_remaining }}</div>
+        </div>
+      </div>
+
+      <div class="ref-cap-bar" aria-label="Annual reward cap">
+        {% set _pct = ((days_earned_this_year * 100) / annual_cap) if annual_cap else 0 %}
+        {% if _pct > 100 %}{% set _pct = 100 %}{% endif %}
+        <div class="ref-cap-fill" style="width: {{ _pct }}%;"></div>
+      </div>
+      <div style="margin-top:8px;font-size:0.78rem;color:var(--text-muted);">
+        Annual reward cap: <b style="color:var(--text);">{{ annual_cap }} days</b>. Friends still get their +{{ reward_days_referred }} bonus once you hit the cap, but no more days are added to your account until next year.
+      </div>
+    </div>
+
+    <h2 style="margin:30px 0 10px;font-size:1.25rem;font-weight:800;letter-spacing:-0.02em;">Recent invites</h2>
+    {% if referred_list %}
+      <div class="ref-table">
+        <div class="ref-table-row is-head">
+          <div>Friend</div>
+          <div>Status</div>
+          <div>Source</div>
+          <div>Date</div>
+        </div>
+        {% for r in referred_list %}
+        <div class="ref-table-row">
+          <div style="font-weight:700;">{{ r.referred_first_name }}</div>
+          <div>
+            {% if r.status == "rewarded" %}
+              <span class="ref-pill is-rewarded">+{{ r.reward_days_referrer }}d</span>
+            {% else %}
+              <span class="ref-pill is-blocked">{{ r.blocked_reason or "blocked" }}</span>
+            {% endif %}
+          </div>
+          <div style="font-size:0.86rem;color:var(--text-muted);">{{ r.source }}</div>
+          <div style="font-size:0.84rem;color:var(--text-muted);">{{ r.created_at.strftime('%d %b %Y') }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div style="padding:32px 24px;text-align:center;border:1px dashed rgba(255,255,255,0.10);border-radius:18px;color:var(--text-muted);">
+        No invites yet. Share your link to start earning days.
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/profile">Profile</a>
+      <a href="/pricing">Access</a>
+    </div>
+    <div>&copy; 2026 WEXTheory</div>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ request.state.csp_nonce }}">
+  (function () {
+    const link = {{ referral_link | tojson }};
+    const code = {{ referral_code | tojson }};
+    const shareText = "Practice Danish driving theory with me on WEXTheory — sign up with my link for +{{ reward_days_referred }} bonus days: " + link;
+
+    const copyBtn = document.getElementById('refCopyBtn');
+    const linkInput = document.getElementById('refLinkInput');
+    const msg = document.getElementById('refCopyMsg');
+    const regenBtn = document.getElementById('refRegenBtn');
+
+    function flash(text, color) {
+      if (!msg) return;
+      msg.textContent = text;
+      msg.style.color = color || '#22c55e';
+      msg.style.display = 'block';
+      clearTimeout(window.__refMsgT);
+      window.__refMsgT = setTimeout(function () { msg.style.display = 'none'; }, 2400);
+    }
+
+    if (copyBtn) {
+      copyBtn.addEventListener('click', async function () {
+        try {
+          await navigator.clipboard.writeText(link);
+          flash('Link copied. Now share it.');
+        } catch (e) {
+          if (linkInput) {
+            linkInput.select();
+            document.execCommand('copy');
+            flash('Link copied.');
+          }
+        }
+      });
+    }
+
+    if (regenBtn) {
+      regenBtn.addEventListener('click', async function () {
+        if (!confirm('Generate a new referral code? Your old link will stop working.')) return;
+        try {
+          const r = await fetch('/api/referrals/regenerate', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+          const data = await r.json();
+          if (data && data.success) {
+            location.reload();
+          } else {
+            flash(data && data.error || 'Could not regenerate code.', '#f87171');
+          }
+        } catch (e) {
+          flash('Network error. Try again.', '#f87171');
+        }
+      });
+    }
+
+    const wa = document.getElementById('refShareWA');
+    const tg = document.getElementById('refShareTG');
+    const xt = document.getElementById('refShareX');
+    const ml = document.getElementById('refShareMail');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(shareText);
+    if (tg) tg.href = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent('Practice Danish driving theory with me on WEXTheory — +{{ reward_days_referred }} bonus days for new accounts via my link.');
+    if (xt) xt.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText);
+    if (ml) ml.href = 'mailto:?subject=' + encodeURIComponent('Practice Danish driving theory with WEXTheory') + '&body=' + encodeURIComponent(shareText);
+  })();
+</script>
+{% endblock %}

@@ -503,12 +503,143 @@
   .triumph-beam,
   .triumph-monument { opacity: 1 !important; transform: none !important; }
 }
+
+/* ============ PRINT-SAFE CLONE (captured for download) ============ */
+.triumph-card-print {
+  position: fixed; left: -10000px; top: 0; width: 480px; height: 720px;
+  box-sizing: border-box; padding: 24px 30px 28px;
+  background-color: #141210;
+  background-image:
+    radial-gradient(circle at 30px 30px, rgba(232,228,220,0.028) 1px, transparent 1.6px),
+    linear-gradient(180deg, #1c1a16 0%, #0e0c0a 100%);
+  background-size: 60px 60px, 100% 100%;
+  color: #c8c4ba;
+  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  border: 1px solid #3a3835; border-radius: 6px;
+  overflow: hidden; pointer-events: none;
+  display: flex; flex-direction: column;
+}
+.tcp-foil {
+  font-size: 7px; letter-spacing: 0.35em; color: rgba(232,228,220,0.32);
+  text-transform: uppercase; text-align: center; font-weight: 400;
+  padding: 0 0 12px; border-bottom: 1px solid rgba(232,228,220,0.09);
+  white-space: nowrap; overflow: hidden;
+}
+.tcp-watermark {
+  position: absolute; top: 46%; left: 50%; transform: translate(-50%, -50%);
+  font-size: 260px; font-weight: 100; line-height: 1;
+  color: rgba(232,228,220,0.045); letter-spacing: 0.03em;
+  pointer-events: none; user-select: none; z-index: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+.tcp-corner {
+  position: absolute; top: 50px; left: 30px; z-index: 2;
+  display: flex; flex-direction: column; gap: 3px;
+  font-size: 8px; letter-spacing: 0.32em; text-transform: uppercase; color: #6b665e;
+}
+.tcp-corner b { font-size: 10px; font-weight: 500; color: #c8c4ba; letter-spacing: 0.25em; }
+.tcp-seal {
+  position: absolute; top: 44px; right: 30px; z-index: 2;
+  width: 46px; height: 46px; border-radius: 50%;
+  border: 1px solid #8a847a;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 300; letter-spacing: 1.5px; color: #e8e4dc;
+  font-family: 'Inter', system-ui, sans-serif;
+  box-shadow: inset 0 0 0 4px rgba(184,176,162,0.08);
+}
+.tcp-content {
+  position: relative; z-index: 1; flex: 1;
+  display: flex; flex-direction: column; text-align: center;
+  padding-top: 64px;
+}
+.tcp-status {
+  font-size: 9px; letter-spacing: 0.4em; text-transform: uppercase; color: #8a847a;
+  margin-bottom: 14px; font-weight: 500;
+}
+.tcp-name {
+  font-size: 36px; font-weight: 300; color: #f0ece2;
+  letter-spacing: -0.01em; line-height: 1.1; margin-bottom: 8px;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+.tcp-date {
+  font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase; color: #8a847a;
+  margin-bottom: 22px;
+}
+.tcp-stats {
+  display: flex; justify-content: center; gap: 56px; margin-bottom: 22px;
+  padding: 16px 0;
+  border-top: 1px solid rgba(232,228,220,0.08);
+  border-bottom: 1px solid rgba(232,228,220,0.08);
+}
+.tcp-stat { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.tcp-stat b {
+  font-size: 30px; font-weight: 200; color: #f0ece2;
+  line-height: 1; font-family: 'Inter', system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.tcp-stat span { font-size: 8px; letter-spacing: 0.28em; text-transform: uppercase; color: #6b665e; font-weight: 500; }
+.tcp-tag {
+  font-size: 11px; line-height: 1.6; color: #a09a8f;
+  margin: 0 auto 20px; max-width: 340px; font-weight: 300;
+}
+.tcp-verify {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px; margin-bottom: 18px; text-align: left;
+  border: 1px solid rgba(232,228,220,0.08); border-radius: 4px;
+  background: rgba(0,0,0,0.15);
+}
+.tcp-qr {
+  width: 70px; height: 70px; padding: 4px; flex-shrink: 0;
+  background: #f0ece2; border-radius: 2px; line-height: 0;
+}
+.tcp-qr canvas, .tcp-qr img { display: block; width: 100%; height: 100%; }
+.tcp-verify-copy { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.tcp-v-label { font-size: 8px; letter-spacing: 0.28em; text-transform: uppercase; color: #c8c4ba; font-weight: 500; }
+.tcp-v-text { font-size: 9px; color: #6b665e; line-height: 1.45; }
+.tcp-v-hash {
+  font-size: 8px; letter-spacing: 0.12em; color: #8a847a;
+  font-family: 'SF Mono', 'Consolas', 'Courier New', monospace;
+  margin-top: 2px; word-break: break-all;
+}
+.tcp-signature {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-top: auto; padding-top: 14px;
+  border-top: 1px solid rgba(232,228,220,0.08);
+}
+.tcp-sig-left { display: flex; flex-direction: column; gap: 4px; text-align: left; }
+.tcp-sig-name {
+  font-family: 'Segoe Script', 'Brush Script MT', 'Lucida Handwriting', cursive;
+  font-size: 26px; color: #e8e4dc; font-weight: 400; line-height: 1;
+}
+.tcp-sig-label {
+  font-size: 7px; letter-spacing: 0.28em; text-transform: uppercase; color: #6b665e;
+  padding-top: 4px; border-top: 1px solid rgba(232,228,220,0.08);
+  max-width: 150px;
+}
+.tcp-sig-right {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 3px;
+  padding: 6px 12px; border: 1.5px solid rgba(232,228,220,0.28);
+  transform: rotate(-4deg); background: rgba(232,228,220,0.02);
+}
+.tcp-stamp-label { font-size: 7px; letter-spacing: 0.3em; text-transform: uppercase; color: #a09a8f; font-weight: 500; }
+.tcp-stamp-date { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; color: #f0ece2; font-variant-numeric: tabular-nums; }
+.tcp-microborder {
+  position: absolute; bottom: 8px; left: 0; right: 0;
+  font-size: 6px; letter-spacing: 0.35em; text-align: center;
+  color: rgba(232,228,220,0.18); white-space: nowrap; overflow: hidden;
+}
 </style>
 {% endblock %}
 {% block body %}
 <div class="triumph-preview-badge">Admin preview · no DB writes</div>
 
-<div id="triumphOverlay" class="triumph-overlay" data-user-name="{{ triumph_data.user_name }}" data-date="{{ triumph_data.date }}" data-total="{{ triumph_data.total_questions }}">
+<div id="triumphOverlay" class="triumph-overlay"
+     data-user-name="{{ triumph_data.user_name }}"
+     data-date="{{ triumph_data.date }}"
+     data-total="{{ triumph_data.total_questions }}"
+     data-serial="{{ triumph_data.certificate_serial or '' }}"
+     data-cert-hash="{{ triumph_data.certificate_hash or '' }}"
+     data-referral-code="{{ triumph_data.referral_code or '' }}">
   <div class="triumph-monument" aria-hidden="true">XIV</div>
   <div class="triumph-dust" aria-hidden="true">
     <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
@@ -518,7 +649,7 @@
   <div class="triumph-inner">
 
     <div class="triumph-strip">
-      <span>N° {{ '%03d'|format(triumph_data.certificate_no if triumph_data.certificate_no is defined else 1) }}</span>
+      <span>N° {{ (triumph_data.certificate_serial or 'WEX-XIV-001').rsplit('-', 1)[-1] }}</span>
       <span class="line" aria-hidden="true"></span>
       <span class="dot" aria-hidden="true"></span>
       <span class="line" aria-hidden="true"></span>
@@ -578,7 +709,7 @@
 
       <div class="triumph-card-corner">
         <span data-en="Serial" data-ua="Серія">Serial</span>
-        <b>WEX·XIV·{{ '%03d'|format(triumph_data.certificate_no if triumph_data.certificate_no is defined else 1) }}</b>
+        <b>{{ (triumph_data.certificate_serial or 'WEX-XIV-001').replace('-', '·') }}</b>
       </div>
 
       <svg class="triumph-card-seal" viewBox="0 0 68 68" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -646,6 +777,47 @@
       </div>
     </div>
 
+    {# Print-safe clone (rendered off-screen, captured by DOWNLOAD button) #}
+    <div class="triumph-card-print" id="triumphCardPrint" aria-hidden="true">
+      <div class="tcp-foil">WEXTHEORY · AUTHENTIC · XIV/XIV · CERTIFIED · FÆRDSELSSTYRELSEN · SECURE · WEXTHEORY</div>
+      <div class="tcp-watermark">XIV</div>
+      <div class="tcp-corner">
+        <span>Serial</span>
+        <b>{{ (triumph_data.certificate_serial or 'WEX-XIV-001').replace('-', '·') }}</b>
+      </div>
+      <div class="tcp-seal">XIV</div>
+      <div class="tcp-content">
+        <div class="tcp-status">Certified Theory Master</div>
+        <div class="tcp-name">{{ triumph_data.user_name }}</div>
+        <div class="tcp-date">{{ triumph_data.user_email }} · {{ triumph_data.date }}</div>
+        <div class="tcp-stats">
+          <div class="tcp-stat"><b>{{ triumph_data.total_questions }}</b><span>Questions</span></div>
+          <div class="tcp-stat"><b>14</b><span>Tests</span></div>
+          <div class="tcp-stat"><b>100%</b><span>Score</span></div>
+        </div>
+        <div class="tcp-tag">Cleared every official Danish driving theory test on WexTheory with a perfect score.</div>
+        <div class="tcp-verify">
+          <div class="tcp-qr" id="triumphCardPrintQr"></div>
+          <div class="tcp-verify-copy">
+            <span class="tcp-v-label">Verify authenticity</span>
+            <span class="tcp-v-text">Scan to confirm this certificate on wextheory.cv</span>
+            <span class="tcp-v-hash" id="tcpHash">— — — —</span>
+          </div>
+        </div>
+        <div class="tcp-signature">
+          <div class="tcp-sig-left">
+            <span class="tcp-sig-name">W. Theory</span>
+            <span class="tcp-sig-label">Chief Examiner · WexTheory</span>
+          </div>
+          <div class="tcp-sig-right">
+            <span class="tcp-stamp-label">Authenticated</span>
+            <b class="tcp-stamp-date">{{ triumph_data.date }}</b>
+          </div>
+        </div>
+      </div>
+      <div class="tcp-microborder">WEXTHEORY · SECURE · AUTHENTIC · NON-TRANSFERABLE · XIV · WEXTHEORY · SECURE</div>
+    </div>
+
     <div class="triumph-actions">
       <button type="button" class="triumph-btn primary" id="triumphDownloadBtn"
               data-en="Download card" data-ua="Завантажити картку">Download card</button>
@@ -697,14 +869,27 @@
     return a.slice(0,4) + '·' + a.slice(4,8) + '·' + b.slice(0,4) + '·' + b.slice(4,8);
   }
   const seed = (overlay && overlay.dataset.userName || '') + '|' + (overlay && overlay.dataset.date || '') + '|' + (overlay && overlay.dataset.total || '');
+  const hashStr = tgHash(seed);
   const hashEl = document.getElementById('triumphHash');
-  if (hashEl) hashEl.textContent = tgHash(seed);
+  if (hashEl) hashEl.textContent = hashStr;
+  const tcpHashEl = document.getElementById('tcpHash');
+  if (tcpHashEl) tcpHashEl.textContent = hashStr;
 
-  // QR — encodes verify URL with hash
+  // QR — encodes verify URL with the server-issued cert hash (rendered on live card + print clone)
+  const verifySerial = (overlay && overlay.dataset.serial || '').trim();
+  const certHash = (overlay && overlay.dataset.certHash || '').trim();
+  const verifyUrl = verifySerial
+    ? (location.origin + '/verify/' + encodeURIComponent(verifySerial) + (certHash ? ('?h=' + encodeURIComponent(certHash)) : ''))
+    : ('https://wextheory.cv/verify-certificate');
   try {
-    const verifyUrl = 'https://wextheory.cv/verify?h=' + encodeURIComponent(tgHash(seed).replace(/·/g, ''));
     new QRCode(document.getElementById('triumphQr'), {
       text: verifyUrl, width: 92, height: 92,
+      colorDark: '#050505', colorLight: '#f0ece2', correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch (e) {}
+  try {
+    new QRCode(document.getElementById('triumphCardPrintQr'), {
+      text: verifyUrl, width: 70, height: 70,
       colorDark: '#050505', colorLight: '#f0ece2', correctLevel: QRCode.CorrectLevel.M
     });
   } catch (e) {}
@@ -749,18 +934,41 @@
   }
   setTimeout(fire, 2200);
 
-  // Download — render card to PNG
+  // Download — render the print-safe clone to PNG (html2canvas can't handle the live card's SVG patterns/animations)
   document.getElementById('triumphDownloadBtn')?.addEventListener('click', async (e) => {
     e.preventDefault();
-    const card = document.getElementById('triumphCard');
-    if (!card || typeof html2canvas !== 'function') return;
+    const btn = e.currentTarget;
+    const printNode = document.getElementById('triumphCardPrint');
+    if (!printNode || typeof html2canvas !== 'function') return;
+    const originalLabel = btn.textContent;
+    btn.disabled = true; btn.textContent = '…';
     try {
-      const canvas = await html2canvas(card, { backgroundColor: '#0a0a0a', scale: 2, useCORS: true });
+      if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (_) {} }
+      const prevLeft = printNode.style.left;
+      printNode.style.left = '0'; printNode.style.top = '0'; printNode.style.visibility = 'hidden';
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const canvas = await html2canvas(printNode, {
+        backgroundColor: '#0e0c0a',
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        width: 480,
+        height: 720,
+        windowWidth: 480,
+        windowHeight: 720,
+      });
+      printNode.style.left = prevLeft || '-10000px';
+      printNode.style.visibility = '';
+      const serial = (overlay && overlay.dataset.serial || '').trim() || 'wextheory-theory-master';
       const link = document.createElement('a');
-      link.download = 'wextheory-theory-master.png';
+      link.download = 'wextheory-certificate-' + serial.replace(/[^A-Za-z0-9._-]/g, '-').toLowerCase() + '.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error('triumph download failed', err);
+    } finally {
+      btn.disabled = false; btn.textContent = originalLabel;
+    }
   });
 })();
 </script>
