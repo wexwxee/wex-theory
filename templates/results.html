@@ -1190,7 +1190,8 @@
     return a.slice(0,4) + '·' + a.slice(4,8) + '·' + b.slice(0,4) + '·' + b.slice(4,8);
   }
   const seed = (overlay.dataset.userName || '') + '|' + (overlay.dataset.date || '') + '|' + (overlay.dataset.total || '');
-  const hashStr = tgHash(seed);
+  const certHash = (overlay.dataset.certHash || '').trim();
+  const hashStr = certHash ? ('Security code ' + certHash.toUpperCase()) : tgHash(seed);
   const hashEl = document.getElementById('triumphHash');
   if (hashEl) hashEl.textContent = hashStr;
   const tcpHashEl = document.getElementById('tcpHash');
@@ -1198,7 +1199,6 @@
 
   // QR — encodes verify URL with the server-issued cert hash (rendered on live card + print clone)
   const verifySerial = (overlay.dataset.serial || '').trim();
-  const certHash = (overlay.dataset.certHash || '').trim();
   const verifyUrl = verifySerial
     ? (location.origin + '/verify/' + encodeURIComponent(verifySerial) + (certHash ? ('?h=' + encodeURIComponent(certHash)) : ''))
     : ('https://wextheory.cv/verify-certificate');
@@ -1327,7 +1327,6 @@
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-viewer.js?v=20260408-lbz"></script>
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/results.js?v=20260407-review2"></script>
 {% endblock %}
-
 
 
 

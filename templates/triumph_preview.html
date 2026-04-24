@@ -869,7 +869,8 @@
     return a.slice(0,4) + '·' + a.slice(4,8) + '·' + b.slice(0,4) + '·' + b.slice(4,8);
   }
   const seed = (overlay && overlay.dataset.userName || '') + '|' + (overlay && overlay.dataset.date || '') + '|' + (overlay && overlay.dataset.total || '');
-  const hashStr = tgHash(seed);
+  const certHash = (overlay && overlay.dataset.certHash || '').trim();
+  const hashStr = certHash ? ('Security code ' + certHash.toUpperCase()) : tgHash(seed);
   const hashEl = document.getElementById('triumphHash');
   if (hashEl) hashEl.textContent = hashStr;
   const tcpHashEl = document.getElementById('tcpHash');
@@ -877,7 +878,6 @@
 
   // QR — encodes verify URL with the server-issued cert hash (rendered on live card + print clone)
   const verifySerial = (overlay && overlay.dataset.serial || '').trim();
-  const certHash = (overlay && overlay.dataset.certHash || '').trim();
   const verifyUrl = verifySerial
     ? (location.origin + '/verify/' + encodeURIComponent(verifySerial) + (certHash ? ('?h=' + encodeURIComponent(certHash)) : ''))
     : ('https://wextheory.cv/verify-certificate');

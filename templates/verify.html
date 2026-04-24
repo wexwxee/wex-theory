@@ -138,7 +138,7 @@
     <p class="verify-eyebrow" style="margin-bottom:14px;">Certificate Verification</p>
     <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.04em;margin-bottom:8px;">Verify a Theory Master certificate</h1>
     <p style="color:var(--text-muted);max-width:580px;line-height:1.7;margin-bottom:28px;">
-      Every WEXTheory Theory Master certificate carries a unique serial number. Enter the serial below to confirm authenticity, or scan the QR code printed on the certificate.
+      Every WEXTheory Theory Master certificate carries a unique serial number and security code. Enter both to confirm authenticity, or scan the QR code printed on the certificate.
     </p>
 
     {% if mode == "form" %}
@@ -146,6 +146,7 @@
         <div class="verify-cell-label">Serial number</div>
         <div class="verify-form">
           <input type="text" id="verifySerialInput" placeholder="WEX-XIV-001" autocomplete="off" autocapitalize="characters" spellcheck="false">
+          <input type="text" id="verifyCodeInput" placeholder="Security code from certificate" autocomplete="off" autocapitalize="characters" spellcheck="false">
           <button class="btn-primary" id="verifySerialBtn" type="button">Verify</button>
         </div>
         <div id="verifyMsg" style="display:none;margin-top:12px;font-size:0.84rem;color:#f87171;"></div>
@@ -209,16 +210,31 @@
           </p>
         </div>
 
+      {% elif not hash_supplied %}
+        <div class="verify-card" style="border-color:rgba(234,179,8,0.32);">
+          <span class="verify-status-pill is-revoked">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Security Code Required
+          </span>
+          <h2 style="margin:16px 0 8px;font-size:1.3rem;font-weight:800;">Enter the certificate security code</h2>
+          <p style="color:var(--text-muted);line-height:1.7;">
+            For privacy, serial numbers alone are not enough to verify a certificate. Scan the QR code or enter the security code printed on the certificate.
+          </p>
+          <div style="margin-top:18px;">
+            <a href="/verify-certificate" class="btn-ghost btn-sm">Try again</a>
+          </div>
+        </div>
+
       {% else %}
         <div class="verify-card" style="border-color:rgba(239,68,68,0.32);">
           <span class="verify-status-pill is-invalid">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
             Not Verified
           </span>
-          <h2 style="margin:16px 0 8px;font-size:1.3rem;font-weight:800;">No certificate found</h2>
+          <h2 style="margin:16px 0 8px;font-size:1.3rem;font-weight:800;">Certificate not verified</h2>
           <p style="color:var(--text-muted);line-height:1.7;">
-            We couldn't find a certificate with serial <b style="color:var(--text);font-family:'JetBrains Mono','Courier New',monospace;">{{ serial_requested }}</b>.
-            Double-check the spelling, or try entering the serial below.
+            We could not verify serial <b style="color:var(--text);font-family:'JetBrains Mono','Courier New',monospace;">{{ serial_requested }}</b> with that security code.
+            Double-check both values, or scan the QR code printed on the certificate.
           </p>
           <div style="margin-top:18px;">
             <a href="/verify-certificate" class="btn-ghost btn-sm">Try again</a>
@@ -250,17 +266,19 @@
 <script nonce="{{ request.state.csp_nonce }}">
   (function () {
     const input = document.getElementById('verifySerialInput');
+    const codeInput = document.getElementById('verifyCodeInput');
     const btn = document.getElementById('verifySerialBtn');
     const msg = document.getElementById('verifyMsg');
     if (!input || !btn) return;
     function go() {
       const raw = (input.value || '').trim().toUpperCase();
+      const code = (codeInput && codeInput.value || '').trim();
       if (!raw) {
         msg.style.display = 'block';
         msg.textContent = 'Enter a certificate serial number.';
         return;
       }
-      window.location.href = '/verify/' + encodeURIComponent(raw);
+      window.location.href = '/verify/' + encodeURIComponent(raw) + (code ? ('?h=' + encodeURIComponent(code)) : '');
     }
     btn.addEventListener('click', go);
     input.addEventListener('keydown', function (e) { if (e.key === 'Enter') go(); });

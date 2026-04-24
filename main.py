@@ -19,6 +19,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import func as sql_func, inspect as sql_inspect, text as sql_text, or_ as sql_or
+from sqlalchemy.exc import IntegrityError
 from authlib.integrations.starlette_client import OAuth
 import httpx
 
@@ -563,8 +564,9 @@ def issue_or_get_certificate(db: Session, user: models.User) -> models.Certifica
             db.commit()
             db.refresh(cert)
             return cert
-        except Exception:
+        except IntegrityError as e:
             db.rollback()
+            print(f"[CERT SERIAL COLLISION] {e}")
             continue
     # Final failure — return something harmless in-memory rather than crashing the page
     raise RuntimeError("Unable to issue certificate serial after retries")
@@ -577,6 +579,7 @@ REFERRAL_COOKIE_MAX_AGE = 86400 * 30
 REFERRAL_DAYS_REFERRER = 14
 REFERRAL_DAYS_REFERRED = 7
 REFERRAL_ANNUAL_CAP_DAYS = 180
+REFERRAL_NEW_ACCOUNT_WINDOW = timedelta(hours=24)
 
 
 def _sign_referral_cookie(code: str) -> str:
@@ -626,6 +629,22 @@ def _find_referrer_by_code(db: Session, raw_code: str) -> Optional[models.User]:
     return db.query(models.User).filter(models.User.referral_code == code).first()
 
 
+def _is_fresh_referral_account(user: models.User) -> bool:
+    created_at = getattr(user, "created_at", None)
+    if not created_at:
+        return False
+    return created_at >= datetime.utcnow() - REFERRAL_NEW_ACCOUNT_WINDOW
+
+
+def _commit_referral_binding(db: Session) -> Optional[str]:
+    try:
+        db.commit()
+        return None
+    except IntegrityError:
+        db.rollback()
+        return "already_bound"
+
+
 def bind_referral_for_new_user(
     db: Session,
     new_user: models.User,
@@ -637,6 +656,10 @@ def bind_referral_for_new_user(
         return False, "no_code"
     if new_user.referred_by_user_id:
         return False, "already_bound"
+    if db.query(models.Referral.id).filter(models.Referral.referred_id == new_user.id).first():
+        return False, "already_bound"
+    if source == "code" and not _is_fresh_referral_account(new_user):
+        return False, "account_too_old"
 
     referrer = _find_referrer_by_code(db, raw_code)
     if not referrer:
@@ -648,7 +671,9 @@ def bind_referral_for_new_user(
             reward_days_referrer=0, reward_days_referred=0,
             blocked_reason="self_referral",
         ))
-        db.commit()
+        duplicate = _commit_referral_binding(db)
+        if duplicate:
+            return False, duplicate
         return False, "self_referral"
     if (referrer.email or "").lower() == (new_user.email or "").lower():
         db.add(models.Referral(
@@ -657,7 +682,9 @@ def bind_referral_for_new_user(
             reward_days_referrer=0, reward_days_referred=0,
             blocked_reason="self_referral",
         ))
-        db.commit()
+        duplicate = _commit_referral_binding(db)
+        if duplicate:
+            return False, duplicate
         return False, "self_referral"
 
     used = _referral_days_used_this_year(db, referrer.id)
@@ -673,7 +700,9 @@ def bind_referral_for_new_user(
             reward_days_referrer=0, reward_days_referred=REFERRAL_DAYS_REFERRED,
             blocked_reason="cap_exceeded",
         ))
-        db.commit()
+        duplicate = _commit_referral_binding(db)
+        if duplicate:
+            return False, duplicate
         return True, "rewarded_referred_only"
 
     apply_subscription_days(referrer, REFERRAL_DAYS_REFERRER)
@@ -684,7 +713,9 @@ def bind_referral_for_new_user(
         reward_days_referrer=REFERRAL_DAYS_REFERRER,
         reward_days_referred=REFERRAL_DAYS_REFERRED,
     ))
-    db.commit()
+    duplicate = _commit_referral_binding(db)
+    if duplicate:
+        return False, duplicate
     try:
         send_referral_emails(referrer, new_user)
     except Exception as e:
@@ -1127,6 +1158,8 @@ def ensure_referrals_table(db: Session) -> None:
         if "referrals" not in inspector.get_table_names():
             models.Referral.__table__.create(bind=engine, checkfirst=True)
             print("[STARTUP] Created referrals table")
+        db.execute(sql_text("CREATE UNIQUE INDEX IF NOT EXISTS ux_referrals_referred_id ON referrals (referred_id)"))
+        db.commit()
     except Exception as e:
         db.rollback()
         print(f"[STARTUP] referrals table setup skipped/error: {e}")
@@ -1397,6 +1430,7 @@ async def refresh_auth_session(request: Request, call_next):
         "/api/auth/login",
         "/api/auth/register",
         "/api/auth/google/callback",
+        "/auth/google/callback",
     }
     token = request.cookies.get(AUTH_COOKIE_NAME)
     payload = decode_token(token) if token else None
@@ -1941,6 +1975,7 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
             return RedirectResponse("/login?error=no_email", status_code=302)
 
         user = db.query(models.User).filter(models.User.email == email).first()
+        created_user = False
         if not user:
             user = models.User(
                 name=name,
@@ -1950,21 +1985,35 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
                 created_at=datetime.utcnow(),
                 expires_at=datetime.utcnow(),  # no automatic premium — admin grants access
                 is_admin=False,
+                referral_code=generate_unique_referral_code(db),
             )
             db.add(user)
             db.commit()
             db.refresh(user)
+            created_user = True
             print(f"[GOOGLE CB] New user created: id={user.id} email={email}")
         else:
+            if not user.referral_code:
+                user.referral_code = generate_unique_referral_code(db)
+                db.commit()
             print(f"[GOOGLE CB] Existing user: id={user.id} email={email}")
+
+        referral_outcome = "no_code"
+        if created_user:
+            try:
+                referral_outcome = process_referral_after_registration(db, user, request)
+            except Exception as rex:
+                print(f"[GOOGLE REFERRAL BIND ERROR] {rex}")
+                referral_outcome = "error"
 
         jwt_token = create_token(user.id)
         redirect = "/admin" if user.is_admin else "/dashboard"
-        print(f"[GOOGLE CB] Issuing JWT, redirecting to {redirect}")
+        print(f"[GOOGLE CB] Issuing JWT, redirecting to {redirect}, ref={referral_outcome}")
 
         # Build redirect response with cookie explicitly
         resp = RedirectResponse(url=redirect, status_code=302)
         set_auth_cookie(resp, jwt_token, request)
+        resp.delete_cookie(REFERRAL_COOKIE_NAME, path="/")
         return resp
     except Exception as e:
         err_str = str(e)
@@ -1990,8 +2039,26 @@ async def login_page(request: Request):
 
 
 @app.get("/register", response_class=HTMLResponse)
-async def register_page(request: Request):
-    return templates.TemplateResponse(request, "register.html", {"request": request})
+async def register_page(request: Request, db: Session = Depends(get_db)):
+    invite_code = ""
+    ref = (request.query_params.get("ref") or "").strip().upper()
+    if ref.startswith("WEXR-") and _find_referrer_by_code(db, ref):
+        invite_code = ref
+    response = templates.TemplateResponse(request, "register.html", {
+        "request": request,
+        "invite_code": invite_code,
+    })
+    if invite_code:
+        response.set_cookie(
+            REFERRAL_COOKIE_NAME,
+            _sign_referral_cookie(invite_code),
+            max_age=REFERRAL_COOKIE_MAX_AGE,
+            httponly=True,
+            samesite="lax",
+            secure=_cookie_secure(request),
+            path="/",
+        )
+    return response
 
 
 @app.get("/forgot-password", response_class=HTMLResponse)
@@ -4167,6 +4234,7 @@ async def api_redeem_promo_code(request: Request, db: Session = Depends(get_db))
                     "self_referral": "You can't invite yourself",
                     "already_bound": "You've already used an invite code",
                     "invalid_code": "Invite code not found",
+                    "account_too_old": "Invite codes are only for newly created accounts",
                 }
                 return JSONResponse({"error": msg_map.get(outcome, "Could not apply invite code")}, status_code=400)
             reward_msg = (
@@ -4223,14 +4291,18 @@ async def verify_certificate_form(request: Request, db: Session = Depends(get_db
 async def verify_certificate(serial: str, request: Request, db: Session = Depends(get_db), h: Optional[str] = None):
     user = get_current_user(request, db)
     serial_clean = (serial or "").strip().upper()
+    supplied_hash = (h or "").strip().lower()
     cert = db.query(models.Certificate).filter(models.Certificate.serial == serial_clean).first()
     valid = False
     owner = None
-    if cert:
-        hash_ok = True
-        if h:
-            hash_ok = hmac.compare_digest(h.strip(), cert.verification_hash or "")
+    certificate_for_template = None
+    hash_supplied = bool(supplied_hash)
+    hash_ok = False
+    if cert and hash_supplied:
+        hash_ok = hmac.compare_digest(supplied_hash, cert.verification_hash or "")
         valid = hash_ok and not cert.is_revoked
+        if hash_ok:
+            certificate_for_template = cert
         if valid:
             owner = db.query(models.User).filter(models.User.id == cert.user_id).first()
     # Referral tie-in — show the owner's code on verified page (soft upsell)
@@ -4240,8 +4312,9 @@ async def verify_certificate(serial: str, request: Request, db: Session = Depend
     return templates.TemplateResponse(request, "verify.html", {
         "request": request, "user": user,
         "mode": "result",
-        "certificate": cert, "valid": valid, "owner": owner,
+        "certificate": certificate_for_template, "valid": valid, "owner": owner,
         "serial_requested": serial_clean,
+        "hash_supplied": hash_supplied,
         "referrer_code": referrer_code,
         "reward_days_referred": REFERRAL_DAYS_REFERRED,
     })
@@ -4260,6 +4333,7 @@ async def referral_landing(code: str, request: Request, db: Session = Depends(ge
         max_age=REFERRAL_COOKIE_MAX_AGE,
         httponly=True,
         samesite="lax",
+        secure=_cookie_secure(request),
         path="/",
     )
     return resp
