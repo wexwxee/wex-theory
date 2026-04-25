@@ -2109,6 +2109,53 @@ def serialize_test_question(question: models.Question, *, display_index: Optiona
     }
 
 
+def serialize_review_question(
+    question: models.Question,
+    *,
+    display_index: int,
+    wording_mode: str,
+    selected_ids: Optional[list[int]] = None,
+    is_correct: bool = False,
+    is_bookmarked: bool = False,
+) -> dict:
+    payload = serialize_test_question(
+        question,
+        display_index=display_index,
+        wording_mode=wording_mode,
+    )
+    answers = ordered_answers(question)
+    correct_ids = [answer.id for answer in answers if answer.is_correct]
+    selected_ids = selected_ids or []
+    review_answers = []
+    for answer_payload, answer in zip(payload["answers"], answers):
+        review_answers.append({
+            "id": answer_payload["id"],
+            "text": answer_payload["text"],
+            "text_ru": answer_payload.get("text_ru") or "",
+            "is_correct": bool(answer.is_correct),
+        })
+
+    return {
+        "id": payload["id"],
+        "index": payload["question_index"],
+        "question_index": payload["question_index"],
+        "question_id": payload["id"],
+        "is_bookmarked": bool(is_bookmarked),
+        "text": payload["question_text"],
+        "question_text": payload["question_text"],
+        "text_ru": payload.get("question_text_ru") or "",
+        "question_text_ru": payload.get("question_text_ru") or "",
+        "image": payload.get("image_path") or "",
+        "image_path": payload.get("image_path") or "",
+        "explanation": payload.get("explanation") or "",
+        "explanation_ru": payload.get("explanation_ru") or "",
+        "is_correct": bool(is_correct),
+        "selected_ids": selected_ids,
+        "correct_ids": correct_ids,
+        "answers": review_answers,
+    }
+
+
 def get_exam_mode_question_ids(db: Session) -> list[int]:
     rows = (
         db.query(models.Question.id)
@@ -3453,14 +3500,22 @@ async def results_page(test_id: int, attempt_id: int, request: Request, db: Sess
         answers = ordered_answers(q)
         correct_ids = [a.id for a in answers if a.is_correct]
         selected_ids = json.loads(ua.selected_answer_ids) if ua else []
+        display_index = idx + 1
         question_results.append({
             "modal_index": idx,
-            "display_index": idx + 1,
+            "display_index": display_index,
             "question": q,
             "answers": answers,
             "is_correct": ua.is_correct if ua else False,
             "selected_ids": selected_ids,
             "correct_ids": correct_ids,
+            "review_json": serialize_review_question(
+                q,
+                display_index=display_index,
+                wording_mode=wording_mode,
+                selected_ids=selected_ids,
+                is_correct=ua.is_correct if ua else False,
+            ),
         })
     bookmarked_question_ids = {
         row[0]
@@ -3472,6 +3527,8 @@ async def results_page(test_id: int, attempt_id: int, request: Request, db: Sess
     saved_question_results = [
         qr for qr in question_results if qr["question"].id in bookmarked_question_ids
     ]
+    for qr in question_results:
+        qr["review_json"]["is_bookmarked"] = qr["question"].id in bookmarked_question_ids
     is_triumph = False
     triumph_data = None
     if (
@@ -3786,17 +3843,18 @@ async def api_review(attempt_id: int, request: Request, db: Session = Depends(ge
     questions = get_questions_for_attempt(db, attempt)
     wording_mode = normalize_wording_mode(getattr(attempt, "wording_mode", None), test_id=attempt.test_id)
 
-    return [
-        {
-            "id": q.id, "question_index": idx + 1 if is_exam_mode_test(attempt.test_id) else q.question_index,
-            "question_text": resolve_question_text(q, wording_mode), "image_path": q.image_path,
-            "explanation": q.explanation,
-            "is_correct": ua_map[q.id].is_correct if q.id in ua_map else False,
-            "selected_ids": json.loads(ua_map[q.id].selected_answer_ids) if q.id in ua_map else [],
-            "answers": [{"id": a.id, "text": resolve_answer_text(a, wording_mode), "is_correct": a.is_correct} for a in ordered_answers(q)],
-        }
-        for idx, q in enumerate(questions)
-    ]
+    review_items = []
+    for idx, q in enumerate(questions):
+        ua = ua_map.get(q.id)
+        selected_ids = json.loads(ua.selected_answer_ids) if ua else []
+        review_items.append(serialize_review_question(
+            q,
+            display_index=idx + 1 if is_exam_mode_test(attempt.test_id) else q.question_index,
+            wording_mode=wording_mode,
+            selected_ids=selected_ids,
+            is_correct=ua.is_correct if ua else False,
+        ))
+    return review_items
 
 
 # ─── Debug ─────────────────────────────────────────────────────────────────────

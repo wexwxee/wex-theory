@@ -1084,7 +1084,7 @@
   </div>
 </div>
 
-<textarea id="resultsDataJson" hidden>[{% for qr in question_results %}{"index": {{ qr.display_index }}, "question_id": {{ qr.question.id }}, "is_bookmarked": {{ 'true' if qr.question.id in bookmarked_question_ids else 'false' }}, "text": {{ (qr.question.display_question_text or qr.question.question_text) | tojson }}, "text_ru": {{ (qr.question.question_text_ru or '') | tojson }}, "image": {{ (qr.question.image_path or '') | tojson }}, "explanation": {{ (qr.question.explanation or '') | tojson }}, "explanation_ru": {{ (qr.question.explanation_ru or '') | tojson }}, "is_correct": {{ 'true' if qr.is_correct else 'false' }}, "selected_ids": {{ qr.selected_ids | tojson }}, "correct_ids": {{ qr.correct_ids | tojson }}, "answers": [{% for a in qr.answers %}{"id": {{ a.id }}, "text": {{ (a.display_text or a.text) | tojson }}, "text_ru": {{ (a.text_ru or '') | tojson }}}{% if not loop.last %}, {% endif %}{% endfor %}]}{% if not loop.last %}, {% endif %}{% endfor %}]</textarea>
+<textarea id="resultsDataJson" hidden>[{% for qr in question_results %}{{ qr.review_json | tojson }}{% if not loop.last %}, {% endif %}{% endfor %}]</textarea>
 <div id="resultsPageMeta" hidden data-score="{{ attempt.score }}" data-total="{{ question_results|length }}"></div>
 
 {% if is_triumph %}
