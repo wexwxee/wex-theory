@@ -941,24 +941,26 @@
     const printNode = document.getElementById('triumphCardPrint');
     if (!printNode || typeof html2canvas !== 'function') return;
     const originalLabel = btn.textContent;
-    let prevStyle = null;
+    let holder = null;
     btn.disabled = true; btn.textContent = '…';
     try {
       if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (_) {} }
-      prevStyle = {
-        left: printNode.style.left,
-        top: printNode.style.top,
-        transform: printNode.style.transform,
-        zIndex: printNode.style.zIndex,
-        pointerEvents: printNode.style.pointerEvents,
-      };
-      printNode.style.left = '50%';
-      printNode.style.top = '12px';
-      printNode.style.transform = 'translateX(-50%)';
-      printNode.style.zIndex = '2147483647';
-      printNode.style.pointerEvents = 'none';
+      // Render an isolated on-screen copy so html2canvas captures exact 480x720 bounds.
+      holder = document.createElement('div');
+      holder.style.cssText = 'position:fixed;left:0;top:0;width:480px;height:720px;z-index:2147483647;pointer-events:none;overflow:hidden;background:#0e0c0a;';
+      const captureNode = printNode.cloneNode(true);
+      captureNode.id = 'triumphCardPrintCapture';
+      captureNode.querySelectorAll('[id]').forEach((el) => { el.removeAttribute('id'); });
+      captureNode.style.position = 'absolute';
+      captureNode.style.left = '0';
+      captureNode.style.top = '0';
+      captureNode.style.transform = 'none';
+      captureNode.style.zIndex = '1';
+      captureNode.style.pointerEvents = 'none';
+      holder.appendChild(captureNode);
+      document.body.appendChild(holder);
       await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-      const canvas = await html2canvas(printNode, {
+      const canvas = await html2canvas(holder, {
         backgroundColor: '#0e0c0a',
         scale: 2,
         useCORS: true,
@@ -983,13 +985,7 @@
     } catch (err) {
       console.error('triumph download failed', err);
     } finally {
-      if (printNode) {
-        printNode.style.left = prevStyle?.left || '-10000px';
-        printNode.style.top = prevStyle?.top || '0';
-        printNode.style.transform = prevStyle?.transform || '';
-        printNode.style.zIndex = prevStyle?.zIndex || '';
-        printNode.style.pointerEvents = prevStyle?.pointerEvents || 'none';
-      }
+      if (holder) holder.remove();
       btn.disabled = false; btn.textContent = originalLabel;
     }
   });
