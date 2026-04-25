@@ -73,6 +73,7 @@ ACTIVITY_10_MIN_WINDOW = timedelta(minutes=10)
 ACTIVITY_RETENTION_WINDOW = timedelta(hours=24)
 PUBLIC_ID_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 BASE_DIR = Path(__file__).resolve().parent
+TRANSLATION_SEED_PATH = BASE_DIR / "data" / "translation_seed.json"
 CONTACT_UPLOAD_DIR = BASE_DIR / "uploads" / "contact"
 SUPPORT_UPLOAD_DIR = BASE_DIR / "uploads" / "support"
 AVATAR_UPLOAD_DIR = BASE_DIR / "uploads" / "avatars"
@@ -1160,6 +1161,120 @@ def ensure_translation_columns(db: Session) -> None:
         print(f"[STARTUP] translation columns setup skipped/error: {e}")
 
 
+def _seed_text(value) -> Optional[str]:
+    value = (value or "").strip()
+    return value or None
+
+
+def seed_missing_translations(db: Session) -> None:
+    """Restore manual RU translations from the repo seed if prod DB is missing them."""
+    if not TRANSLATION_SEED_PATH.exists():
+        return
+
+    try:
+        data = json.loads(TRANSLATION_SEED_PATH.read_text(encoding="utf-8"))
+        question_rows = data.get("questions") or []
+        answer_rows = data.get("answers") or []
+        word_rows = data.get("word_translations") or []
+        if not question_rows and not answer_rows and not word_rows:
+            return
+
+        q_existing = db.query(models.Question).filter(
+            models.Question.question_text_ru.isnot(None),
+            sql_func.length(sql_func.trim(models.Question.question_text_ru)) > 0,
+        ).count()
+        a_existing = db.query(models.Answer).filter(
+            models.Answer.text_ru.isnot(None),
+            sql_func.length(sql_func.trim(models.Answer.text_ru)) > 0,
+        ).count()
+        w_existing = db.query(models.WordTranslation).count()
+
+        if q_existing >= len(question_rows) and a_existing >= len(answer_rows) and w_existing >= len(word_rows):
+            print("[STARTUP] Translation seed already present")
+            return
+
+        print(
+            "[STARTUP] Seeding missing translations "
+            f"(questions {q_existing}/{len(question_rows)}, answers {a_existing}/{len(answer_rows)}, words {w_existing}/{len(word_rows)})"
+        )
+
+        question_id_map: dict[int, int] = {}
+        q_updated = 0
+        for item in question_rows:
+            seed_id = int(item.get("id") or 0)
+            question = db.get(models.Question, seed_id) if seed_id else None
+            if not question:
+                question = db.query(models.Question).filter(
+                    models.Question.test_id == item.get("test_id"),
+                    models.Question.question_index == item.get("question_index"),
+                ).first()
+            if not question:
+                continue
+
+            question_id_map[seed_id] = question.id
+            q_ru = _seed_text(item.get("question_text_ru"))
+            e_ru = _seed_text(item.get("explanation_ru"))
+            changed = False
+            if q_ru and not _seed_text(question.question_text_ru):
+                question.question_text_ru = q_ru
+                changed = True
+            if e_ru and not _seed_text(getattr(question, "explanation_ru", None)):
+                question.explanation_ru = e_ru
+                changed = True
+            if changed:
+                q_updated += 1
+
+        a_updated = 0
+        for item in answer_rows:
+            seed_id = int(item.get("id") or 0)
+            answer = db.get(models.Answer, seed_id) if seed_id else None
+            if not answer:
+                mapped_qid = question_id_map.get(int(item.get("question_id") or 0))
+                if mapped_qid:
+                    answer = db.query(models.Answer).filter(
+                        models.Answer.question_id == mapped_qid,
+                        models.Answer.text == item.get("text"),
+                    ).first()
+            if not answer:
+                continue
+
+            text_ru = _seed_text(item.get("text_ru"))
+            if text_ru and not _seed_text(answer.text_ru):
+                answer.text_ru = text_ru
+                a_updated += 1
+
+        w_upserted = 0
+        for item in word_rows:
+            word_en = _seed_text(item.get("word_en"))
+            translation_ru = _seed_text(item.get("translation_ru"))
+            if not word_en or not translation_ru:
+                continue
+            word_key = word_en.lower()
+            row = db.query(models.WordTranslation).filter(
+                models.WordTranslation.word_en == word_key
+            ).first()
+            if row:
+                if not _seed_text(row.translation_ru):
+                    row.translation_ru = translation_ru
+                    row.pos = _seed_text(item.get("pos"))
+                    row.is_curated = bool(item.get("is_curated"))
+                    w_upserted += 1
+            else:
+                db.add(models.WordTranslation(
+                    word_en=word_key,
+                    translation_ru=translation_ru,
+                    pos=_seed_text(item.get("pos")),
+                    is_curated=bool(item.get("is_curated")),
+                ))
+                w_upserted += 1
+
+        db.commit()
+        print(f"[STARTUP] Translation seed applied: questions={q_updated}, answers={a_updated}, words={w_upserted}")
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] translation seed skipped/error: {e}")
+
+
 def ensure_certificates_table(db: Session) -> None:
     try:
         inspector = sql_inspect(engine)
@@ -1639,6 +1754,8 @@ async def startup_init():
                 traceback.print_exc()
         else:
             print(f"[STARTUP] Tests already in DB: {test_count}")
+
+        seed_missing_translations(db)
 
         # 2. Fix image paths: rename .png → .jpg (images were converted to JPEG)
         png_count = db.query(models.Question).filter(
