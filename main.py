@@ -376,11 +376,14 @@ ADMIN_SETUP_TOKEN = _clean_env_value("ADMIN_SETUP_TOKEN")
 
 def get_public_base_url(request: Optional[Request] = None) -> str:
     configured = _clean_env_value("BASE_URL")
-    if configured:
+    if configured and configured.upper() not in {"BASE_URL", "YOUR_BASE_URL", "TODO"} and configured.lower().startswith(("http://", "https://")):
         return configured.rstrip("/")
     if request is not None:
-        return str(request.base_url).rstrip("/")
-    return ""
+        return get_request_base_url(request)
+    render_url = _clean_env_value("RENDER_EXTERNAL_URL")
+    if render_url and render_url.lower().startswith(("http://", "https://")):
+        return render_url.rstrip("/")
+    return "https://wextheory.cv"
 
 
 def get_request_base_url(request: Request) -> str:
@@ -1767,7 +1770,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260425-nav-profile-polish"
+templates.env.globals["asset_version"] = "20260425-referrals-flow"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 
 FREE_SAMPLE_TEST_ID = 0
