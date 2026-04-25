@@ -378,6 +378,41 @@
   .triumph-card { max-width: min(100%, 480px); }
   .triumph-card-frame { padding-left: 20px; padding-right: 20px; }
 }
+/* ============ TRIUMPH EXPERIENCE V3 — bolder, less museum, more product finale ============ */
+.triumph-overlay { padding-top: 34px; background: radial-gradient(circle at 80% 18%, rgba(245,158,11,0.18), transparent 26%), radial-gradient(circle at 18% 28%, rgba(236,72,153,0.10), transparent 28%), radial-gradient(circle at 58% 82%, rgba(20,184,166,0.11), transparent 30%), linear-gradient(135deg, #030303 0%, #0c070b 42%, #050505 100%); }
+.triumph-overlay::after { background: radial-gradient(ellipse at 62% 44%, transparent 18%, rgba(0,0,0,0.50) 62%, rgba(0,0,0,0.86) 100%); }
+.triumph-dust::before, .triumph-dust::after { content: ""; position: fixed; inset: -20%; pointer-events: none; background: conic-gradient(from 120deg at 50% 50%, transparent 0 18%, rgba(245,158,11,0.13) 23%, transparent 31%, rgba(236,72,153,0.10) 44%, transparent 58%, rgba(20,184,166,0.09) 72%, transparent 84%); filter: blur(34px); opacity: 0.55; animation: tg-aurora 16s ease-in-out infinite alternate; }
+.triumph-dust::after { animation-duration: 22s; animation-direction: alternate-reverse; opacity: 0.35; transform: rotate(18deg); }
+@keyframes tg-aurora { from { transform: translate3d(-2%, -1%, 0) rotate(-8deg) scale(1); } to { transform: translate3d(2%, 1%, 0) rotate(10deg) scale(1.06); } }
+.triumph-monument { color: rgba(255,255,255,0.012); -webkit-text-stroke-color: rgba(255,255,255,0.035); }
+.triumph-inner { max-width: 1320px; min-height: calc(100svh - 120px); grid-template-columns: minmax(430px, 690px) minmax(420px, 520px); grid-template-areas: "strip strip" "title card" "sub card" "proof card" "tips card" "actions card" "ticker ticker"; gap: 16px 72px; }
+.triumph-strip { max-width: 1000px; justify-self: center; margin-bottom: 4px; background: rgba(255,255,255,0.045); }
+.triumph-title { font-size: clamp(4rem, 7.8vw, 8.4rem); font-weight: 900; letter-spacing: -0.075em; line-height: 0.86; max-width: 720px; text-wrap: balance; background: linear-gradient(180deg, #fffaf0 0%, #d7cbb7 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.triumph-sub { max-width: 610px; color: rgba(255,250,240,0.72); font-size: clamp(1.08rem, 1.45vw, 1.28rem); }
+.triumph-proof { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.triumph-proof div { position: relative; overflow: hidden; border-color: rgba(255,255,255,0.11); background: linear-gradient(145deg, rgba(255,255,255,0.105), rgba(255,255,255,0.035)); }
+.triumph-proof div::after { content: ""; position: absolute; inset: auto -18% -38% auto; width: 110px; height: 110px; border-radius: 999px; filter: blur(18px); background: rgba(245,158,11,0.24); }
+.triumph-proof div:nth-child(2)::after { background: rgba(236,72,153,0.20); }
+.triumph-proof div:nth-child(3)::after { background: rgba(20,184,166,0.20); }
+.triumph-tips { padding: 18px; background: rgba(255,255,255,0.055); border-color: rgba(255,255,255,0.11); }
+.triumph-tips-head { justify-content: flex-start; gap: 12px; }
+.triumph-tips-head .line { max-width: 70px; }
+.triumph-tips ul { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.triumph-tips li { display: block; min-height: 128px; padding: 16px; border: 1px solid rgba(255,255,255,0.095); border-radius: 18px; background: rgba(0,0,0,0.22); color: rgba(255,250,240,0.64); }
+.triumph-tips li::before { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 10px; margin-bottom: 12px; padding: 0; background: rgba(245,158,11,0.15); color: #f7c873; letter-spacing: 0; font-weight: 800; }
+.triumph-tips li:nth-child(2)::before { background: rgba(236,72,153,0.14); color: #f0a8d7; }
+.triumph-tips li:nth-child(3)::before { background: rgba(20,184,166,0.14); color: #5eead4; }
+.triumph-tips li:nth-child(4)::before { background: rgba(124,58,237,0.16); color: #c4b5fd; }
+.triumph-tips li strong { display: block; margin-bottom: 7px; color: #fffaf0; font-size: 1rem; }
+.triumph-card { transform-style: preserve-3d; perspective: 1200px; opacity: 0; transform: perspective(1200px) rotateY(22deg) rotateX(8deg) translate3d(70px, 32px, 0) scale(0.86); animation: tg-card-artifact-in 1.35s 1.05s cubic-bezier(0.16,1,0.3,1) forwards, tg-card-float 5.6s 2.6s ease-in-out infinite alternate; }
+.triumph-card::before { content: ""; position: absolute; inset: -2px; z-index: 8; pointer-events: none; background: linear-gradient(110deg, transparent 0 32%, rgba(255,255,255,0.22) 42%, transparent 52% 100%); transform: translateX(-120%); animation: tg-card-sweep 1.35s 1.8s cubic-bezier(0.2,0.8,0.2,1) forwards; }
+@keyframes tg-card-artifact-in { 0% { opacity: 0; filter: blur(12px); } 55% { opacity: 1; filter: blur(0); transform: perspective(1200px) rotateY(-4deg) rotateX(2deg) translate3d(-8px, -4px, 0) scale(1.02); } 100% { opacity: 1; filter: blur(0); transform: perspective(1200px) rotateY(0) rotateX(0) translate3d(0,0,0) scale(1); } }
+@keyframes tg-card-sweep { to { transform: translateX(120%); } }
+@keyframes tg-card-float { from { translate: 0 0; } to { translate: 0 -8px; } }
+.triumph-actions { justify-content: flex-start; }
+.triumph-btn { letter-spacing: 0.16em; }
+@media (max-width: 980px) { .triumph-inner { grid-template-columns: 1fr; grid-template-areas: "strip" "title" "sub" "proof" "card" "tips" "actions" "ticker"; min-height: auto; gap: 18px; } .triumph-actions { justify-content: center; } }
+@media (max-width: 620px) { .triumph-title { font-size: clamp(3.2rem, 17vw, 5.1rem); } .triumph-proof, .triumph-tips ul { grid-template-columns: 1fr; } .triumph-tips li { min-height: auto; } .triumph-card { animation: tg-card-artifact-in 1.1s 0.8s cubic-bezier(0.16,1,0.3,1) forwards; } }
 .modal-bookmark-btn {
   background: transparent; border: 1.5px solid var(--border); color: var(--text-muted);
   height: 36px; padding: 0 12px; border-radius: 10px; cursor: pointer;
@@ -1007,11 +1042,11 @@
       </div>
     </div>
 
-    <h1 class="triumph-title" id="triumphTitle" aria-label="Theory Master">Theory Master</h1>
+    <h1 class="triumph-title" id="triumphTitle" aria-label="Master status unlocked">Master status unlocked</h1>
     <div class="triumph-sub"
-         data-en="All <strong>14 official theory tests</strong> cleared with a perfect score. You are ready for the real Danish driving theory test."
-         data-ua="Усі <strong>14 офіційних теоретичних тестів</strong> пройдено з ідеальним результатом. Ти готовий до справжнього датського теоретичного іспиту.">
-      All <strong>14 official theory tests</strong> cleared with a perfect score. You are ready for the real Danish driving theory test.
+         data-en="Perfect run complete. Your verified WEXTheory certificate is ready to download, scan, and share."
+         data-ua="Ідеальний результат. Твій verified WEXTheory certificate готовий для завантаження, перевірки та поширення.">
+      Perfect run complete. Your verified WEXTheory certificate is ready to download, scan, and share.
     </div>
 
     <div class="triumph-proof">
@@ -1025,14 +1060,14 @@
     <div class="triumph-tips">
       <div class="triumph-tips-head">
         <span class="line" aria-hidden="true"></span>
-        <span data-en="Before the real test" data-ua="Перед справжнім іспитом">Before the real test</span>
+        <span data-en="Unlocked now" data-ua="Відкрито зараз">Unlocked now</span>
         <span class="line" aria-hidden="true"></span>
       </div>
       <ul>
-        <li data-n="01" data-en="<strong>Sleep.</strong> 7–8 hours beats one more cram session. Show up rested." data-ua="<strong>Сон.</strong> 7–8 годин краще, ніж ще одна нічна зубрячка. Прийди відпочившим."><strong>Sleep.</strong> 7–8 hours beats one more cram session. Show up rested.</li>
-        <li data-n="02" data-en="<strong>Arrive early.</strong> Be at the prøvested 20 minutes before your slot. No rush, no stress." data-ua="<strong>Прийди заздалегідь.</strong> Будь у prøvested за 20 хвилин до слоту — без поспіху."><strong>Arrive early.</strong> Be at the prøvested 20 minutes before your slot. No rush, no stress.</li>
-        <li data-n="03" data-en="<strong>Documents.</strong> Photo ID (passport or Danish CPR card) and your lektionsplan. No documents, no exam." data-ua="<strong>Документи.</strong> Фото-ID (паспорт або CPR-карта) та lektionsplan. Без них не пустять."><strong>Documents.</strong> Photo ID (passport or Danish CPR card) and your lektionsplan. No documents, no exam.</li>
-        <li data-n="04" data-en="<strong>Read twice.</strong> The official Danish phrasing can be sneaky. Don't rush the first click." data-ua="<strong>Читай двічі.</strong> Офіційні датські формулювання бувають хитрими. Не поспішай із першим кліком."><strong>Read twice.</strong> The official Danish phrasing can be sneaky. Don't rush the first click.</li>
+        <li data-n="01" data-en="<strong>Download your card.</strong> Keep the certificate image on your phone for quick sharing." data-ua="<strong>Завантаж картку.</strong> Збережи сертифікат на телефон для швидкого поширення."><strong>Download your card.</strong> Keep the certificate image on your phone for quick sharing.</li>
+        <li data-n="02" data-en="<strong>Scan the QR.</strong> Anyone can confirm the certificate on wextheory.cv." data-ua="<strong>Скануй QR.</strong> Будь-хто може перевірити сертифікат на wextheory.cv."><strong>Scan the QR.</strong> Anyone can confirm the certificate on wextheory.cv.</li>
+        <li data-n="03" data-en="<strong>Share the win.</strong> Invite a friend and both accounts get bonus access days." data-ua="<strong>Поділись результатом.</strong> Запроси друга, і обидва акаунти отримають бонусні дні."><strong>Share the win.</strong> Invite a friend and both accounts get bonus access days.</li>
+        <li data-n="04" data-en="<strong>Book with confidence.</strong> You have cleared the full WEXTheory path." data-ua="<strong>Йди впевнено.</strong> Ти пройшов повний шлях WEXTheory."><strong>Book with confidence.</strong> You have cleared the full WEXTheory path.</li>
         <li data-n="05" data-en="<strong>Listen carefully.</strong> Each question is read aloud once. Use the time on screen to re-read it yourself." data-ua="<strong>Слухай уважно.</strong> Кожне питання зачитують один раз. Використай час на екрані, щоб перечитати самому."><strong>Listen carefully.</strong> Each question is read aloud once. Use the time on screen to re-read it yourself.</li>
         <li data-n="06" data-en="<strong>One pass only.</strong> The official test does not let you go back. Decide and commit." data-ua="<strong>Один прохід.</strong> Офіційний іспит не дозволяє повертатися. Обери відповідь і йди далі."><strong>One pass only.</strong> The official test does not let you go back. Decide and commit.</li>
         <li data-n="07" data-en="<strong>Breathe.</strong> Nervous? 4 seconds in, 6 seconds out. It works." data-ua="<strong>Дихай.</strong> Нервуєш? 4 секунди вдих, 6 секунд видих. Це працює."><strong>Breathe.</strong> Nervous? 4 seconds in, 6 seconds out. It works.</li>
