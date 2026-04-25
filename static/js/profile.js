@@ -154,7 +154,8 @@
   });
 
   document.querySelectorAll('[data-history-url]').forEach((row) => {
-    row.addEventListener('click', () => {
+    row.addEventListener('click', (event) => {
+      if (event.target.closest('[data-history-action]')) return;
       if (row.dataset.historyUrl) {
         window.location.href = row.dataset.historyUrl;
       }

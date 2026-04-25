@@ -442,6 +442,28 @@
   [data-theme="light"] .history-table tbody tr:hover {
     background: rgba(0,0,0,0.035);
   }
+  .history-review-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+  }
+  .history-review-link:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--text) 24%, var(--border));
+    background: var(--bg-card);
+  }
   .side-stack {
     display: flex;
     flex-direction: column;
@@ -868,11 +890,12 @@
               <th>Score</th>
               <th>Result</th>
               <th>Date</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
             {% for a in attempts %}
-            <tr style="cursor:pointer;" data-history-url="/test/{{ a.test_id }}/results/{{ a.id }}">
+            <tr style="cursor:pointer;" data-history-url="/test/{{ a.test_id }}/results/{{ a.id }}?review=1">
               <td style="font-weight:650;">{{ a.test.title }}</td>
               <td>{{ a.score }}/25</td>
               <td>
@@ -883,6 +906,12 @@
                 {% endif %}
               </td>
               <td style="color:var(--text-muted);">{{ a.finished_at.strftime('%d %b %Y') }}</td>
+              <td>
+                <a class="history-review-link" href="/test/{{ a.test_id }}/results/{{ a.id }}?review=1" data-history-action>
+                  <i class="fa-regular fa-eye"></i>
+                  Review
+                </a>
+              </td>
             </tr>
             {% endfor %}
           </tbody>

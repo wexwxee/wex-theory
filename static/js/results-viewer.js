@@ -177,7 +177,7 @@
     }
 
     function openModal(i) {
-      currentModal = i;
+      currentModal = Math.max(0, Math.min(DATA.length - 1, Number(i) || 0));
       renderModal();
       document.getElementById('qModal').classList.add('open');
     }
@@ -272,6 +272,21 @@
     function modalNav(dir) {
       currentModal = Math.max(0, Math.min(DATA.length - 1, currentModal + dir));
       renderModal();
+    }
+
+    function openReviewFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const raw = params.get('review') || params.get('question');
+      if (!raw || !DATA.length) return;
+      const normalized = raw.trim().toLowerCase();
+      let index = 0;
+      if (!['1', 'true', 'open', 'yes'].includes(normalized)) {
+        const requested = Number.parseInt(normalized, 10);
+        if (Number.isFinite(requested)) {
+          index = requested > 0 ? requested - 1 : requested;
+        }
+      }
+      window.requestAnimationFrame(() => openModal(index));
     }
 
     function renderModal() {
@@ -489,5 +504,7 @@
         if (bar) bar.style.width = ((SCORE / TOTAL) * 100) + '%';
       }, 50);
     })();
+
+    openReviewFromUrl();
   };
 })();
