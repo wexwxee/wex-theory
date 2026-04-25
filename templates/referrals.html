@@ -697,6 +697,202 @@
       grid-template-columns: 1fr;
     }
   }
+  /* Refined v2: less generated, no grid, calmer product-app finish */
+  body:has(.ref-page) {
+    background:
+      radial-gradient(circle at 20% -12%, rgba(236,72,153,0.12), transparent 30%),
+      radial-gradient(circle at 88% 10%, rgba(126,34,206,0.10), transparent 28%),
+      linear-gradient(180deg, #060506 0%, #090709 44%, #050505 100%);
+  }
+  .ref-page {
+    width: min(1120px, calc(100% - 36px));
+  }
+  .ref-hero {
+    border-radius: 20px;
+    padding: clamp(24px, 4vw, 48px);
+    background:
+      radial-gradient(circle at 14% 0%, rgba(236,72,153,0.16), transparent 28%),
+      linear-gradient(145deg, #160912 0%, #0c0b0d 48%, #080808 100%);
+    border-color: rgba(255,255,255,0.10);
+    box-shadow: 0 34px 90px rgba(0,0,0,0.45);
+  }
+  .ref-hero::before,
+  .ref-hero::after {
+    display: none;
+  }
+  .ref-hero-inner {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 390px);
+    gap: clamp(28px, 5vw, 64px);
+  }
+  .ref-kicker {
+    padding: 0;
+    min-height: auto;
+    background: transparent;
+    border: 0;
+    color: #f0a8d7;
+    letter-spacing: 0.13em;
+  }
+  .ref-kicker-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: #ec4899;
+    box-shadow: 0 0 18px rgba(236,72,153,0.72);
+  }
+  .ref-title {
+    max-width: 620px;
+    margin: 18px 0 16px;
+    font-size: clamp(3rem, 6vw, 4.6rem);
+    line-height: 0.98;
+    letter-spacing: -0.06em;
+    text-shadow: none;
+  }
+  .ref-subtitle {
+    max-width: 620px;
+    font-size: clamp(1rem, 1.7vw, 1.18rem);
+    line-height: 1.55;
+    color: rgba(248,250,252,0.64);
+  }
+  .ref-primary,
+  .ref-secondary {
+    min-height: 50px;
+    border-radius: 14px;
+    padding: 0 22px;
+  }
+  .ref-primary {
+    background: linear-gradient(135deg, #f44fc2, #b845f4);
+    box-shadow: 0 16px 34px rgba(217,70,239,0.20);
+  }
+  .ref-secondary,
+  .ref-share-btn,
+  #refRegenBtn.ref-secondary {
+    background: rgba(255,255,255,0.055);
+    border-color: rgba(255,255,255,0.13);
+    box-shadow: none;
+  }
+  .ref-link-panel {
+    border-radius: 18px;
+    padding: 22px;
+    background: rgba(24,24,27,0.78);
+    border-color: rgba(255,255,255,0.12);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 24px 70px rgba(0,0,0,0.34);
+  }
+  .ref-link-box {
+    border-radius: 14px;
+    background: rgba(0,0,0,0.34);
+  }
+  .ref-copy-icon {
+    border-radius: 12px;
+  }
+  .ref-share-row {
+    gap: 10px;
+  }
+  .ref-share-btn {
+    border-radius: 13px;
+    min-height: 46px;
+    font-size: 0.88rem;
+  }
+  .ref-section {
+    margin-top: 34px;
+  }
+  .ref-section-head {
+    margin-bottom: 16px;
+  }
+  .ref-section-head h2 {
+    font-size: clamp(1.45rem, 2.4vw, 1.9rem);
+    letter-spacing: -0.045em;
+  }
+  .ref-steps {
+    gap: 14px;
+  }
+  .ref-step {
+    min-height: 172px;
+    border-radius: 18px;
+    padding: 22px;
+    background: #101012;
+    box-shadow: none;
+  }
+  .ref-step::after {
+    display: none;
+  }
+  .ref-step-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+    background: rgba(236,72,153,0.12);
+    color: #f0a8d7;
+    font-size: 0.9rem;
+    font-weight: 900;
+    font-family: inherit;
+  }
+  .ref-step:nth-child(2) .ref-step-icon,
+  .ref-step:nth-child(3) .ref-step-icon,
+  .ref-step:nth-child(4) .ref-step-icon {
+    background: rgba(236,72,153,0.12);
+    color: #f0a8d7;
+  }
+  .ref-step h3 {
+    margin-top: 18px;
+    font-size: 1.05rem;
+    letter-spacing: -0.025em;
+  }
+  .ref-step p {
+    margin-top: 10px;
+    color: rgba(248,250,252,0.58);
+  }
+  .ref-stat,
+  .ref-rule-card,
+  .ref-empty,
+  .ref-table {
+    background: #101012;
+    box-shadow: none;
+  }
+  .ref-primary:hover,
+  .ref-secondary:hover,
+  .ref-share-btn:hover,
+  .ref-copy-icon:hover {
+    transform: translateY(-1px);
+    border-color: rgba(236,72,153,0.34);
+  }
+
+  @media (max-width: 760px) {
+    .ref-page {
+      width: min(100% - 24px, 1120px);
+      padding-top: 18px;
+    }
+    .ref-hero {
+      padding: 22px;
+      border-radius: 18px;
+    }
+    .ref-hero-inner {
+      grid-template-columns: 1fr;
+      gap: 22px;
+    }
+    .ref-title {
+      font-size: clamp(2.35rem, 11vw, 3.45rem);
+      letter-spacing: -0.06em;
+      line-height: 1;
+    }
+    .ref-subtitle {
+      font-size: 1rem;
+    }
+    .ref-primary,
+    .ref-secondary {
+      width: 100%;
+      border-radius: 14px;
+    }
+    .ref-link-panel {
+      padding: 16px;
+    }
+    .ref-share-row {
+      grid-template-columns: 1fr 1fr;
+    }
+    .ref-share-btn {
+      min-height: 44px;
+      font-size: 0.82rem;
+    }
+  }
 </style>
 
 <nav>
@@ -716,14 +912,14 @@
   <section class="ref-hero">
     <div class="ref-hero-inner">
       <div>
-        <div class="ref-kicker"><i class="fa-solid fa-gift"></i> WEXTheory Invite</div>
+        <div class="ref-kicker"><span class="ref-kicker-dot"></span> WEXTheory Invite</div>
         <h1 class="ref-title">Give +{{ reward_days_referred }} days. Get +{{ reward_days_referrer }} days.</h1>
         <p class="ref-subtitle">
           Send your invite link to a friend. When they create a new WEXTheory account through it, they get <b>+{{ reward_days_referred }} bonus days</b> and you get <b>+{{ reward_days_referrer }} days</b> added to your access.
         </p>
         <div class="ref-cta-row">
-          <button class="ref-primary" id="refHeroShareBtn" type="button"><i class="fa-solid fa-paper-plane"></i> Invite friends</button>
-          <a class="ref-secondary" href="{{ referral_link }}" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open invite link</a>
+          <button class="ref-primary" id="refHeroShareBtn" type="button">Invite friends</button>
+          <a class="ref-secondary" href="{{ referral_link }}" target="_blank" rel="noopener">Open invite link</a>
         </div>
       </div>
       <div class="ref-link-panel">
@@ -733,10 +929,10 @@
           <button class="ref-copy-icon" id="refCopyBtn" type="button" aria-label="Copy invite link"><i class="fa-regular fa-copy"></i></button>
         </div>
         <div class="ref-share-row">
-          <a class="ref-share-btn" id="refShareWA" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
-          <a class="ref-share-btn" id="refShareTG" target="_blank" rel="noopener"><i class="fa-brands fa-telegram"></i> Telegram</a>
-          <a class="ref-share-btn" id="refShareX" target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
-          <a class="ref-share-btn" id="refShareMail"><i class="fa-regular fa-envelope"></i> Email</a>
+          <a class="ref-share-btn" id="refShareWA" target="_blank" rel="noopener">WhatsApp</a>
+          <a class="ref-share-btn" id="refShareTG" target="_blank" rel="noopener">Telegram</a>
+          <a class="ref-share-btn" id="refShareX" target="_blank" rel="noopener">X / Twitter</a>
+          <a class="ref-share-btn" id="refShareMail">Email</a>
         </div>
         <div class="ref-msg" id="refCopyMsg"></div>
         <button class="ref-secondary" id="refRegenBtn" type="button" style="width:100%;margin-top:12px;min-height:44px;">Regenerate code</button>
@@ -753,22 +949,22 @@
     </div>
     <div class="ref-steps">
       <div class="ref-step">
-        <div class="ref-step-icon"><i class="fa-solid fa-link"></i></div>
+        <div class="ref-step-icon">1</div>
         <h3>1. Share your link</h3>
         <p>Send it in Telegram, WhatsApp, Instagram, or anywhere else.</p>
       </div>
       <div class="ref-step">
-        <div class="ref-step-icon"><i class="fa-solid fa-user-plus"></i></div>
+        <div class="ref-step-icon">2</div>
         <h3>2. Friend signs up</h3>
         <p>They must create a new account using your invite link.</p>
       </div>
       <div class="ref-step">
-        <div class="ref-step-icon"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="ref-step-icon">3</div>
         <h3>3. Bonus applies</h3>
         <p>Your friend receives +{{ reward_days_referred }} days automatically after registration.</p>
       </div>
       <div class="ref-step">
-        <div class="ref-step-icon"><i class="fa-solid fa-bolt"></i></div>
+        <div class="ref-step-icon">4</div>
         <h3>4. You earn days</h3>
         <p>You receive +{{ reward_days_referrer }} days for each successful invite.</p>
       </div>
