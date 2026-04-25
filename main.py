@@ -1166,6 +1166,74 @@ def _seed_text(value) -> Optional[str]:
     return value or None
 
 
+_translation_seed_cache: Optional[dict] = None
+
+
+def get_translation_seed_maps() -> dict:
+    """Load manual RU translations from data/translation_seed.json for runtime fallback."""
+    global _translation_seed_cache
+    if _translation_seed_cache is not None:
+        return _translation_seed_cache
+
+    empty = {
+        "questions_by_id": {},
+        "questions_by_test_index": {},
+        "answers_by_id": {},
+        "answers_by_seed_question_text": {},
+    }
+    if not TRANSLATION_SEED_PATH.exists():
+        _translation_seed_cache = empty
+        return empty
+
+    try:
+        data = json.loads(TRANSLATION_SEED_PATH.read_text(encoding="utf-8"))
+    except Exception as e:
+        print(f"[TRANSLATION SEED] failed to load runtime seed: {e}")
+        _translation_seed_cache = empty
+        return empty
+
+    questions = data.get("questions") or []
+    answers = data.get("answers") or []
+    maps = {
+        "questions_by_id": {},
+        "questions_by_test_index": {},
+        "answers_by_id": {},
+        "answers_by_seed_question_text": {},
+    }
+    for item in questions:
+        try:
+            seed_id = int(item.get("id") or 0)
+        except (TypeError, ValueError):
+            seed_id = 0
+        if seed_id:
+            maps["questions_by_id"][seed_id] = item
+        key = (item.get("test_id"), item.get("question_index"))
+        maps["questions_by_test_index"][key] = item
+
+    for item in answers:
+        try:
+            seed_answer_id = int(item.get("id") or 0)
+            seed_question_id = int(item.get("question_id") or 0)
+        except (TypeError, ValueError):
+            seed_answer_id = 0
+            seed_question_id = 0
+        if seed_answer_id:
+            maps["answers_by_id"][seed_answer_id] = item
+        if seed_question_id:
+            maps["answers_by_seed_question_text"][(seed_question_id, item.get("text") or "")] = item
+
+    _translation_seed_cache = maps
+    return maps
+
+
+def translation_seed_for_question(question: models.Question) -> Optional[dict]:
+    maps = get_translation_seed_maps()
+    seed = maps["questions_by_id"].get(question.id)
+    if seed:
+        return seed
+    return maps["questions_by_test_index"].get((question.test_id, question.question_index))
+
+
 def seed_missing_translations(db: Session) -> None:
     """Restore manual RU translations from the repo seed if prod DB is missing them."""
     if not TRANSLATION_SEED_PATH.exists():
@@ -2002,19 +2070,39 @@ def apply_wording_to_question(question: models.Question, wording_mode: str) -> m
 
 
 def serialize_test_question(question: models.Question, *, display_index: Optional[int] = None, wording_mode: str = WORDING_MODE_ORIGINAL):
+    seed_question = translation_seed_for_question(question)
+    question_text_ru = _seed_text(getattr(question, "question_text_ru", None))
+    if not question_text_ru and seed_question:
+        question_text_ru = _seed_text(seed_question.get("question_text_ru"))
+    explanation_ru = _seed_text(getattr(question, "explanation_ru", None))
+    if not explanation_ru and seed_question:
+        explanation_ru = _seed_text(seed_question.get("explanation_ru"))
+
+    seed_question_id = int(seed_question.get("id") or 0) if seed_question else 0
+    seed_maps = get_translation_seed_maps()
+
+    def answer_text_ru(answer: models.Answer) -> Optional[str]:
+        existing = _seed_text(getattr(answer, "text_ru", None))
+        if existing:
+            return existing
+        seed_answer = seed_maps["answers_by_id"].get(answer.id)
+        if not seed_answer and seed_question_id:
+            seed_answer = seed_maps["answers_by_seed_question_text"].get((seed_question_id, answer.text))
+        return _seed_text(seed_answer.get("text_ru")) if seed_answer else None
+
     return {
         "id": question.id,
         "question_index": display_index or question.question_index,
         "question_text": resolve_question_text(question, wording_mode),
-        "question_text_ru": getattr(question, "question_text_ru", None),
+        "question_text_ru": question_text_ru,
         "explanation": question.explanation or "",
-        "explanation_ru": getattr(question, "explanation_ru", None),
+        "explanation_ru": explanation_ru,
         "image_path": question.image_path,
         "answers": [
             {
                 "id": a.id,
                 "text": resolve_answer_text(a, wording_mode),
-                "text_ru": getattr(a, "text_ru", None),
+                "text_ru": answer_text_ru(a),
             }
             for a in ordered_answers(question)
         ],
