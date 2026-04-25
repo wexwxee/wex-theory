@@ -198,6 +198,9 @@
       {% if request.query_params.get('google_error') %}
       <div class="msg-box error">Google: {{ request.query_params.get('google_error') }}</div>
       {% endif %}
+      {% if request.query_params.get('telegram_error') %}
+      <div class="msg-box error">Telegram: {{ request.query_params.get('telegram_error') }}</div>
+      {% endif %}
       {% if request.query_params.get('reset') %}
       <div class="msg-box success">Password updated. You can sign in now.</div>
       {% endif %}
@@ -232,6 +235,17 @@
         </svg>
         Continue with Google
       </a>
+      {% if telegram_login_enabled %}
+      <a href="/auth/telegram" style="display:flex;align-items:center;justify-content:center;gap:10px;
+         width:100%;padding:11px 24px;border:1px solid rgba(34,158,217,0.45);border-radius:8px;
+         background:#229ED9;text-decoration:none;color:#fff;font-weight:700;
+         font-size:0.9rem;transition:opacity 0.15s;margin-top:10px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="#fff" d="M21.9 4.6 18.6 20c-.2 1-.8 1.2-1.6.7l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1 9.2-8.3c.4-.4-.1-.6-.6-.2L6.2 13.4 1.3 11.9c-1-.3-1-1 .2-1.5L20.5 3c.9-.3 1.7.2 1.4 1.6z"/>
+        </svg>
+        Continue with Telegram
+      </a>
+      {% endif %}
     </div>
     <div class="footer-link">
       Don't have an account? <a href="/register">Create one</a>
@@ -247,4 +261,3 @@
   <script nonce="{{ request.state.csp_nonce }}" src="/static/js/login.js"></script>
 </body>
 </html>
-

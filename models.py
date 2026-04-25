@@ -28,6 +28,13 @@ class User(Base):
     referred_by_user_id      = Column(Integer, ForeignKey("users.id"), nullable=True)
     referral_rewards_granted = Column(Integer, nullable=False, default=0)
 
+    # Telegram Login fields
+    telegram_id             = Column(String, unique=True, index=True, nullable=True)
+    telegram_username       = Column(String, nullable=True)
+    telegram_phone          = Column(String, nullable=True)
+    telegram_phone_verified = Column(Boolean, nullable=False, default=False)
+    telegram_connected_at   = Column(DateTime, nullable=True)
+
     attempts = relationship("UserTestAttempt", back_populates="user")
     support_threads = relationship("SupportThread", back_populates="user")
     certificates = relationship("Certificate", back_populates="user", foreign_keys="Certificate.user_id")

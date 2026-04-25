@@ -180,6 +180,14 @@ def _env_flag(name: str, default: bool = False) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _env_first(*names: str) -> str:
+    for name in names:
+        value = _clean_env_value(name)
+        if value:
+            return value
+    return ""
+
+
 def _cookie_secure(request: Optional[Request] = None) -> bool:
     if "COOKIE_SECURE" in os.environ:
         return _env_flag("COOKIE_SECURE")
@@ -1188,6 +1196,37 @@ def ensure_user_referral_columns(db: Session) -> None:
         print(f"[STARTUP] user referral columns setup skipped/error: {e}")
 
 
+def ensure_user_telegram_columns(db: Session) -> None:
+    try:
+        inspector = sql_inspect(engine)
+        columns = {col["name"] for col in inspector.get_columns("users")}
+        if "telegram_id" not in columns:
+            db.execute(sql_text("ALTER TABLE users ADD COLUMN telegram_id VARCHAR"))
+            db.commit()
+            print("[STARTUP] Added users.telegram_id column")
+        if "telegram_username" not in columns:
+            db.execute(sql_text("ALTER TABLE users ADD COLUMN telegram_username VARCHAR"))
+            db.commit()
+            print("[STARTUP] Added users.telegram_username column")
+        if "telegram_phone" not in columns:
+            db.execute(sql_text("ALTER TABLE users ADD COLUMN telegram_phone VARCHAR"))
+            db.commit()
+            print("[STARTUP] Added users.telegram_phone column")
+        if "telegram_phone_verified" not in columns:
+            db.execute(sql_text("ALTER TABLE users ADD COLUMN telegram_phone_verified BOOLEAN DEFAULT FALSE"))
+            db.commit()
+            print("[STARTUP] Added users.telegram_phone_verified column")
+        if "telegram_connected_at" not in columns:
+            db.execute(sql_text("ALTER TABLE users ADD COLUMN telegram_connected_at TIMESTAMP"))
+            db.commit()
+            print("[STARTUP] Added users.telegram_connected_at column")
+        db.execute(sql_text("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_telegram_id ON users (telegram_id)"))
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] user telegram columns setup skipped/error: {e}")
+
+
 def _new_referral_code() -> str:
     return "WEXR-" + "".join(secrets.choice(PUBLIC_ID_ALPHABET) for _ in range(6))
 
@@ -1431,6 +1470,7 @@ async def refresh_auth_session(request: Request, call_next):
         "/api/auth/register",
         "/api/auth/google/callback",
         "/auth/google/callback",
+        "/auth/telegram/callback",
     }
     token = request.cookies.get(AUTH_COOKIE_NAME)
     payload = decode_token(token) if token else None
@@ -1471,6 +1511,8 @@ async def refresh_auth_session(request: Request, call_next):
 oauth = OAuth()
 _google_client_id = os.environ.get("GOOGLE_CLIENT_ID", "")
 _google_client_secret = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+_telegram_client_id = _env_first("TELEGRAM_CLIENT_ID", "TELEGRAM_BOT_CLIENT_ID")
+_telegram_client_secret = _env_first("TELEGRAM_CLIENT_SECRET", "TELEGRAM_BOT_CLIENT_SECRET")
 if _google_client_id and _google_client_secret:
     oauth.register(
         name="google",
@@ -1478,6 +1520,14 @@ if _google_client_id and _google_client_secret:
         client_secret=_google_client_secret,
         server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
         client_kwargs={"scope": "openid email profile"},
+    )
+if _telegram_client_id and _telegram_client_secret:
+    oauth.register(
+        name="telegram",
+        client_id=_telegram_client_id,
+        client_secret=_telegram_client_secret,
+        server_metadata_url="https://oauth.telegram.org/.well-known/openid-configuration",
+        client_kwargs={"scope": "openid profile phone telegram:bot_access"},
     )
 
 
@@ -1493,6 +1543,7 @@ async def startup_init():
     try:
         ensure_user_public_id_column(db)
         ensure_user_referral_columns(db)
+        ensure_user_telegram_columns(db)
         ensure_super_admin_column(db)
         ensure_all_user_public_ids(db)
         ensure_contact_attachment_columns(db)
@@ -1636,7 +1687,8 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260328-live-activity"
+templates.env.globals["asset_version"] = "20260425-telegram-login-menu"
+templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 
 FREE_SAMPLE_TEST_ID = 0
 FREE_SAMPLE_TEST_TITLE = "Test 0"
@@ -1939,6 +1991,56 @@ async def setup_admin(request: Request, db: Session = Depends(get_db)):
     return {"status": "created", "id": u.id}
 
 
+def _telegram_pseudo_email(telegram_id: str) -> str:
+    safe_id = re.sub(r"[^0-9A-Za-z_-]", "", str(telegram_id or "")) or secrets.token_hex(6)
+    return f"telegram-{safe_id}@telegram.wextheory.local"
+
+
+async def _extract_oidc_userinfo(client, request: Request, token: dict) -> dict:
+    info = token.get("userinfo") or {}
+    if info:
+        return dict(info)
+    raise RuntimeError("Telegram did not return verified OIDC user info")
+
+
+def _upsert_telegram_user(db: Session, info: dict) -> tuple[models.User, bool]:
+    telegram_id = str(info.get("sub") or info.get("id") or "").strip()
+    if not telegram_id:
+        raise RuntimeError("Telegram did not return a user id")
+
+    username = str(info.get("preferred_username") or info.get("username") or "").strip()
+    phone = str(info.get("phone_number") or "").strip()
+    display_name = str(info.get("name") or username or f"Telegram {telegram_id[-4:]}").strip()
+
+    user = db.query(models.User).filter(models.User.telegram_id == telegram_id).first()
+    created_user = False
+    if not user:
+        user = models.User(
+            name=display_name,
+            public_id=generate_unique_public_user_id(db),
+            email=_telegram_pseudo_email(telegram_id),
+            password_hash="telegram_oauth",
+            created_at=datetime.utcnow(),
+            expires_at=datetime.utcnow(),
+            is_admin=False,
+            referral_code=generate_unique_referral_code(db),
+            telegram_id=telegram_id,
+        )
+        db.add(user)
+        created_user = True
+
+    user.telegram_username = username or None
+    user.telegram_phone = phone or None
+    user.telegram_phone_verified = bool(phone)
+    user.telegram_connected_at = datetime.utcnow()
+    if not user.referral_code:
+        user.referral_code = generate_unique_referral_code(db)
+
+    db.commit()
+    db.refresh(user)
+    return user, created_user
+
+
 # ─── Google OAuth pages ────────────────────────────────────────────────────────
 
 @app.get("/auth/google")
@@ -2021,6 +2123,59 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
         traceback.print_exc()
         from urllib.parse import quote
         return RedirectResponse(f"/login?google_error={quote(err_str[:120])}", status_code=302)
+
+
+@app.get("/auth/telegram")
+async def telegram_login(request: Request):
+    limited = check_rate_limit(
+        request,
+        "google_login",
+        message="too_many_telegram_attempts",
+        redirect_to="/login",
+        redirect_param="telegram_error",
+    )
+    if limited:
+        return limited
+    if not (_telegram_client_id and _telegram_client_secret):
+        return RedirectResponse("/login?telegram_error=telegram_not_configured", status_code=302)
+    base_url = get_request_base_url(request)
+    redirect_uri = base_url + "/auth/telegram/callback"
+    print(f"[TELEGRAM LOGIN] redirect_uri={redirect_uri}")
+    return await oauth.telegram.authorize_redirect(request, redirect_uri)
+
+
+@app.get("/auth/telegram/callback")
+async def telegram_callback(request: Request, db: Session = Depends(get_db)):
+    print(f"[TELEGRAM CB] query params: {dict(request.query_params)}")
+    try:
+        token = await oauth.telegram.authorize_access_token(request)
+        print(f"[TELEGRAM CB] token keys: {list(token.keys())}")
+        info = await _extract_oidc_userinfo(oauth.telegram, request, token)
+        print(f"[TELEGRAM CB] userinfo keys: {list(info.keys())}")
+
+        user, created_user = _upsert_telegram_user(db, info)
+
+        referral_outcome = "no_code"
+        if created_user:
+            try:
+                referral_outcome = process_referral_after_registration(db, user, request)
+            except Exception as rex:
+                print(f"[TELEGRAM REFERRAL BIND ERROR] {rex}")
+                referral_outcome = "error"
+
+        jwt_token = create_token(user.id)
+        redirect = "/admin" if user.is_admin else "/dashboard"
+        print(f"[TELEGRAM CB] Issuing JWT, redirecting to {redirect}, ref={referral_outcome}")
+        resp = RedirectResponse(url=redirect, status_code=302)
+        set_auth_cookie(resp, jwt_token, request)
+        resp.delete_cookie(REFERRAL_COOKIE_NAME, path="/")
+        return resp
+    except Exception as e:
+        db.rollback()
+        err_str = str(e)
+        print(f"[TELEGRAM CB ERROR] {err_str}")
+        traceback.print_exc()
+        return RedirectResponse(f"/login?telegram_error={quote(err_str[:120])}", status_code=302)
 
 
 # ─── Public pages ──────────────────────────────────────────────────────────────
