@@ -42,6 +42,9 @@
     border: 1px solid var(--border);
     border-radius: 18px;
     background:
+      radial-gradient(circle at 12% 8%, rgba(14,165,233,0.12), transparent 26%),
+      radial-gradient(circle at 86% 12%, rgba(168,85,247,0.10), transparent 28%),
+      radial-gradient(circle at 58% 95%, rgba(34,197,94,0.10), transparent 28%),
       linear-gradient(135deg, rgba(255,255,255,0.08), transparent 34%),
       linear-gradient(180deg, var(--bg-card), var(--bg));
     min-height: 310px;
@@ -74,6 +77,9 @@
   [data-theme="light"] .profile-hero::after { color: rgba(0,0,0,0.04); }
   [data-theme="light"] .profile-hero {
     background:
+      radial-gradient(circle at 12% 8%, rgba(14,165,233,0.13), transparent 26%),
+      radial-gradient(circle at 86% 12%, rgba(168,85,247,0.10), transparent 28%),
+      radial-gradient(circle at 58% 95%, rgba(34,197,94,0.10), transparent 28%),
       linear-gradient(135deg, rgba(0,0,0,0.05), transparent 34%),
       linear-gradient(180deg, #fff, var(--bg-card));
   }
@@ -182,6 +188,28 @@
     font-size: 0.8rem;
     font-weight: 750;
   }
+  .profile-pill--admin,
+  .profile-pill--active {
+    color: #ecfeff;
+    background: linear-gradient(135deg, rgba(14,165,233,0.72), rgba(168,85,247,0.72));
+    border-color: rgba(255,255,255,0.2);
+    box-shadow: 0 14px 30px rgba(14,165,233,0.16);
+  }
+  .profile-pill--telegram {
+    color: #e0f2fe;
+    background: linear-gradient(135deg, rgba(2,132,199,0.72), rgba(14,165,233,0.58));
+    border-color: rgba(125,211,252,0.26);
+  }
+  .profile-pill--cert {
+    color: #fff7ed;
+    background: linear-gradient(135deg, rgba(249,115,22,0.72), rgba(244,63,94,0.58));
+    border-color: rgba(253,186,116,0.28);
+  }
+  .profile-pill--expired {
+    color: #fee2e2;
+    background: linear-gradient(135deg, rgba(239,68,68,0.72), rgba(127,29,29,0.55));
+    border-color: rgba(248,113,113,0.28);
+  }
   [data-theme="light"] .profile-pill {
     border-color: rgba(0,0,0,0.08);
     background: rgba(0,0,0,0.035);
@@ -212,6 +240,72 @@
     padding: 18px;
     background: rgba(0,0,0,0.18);
     backdrop-filter: blur(10px);
+  }
+  .access-card--subscription {
+    position: relative;
+    overflow: hidden;
+    border: 0;
+    color: #f8fafc;
+    background:
+      linear-gradient(#0b1120, #0b1120) padding-box,
+      linear-gradient(135deg, #38bdf8, #a855f7, #22c55e, #f97316) border-box;
+    border: 1px solid transparent;
+    box-shadow: 0 22px 70px rgba(14,165,233,0.22);
+  }
+  .access-card--subscription::before {
+    content: "";
+    position: absolute;
+    inset: -42%;
+    background:
+      conic-gradient(from 140deg, transparent 0 18%, rgba(56,189,248,0.28), rgba(168,85,247,0.24), transparent 48% 100%);
+    animation: accessGlowSpin 7s linear infinite;
+    opacity: 0.8;
+  }
+  .access-card--subscription::after {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    border-radius: 15px;
+    background:
+      radial-gradient(circle at 14% 20%, rgba(56,189,248,0.28), transparent 32%),
+      radial-gradient(circle at 82% 12%, rgba(168,85,247,0.24), transparent 32%),
+      radial-gradient(circle at 72% 86%, rgba(34,197,94,0.16), transparent 34%),
+      #0b1120;
+    z-index: 0;
+  }
+  .access-card--subscription > * {
+    position: relative;
+    z-index: 1;
+  }
+  .access-card--subscription .access-label,
+  .access-card--subscription .access-date {
+    color: #f8fafc;
+  }
+  .access-card--subscription .access-label {
+    opacity: 0.82;
+  }
+  .access-card--subscription .access-status.ok {
+    color: #bbf7d0;
+    background: rgba(34,197,94,0.16);
+    border-color: rgba(187,247,208,0.36);
+  }
+  .access-card--subscription .access-status.warn {
+    color: #fecaca;
+    background: rgba(239,68,68,0.16);
+    border-color: rgba(254,202,202,0.32);
+  }
+  .access-card--subscription .meter {
+    background: rgba(255,255,255,0.14);
+  }
+  .access-card--subscription .meter span {
+    background: linear-gradient(90deg, #38bdf8, #a855f7, #22c55e);
+    box-shadow: 0 0 22px rgba(56,189,248,0.45);
+  }
+  .subscription-subcopy {
+    color: rgba(248,250,252,0.68);
+    font-size: 0.82rem;
+    line-height: 1.5;
+    margin-top: 10px;
   }
   [data-theme="light"] .access-card {
     border-color: rgba(0,0,0,0.08);
@@ -393,6 +487,9 @@
     from { width: 0; }
     to { width: var(--value, 0%); }
   }
+  @keyframes accessGlowSpin {
+    to { transform: rotate(360deg); }
+  }
   @media (max-width: 980px) {
     .profile-hero-inner,
     .profile-main {
@@ -494,17 +591,17 @@
             <div class="identity-email">{{ user.email }}</div>
             <div class="profile-pills">
               {% if user.is_admin %}
-                <span class="profile-pill"><i class="fa-solid fa-shield-halved"></i> Admin</span>
+                <span class="profile-pill profile-pill--admin"><i class="fa-solid fa-shield-halved"></i> Admin</span>
               {% elif profile_stats.has_access %}
-                <span class="profile-pill"><i class="fa-solid fa-star"></i> Active access</span>
+                <span class="profile-pill profile-pill--active"><i class="fa-solid fa-bolt"></i> Active access</span>
               {% else %}
-                <span class="profile-pill"><i class="fa-solid fa-lock"></i> Access expired</span>
+                <span class="profile-pill profile-pill--expired"><i class="fa-solid fa-lock"></i> Access expired</span>
               {% endif %}
               {% if user.telegram_id %}
-                <span class="profile-pill"><i class="fa-brands fa-telegram"></i> Telegram connected</span>
+                <span class="profile-pill profile-pill--telegram"><i class="fa-brands fa-telegram"></i> Telegram connected</span>
               {% endif %}
               {% if profile_stats.certificate %}
-                <span class="profile-pill"><i class="fa-solid fa-certificate"></i> Certified</span>
+                <span class="profile-pill profile-pill--cert"><i class="fa-solid fa-award"></i> Certified</span>
               {% endif %}
             </div>
             <form id="avatarForm" enctype="multipart/form-data">
@@ -526,9 +623,9 @@
       </div>
 
       <div class="access-panel">
-        <div class="access-card">
+        <div class="access-card access-card--subscription">
           <div class="access-head">
-            <div class="access-label">Access</div>
+            <div class="access-label">{{ 'WEXTheory All Access' if user.is_admin else 'WEXTheory Access' }}</div>
             {% if user.is_admin or days_left > 0 %}
               <span class="access-status ok">Active</span>
             {% else %}
@@ -543,6 +640,15 @@
             {% endif %}
           </div>
           <div class="meter" aria-label="Access progress"><span style="--value: {{ access_meter }}%;"></span></div>
+          <div class="subscription-subcopy">
+            {% if user.is_admin %}
+              Full workspace access, admin tools, support inbox, and every training mode.
+            {% elif days_left > 0 %}
+              Your training access is live. Keep the streak going while the pass is active.
+            {% else %}
+              Renew access to unlock the full practice library and certificate path.
+            {% endif %}
+          </div>
         </div>
         <div class="access-card">
           <div class="access-label" style="margin-bottom:12px;">Practice completion</div>

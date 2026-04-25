@@ -1767,7 +1767,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260425-verify-clarity"
+templates.env.globals["asset_version"] = "20260425-nav-profile-polish"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 
 FREE_SAMPLE_TEST_ID = 0
