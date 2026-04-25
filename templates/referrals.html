@@ -4,32 +4,56 @@
 
 {% block body %}
 <style>
+  body:has(.ref-page) {
+    background:
+      radial-gradient(circle at 15% 0%, rgba(244,114,182,0.10), transparent 28%),
+      #fffafc;
+    color: #171018;
+  }
+  body:has(.ref-page) nav {
+    background: rgba(255,255,255,0.92);
+    border-color: rgba(244,114,182,0.14);
+    backdrop-filter: blur(14px);
+  }
+  body:has(.ref-page) .logo,
+  body:has(.ref-page) .nav-right .btn-ghost,
+  body:has(.ref-page) .theme-btn,
+  body:has(.ref-page) .burger-btn {
+    color: #171018;
+  }
+  body:has(.ref-page) footer {
+    background: #fffafc;
+    border-color: rgba(244,114,182,0.14);
+    color: rgba(23,16,24,0.70);
+  }
   .ref-page {
     width: min(1120px, calc(100% - 32px));
     margin: 0 auto;
     padding: 42px 0 76px;
+    color: #171018;
   }
   .ref-hero {
     position: relative;
     overflow: hidden;
-    min-height: 430px;
+    min-height: 390px;
     border-radius: 28px;
     padding: 34px;
-    color: #f8fafc;
+    color: #171018;
     background:
-      radial-gradient(circle at 18% 10%, rgba(56,189,248,0.34), transparent 32%),
-      radial-gradient(circle at 82% 18%, rgba(168,85,247,0.28), transparent 30%),
-      radial-gradient(circle at 74% 92%, rgba(34,197,94,0.18), transparent 32%),
-      linear-gradient(145deg, #05070d 0%, #0b1020 46%, #050505 100%);
-    box-shadow: 0 34px 100px rgba(2,6,23,0.34);
+      radial-gradient(circle at 16% 0%, rgba(244,114,182,0.32), transparent 34%),
+      radial-gradient(circle at 88% 18%, rgba(251,113,133,0.24), transparent 32%),
+      radial-gradient(circle at 68% 95%, rgba(253,186,116,0.24), transparent 32%),
+      linear-gradient(145deg, #fff7fb 0%, #fff 48%, #fff1f2 100%);
+    border: 1px solid rgba(244,114,182,0.20);
+    box-shadow: 0 28px 80px rgba(190,24,93,0.13);
   }
   .ref-hero::before {
     content: "";
     position: absolute;
     inset: 0;
     background-image:
-      linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px),
-      linear-gradient(180deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+      linear-gradient(90deg, rgba(190,24,93,0.045) 1px, transparent 1px),
+      linear-gradient(180deg, rgba(190,24,93,0.04) 1px, transparent 1px);
     background-size: 56px 56px;
     mask-image: radial-gradient(circle at 25% 20%, #000, transparent 72%);
     pointer-events: none;
@@ -43,7 +67,7 @@
     line-height: 1;
     font-weight: 900;
     letter-spacing: -0.1em;
-    color: rgba(255,255,255,0.04);
+    color: rgba(190,24,93,0.055);
     pointer-events: none;
   }
   .ref-hero-inner {
@@ -52,7 +76,7 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) 360px;
     gap: 30px;
-    align-items: end;
+    align-items: center;
   }
   .ref-kicker {
     display: inline-flex;
@@ -61,9 +85,9 @@
     min-height: 32px;
     padding: 0 12px;
     border-radius: 999px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.12);
-    color: rgba(248,250,252,0.82);
+    background: rgba(244,114,182,0.12);
+    border: 1px solid rgba(244,114,182,0.22);
+    color: #be185d;
     font-size: 0.76rem;
     font-weight: 850;
     letter-spacing: 0.12em;
@@ -72,18 +96,18 @@
   .ref-title {
     margin: 22px 0 16px;
     max-width: 690px;
-    font-size: clamp(2.7rem, 7vw, 5.8rem);
-    line-height: 0.92;
+    font-size: clamp(2.45rem, 6.3vw, 5.2rem);
+    line-height: 0.96;
     letter-spacing: -0.08em;
     font-weight: 900;
   }
   .ref-subtitle {
     max-width: 640px;
-    color: rgba(248,250,252,0.72);
+    color: rgba(23,16,24,0.68);
     font-size: clamp(1rem, 2.3vw, 1.22rem);
     line-height: 1.65;
   }
-  .ref-subtitle b { color: #fff; }
+  .ref-subtitle b { color: #171018; }
   .ref-cta-row {
     display: flex;
     gap: 12px;
@@ -95,7 +119,7 @@
     min-height: 52px;
     border-radius: 999px;
     padding: 0 24px;
-    border: 1px solid rgba(255,255,255,0.16);
+    border: 1px solid rgba(244,114,182,0.20);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -106,24 +130,27 @@
     transition: transform 0.18s ease, opacity 0.18s ease;
   }
   .ref-primary {
-    background: #fff;
-    color: #050505;
+    background: linear-gradient(135deg, #f43f5e, #ec4899);
+    color: #fff;
+    box-shadow: 0 18px 36px rgba(236,72,153,0.24);
   }
   .ref-secondary {
-    background: rgba(255,255,255,0.08);
-    color: #fff;
+    background: rgba(255,255,255,0.66);
+    color: #831843;
+    border-color: rgba(244,114,182,0.24);
   }
   .ref-primary:hover,
   .ref-secondary:hover { transform: translateY(-2px); opacity: 0.92; }
   .ref-link-panel {
-    border: 1px solid rgba(255,255,255,0.12);
+    border: 1px solid rgba(244,114,182,0.18);
     border-radius: 22px;
     padding: 18px;
-    background: rgba(255,255,255,0.075);
-    backdrop-filter: blur(12px);
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 22px 60px rgba(190,24,93,0.10);
   }
   .ref-mini-label {
-    color: rgba(248,250,252,0.58);
+    color: rgba(131,24,67,0.58);
     font-size: 0.7rem;
     font-weight: 850;
     letter-spacing: 0.14em;
@@ -136,13 +163,13 @@
     margin: 12px 0 14px;
     padding: 12px 14px;
     border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.14);
-    background: rgba(0,0,0,0.26);
+    border: 1px solid rgba(244,114,182,0.20);
+    background: rgba(255,255,255,0.88);
   }
   .ref-link-anchor {
     flex: 1;
     min-width: 0;
-    color: #fff;
+    color: #831843;
     font-family: 'JetBrains Mono','Courier New',monospace;
     font-size: 0.88rem;
     overflow: hidden;
@@ -154,9 +181,9 @@
     width: 38px;
     height: 38px;
     border-radius: 13px;
-    border: 1px solid rgba(255,255,255,0.14);
-    background: rgba(255,255,255,0.08);
-    color: #fff;
+    border: 1px solid rgba(244,114,182,0.24);
+    background: #fff0f6;
+    color: #be185d;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -174,9 +201,9 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    color: #fff;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.12);
+    color: #831843;
+    background: rgba(255,255,255,0.70);
+    border: 1px solid rgba(244,114,182,0.22);
     font-weight: 800;
     font-size: 0.84rem;
     text-decoration: none;
@@ -184,7 +211,7 @@
   .ref-msg {
     display: none;
     margin-top: 12px;
-    color: #86efac;
+    color: #be185d;
     font-size: 0.86rem;
     font-weight: 700;
   }
@@ -204,7 +231,7 @@
     letter-spacing: -0.04em;
   }
   .ref-muted {
-    color: var(--text-muted);
+    color: rgba(23,16,24,0.62);
     line-height: 1.6;
   }
   .ref-steps {
@@ -217,8 +244,9 @@
     min-height: 170px;
     padding: 18px;
     border-radius: 20px;
-    border: 1px solid var(--border);
-    background: var(--bg-card);
+    border: 1px solid rgba(244,114,182,0.16);
+    background: rgba(255,255,255,0.82);
+    box-shadow: 0 16px 44px rgba(190,24,93,0.06);
     overflow: hidden;
   }
   .ref-step::after {
@@ -250,14 +278,14 @@
     margin-bottom: 7px;
   }
   .ref-step p {
-    color: var(--text-muted);
+    color: rgba(23,16,24,0.62);
     font-size: 0.9rem;
     line-height: 1.55;
   }
-  .ref-step:nth-child(1) { --step-a: #38bdf8; --step-b: #2563eb; --step-glow: rgba(56,189,248,0.2); }
-  .ref-step:nth-child(2) { --step-a: #a855f7; --step-b: #ec4899; --step-glow: rgba(168,85,247,0.18); }
-  .ref-step:nth-child(3) { --step-a: #22c55e; --step-b: #14b8a6; --step-glow: rgba(34,197,94,0.18); }
-  .ref-step:nth-child(4) { --step-a: #f97316; --step-b: #fb7185; --step-glow: rgba(249,115,22,0.18); }
+  .ref-step:nth-child(1) { --step-a: #f43f5e; --step-b: #ec4899; --step-glow: rgba(236,72,153,0.18); }
+  .ref-step:nth-child(2) { --step-a: #ec4899; --step-b: #a855f7; --step-glow: rgba(236,72,153,0.16); }
+  .ref-step:nth-child(3) { --step-a: #fb7185; --step-b: #f97316; --step-glow: rgba(251,113,133,0.16); }
+  .ref-step:nth-child(4) { --step-a: #be185d; --step-b: #f43f5e; --step-glow: rgba(190,24,93,0.16); }
   .ref-stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -265,16 +293,16 @@
   }
   .ref-stat {
     min-height: 126px;
-    border: 1px solid var(--border);
+    border: 1px solid rgba(244,114,182,0.16);
     border-radius: 20px;
-    background: var(--bg-card);
+    background: rgba(255,255,255,0.82);
     padding: 18px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
   }
   .ref-stat-label {
-    color: var(--text-muted);
+    color: rgba(23,16,24,0.58);
     font-size: 0.72rem;
     font-weight: 850;
     letter-spacing: 0.13em;
@@ -291,9 +319,9 @@
     gap: 14px;
   }
   .ref-rule-card {
-    border: 1px solid var(--border);
+    border: 1px solid rgba(244,114,182,0.16);
     border-radius: 20px;
-    background: var(--bg-card);
+    background: rgba(255,255,255,0.82);
     padding: 20px;
   }
   .ref-rule-card h3 {
@@ -306,30 +334,30 @@
     margin-top: 14px;
     height: 9px;
     border-radius: 999px;
-    background: color-mix(in srgb, var(--text-muted) 16%, transparent);
+    background: rgba(190,24,93,0.10);
     overflow: hidden;
   }
   .ref-cap-fill {
     height: 100%;
     border-radius: inherit;
-    background: linear-gradient(90deg, #38bdf8, #a855f7, #22c55e);
+    background: linear-gradient(90deg, #f43f5e, #ec4899, #fb7185);
   }
   .ref-table {
-    border: 1px solid var(--border);
+    border: 1px solid rgba(244,114,182,0.16);
     border-radius: 20px;
     overflow: hidden;
-    background: var(--bg-card);
+    background: rgba(255,255,255,0.84);
   }
   .ref-table-row {
     display: grid;
     grid-template-columns: 1.4fr 1fr 1fr 0.9fr;
     gap: 10px;
     padding: 15px 18px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid rgba(244,114,182,0.12);
     align-items: center;
   }
   .ref-table-row.is-head {
-    color: var(--text-muted);
+    color: rgba(23,16,24,0.58);
     font-size: 0.7rem;
     font-weight: 850;
     letter-spacing: 0.12em;
@@ -349,10 +377,10 @@
   .ref-empty {
     padding: 34px 22px;
     text-align: center;
-    border: 1px dashed var(--border);
+    border: 1px dashed rgba(244,114,182,0.28);
     border-radius: 20px;
-    color: var(--text-muted);
-    background: color-mix(in srgb, var(--bg-card) 72%, transparent);
+    color: rgba(23,16,24,0.62);
+    background: rgba(255,255,255,0.72);
   }
   @media (max-width: 920px) {
     .ref-hero-inner,
@@ -367,11 +395,36 @@
   @media (max-width: 640px) {
     .ref-page {
       width: min(100% - 24px, 1120px);
-      padding-top: 28px;
+      padding-top: 18px;
     }
     .ref-hero {
-      padding: 22px;
+      min-height: auto;
+      padding: 20px;
       border-radius: 22px;
+    }
+    .ref-title {
+      margin: 16px 0 12px;
+      font-size: clamp(2.25rem, 12vw, 3.55rem);
+      line-height: 0.98;
+      letter-spacing: -0.07em;
+    }
+    .ref-subtitle {
+      font-size: 1rem;
+      line-height: 1.55;
+    }
+    .ref-link-panel {
+      padding: 14px;
+      border-radius: 20px;
+    }
+    .ref-link-box {
+      padding: 10px 10px 10px 12px;
+    }
+    .ref-link-anchor {
+      font-size: 0.76rem;
+    }
+    .ref-copy-icon {
+      width: 36px;
+      height: 36px;
     }
     .ref-steps,
     .ref-stats,
@@ -423,7 +476,7 @@
         <div class="ref-share-row">
           <a class="ref-share-btn" id="refShareWA" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
           <a class="ref-share-btn" id="refShareTG" target="_blank" rel="noopener"><i class="fa-brands fa-telegram"></i> Telegram</a>
-          <a class="ref-share-btn" id="refShareX" target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i> X</a>
+          <a class="ref-share-btn" id="refShareX" target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           <a class="ref-share-btn" id="refShareMail"><i class="fa-regular fa-envelope"></i> Email</a>
         </div>
         <div class="ref-msg" id="refCopyMsg"></div>
@@ -493,7 +546,7 @@
   <section class="ref-section ref-rules">
     <div class="ref-rule-card">
       <h3>Reward limit</h3>
-      <p class="ref-muted">You can earn up to <b style="color:var(--text);">{{ annual_cap }} days</b> per year from invites. Friends still get their +{{ reward_days_referred }} days even after you hit the cap.</p>
+      <p class="ref-muted">You can earn up to <b style="color:#171018;">{{ annual_cap }} days</b> per year from invites. Friends still get their +{{ reward_days_referred }} days even after you hit the cap.</p>
       <div class="ref-cap-bar" aria-label="Annual reward cap">
         {% set _pct = ((days_earned_this_year * 100) / annual_cap) if annual_cap else 0 %}
         {% if _pct > 100 %}{% set _pct = 100 %}{% endif %}
@@ -536,7 +589,7 @@
       </div>
     {% else %}
       <div class="ref-empty">
-        <div style="font-weight:850;color:var(--text);margin-bottom:6px;">No invites yet</div>
+        <div style="font-weight:850;color:#171018;margin-bottom:6px;">No invites yet</div>
         <div>Share your link with a friend. Their signup will appear here after registration.</div>
       </div>
     {% endif %}
