@@ -1203,19 +1203,38 @@
   const verifyUrl = verifySerial
     ? (location.origin + '/verify/' + encodeURIComponent(verifySerial) + (certHash ? ('?h=' + encodeURIComponent(certHash)) : ''))
     : ('https://wextheory.cv/verify-certificate');
-  try {
-    new QRCode(document.getElementById('triumphQr'), {
-      text: verifyUrl, width: 92, height: 92,
+  function renderCertificateQr(target, size) {
+    if (!target || typeof QRCode !== 'function') return;
+    target.innerHTML = '';
+    new QRCode(target, {
+      text: verifyUrl, width: size, height: size,
       colorDark: '#050505', colorLight: '#f0ece2', correctLevel: QRCode.CorrectLevel.M
     });
-  } catch (e) {}
-  try {
-    new QRCode(document.getElementById('triumphCardPrintQr'), {
-      text: verifyUrl, width: 70, height: 70,
-      colorDark: '#050505', colorLight: '#f0ece2', correctLevel: QRCode.CorrectLevel.M
-    });
-  } catch (e) {}
+  }
 
+  function freezeQrCanvas(target) {
+    if (!target) return;
+    const canvas = target.querySelector('canvas');
+    if (!canvas) return;
+    try {
+      const img = document.createElement('img');
+      img.src = canvas.toDataURL('image/png');
+      img.alt = 'Certificate QR code';
+      img.width = canvas.width;
+      img.height = canvas.height;
+      target.innerHTML = '';
+      target.appendChild(img);
+    } catch (e) {}
+  }
+
+  try {
+    renderCertificateQr(document.getElementById('triumphQr'), 92);
+  } catch (e) {}
+  try {
+    const printQr = document.getElementById('triumphCardPrintQr');
+    renderCertificateQr(printQr, 70);
+    freezeQrCanvas(printQr);
+  } catch (e) {}
   // Lang toggle
   const langBtns = document.querySelectorAll('.triumph-lang button');
   function setLang(lang) {
@@ -1292,6 +1311,7 @@
     btn.disabled = true; btn.textContent = '…';
     try {
       if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (_) {} }
+      freezeQrCanvas(document.getElementById('triumphCardPrintQr'));
       // Render an isolated on-screen copy so html2canvas captures exact 480x720 bounds.
       holder = document.createElement('div');
       holder.style.cssText = 'position:fixed;left:0;top:0;width:480px;height:720px;z-index:2147483647;pointer-events:none;overflow:hidden;background:#0e0c0a;';
