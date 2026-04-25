@@ -547,6 +547,10 @@ def _cert_verification_hash(serial: str, user_id: int, issued_at: datetime) -> s
     return hmac.new(key, payload, hashlib.sha256).hexdigest()[:16]
 
 
+def _normalize_certificate_security_code(value: Optional[str]) -> str:
+    return re.sub(r"[^a-fA-F0-9]", "", value or "").lower()
+
+
 def issue_or_get_certificate(db: Session, user: models.User) -> models.Certificate:
     """Return existing Certificate for user, or issue a new one with the next serial."""
     existing = (
@@ -1763,7 +1767,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260425-profile-refresh"
+templates.env.globals["asset_version"] = "20260425-verify-clarity"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 
 FREE_SAMPLE_TEST_ID = 0
@@ -4575,6 +4579,7 @@ async def verify_certificate_form(request: Request, db: Session = Depends(get_db
     return templates.TemplateResponse(request, "verify.html", {
         "request": request, "user": user,
         "mode": "form", "certificate": None, "valid": False,
+        "is_preview_serial": False,
     })
 
 
@@ -4582,7 +4587,7 @@ async def verify_certificate_form(request: Request, db: Session = Depends(get_db
 async def verify_certificate(serial: str, request: Request, db: Session = Depends(get_db), h: Optional[str] = None):
     user = get_current_user(request, db)
     serial_clean = (serial or "").strip().upper()
-    supplied_hash = (h or "").strip().lower()
+    supplied_hash = _normalize_certificate_security_code(h)
     cert = db.query(models.Certificate).filter(models.Certificate.serial == serial_clean).first()
     valid = False
     owner = None
@@ -4606,6 +4611,7 @@ async def verify_certificate(serial: str, request: Request, db: Session = Depend
         "certificate": certificate_for_template, "valid": valid, "owner": owner,
         "serial_requested": serial_clean,
         "hash_supplied": hash_supplied,
+        "is_preview_serial": serial_clean.endswith("PREVIEW"),
         "referrer_code": referrer_code,
         "reward_days_referred": REFERRAL_DAYS_REFERRED,
     })

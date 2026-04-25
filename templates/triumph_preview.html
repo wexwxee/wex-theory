@@ -870,7 +870,8 @@
   }
   const seed = (overlay && overlay.dataset.userName || '') + '|' + (overlay && overlay.dataset.date || '') + '|' + (overlay && overlay.dataset.total || '');
   const certHash = (overlay && overlay.dataset.certHash || '').trim();
-  const hashStr = certHash ? ('Security code ' + certHash.toUpperCase()) : tgHash(seed);
+  const formattedCertHash = certHash ? certHash.toUpperCase().replace(/(.{4})(?=.)/g, '$1-') : '';
+  const hashStr = formattedCertHash ? ('Security code ' + formattedCertHash) : tgHash(seed);
   const hashEl = document.getElementById('triumphHash');
   if (hashEl) hashEl.textContent = hashStr;
   const tcpHashEl = document.getElementById('tcpHash');

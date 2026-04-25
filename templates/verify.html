@@ -17,6 +17,17 @@
     color: #f5f5f5;
   }
   .verify-card b { color: #f5f5f5 !important; }
+  .verify-card .btn-ghost {
+    color: #f5f5f5;
+    border-color: rgba(255,255,255,0.22);
+  }
+  .verify-card .btn-ghost:hover {
+    border-color: rgba(255,255,255,0.48);
+  }
+  .verify-card .btn-primary {
+    background: #f5f5f5;
+    color: #0a0a0a;
+  }
   .verify-eyebrow {
     display: inline-block;
     padding: 6px 12px;
@@ -140,7 +151,7 @@
     <p class="verify-eyebrow" style="margin-bottom:14px;">Certificate Verification</p>
     <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.04em;margin-bottom:8px;">Verify a Theory Master certificate</h1>
     <p style="color:var(--text-muted);max-width:580px;line-height:1.7;margin-bottom:28px;">
-      Every WEXTheory Theory Master certificate carries a unique serial number and security code. Enter both to confirm authenticity, or scan the QR code printed on the certificate.
+      Every WEXTheory Theory Master certificate has two parts: a serial number and a security code. If the QR scan opens this page without verification, enter the security code printed next to the QR code.
     </p>
 
     {% if mode == "form" %}
@@ -212,19 +223,39 @@
           </p>
         </div>
 
+      {% elif is_preview_serial %}
+        <div class="verify-card" style="border-color:rgba(234,179,8,0.32);">
+          <span class="verify-status-pill is-revoked">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Preview Only
+          </span>
+          <h2 style="margin:16px 0 8px;font-size:1.3rem;font-weight:800;">This is the admin preview certificate</h2>
+          <p style="color:var(--text-muted);line-height:1.7;">
+            The preview card is only for testing the design and download button. It is not saved in the database, so it cannot verify as a real certificate.
+          </p>
+          <div style="margin-top:18px;">
+            <a href="/admin/triumph-preview" class="btn-ghost btn-sm">Back to preview</a>
+          </div>
+        </div>
+
       {% elif not hash_supplied %}
         <div class="verify-card" style="border-color:rgba(234,179,8,0.32);">
           <span class="verify-status-pill is-revoked">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             Security Code Required
           </span>
-          <h2 style="margin:16px 0 8px;font-size:1.3rem;font-weight:800;">Enter the certificate security code</h2>
+          <h2 style="margin:16px 0 8px;font-size:1.3rem;font-weight:800;">One more step: enter the security code</h2>
           <p style="color:var(--text-muted);line-height:1.7;">
-            For privacy, serial numbers alone are not enough to verify a certificate. Scan the QR code or enter the security code printed on the certificate.
+            The serial number alone is not enough. Look on the certificate near the QR code for a line like <b>Security code ABCD-EFGH-1234-5678</b>, then enter it below.
           </p>
-          <div style="margin-top:18px;">
-            <a href="/verify-certificate" class="btn-ghost btn-sm">Try again</a>
+          <div class="verify-form" style="margin-top:18px;">
+            <input type="text" id="verifySerialInput" value="{{ serial_requested }}" autocomplete="off" autocapitalize="characters" spellcheck="false">
+            <input type="text" id="verifyCodeInput" placeholder="ABCD-EFGH-1234-5678" autocomplete="off" autocapitalize="characters" spellcheck="false">
+            <button class="btn-primary" id="verifySerialBtn" type="button">Verify</button>
           </div>
+          <p style="color:#8d8d8d;font-size:0.86rem;line-height:1.6;margin-top:14px;">
+            If you scanned an old saved image or the admin preview certificate, create/download the certificate again. New QR codes include this code automatically.
+          </p>
         </div>
 
       {% else %}
