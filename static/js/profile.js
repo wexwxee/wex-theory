@@ -8,6 +8,12 @@
   const avatarInitial = document.getElementById('profileAvatarInitial');
   const avatarHint = document.getElementById('avatarHint');
   const removeAvatarBtn = document.getElementById('removeAvatarBtn');
+  const profileNameText = document.getElementById('profileNameText');
+  const editNameBtn = document.getElementById('editNameBtn');
+  const nameEditForm = document.getElementById('nameEditForm');
+  const profileNameInput = document.getElementById('profileNameInput');
+  const saveNameBtn = document.getElementById('saveNameBtn');
+  const cancelNameBtn = document.getElementById('cancelNameBtn');
   let previewUrl = null;
 
   function setAvatar(url) {
@@ -88,6 +94,50 @@
       showToast(err.message || 'Unable to remove photo', 'error');
     } finally {
       removeAvatarBtn.disabled = false;
+    }
+  });
+
+  function closeNameEditor() {
+    nameEditForm?.classList.remove('open');
+    if (profileNameInput && profileNameText) {
+      profileNameInput.value = profileNameText.textContent.trim();
+    }
+  }
+
+  editNameBtn?.addEventListener('click', () => {
+    nameEditForm?.classList.add('open');
+    profileNameInput?.focus();
+    profileNameInput?.select();
+  });
+
+  cancelNameBtn?.addEventListener('click', closeNameEditor);
+
+  nameEditForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const name = (profileNameInput?.value || '').replace(/\s+/g, ' ').trim();
+    if (name.length < 2) {
+      showToast('Name must be at least 2 characters', 'error');
+      return;
+    }
+    if (saveNameBtn) saveNameBtn.disabled = true;
+    try {
+      const res = await fetch('/api/profile/name', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.name) {
+        throw new Error(data.error || data.detail || 'Unable to save name');
+      }
+      if (profileNameText) profileNameText.textContent = data.name;
+      if (avatarInitial) avatarInitial.textContent = data.name.trim().charAt(0).toUpperCase();
+      closeNameEditor();
+      showToast('Name updated', 'success');
+    } catch (err) {
+      showToast(err.message || 'Unable to save name', 'error');
+    } finally {
+      if (saveNameBtn) saveNameBtn.disabled = false;
     }
   });
 

@@ -3030,6 +3030,28 @@ async def remove_profile_avatar(request: Request, db: Session = Depends(get_db))
     return JSONResponse({"ok": True})
 
 
+@app.post("/api/profile/name")
+async def update_profile_name(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+
+    try:
+        data = await request.json()
+    except Exception:
+        return JSONResponse({"error": "Invalid request"}, status_code=400)
+
+    name = re.sub(r"\s+", " ", str(data.get("name") or "")).strip()
+    if len(name) < 2:
+        return JSONResponse({"error": "Name must be at least 2 characters"}, status_code=400)
+    if len(name) > 60:
+        return JSONResponse({"error": "Name must be 60 characters or less"}, status_code=400)
+
+    user.name = name
+    db.commit()
+    return JSONResponse({"ok": True, "name": name})
+
+
 @app.get("/promo-code", response_class=HTMLResponse)
 async def promo_code_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)

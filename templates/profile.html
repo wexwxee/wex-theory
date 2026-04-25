@@ -561,6 +561,149 @@
       min-width: 560px;
     }
   }
+
+  /* Pink dark-theme refresh */
+  [data-theme="dark"] .profile-hero {
+    background:
+      radial-gradient(circle at 8% 0%, rgba(244,114,182,0.23), transparent 31%),
+      radial-gradient(circle at 74% 10%, rgba(217,70,239,0.18), transparent 34%),
+      radial-gradient(circle at 74% 96%, rgba(251,113,133,0.14), transparent 35%),
+      linear-gradient(135deg, rgba(255,255,255,0.07), transparent 32%),
+      linear-gradient(180deg, #181014, #080708 72%);
+    border-color: rgba(244,114,182,0.22);
+    box-shadow: 0 34px 120px rgba(0,0,0,0.32), 0 0 80px rgba(244,114,182,0.08);
+  }
+  [data-theme="dark"] .profile-hero::before {
+    background-image:
+      radial-gradient(circle at 18% 26%, rgba(255,255,255,0.14) 0 1px, transparent 1.5px),
+      radial-gradient(circle at 76% 18%, rgba(244,114,182,0.12), transparent 30%),
+      linear-gradient(115deg, transparent 0 42%, rgba(255,255,255,0.045) 43%, transparent 44% 100%);
+    background-size: 170px 170px, 100% 100%, 100% 100%;
+    opacity: 0.6;
+    mask-image: linear-gradient(90deg, #000, transparent 88%);
+    animation: profileSoftDrift 12s ease-in-out infinite alternate;
+  }
+  [data-theme="dark"] .profile-hero::after {
+    color: rgba(244,114,182,0.07);
+    text-shadow: 0 0 70px rgba(244,114,182,0.16);
+  }
+  [data-theme="dark"] .access-card--subscription {
+    background:
+      linear-gradient(#160911, #160911) padding-box,
+      linear-gradient(135deg, #f472b6, #d946ef, #fb7185, #fbbf24) border-box;
+    box-shadow: 0 26px 80px rgba(244,114,182,0.20);
+  }
+  [data-theme="dark"] .access-card--subscription::before {
+    background:
+      conic-gradient(from 120deg, transparent 0 20%, rgba(244,114,182,0.34), rgba(217,70,239,0.26), rgba(251,113,133,0.20), transparent 58% 100%);
+  }
+  [data-theme="dark"] .access-card--subscription::after {
+    background:
+      radial-gradient(circle at 15% 12%, rgba(244,114,182,0.30), transparent 35%),
+      radial-gradient(circle at 88% 20%, rgba(217,70,239,0.23), transparent 34%),
+      radial-gradient(circle at 70% 92%, rgba(251,113,133,0.18), transparent 36%),
+      #160911;
+  }
+  [data-theme="dark"] .access-card--subscription .meter span,
+  [data-theme="dark"] .meter span {
+    background: linear-gradient(90deg, #f472b6, #d946ef, #fb7185);
+    box-shadow: 0 0 22px rgba(244,114,182,0.38);
+  }
+  [data-theme="dark"] .profile-pill--admin,
+  [data-theme="dark"] .profile-pill--active {
+    color: #fff7fb;
+    background: linear-gradient(135deg, rgba(244,114,182,0.86), rgba(168,85,247,0.70));
+    box-shadow: 0 14px 36px rgba(244,114,182,0.22);
+  }
+  [data-theme="dark"] .profile-pill--telegram {
+    color: #fff7fb;
+    background: linear-gradient(135deg, rgba(217,70,239,0.72), rgba(244,114,182,0.56));
+    border-color: rgba(244,114,182,0.30);
+  }
+  [data-theme="dark"] .stat-card,
+  [data-theme="dark"] .info-card,
+  [data-theme="dark"] .card {
+    background: linear-gradient(145deg, rgba(255,255,255,0.065), rgba(255,255,255,0.028));
+    border-color: rgba(244,114,182,0.13);
+  }
+  [data-theme="dark"] .stat-card:hover,
+  [data-theme="dark"] .info-card:hover {
+    border-color: rgba(244,114,182,0.28);
+    box-shadow: 0 22px 70px rgba(244,114,182,0.10), 0 22px 70px rgba(0,0,0,0.22);
+  }
+  .identity-name-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .name-edit-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.055);
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  }
+  .name-edit-btn:hover {
+    transform: translateY(-2px);
+    border-color: rgba(244,114,182,0.42);
+    background: rgba(244,114,182,0.12);
+  }
+  .name-edit-form {
+    display: none;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .name-edit-form.open { display: flex; }
+  .name-edit-input {
+    width: min(280px, 100%);
+    min-height: 38px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(0,0,0,0.18);
+    color: var(--text);
+    padding: 0 12px;
+    font: inherit;
+    font-weight: 700;
+    outline: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+  .name-edit-input:focus {
+    border-color: rgba(244,114,182,0.55);
+    box-shadow: 0 0 0 4px rgba(244,114,182,0.12);
+  }
+  .profile-hero,
+  .access-card,
+  .stat-card,
+  .info-card {
+    transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
+  }
+  .profile-hero:hover {
+    transform: translateY(-2px);
+  }
+  .profile-avatar {
+    transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+  }
+  .avatar-wrap:hover .profile-avatar {
+    transform: translateY(-3px) scale(1.02);
+    border-color: rgba(244,114,182,0.36);
+    box-shadow: 0 28px 76px rgba(244,114,182,0.16), 0 24px 60px rgba(0,0,0,0.22);
+  }
+  .stat-card:nth-child(2) { animation-delay: 0.05s; }
+  .stat-card:nth-child(3) { animation-delay: 0.10s; }
+  .stat-card:nth-child(4) { animation-delay: 0.15s; }
+  @keyframes profileSoftDrift {
+    from { transform: translate3d(-1.2%, -0.8%, 0) scale(1); }
+    to { transform: translate3d(1.2%, 0.8%, 0) scale(1.035); }
+  }
 </style>
 <nav>
   <div class="nav-inner">
@@ -609,8 +752,18 @@
             </button>
           </div>
           <div class="identity-copy">
-            <div class="identity-name">{{ user.name }}</div>
+            <div class="identity-name-row">
+              <div class="identity-name" id="profileNameText">{{ user.name }}</div>
+              <button class="name-edit-btn" id="editNameBtn" type="button" aria-label="Edit name">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+            </div>
             <div class="identity-email">{{ user.email }}</div>
+            <form class="name-edit-form" id="nameEditForm">
+              <input class="name-edit-input" id="profileNameInput" type="text" value="{{ user.name }}" maxlength="60" autocomplete="name" aria-label="Profile name">
+              <button class="btn-primary btn-sm" id="saveNameBtn" type="submit" style="padding:8px 14px;">Save</button>
+              <button class="btn-ghost btn-sm" id="cancelNameBtn" type="button" style="padding:8px 14px;">Cancel</button>
+            </form>
             <div class="profile-pills">
               {% if user.is_admin %}
                 <span class="profile-pill profile-pill--admin"><i class="fa-solid fa-shield-halved"></i> Admin</span>
