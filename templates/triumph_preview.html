@@ -495,6 +495,7 @@
   .triumph-beam::after { animation: none !important; }
   .triumph-title span,
   .triumph-sub,
+  .triumph-proof,
   .triumph-tips,
   .triumph-card,
   .triumph-actions,
@@ -502,6 +503,236 @@
   .triumph-strip,
   .triumph-beam,
   .triumph-monument { opacity: 1 !important; transform: none !important; }
+}
+
+/* ============ TRIUMPH EXPERIENCE V2 — product-grade celebration scene ============ */
+.triumph-overlay {
+  align-items: flex-start;
+  padding: 42px 28px 72px;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(232,228,220,0.10), transparent 22%),
+    radial-gradient(circle at 76% 20%, rgba(166,122,77,0.12), transparent 26%),
+    radial-gradient(circle at 18% 78%, rgba(124,58,237,0.10), transparent 30%),
+    linear-gradient(140deg, #050505 0%, #0b0908 50%, #020202 100%);
+}
+.triumph-overlay::before {
+  opacity: 0.045;
+}
+.triumph-overlay::after {
+  background:
+    linear-gradient(115deg, transparent 0 42%, rgba(232,228,220,0.035) 42.2%, transparent 42.8% 100%),
+    radial-gradient(ellipse at 50% 38%, transparent 26%, rgba(0,0,0,0.72) 100%);
+}
+.triumph-monument {
+  top: 49%;
+  font-size: clamp(22rem, 58vw, 46rem);
+  -webkit-text-stroke-color: rgba(232,228,220,0.055);
+  opacity: 1;
+  animation: tg-monument-in 1.6s ease forwards, tg-monument-drift 12s ease-in-out infinite alternate;
+}
+@keyframes tg-monument-drift {
+  from { transform: translate(-51%, -46%) rotate(-2deg); }
+  to { transform: translate(-49%, -44%) rotate(2deg); }
+}
+.triumph-inner {
+  max-width: 1180px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 480px);
+  grid-template-areas:
+    "strip strip"
+    "title card"
+    "sub card"
+    "proof card"
+    "tips card"
+    "actions actions"
+    "ticker ticker";
+  gap: 18px 54px;
+  text-align: left;
+  align-items: center;
+}
+.triumph-strip {
+  grid-area: strip;
+  width: 100%;
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border: 1px solid rgba(232,228,220,0.10);
+  border-radius: 999px;
+  background: rgba(232,228,220,0.035);
+  backdrop-filter: blur(16px);
+}
+.triumph-title {
+  grid-area: title;
+  margin: 0;
+  padding-left: 0;
+  font-size: clamp(3.3rem, 7.4vw, 7rem);
+  line-height: 0.92;
+  font-weight: 760;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 44px rgba(232,228,220,0.12);
+}
+.triumph-sub {
+  grid-area: sub;
+  margin: 0;
+  max-width: 610px;
+  font-size: clamp(1rem, 1.35vw, 1.18rem);
+  line-height: 1.65;
+  color: rgba(232,228,220,0.64);
+}
+.triumph-proof {
+  grid-area: proof;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  max-width: 610px;
+  opacity: 0;
+  animation: tg-rise-soft 0.9s 1.45s cubic-bezier(0.2,0.7,0.2,1) forwards;
+}
+.triumph-proof div {
+  min-height: 78px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(232,228,220,0.10);
+  background: rgba(232,228,220,0.045);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.triumph-proof b {
+  display: block;
+  color: #f0ece2;
+  font-size: 1.35rem;
+  font-weight: 760;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.triumph-proof span {
+  display: block;
+  color: rgba(232,228,220,0.46);
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.triumph-beam { display: none; }
+.triumph-tips {
+  grid-area: tips;
+  max-width: 610px;
+  margin: 6px 0 0;
+  padding: 20px;
+  border: 1px solid rgba(232,228,220,0.10);
+  border-radius: 22px;
+  background: linear-gradient(145deg, rgba(232,228,220,0.05), rgba(232,228,220,0.025));
+  backdrop-filter: blur(12px);
+}
+.triumph-tips-head {
+  margin-bottom: 10px;
+}
+.triumph-tips ul {
+  display: grid;
+  gap: 0;
+}
+.triumph-tips li {
+  grid-template-columns: 42px 1fr;
+  padding: 11px 0;
+}
+.triumph-tips li:nth-child(n+5) {
+  display: none;
+}
+.triumph-card {
+  grid-area: card;
+  width: 100%;
+  margin: 0;
+  justify-self: center;
+  border-radius: 22px;
+  box-shadow:
+    0 34px 100px rgba(0,0,0,0.72),
+    0 0 0 1px rgba(232,228,220,0.06),
+    0 0 90px rgba(232,228,220,0.055);
+  transform: translateY(18px) scale(0.98);
+  animation: tg-card-hero-in 1.05s 1.75s cubic-bezier(0.2,0.8,0.2,1) forwards;
+}
+@keyframes tg-card-hero-in {
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes tg-rise-soft {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.triumph-actions {
+  grid-area: actions;
+  margin: 18px 0 0;
+  opacity: 0;
+  animation: tg-rise-soft 0.8s 2.5s forwards;
+}
+.triumph-btn {
+  border-radius: 999px;
+  background: rgba(232,228,220,0.035);
+  backdrop-filter: blur(12px);
+}
+.triumph-btn.primary {
+  background: #f0ece2;
+  color: #050505;
+}
+.triumph-btn.primary::before {
+  background: #ffffff;
+}
+.triumph-ticker {
+  grid-area: ticker;
+  width: 100%;
+  margin: 26px 0 -26px;
+}
+.triumph-share-panel {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 900px) {
+  .triumph-overlay {
+    padding: 24px 16px 56px;
+  }
+  .triumph-inner {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "strip"
+      "title"
+      "sub"
+      "proof"
+      "card"
+      "tips"
+      "actions"
+      "ticker";
+    gap: 18px;
+    text-align: center;
+  }
+  .triumph-title {
+    font-size: clamp(3rem, 13vw, 5.2rem);
+    letter-spacing: 0.03em;
+  }
+  .triumph-sub,
+  .triumph-proof,
+  .triumph-tips {
+    max-width: 560px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .triumph-tips {
+    text-align: left;
+  }
+  .triumph-monument {
+    opacity: 0.5;
+  }
+}
+@media (max-width: 560px) {
+  .triumph-strip {
+    border-radius: 18px;
+  }
+  .triumph-proof {
+    grid-template-columns: 1fr;
+  }
+  .triumph-card {
+    max-width: min(100%, 480px);
+  }
+  .triumph-card-frame {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
 }
 
 /* ============ PRINT-SAFE CLONE (captured for download) ============ */
@@ -664,6 +895,12 @@
          data-en="All <strong>14 official theory tests</strong> cleared with a perfect score. You are ready for the real Danish driving theory test."
          data-ua="Усі <strong>14 офіційних теоретичних тестів</strong> пройдено з ідеальним результатом. Ти готовий до справжнього датського теоретичного іспиту.">
       All <strong>14 official theory tests</strong> cleared with a perfect score. You are ready for the real Danish driving theory test.
+    </div>
+
+    <div class="triumph-proof">
+      <div><b>{{ triumph_data.total_questions }}</b><span data-en="questions cleared" data-ua="питань пройдено">questions cleared</span></div>
+      <div><b>14/14</b><span data-en="official tests" data-ua="офіційних тестів">official tests</span></div>
+      <div><b>100%</b><span data-en="perfect score" data-ua="ідеальний результат">perfect score</span></div>
     </div>
 
     <div class="triumph-beam" aria-hidden="true"></div>
@@ -941,18 +1178,19 @@
     requestAnimationFrame(tick);
   }
 
-  // Ash/bone confetti — slow drifting particles, two waves
+  // Premium celebration — first a clean center burst, then soft side cannons.
   function fire() {
     if (typeof confetti !== 'function') return;
-    const palette = ['#f0ece2', '#c8c4ba', '#8a847a', '#6b665e', '#3a3835'];
-    const end = Date.now() + 3400;
+    const palette = ['#f8f4ea', '#d6c7a8', '#b08b55', '#7c3aed', '#3a3835'];
+    confetti({ particleCount: 90, spread: 74, origin: { x: 0.5, y: 0.34 }, colors: palette, gravity: 0.75, scalar: 0.95, ticks: 240, startVelocity: 42 });
+    const end = Date.now() + 2400;
     (function frame() {
-      confetti({ particleCount: 2, angle: 70, spread: 50, origin: { x: 0, y: 0.1 }, colors: palette, gravity: 0.38, scalar: 0.8, ticks: 340, startVelocity: 30 });
-      confetti({ particleCount: 2, angle: 110, spread: 50, origin: { x: 1, y: 0.1 }, colors: palette, gravity: 0.38, scalar: 0.8, ticks: 340, startVelocity: 30 });
+      confetti({ particleCount: 2, angle: 64, spread: 42, origin: { x: 0, y: 0.72 }, colors: palette, gravity: 0.42, scalar: 0.8, ticks: 300, startVelocity: 38 });
+      confetti({ particleCount: 2, angle: 116, spread: 42, origin: { x: 1, y: 0.72 }, colors: palette, gravity: 0.42, scalar: 0.8, ticks: 300, startVelocity: 38 });
       if (Date.now() < end) requestAnimationFrame(frame);
     })();
   }
-  setTimeout(fire, 2200);
+  setTimeout(fire, 1400);
 
   // Download — render the print-safe clone to PNG (html2canvas can't handle the live card's SVG patterns/animations)
   document.getElementById('triumphDownloadBtn')?.addEventListener('click', async (e) => {
