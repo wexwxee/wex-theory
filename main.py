@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from types import SimpleNamespace
 from typing import Optional
 from urllib.parse import urlencode, quote
-from fastapi import FastAPI, Request, Depends, HTTPException, Header, UploadFile
+from fastapi import FastAPI, Request, Depends, HTTPException, Header, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -75,8 +75,11 @@ PUBLIC_ID_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 BASE_DIR = Path(__file__).resolve().parent
 CONTACT_UPLOAD_DIR = BASE_DIR / "uploads" / "contact"
 SUPPORT_UPLOAD_DIR = BASE_DIR / "uploads" / "support"
+AVATAR_UPLOAD_DIR = BASE_DIR / "uploads" / "avatars"
 ALLOWED_CONTACT_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".pdf", ".txt", ".log", ".json"}
+ALLOWED_AVATAR_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
 MAX_CONTACT_UPLOAD_BYTES = 10 * 1024 * 1024
+MAX_AVATAR_UPLOAD_BYTES = 2 * 1024 * 1024
 
 # Magic byte signatures for binary file types
 MAGIC_SIGNATURES: dict[str, list[bytes]] = {
@@ -104,6 +107,7 @@ def validate_file_magic(file_obj, ext: str) -> bool:
     return any(header.startswith(sig) for sig in signatures)
 CONTACT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 SUPPORT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+AVATAR_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 QUESTION_TEXT_FIXES = {
     "You are required to turn right at the signal-controlled junction. There is no traffic directly behind you. How should":
         "You are required to turn right at the signal-controlled junction. There is no traffic directly behind you. How should you proceed?"
@@ -1227,6 +1231,19 @@ def ensure_user_telegram_columns(db: Session) -> None:
         print(f"[STARTUP] user telegram columns setup skipped/error: {e}")
 
 
+def ensure_user_profile_columns(db: Session) -> None:
+    try:
+        inspector = sql_inspect(engine)
+        columns = {col["name"] for col in inspector.get_columns("users")}
+        if "avatar_path" not in columns:
+            db.execute(sql_text("ALTER TABLE users ADD COLUMN avatar_path VARCHAR"))
+            db.commit()
+            print("[STARTUP] Added users.avatar_path column")
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] user profile columns setup skipped/error: {e}")
+
+
 def _new_referral_code() -> str:
     return "WEXR-" + "".join(secrets.choice(PUBLIC_ID_ALPHABET) for _ in range(6))
 
@@ -1340,6 +1357,47 @@ def save_support_attachment(upload: UploadFile) -> tuple[str, str, str]:
             f.write(chunk)
 
     return original_name, f"/uploads/support/{stored_name}", (upload.content_type or "")
+
+
+def save_avatar_upload(upload: UploadFile, user: models.User) -> str:
+    original_name = os.path.basename(upload.filename or "").strip()
+    ext = Path(original_name).suffix.lower()
+    if ext not in ALLOWED_AVATAR_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Use PNG, JPG, WEBP, or GIF.")
+    if not validate_file_magic(upload.file, ext):
+        raise HTTPException(status_code=400, detail="The image file looks invalid.")
+
+    public_part = re.sub(r"[^A-Za-z0-9_-]", "-", user.public_id or str(user.id)).strip("-") or str(user.id)
+    stored_name = f"user-{public_part}-{secrets.token_urlsafe(10)}{ext}"
+    target = AVATAR_UPLOAD_DIR / stored_name
+    total = 0
+    with target.open("wb") as out:
+        while True:
+            chunk = upload.file.read(512 * 1024)
+            if not chunk:
+                break
+            total += len(chunk)
+            if total > MAX_AVATAR_UPLOAD_BYTES:
+                out.close()
+                try:
+                    target.unlink(missing_ok=True)
+                except Exception:
+                    pass
+                raise HTTPException(status_code=413, detail="Avatar image must be 2 MB or smaller.")
+            out.write(chunk)
+
+    return f"/uploads/avatars/{stored_name}"
+
+
+def remove_stored_avatar(path_value: Optional[str]) -> None:
+    if not path_value or not path_value.startswith("/uploads/avatars/"):
+        return
+    safe_filename = os.path.basename(path_value)
+    target = AVATAR_UPLOAD_DIR / safe_filename
+    try:
+        target.unlink(missing_ok=True)
+    except Exception as e:
+        print(f"[PROFILE] Failed to remove old avatar {safe_filename}: {e}")
 
 
 def get_uploaded_file(value) -> Optional[UploadFile]:
@@ -1544,6 +1602,7 @@ async def startup_init():
         ensure_user_public_id_column(db)
         ensure_user_referral_columns(db)
         ensure_user_telegram_columns(db)
+        ensure_user_profile_columns(db)
         ensure_super_admin_column(db)
         ensure_all_user_public_ids(db)
         ensure_contact_attachment_columns(db)
@@ -1557,6 +1616,8 @@ async def startup_init():
         ensure_referrals_table(db)
         ensure_all_user_referral_codes(db)
         CONTACT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+        SUPPORT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+        AVATAR_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
         # 1. Import test data if DB is empty
         test_count = db.query(models.Test).count()
@@ -1681,13 +1742,28 @@ async def serve_upload(subdir: str, filename: str):
     file_path = BASE_DIR / "uploads" / safe_subdir / safe_filename
     if not file_path.is_file():
         return JSONResponse({"error": "Not found"}, status_code=404)
+    if safe_subdir == "avatars":
+        ext = Path(safe_filename).suffix.lower()
+        media_types = {
+            ".png": "image/png",
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".webp": "image/webp",
+            ".gif": "image/gif",
+        }
+        if ext in ALLOWED_AVATAR_EXTENSIONS:
+            return FileResponse(
+                path=str(file_path),
+                media_type=media_types.get(ext, "application/octet-stream"),
+                headers={"Cache-Control": "private, max-age=86400"},
+            )
     return FileResponse(
         path=str(file_path),
         filename=safe_filename,
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260425-telegram-login-menu"
+templates.env.globals["asset_version"] = "20260425-profile-refresh"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 
 FREE_SAMPLE_TEST_ID = 0
@@ -2764,10 +2840,70 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
         .order_by(models.UserTestAttempt.finished_at.desc())
         .all()
     )
+    scored_attempts = [a for a in attempts if a.score is not None]
+    passed_test_ids = {
+        a.test_id for a in attempts
+        if a.passed and a.test_id != FREE_SAMPLE_TEST_ID
+    }
+    official_total = EXAM_MODE_TEST_ID
+    certificate = (
+        db.query(models.Certificate)
+        .filter(models.Certificate.user_id == user.id)
+        .order_by(models.Certificate.issued_at.desc())
+        .first()
+    )
+    now = datetime.utcnow()
+    days_left = (user.expires_at - now).days
+    active_days = max(days_left, 0)
+    has_access = user_has_access(user)
+    profile_stats = {
+        "attempts_count": len(attempts),
+        "passed_count": sum(1 for a in attempts if a.passed),
+        "avg_score": round(sum((a.score or 0) for a in scored_attempts) / len(scored_attempts), 1) if scored_attempts else 0,
+        "best_score": max((a.score or 0) for a in scored_attempts) if scored_attempts else 0,
+        "completed_tests": len(passed_test_ids),
+        "official_total": official_total,
+        "completion_percent": round((len(passed_test_ids) / official_total) * 100) if official_total else 0,
+        "certificate": certificate,
+        "latest_attempt": attempts[0] if attempts else None,
+        "days_left": days_left,
+        "active_days": active_days,
+        "has_access": has_access,
+        "access_meter": 100 if user.is_admin else round((min(active_days, 30) / 30) * 100),
+    }
     return templates.TemplateResponse(request, "profile.html", {
         "request": request, "user": user, "attempts": attempts,
-        "now": datetime.utcnow(),
+        "now": now, "profile_stats": profile_stats,
     })
+
+
+@app.post("/api/profile/avatar")
+async def update_profile_avatar(
+    request: Request,
+    avatar: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    user = get_current_user(request, db)
+    if not user:
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    old_avatar_path = user.avatar_path
+    avatar_path = save_avatar_upload(avatar, user)
+    user.avatar_path = avatar_path
+    db.commit()
+    remove_stored_avatar(old_avatar_path)
+    return JSONResponse({"ok": True, "avatar_url": avatar_path})
+
+
+@app.post("/api/profile/avatar/remove")
+async def remove_profile_avatar(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    old_avatar_path = user.avatar_path
+    user.avatar_path = None
+    db.commit()
+    remove_stored_avatar(old_avatar_path)
+    return JSONResponse({"ok": True})
 
 
 @app.get("/promo-code", response_class=HTMLResponse)

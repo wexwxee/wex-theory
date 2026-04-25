@@ -35,6 +35,9 @@ class User(Base):
     telegram_phone_verified = Column(Boolean, nullable=False, default=False)
     telegram_connected_at   = Column(DateTime, nullable=True)
 
+    # Profile fields
+    avatar_path = Column(String, nullable=True)
+
     attempts = relationship("UserTestAttempt", back_populates="user")
     support_threads = relationship("SupportThread", back_populates="user")
     certificates = relationship("Certificate", back_populates="user", foreign_keys="Certificate.user_id")

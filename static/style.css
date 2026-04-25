@@ -404,6 +404,13 @@ input::placeholder, textarea::placeholder {
   font-size: 0.9rem;
   flex-shrink: 0;
   letter-spacing: 0;
+  overflow: hidden;
+}
+.sb-avi img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 [data-theme="light"] .sb-avi {
   background: linear-gradient(135deg, rgba(10,10,10,0.08), rgba(10,10,10,0.03));
