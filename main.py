@@ -2038,7 +2038,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260426-light-dashboard-refresh"
+templates.env.globals["asset_version"] = "20260427-neutral-home-profile"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 
@@ -2605,6 +2605,15 @@ async def index(request: Request, db: Session = Depends(get_db)):
     if token and decode_token(token):
         return RedirectResponse("/dashboard", status_code=302)
     return templates.TemplateResponse(request, "index.html", {"request": request})
+
+
+@app.get("/welcome", response_class=HTMLResponse)
+async def welcome_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    context = {"request": request}
+    if user:
+        context["user"] = user
+    return templates.TemplateResponse(request, "index.html", context)
 
 
 @app.get("/login", response_class=HTMLResponse)

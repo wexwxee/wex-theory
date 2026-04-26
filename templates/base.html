@@ -98,8 +98,9 @@
   <div class="sb-overlay" id="sbOverlay"></div>
   <aside class="sb" id="sidebar">
     {% set current_path = request.url.path if request is defined else '' %}
+    {% set home_href = '/welcome' if user is defined and user else '/' %}
     <div class="sb-brand">
-      <a href="/" class="sb-logo">WEXTheory</a>
+      <a href="{{ home_href }}" class="sb-logo">WEXTheory</a>
       <button class="sb-x" id="sbCloseBtn" aria-label="Close">
         <i class="fa-solid fa-xmark"></i>
       </button>
@@ -131,7 +132,7 @@
 
     <div class="sb-list">
 
-      <a href="/" class="sb-item{% if current_path == '/' %} is-current{% endif %}">
+      <a href="{{ home_href }}" class="sb-item{% if current_path == '/' or current_path == '/welcome' %} is-current{% endif %}">
         <span class="sb-ic sb-ic--home"><i class="fa-solid fa-house"></i></span><span>Home</span>
       </a>
 
