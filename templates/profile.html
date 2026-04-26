@@ -653,6 +653,99 @@
     border-color: rgba(244,114,182,0.28);
     box-shadow: 0 22px 70px rgba(244,114,182,0.10), 0 22px 70px rgba(0,0,0,0.22);
   }
+  [data-theme="light"] .profile-page {
+    color: #0f0a0d;
+  }
+  [data-theme="light"] .profile-kicker,
+  [data-theme="light"] .stat-label,
+  [data-theme="light"] .access-label {
+    color: #7b6973;
+  }
+  [data-theme="light"] .profile-hero {
+    background:
+      radial-gradient(circle at 8% 0%, rgba(244,114,182,0.23), transparent 30%),
+      radial-gradient(circle at 78% 5%, rgba(217,70,239,0.15), transparent 31%),
+      radial-gradient(circle at 72% 98%, rgba(251,113,133,0.12), transparent 34%),
+      linear-gradient(135deg, rgba(255,255,255,0.92), rgba(255,247,251,0.82) 50%, rgba(252,231,243,0.54));
+    border-color: rgba(190,24,93,0.16);
+    box-shadow: 0 32px 90px rgba(190,24,93,0.10), inset 0 1px 0 rgba(255,255,255,0.85);
+  }
+  [data-theme="light"] .profile-hero::before {
+    background-image:
+      radial-gradient(circle at 15% 24%, rgba(244,114,182,0.13) 0 1px, transparent 1.6px),
+      linear-gradient(115deg, transparent 0 42%, rgba(255,255,255,0.72) 43%, transparent 45% 100%);
+    background-size: 150px 150px, 100% 100%;
+    opacity: 0.55;
+    mask-image: linear-gradient(90deg, #000, transparent 88%);
+  }
+  [data-theme="light"] .profile-hero::after {
+    color: rgba(190,24,93,0.055);
+    text-shadow: 0 0 70px rgba(244,114,182,0.12);
+  }
+  [data-theme="light"] .profile-avatar {
+    border-color: rgba(190,24,93,0.16);
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.92), rgba(252,231,243,0.72)),
+      #fff;
+    box-shadow: 0 22px 64px rgba(190,24,93,0.14);
+  }
+  [data-theme="light"] .profile-pill--admin,
+  [data-theme="light"] .profile-pill--active {
+    color: #6d0f43;
+    background: linear-gradient(135deg, rgba(244,114,182,0.34), rgba(192,132,252,0.28));
+    border-color: rgba(190,24,93,0.18);
+    box-shadow: 0 12px 30px rgba(190,24,93,0.10);
+  }
+  [data-theme="light"] .profile-pill--telegram {
+    color: #7e1b53;
+    background: linear-gradient(135deg, rgba(244,114,182,0.22), rgba(217,70,239,0.16));
+    border-color: rgba(190,24,93,0.16);
+  }
+  [data-theme="light"] .access-card--subscription {
+    background:
+      linear-gradient(#fff7fb, #fff7fb) padding-box,
+      linear-gradient(135deg, #f472b6, #d946ef, #fb7185, #f59e0b) border-box;
+    box-shadow: 0 26px 74px rgba(190,24,93,0.16);
+  }
+  [data-theme="light"] .access-card--subscription::before {
+    background:
+      conic-gradient(from 130deg, transparent 0 18%, rgba(244,114,182,0.26), rgba(217,70,239,0.20), rgba(251,113,133,0.16), transparent 58% 100%);
+  }
+  [data-theme="light"] .access-card--subscription::after {
+    background:
+      radial-gradient(circle at 15% 12%, rgba(244,114,182,0.19), transparent 36%),
+      radial-gradient(circle at 88% 20%, rgba(217,70,239,0.13), transparent 34%),
+      radial-gradient(circle at 70% 92%, rgba(251,113,133,0.12), transparent 36%),
+      #fff9fc;
+  }
+  [data-theme="light"] .access-card--subscription,
+  [data-theme="light"] .access-card--subscription .access-label,
+  [data-theme="light"] .access-card--subscription .access-date {
+    color: #150b10;
+  }
+  [data-theme="light"] .access-card--subscription .subscription-subcopy {
+    color: rgba(21,11,16,0.68);
+  }
+  [data-theme="light"] .access-card--subscription .meter {
+    background: rgba(190,24,93,0.11);
+  }
+  [data-theme="light"] .access-card--subscription .meter span,
+  [data-theme="light"] .meter span {
+    background: linear-gradient(90deg, #f472b6, #d946ef, #fb7185);
+    box-shadow: 0 0 20px rgba(244,114,182,0.30);
+  }
+  [data-theme="light"] .stat-card,
+  [data-theme="light"] .info-card,
+  [data-theme="light"] .card {
+    background: linear-gradient(145deg, rgba(255,255,255,0.92), rgba(255,247,251,0.82));
+    border-color: rgba(190,24,93,0.11);
+    box-shadow: 0 16px 42px rgba(190,24,93,0.06);
+  }
+  [data-theme="light"] .stat-card:hover,
+  [data-theme="light"] .info-card:hover {
+    border-color: rgba(190,24,93,0.22);
+    box-shadow: 0 24px 64px rgba(190,24,93,0.11);
+  }
   .identity-name-row {
     display: flex;
     align-items: center;

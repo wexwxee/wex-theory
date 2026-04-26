@@ -4,6 +4,72 @@
 
 {% block body %}
 <style>
+  .dashboard-page {
+    position: relative;
+    max-width: 1180px;
+    padding-top: 34px;
+  }
+  .dashboard-page::before {
+    content: "";
+    position: fixed;
+    inset: 60px 0 auto 0;
+    height: 360px;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 18% 10%, rgba(244, 114, 182, 0.12), transparent 28%),
+      radial-gradient(circle at 76% 0%, rgba(168, 85, 247, 0.10), transparent 30%),
+      radial-gradient(circle at 52% 18%, rgba(251, 113, 133, 0.08), transparent 34%);
+    opacity: 0.95;
+    z-index: -1;
+  }
+  [data-theme="light"] .dashboard-page::before {
+    background:
+      radial-gradient(circle at 18% 6%, rgba(244, 114, 182, 0.20), transparent 30%),
+      radial-gradient(circle at 80% 0%, rgba(192, 132, 252, 0.16), transparent 32%),
+      radial-gradient(circle at 50% 30%, rgba(251, 113, 133, 0.10), transparent 36%);
+  }
+  .dashboard-hero {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(244, 114, 182, 0.16);
+    border-radius: 22px;
+    padding: 28px;
+    margin-bottom: 18px;
+    background:
+      radial-gradient(circle at 12% 2%, rgba(244, 114, 182, 0.18), transparent 34%),
+      radial-gradient(circle at 88% 4%, rgba(168, 85, 247, 0.13), transparent 34%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.06), transparent 38%),
+      linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 88%, #ff4fb3 12%), var(--bg-card));
+    box-shadow: 0 28px 90px rgba(0, 0, 0, 0.12);
+  }
+  [data-theme="light"] .dashboard-hero {
+    border-color: rgba(190, 24, 93, 0.15);
+    background:
+      radial-gradient(circle at 10% 0%, rgba(244, 114, 182, 0.18), transparent 34%),
+      radial-gradient(circle at 92% 6%, rgba(192, 132, 252, 0.18), transparent 32%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(255, 247, 251, 0.72)),
+      #fff;
+    box-shadow: 0 28px 80px rgba(190, 24, 93, 0.10);
+  }
+  .dashboard-hero::after {
+    content: "WEX";
+    position: absolute;
+    right: -18px;
+    bottom: -74px;
+    font-size: clamp(7rem, 19vw, 17rem);
+    font-weight: 900;
+    letter-spacing: -0.08em;
+    line-height: 1;
+    color: rgba(244, 114, 182, 0.07);
+    pointer-events: none;
+  }
+  [data-theme="light"] .dashboard-hero::after {
+    color: rgba(190, 24, 93, 0.055);
+  }
+  .dashboard-hero > * {
+    position: relative;
+    z-index: 1;
+  }
   .dashboard-link-btn {
     display: inline-flex;
     align-items: center;
@@ -77,7 +143,31 @@
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 16px;
-    margin-bottom: 36px;
+    margin-bottom: 0;
+  }
+  .dashboard-kicker {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-weight: 850;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .dashboard-title {
+    font-size: clamp(2.3rem, 6vw, 5rem);
+    font-weight: 900;
+    line-height: 0.94;
+    letter-spacing: -0.075em;
+    margin-bottom: 14px;
+  }
+  .dashboard-subcopy {
+    max-width: 610px;
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+  .dashboard-subcopy strong {
+    color: var(--text);
   }
   .dashboard-actions {
     display: flex;
@@ -89,7 +179,92 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
-    margin-bottom: 36px;
+    margin: 18px 0 24px;
+  }
+  .dashboard-stat-card {
+    position: relative;
+    overflow: hidden;
+    padding: 20px;
+    min-height: 118px;
+    border-radius: 18px;
+    background:
+      linear-gradient(145deg, color-mix(in srgb, var(--bg-card) 93%, #ff4fb3 7%), var(--bg-card));
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+  .dashboard-stat-card::after {
+    content: "";
+    position: absolute;
+    inset: auto -12% -40% 38%;
+    height: 80px;
+    background: radial-gradient(circle, rgba(244, 114, 182, 0.20), transparent 64%);
+    pointer-events: none;
+  }
+  .dashboard-stat-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(244, 114, 182, 0.24);
+    box-shadow: 0 18px 50px rgba(190, 24, 93, 0.10);
+  }
+  .dashboard-stat-value {
+    font-size: 2rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.05em;
+  }
+  .dashboard-stat-label {
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    font-weight: 820;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 10px;
+  }
+  [data-theme="light"] .dashboard-stat-card {
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(255, 246, 251, 0.78));
+    border-color: rgba(190, 24, 93, 0.11);
+    box-shadow: 0 16px 42px rgba(190, 24, 93, 0.06);
+  }
+  .tests-grid {
+    gap: 18px;
+  }
+  .tests-grid .test-card {
+    position: relative;
+    border-radius: 20px;
+    background:
+      linear-gradient(145deg, color-mix(in srgb, var(--bg-card) 95%, #ff4fb3 5%), var(--bg-card));
+    box-shadow: 0 16px 42px rgba(0, 0, 0, 0.08);
+    transform: translateY(0);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .tests-grid .test-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(244, 114, 182, 0.32);
+    box-shadow: 0 22px 58px rgba(190, 24, 93, 0.13);
+  }
+  [data-theme="light"] .tests-grid .test-card {
+    background: linear-gradient(180deg, #fff, #fff8fc);
+    border-color: rgba(190, 24, 93, 0.10);
+  }
+  .tests-grid .test-card img {
+    transition: transform 0.35s ease, filter 0.35s ease;
+  }
+  .tests-grid .test-card:hover img {
+    transform: scale(1.035);
+    filter: saturate(1.05) contrast(1.03);
+  }
+  .test-card-body {
+    position: relative;
+  }
+  .mode-progress-item {
+    transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+  }
+  .mode-progress-item:hover {
+    transform: translateY(-1px);
+    border-color: rgba(244, 114, 182, 0.24);
+  }
+  [data-theme="light"] .mode-progress-item {
+    background: rgba(255, 255, 255, 0.72);
+    border-color: rgba(190, 24, 93, 0.09);
   }
   @media (max-width: 900px) {
     .dashboard-stats {
@@ -97,6 +272,15 @@
     }
   }
   @media (max-width: 640px) {
+    .dashboard-page {
+      width: min(100% - 24px, 1180px);
+      padding-left: 0;
+      padding-right: 0;
+    }
+    .dashboard-hero {
+      padding: 22px;
+      border-radius: 20px;
+    }
     .dashboard-head {
       margin-bottom: 24px;
     }
@@ -111,6 +295,9 @@
       grid-template-columns: 1fr 1fr;
       gap: 10px;
       margin-bottom: 24px;
+    }
+    .dashboard-title {
+      font-size: clamp(2.25rem, 15vw, 4rem);
     }
   }
   .wording-meta {
@@ -167,6 +354,11 @@
   .mode-progress-item.ai {
     background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 93%, #ecfdf5 7%), var(--bg-card));
   }
+  [data-theme="light"] .mode-progress-item.original,
+  [data-theme="light"] .mode-progress-item.ai {
+    background: rgba(255, 255, 255, 0.72);
+    border-color: rgba(190, 24, 93, 0.09);
+  }
   .mode-progress-value {
     display: flex;
     align-items: flex-start;
@@ -201,10 +393,15 @@
   </div>
 </nav>
 
-<div class="page">
+<div class="page dashboard-page">
+  <section class="dashboard-hero">
   <div class="dashboard-head">
     <div>
-      <h1 style="font-size:1.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:6px;">My Tests</h1>
+      <div class="dashboard-kicker">Practice Library</div>
+      <h1 class="dashboard-title">My Tests</h1>
+      <p class="dashboard-subcopy">
+        Train through the official WEXTheory set, keep your saved questions close, and return to any finished attempt for a full answer review.
+      </p>
       {% if user.is_admin %}
         <span style="font-size:0.75rem;color:var(--correct);border:1px solid var(--correct);padding:2px 10px;border-radius:999px;display:inline-block;">Admin</span>
         <a href="/admin/triumph-preview" style="margin-left:8px;font-size:0.75rem;color:#fbbf24;border:1px solid #fbbf24;padding:2px 10px;border-radius:999px;display:inline-block;text-decoration:none;font-weight:700;" title="Preview Triumph Screen (admin only, no DB writes)">🏆 Preview Triumph</a>
@@ -251,27 +448,28 @@
   </div>
 
   <div class="dashboard-stats">
-    <div class="card" style="padding:20px;text-align:center;">
-      <div style="font-size:2rem;font-weight:800;line-height:1;">{{ completed }}</div>
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">Completed</div>
+    <div class="card dashboard-stat-card">
+      <div class="dashboard-stat-value">{{ completed }}</div>
+      <div class="dashboard-stat-label">Completed</div>
     </div>
-    <div class="card" style="padding:20px;text-align:center;">
-      <div style="font-size:2rem;font-weight:800;line-height:1;">{{ library_total - completed }}</div>
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">Remaining</div>
+    <div class="card dashboard-stat-card">
+      <div class="dashboard-stat-value">{{ library_total - completed }}</div>
+      <div class="dashboard-stat-label">Remaining</div>
     </div>
-    <div class="card" style="padding:20px;text-align:center;">
-      <div style="font-size:2rem;font-weight:800;line-height:1;">{{ latest_scores.values() | list | sum if latest_scores else 0 }}</div>
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">Total Score</div>
+    <div class="card dashboard-stat-card">
+      <div class="dashboard-stat-value">{{ latest_scores.values() | list | sum if latest_scores else 0 }}</div>
+      <div class="dashboard-stat-label">Total Score</div>
     </div>
-    <div class="card" style="padding:20px;text-align:center;">
+    <div class="card dashboard-stat-card">
       {% if has_access %}
-        <div style="font-size:1.4rem;font-weight:800;line-height:1;color:var(--correct);">Extended</div>
+        <div class="dashboard-stat-value" style="font-size:1.45rem;color:var(--correct);">Extended</div>
       {% else %}
-        <div style="font-size:1.4rem;font-weight:800;line-height:1;color:var(--text-muted);">Free</div>
+        <div class="dashboard-stat-value" style="font-size:1.45rem;color:var(--text-muted);">Free</div>
       {% endif %}
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">Plan</div>
+      <div class="dashboard-stat-label">Plan</div>
     </div>
   </div>
+  </section>
 
   <div class="tests-grid">
     {% for t in tests %}
@@ -420,6 +618,3 @@
 {% block scripts %}
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/dashboard.js"></script>
 {% endblock %}
-
-
-
