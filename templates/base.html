@@ -137,55 +137,53 @@
       {% if user is defined and user %}
       <div class="sb-sep">Account</div>
       <a href="/dashboard" class="sb-item{% if current_path.startswith('/dashboard') %} is-current{% endif %}">
-        <span class="sb-ic sb-ic--dashboard"><i class="fa-solid fa-grip"></i></span><span>Dashboard</span>
+        <span class="sb-ic sb-ic--dashboard"><i class="fa-solid fa-table-columns"></i></span><span>Dashboard</span>
       </a>
       <a href="/profile" class="sb-item{% if current_path.startswith('/profile') %} is-current{% endif %}">
-        <span class="sb-ic sb-ic--profile"><i class="fa-solid fa-user"></i></span><span>Profile</span>
+        <span class="sb-ic sb-ic--profile"><i class="fa-regular fa-circle-user"></i></span><span>Profile</span>
       </a>
       <a href="/referrals" class="sb-item{% if current_path.startswith('/referrals') %} is-current{% endif %}">
-        <span class="sb-ic sb-ic--invite"><i class="fa-solid fa-gift"></i></span><span>Invite Friends</span>
+        <span class="sb-ic sb-ic--invite"><i class="fa-solid fa-user-group"></i></span><span>Invite Friends</span>
       </a>
-      {% if not user.is_admin %}
       <a href="/promo-code" class="sb-item{% if current_path.startswith('/promo-code') %} is-current{% endif %}">
-        <span class="sb-ic sb-ic--promo"><i class="fa-solid fa-ticket"></i></span><span>Activate Promo Code</span>
+        <span class="sb-ic sb-ic--promo"><i class="fa-solid fa-ticket-simple"></i></span><span>Activate Promo Code</span>
       </a>
-      {% endif %}
       <a href="/pricing" class="sb-item{% if current_path.startswith('/pricing') %} is-current{% endif %}">
-        <span class="sb-ic sb-ic--access"><i class="fa-solid fa-credit-card"></i></span><span>Access</span>
+        <span class="sb-ic sb-ic--access"><i class="fa-solid fa-wallet"></i></span><span>Access</span>
       </a>
       {% if user.is_admin %}
       <a href="/support" class="sb-item{% if current_path.startswith('/support') %} is-current{% endif %}">
-        <span class="sb-ic sb-ic--support"><i class="fa-solid fa-headset"></i></span>
+        <span class="sb-ic sb-ic--support"><i class="fa-regular fa-message"></i></span>
         <span class="sb-item-label">Support Inbox <span class="sb-alert-dot" id="supportUnreadBadge"></span></span>
       </a>
       {% else %}
       <a href="/messages" class="sb-item{% if current_path.startswith('/messages') %} is-current{% endif %}">
-        <span class="sb-ic sb-ic--support"><i class="fa-solid fa-comments"></i></span>
+        <span class="sb-ic sb-ic--support"><i class="fa-regular fa-message"></i></span>
         <span class="sb-item-label">Messages <span class="sb-alert-dot" id="supportUnreadBadge"></span></span>
       </a>
       {% endif %}
       {% if user.is_admin %}
       <a href="/admin" class="sb-item{% if current_path.startswith('/admin') %} is-current{% endif %}">
-        <span class="sb-ic sb-ic--admin"><i class="fa-solid fa-screwdriver-wrench"></i></span><span>Admin Panel</span>
+        <span class="sb-ic sb-ic--admin"><i class="fa-solid fa-sliders"></i></span><span>Admin Panel</span>
       </a>
       {% endif %}
       {% endif %}
 
       <div class="sb-sep">Info</div>
       <a href="/about" class="sb-item{% if current_path.startswith('/about') %} is-current{% endif %}">
-        <span class="sb-ic sb-ic--about"><i class="fa-solid fa-circle-info"></i></span><span>About</span>
+        <span class="sb-ic sb-ic--about"><i class="fa-solid fa-book-open"></i></span><span>About</span>
       </a>
       <a href="/faq" class="sb-item{% if current_path.startswith('/faq') %} is-current{% endif %}">
-        <span class="sb-ic sb-ic--faq"><i class="fa-solid fa-circle-question"></i></span><span>FAQ</span>
+        <span class="sb-ic sb-ic--faq"><i class="fa-regular fa-circle-question"></i></span><span>FAQ</span>
       </a>
       <a href="/contact" class="sb-item{% if current_path.startswith('/contact') %} is-current{% endif %}">
-        <span class="sb-ic sb-ic--contact"><i class="fa-solid fa-paper-plane"></i></span><span>Contact</span>
+        <span class="sb-ic sb-ic--contact"><i class="fa-regular fa-envelope"></i></span><span>Contact</span>
       </a>
       <a href="/privacy" class="sb-item{% if current_path.startswith('/privacy') %} is-current{% endif %}">
-        <span class="sb-ic sb-ic--privacy"><i class="fa-solid fa-shield-halved"></i></span><span>Privacy</span>
+        <span class="sb-ic sb-ic--privacy"><i class="fa-solid fa-shield"></i></span><span>Privacy</span>
       </a>
       <a href="/verify-certificate" class="sb-item{% if current_path.startswith('/verify') %} is-current{% endif %}">
-        <span class="sb-ic sb-ic--verify"><i class="fa-solid fa-award"></i></span><span>Verify Certificate</span>
+        <span class="sb-ic sb-ic--verify"><i class="fa-solid fa-certificate"></i></span><span>Verify Certificate</span>
       </a>
 
     </div>
