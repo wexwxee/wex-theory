@@ -13,7 +13,7 @@ from types import SimpleNamespace
 from typing import Optional
 from urllib.parse import urlencode, quote
 from fastapi import FastAPI, Request, Depends, HTTPException, Header, UploadFile, File
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
@@ -1434,6 +1434,19 @@ def ensure_user_profile_columns(db: Session) -> None:
         print(f"[STARTUP] user profile columns setup skipped/error: {e}")
 
 
+def ensure_user_avatars_table(db: Session) -> None:
+    try:
+        inspector = sql_inspect(engine)
+        if "user_avatars" not in inspector.get_table_names():
+            models.UserAvatar.__table__.create(bind=engine, checkfirst=True)
+            print("[STARTUP] Created user_avatars table")
+        db.execute(sql_text("CREATE UNIQUE INDEX IF NOT EXISTS ux_user_avatars_user_id ON user_avatars (user_id)"))
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] user_avatars table setup skipped/error: {e}")
+
+
 def _new_referral_code() -> str:
     return "WEXR-" + "".join(secrets.choice(PUBLIC_ID_ALPHABET) for _ in range(6))
 
@@ -1579,6 +1592,46 @@ def save_avatar_upload(upload: UploadFile, user: models.User) -> str:
     return f"/uploads/avatars/{stored_name}"
 
 
+def save_avatar_to_database(db: Session, upload: UploadFile, user: models.User) -> str:
+    original_name = os.path.basename(upload.filename or "").strip()
+    ext = Path(original_name).suffix.lower()
+    if ext not in ALLOWED_AVATAR_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Use PNG, JPG, WEBP, or GIF.")
+    if not validate_file_magic(upload.file, ext):
+        raise HTTPException(status_code=400, detail="The image file looks invalid.")
+
+    chunks = []
+    total = 0
+    while True:
+        chunk = upload.file.read(512 * 1024)
+        if not chunk:
+            break
+        total += len(chunk)
+        if total > MAX_AVATAR_UPLOAD_BYTES:
+            raise HTTPException(status_code=413, detail="Avatar image must be 2 MB or smaller.")
+        chunks.append(chunk)
+
+    if total <= 0:
+        raise HTTPException(status_code=400, detail="The image file is empty.")
+
+    media_types = {
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".webp": "image/webp",
+        ".gif": "image/gif",
+    }
+    row = db.query(models.UserAvatar).filter(models.UserAvatar.user_id == user.id).first()
+    if not row:
+        row = models.UserAvatar(user_id=user.id, content_type=media_types.get(ext, "application/octet-stream"), data=b"")
+        db.add(row)
+    row.content_type = media_types.get(ext, "application/octet-stream")
+    row.data = b"".join(chunks)
+    row.updated_at = datetime.utcnow()
+    public_part = re.sub(r"[^A-Za-z0-9_-]", "-", user.public_id or str(user.id)).strip("-") or str(user.id)
+    return f"/avatar/{public_part}"
+
+
 def remove_stored_avatar(path_value: Optional[str]) -> None:
     if not path_value or not path_value.startswith("/uploads/avatars/"):
         return
@@ -1588,6 +1641,17 @@ def remove_stored_avatar(path_value: Optional[str]) -> None:
         target.unlink(missing_ok=True)
     except Exception as e:
         print(f"[PROFILE] Failed to remove old avatar {safe_filename}: {e}")
+
+
+def profile_avatar_url(user: Optional[models.User]) -> Optional[str]:
+    if not user or not user.avatar_path:
+        return None
+    avatar_path = str(user.avatar_path)
+    if avatar_path.startswith("/uploads/avatars/"):
+        safe_filename = os.path.basename(avatar_path)
+        if not (AVATAR_UPLOAD_DIR / safe_filename).is_file():
+            return None
+    return avatar_path
 
 
 def get_uploaded_file(value) -> Optional[UploadFile]:
@@ -1793,6 +1857,7 @@ async def startup_init():
         ensure_user_referral_columns(db)
         ensure_user_telegram_columns(db)
         ensure_user_profile_columns(db)
+        ensure_user_avatars_table(db)
         ensure_super_admin_column(db)
         ensure_all_user_public_ids(db)
         ensure_contact_attachment_columns(db)
@@ -1926,6 +1991,24 @@ async def favicon():
     return FileResponse(str(BASE_DIR / "static" / "favicon.svg"), media_type="image/svg+xml")
 
 
+@app.get("/avatar/{public_id}")
+async def serve_user_avatar(public_id: str, db: Session = Depends(get_db)):
+    cleaned_public_id = re.sub(r"[^A-Za-z0-9_-]", "", public_id or "")
+    if not cleaned_public_id:
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    user = db.query(models.User).filter(models.User.public_id == cleaned_public_id).first()
+    if not user:
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    avatar = db.query(models.UserAvatar).filter(models.UserAvatar.user_id == user.id).first()
+    if not avatar:
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    return Response(
+        content=avatar.data,
+        media_type=avatar.content_type,
+        headers={"Cache-Control": "private, no-cache"},
+    )
+
+
 # Uploads served with Content-Disposition: attachment to prevent XSS via uploaded files
 @app.get("/uploads/{subdir:path}/{filename:path}")
 async def serve_upload(subdir: str, filename: str):
@@ -1955,8 +2038,9 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260426-sidebar-promo-icons"
+templates.env.globals["asset_version"] = "20260426-db-avatars"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
+templates.env.globals["profile_avatar_url"] = profile_avatar_url
 
 FREE_SAMPLE_TEST_ID = 0
 FREE_SAMPLE_TEST_TITLE = "Test 0"
@@ -3146,7 +3230,7 @@ async def update_profile_avatar(
     if not user:
         return JSONResponse({"error": "Unauthorized"}, status_code=401)
     old_avatar_path = user.avatar_path
-    avatar_path = save_avatar_upload(avatar, user)
+    avatar_path = save_avatar_to_database(db, avatar, user)
     user.avatar_path = avatar_path
     db.commit()
     remove_stored_avatar(old_avatar_path)
@@ -3160,6 +3244,7 @@ async def remove_profile_avatar(request: Request, db: Session = Depends(get_db))
         return JSONResponse({"error": "Unauthorized"}, status_code=401)
     old_avatar_path = user.avatar_path
     user.avatar_path = None
+    db.query(models.UserAvatar).filter(models.UserAvatar.user_id == user.id).delete()
     db.commit()
     remove_stored_avatar(old_avatar_path)
     return JSONResponse({"ok": True})

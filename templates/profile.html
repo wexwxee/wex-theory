@@ -743,6 +743,7 @@
 {% set days_left = profile_stats.days_left %}
 {% set active_days = profile_stats.active_days %}
 {% set access_meter = profile_stats.access_meter %}
+{% set profile_avatar = profile_avatar_url(user) %}
 
 <main class="profile-page">
   <div class="profile-topline">
@@ -762,12 +763,12 @@
         <div class="identity-main">
           <div class="avatar-wrap">
             <div class="profile-avatar" id="profileAvatar">
-              {% if user.avatar_path %}
-                <img id="profileAvatarImg" src="{{ user.avatar_path }}" alt="Profile photo">
+              {% if profile_avatar %}
+                <img id="profileAvatarImg" src="{{ profile_avatar }}" alt="Profile photo">
               {% else %}
                 <img id="profileAvatarImg" alt="Profile photo" hidden>
               {% endif %}
-              <span id="profileAvatarInitial"{% if user.avatar_path %} hidden{% endif %}>{{ user.name[0].upper() }}</span>
+              <span id="profileAvatarInitial"{% if profile_avatar %} hidden{% endif %}>{{ user.name[0].upper() }}</span>
             </div>
             <button class="avatar-button" id="avatarPickBtn" type="button" aria-label="Upload profile photo">
               <i class="fa-solid fa-camera"></i>
@@ -811,7 +812,7 @@
           <span>User ID</span>
           <span class="profile-id-code">{{ user.public_id }}</span>
           <button class="btn-ghost btn-sm" id="copyUserIdBtn" data-public-id="{{ user.public_id }}" style="padding:5px 11px;">Copy</button>
-          {% if user.avatar_path %}
+          {% if profile_avatar %}
             <button class="btn-ghost btn-sm" id="removeAvatarBtn" type="button" style="padding:5px 11px;">Remove photo</button>
           {% else %}
             <button class="btn-ghost btn-sm" id="removeAvatarBtn" type="button" style="padding:5px 11px;display:none;">Remove photo</button>
