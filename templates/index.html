@@ -3,6 +3,623 @@
 {% block title %}WEX Theory - Danish Driving Theory Practice{% endblock %}
 
 {% block body %}
+<style>
+  .landing-page {
+    overflow: hidden;
+  }
+  .landing-shell {
+    width: min(1180px, calc(100% - 32px));
+    margin: 0 auto;
+  }
+  .landing-hero {
+    position: relative;
+    min-height: min(790px, calc(100vh - 120px));
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+    gap: 52px;
+    align-items: center;
+    padding: 64px 0 70px;
+  }
+  .landing-hero::before {
+    content: "";
+    position: absolute;
+    inset: 18px -18vw auto -18vw;
+    height: 78%;
+    z-index: -1;
+    background:
+      radial-gradient(circle at 18% 22%, rgba(0,0,0,0.07), transparent 26%),
+      radial-gradient(circle at 82% 12%, rgba(0,0,0,0.04), transparent 30%),
+      linear-gradient(180deg, rgba(0,0,0,0.035), transparent 62%);
+    pointer-events: none;
+  }
+  [data-theme="dark"] .landing-hero::before {
+    background:
+      radial-gradient(circle at 16% 18%, rgba(244,114,182,0.18), transparent 28%),
+      radial-gradient(circle at 82% 14%, rgba(56,189,248,0.10), transparent 30%),
+      linear-gradient(180deg, rgba(255,255,255,0.045), transparent 62%);
+  }
+  .landing-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-weight: 850;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    background: color-mix(in srgb, var(--bg-card) 92%, transparent);
+  }
+  .landing-kicker i {
+    color: var(--text);
+  }
+  .landing-title {
+    font-size: clamp(3.2rem, 7.4vw, 7.2rem);
+    line-height: 0.92;
+    letter-spacing: -0.085em;
+    font-weight: 900;
+    max-width: 760px;
+    margin-bottom: 22px;
+  }
+  .landing-title span {
+    display: block;
+  }
+  .landing-sub {
+    max-width: 590px;
+    color: var(--text-muted);
+    font-size: 1.08rem;
+    line-height: 1.72;
+    margin-bottom: 28px;
+  }
+  .landing-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 34px;
+  }
+  .landing-actions .btn-primary,
+  .landing-actions .btn-ghost {
+    min-height: 48px;
+    border-radius: 12px;
+    padding-inline: 22px;
+  }
+  .hero-proof {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    max-width: 610px;
+  }
+  .hero-proof-item {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px;
+    background: color-mix(in srgb, var(--bg-card) 88%, transparent);
+    animation: landingRise 0.55s ease both;
+  }
+  .hero-proof-num {
+    font-size: 1.55rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.05em;
+  }
+  .hero-proof-label {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    margin-top: 6px;
+  }
+  .hero-visual {
+    position: relative;
+    min-height: 640px;
+    animation: landingRise 0.65s ease both;
+  }
+  .practice-stage {
+    position: absolute;
+    inset: 54px 0 0 0;
+    border-radius: 30px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--text) 12%, var(--border));
+    background: #0b0b0b;
+    box-shadow: 0 36px 120px rgba(0,0,0,0.26);
+  }
+  .practice-stage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0.78;
+    animation: landingKenBurns 14s ease-in-out infinite alternate;
+  }
+  .practice-stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(0,0,0,0.76), rgba(0,0,0,0.18) 52%, rgba(0,0,0,0.55)),
+      linear-gradient(0deg, rgba(0,0,0,0.72), transparent 45%);
+  }
+  .stage-topbar {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    right: 18px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: #fff;
+  }
+  .stage-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
+    backdrop-filter: blur(12px);
+    font-size: 0.78rem;
+    font-weight: 760;
+  }
+  .stage-dots {
+    display: flex;
+    gap: 5px;
+  }
+  .stage-dots span {
+    width: 7px;
+    height: 7px;
+    border-radius: 99px;
+    background: rgba(255,255,255,0.34);
+  }
+  .stage-dots span:first-child {
+    width: 26px;
+    background: #fff;
+  }
+  .question-glass {
+    position: absolute;
+    z-index: 3;
+    left: 28px;
+    right: 28px;
+    bottom: 28px;
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(10,10,10,0.74);
+    backdrop-filter: blur(18px);
+    color: #fff;
+    padding: 22px;
+  }
+  .question-glass h3 {
+    font-size: clamp(1.1rem, 2vw, 1.55rem);
+    line-height: 1.25;
+    letter-spacing: -0.035em;
+    margin-bottom: 16px;
+  }
+  .answer-preview {
+    display: grid;
+    gap: 10px;
+  }
+  .answer-preview div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.07);
+    padding: 0 14px;
+    color: rgba(255,255,255,0.82);
+    font-size: 0.92rem;
+  }
+  .answer-preview div:nth-child(2) {
+    border-color: rgba(34,197,94,0.55);
+    background: rgba(34,197,94,0.16);
+    color: #dcfce7;
+  }
+  .answer-preview i {
+    width: 22px;
+    height: 22px;
+    border-radius: 8px;
+    display: inline-grid;
+    place-items: center;
+    background: rgba(255,255,255,0.10);
+    font-size: 0.72rem;
+  }
+  .floating-review {
+    position: absolute;
+    z-index: 4;
+    right: -14px;
+    top: 0;
+    width: min(310px, 42%);
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,0.16);
+    background: #111;
+    color: #fff;
+    padding: 18px;
+    box-shadow: 0 26px 70px rgba(0,0,0,0.28);
+    animation: floatingCard 5s ease-in-out infinite;
+  }
+  .review-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    color: rgba(255,255,255,0.62);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 820;
+  }
+  .review-score {
+    font-size: 2.25rem;
+    line-height: 1;
+    font-weight: 900;
+    letter-spacing: -0.06em;
+    margin-bottom: 10px;
+  }
+  .review-bar {
+    height: 8px;
+    border-radius: 99px;
+    background: rgba(255,255,255,0.12);
+    overflow: hidden;
+  }
+  .review-bar span {
+    display: block;
+    width: 80%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #22c55e, #f8fafc);
+    animation: reviewGrow 1.8s ease both;
+  }
+  .image-stack {
+    position: absolute;
+    z-index: 5;
+    left: -24px;
+    top: 28px;
+    display: grid;
+    gap: 10px;
+  }
+  .image-stack img {
+    width: 138px;
+    height: 86px;
+    object-fit: cover;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.28);
+    box-shadow: 0 18px 40px rgba(0,0,0,0.22);
+    transform: rotate(-3deg);
+  }
+  .image-stack img:nth-child(2) {
+    transform: translateX(22px) rotate(4deg);
+  }
+  .landing-section {
+    border-top: 1px solid var(--border);
+    padding: 82px 0;
+  }
+  .section-eyebrow {
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    font-size: 0.76rem;
+    font-weight: 850;
+    margin-bottom: 12px;
+  }
+  .section-row {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 30px;
+  }
+  .section-copy {
+    color: var(--text-muted);
+    max-width: 470px;
+    line-height: 1.7;
+  }
+  .media-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 18px;
+  }
+  .media-card {
+    position: relative;
+    overflow: hidden;
+    min-height: 360px;
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    box-shadow: 0 24px 70px rgba(0,0,0,0.08);
+  }
+  .media-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.45s ease;
+  }
+  .media-card:hover img {
+    transform: scale(1.04);
+  }
+  .media-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(0deg, rgba(0,0,0,0.72), transparent 48%);
+  }
+  .media-caption {
+    position: absolute;
+    z-index: 1;
+    left: 22px;
+    right: 22px;
+    bottom: 22px;
+    color: #fff;
+  }
+  .media-caption h3 {
+    font-size: 1.5rem;
+    letter-spacing: -0.04em;
+    margin-bottom: 8px;
+  }
+  .media-caption p {
+    color: rgba(255,255,255,0.72);
+    line-height: 1.55;
+  }
+  .side-demo {
+    display: grid;
+    gap: 18px;
+  }
+  .mini-panel {
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 22px;
+    background: var(--bg-card);
+    min-height: 171px;
+  }
+  .mini-panel h3 {
+    font-size: 1.1rem;
+    letter-spacing: -0.03em;
+    margin-bottom: 10px;
+  }
+  .mini-panel p {
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .library-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .library-card {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    background: var(--bg-card);
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  }
+  .library-card:hover {
+    transform: translateY(-6px);
+    border-color: color-mix(in srgb, var(--text) 22%, var(--border));
+    box-shadow: 0 22px 60px rgba(0,0,0,0.10);
+  }
+  .library-card img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    display: block;
+  }
+  .library-card-body {
+    padding: 16px;
+  }
+  .library-card-title {
+    font-weight: 850;
+    letter-spacing: -0.025em;
+    margin-bottom: 6px;
+  }
+  .library-card-text {
+    color: var(--text-muted);
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+  .flow-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .flow-card {
+    position: relative;
+    min-height: 230px;
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    background:
+      linear-gradient(145deg, color-mix(in srgb, var(--bg-card) 96%, #fff 4%), var(--bg-card));
+    padding: 24px;
+    overflow: hidden;
+  }
+  .flow-card::after {
+    content: attr(data-step);
+    position: absolute;
+    right: 16px;
+    bottom: -22px;
+    color: color-mix(in srgb, var(--text) 8%, transparent);
+    font-size: 7rem;
+    line-height: 1;
+    font-weight: 900;
+    letter-spacing: -0.08em;
+  }
+  .flow-icon {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .flow-card h3 {
+    font-size: 1.22rem;
+    letter-spacing: -0.035em;
+    margin-bottom: 10px;
+  }
+  .flow-card p {
+    color: var(--text-muted);
+    line-height: 1.65;
+    position: relative;
+    z-index: 1;
+  }
+  .landing-cta {
+    position: relative;
+    overflow: hidden;
+    border-radius: 30px;
+    border: 1px solid var(--border);
+    padding: 44px;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.08), transparent 40%),
+      #0d0d0d;
+    color: #fff;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 28px;
+    align-items: center;
+  }
+  .landing-cta::after {
+    content: "WEX";
+    position: absolute;
+    right: -16px;
+    bottom: -58px;
+    font-size: 12rem;
+    font-weight: 900;
+    letter-spacing: -0.08em;
+    color: rgba(255,255,255,0.04);
+  }
+  .landing-cta h2 {
+    font-size: clamp(2rem, 4vw, 4rem);
+    line-height: 0.98;
+    letter-spacing: -0.07em;
+    max-width: 680px;
+    margin-bottom: 14px;
+  }
+  .landing-cta p {
+    color: rgba(255,255,255,0.68);
+    max-width: 560px;
+    line-height: 1.7;
+  }
+  .landing-cta .btn-primary {
+    background: #fff;
+    color: #0a0a0a;
+  }
+  @keyframes landingRise {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes landingKenBurns {
+    from { transform: scale(1); }
+    to { transform: scale(1.08) translateX(-1.5%); }
+  }
+  @keyframes floatingCard {
+    0%, 100% { transform: translateY(0) rotate(1deg); }
+    50% { transform: translateY(10px) rotate(-1deg); }
+  }
+  @keyframes reviewGrow {
+    from { width: 0; }
+    to { width: 80%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .practice-stage img,
+    .floating-review,
+    .hero-proof-item,
+    .hero-visual {
+      animation: none !important;
+    }
+  }
+  @media (max-width: 980px) {
+    .landing-hero {
+      grid-template-columns: 1fr;
+      min-height: auto;
+      padding-top: 44px;
+    }
+    .hero-visual {
+      min-height: 560px;
+    }
+    .media-grid,
+    .landing-cta {
+      grid-template-columns: 1fr;
+    }
+    .flow-grid {
+      grid-template-columns: 1fr;
+    }
+    .library-strip {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 640px) {
+    .landing-shell {
+      width: min(100% - 24px, 1180px);
+    }
+    .landing-hero {
+      gap: 30px;
+      padding-bottom: 44px;
+    }
+    .landing-title {
+      font-size: clamp(2.65rem, 17vw, 4.8rem);
+    }
+    .landing-sub {
+      font-size: 1rem;
+    }
+    .hero-proof {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .hero-visual {
+      min-height: 520px;
+    }
+    .practice-stage {
+      inset: 70px 0 0 0;
+      border-radius: 24px;
+    }
+    .floating-review {
+      right: 10px;
+      width: 230px;
+      padding: 14px;
+    }
+    .image-stack {
+      left: 10px;
+      top: 0;
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .image-stack img {
+      width: 112px;
+      height: 72px;
+    }
+    .question-glass {
+      left: 14px;
+      right: 14px;
+      bottom: 14px;
+      padding: 16px;
+      border-radius: 20px;
+    }
+    .answer-preview div {
+      font-size: 0.82rem;
+      min-height: 44px;
+    }
+    .section-row {
+      align-items: start;
+      flex-direction: column;
+    }
+    .landing-section {
+      padding: 58px 0;
+    }
+    .library-strip {
+      grid-template-columns: 1fr;
+    }
+    .landing-cta {
+      padding: 28px;
+      border-radius: 24px;
+    }
+  }
+</style>
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
@@ -22,127 +639,185 @@
   </div>
 </nav>
 
-<section class="hero">
-  <h1 class="hero-title">Prepare for theory study in Denmark with structured practice</h1>
-  <p class="hero-sub">Work through 13 structured tests with 325 photo-based questions, saved questions, and answer explanations designed for steady practice.</p>
-  <div class="hero-btns">
-    <a href="/test/0" class="btn-primary">Start Starter Test</a>
-    <a href="/pricing" class="btn-ghost">Practice Library</a>
-  </div>
-  <div class="stats-strip" style="margin-top:48px;">
-    <div class="stat-item">
-      <div class="stat-num">13</div>
-      <div class="stat-label">Practice Tests</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num">325</div>
-      <div class="stat-label">Questions</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num">20/25</div>
-      <div class="stat-label">Pass Score</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num">Yes</div>
-      <div class="stat-label">Explanations</div>
-    </div>
-  </div>
-</section>
-
-<section style="border-top:1px solid var(--border);padding:64px 0;">
-  <div class="page" style="padding-top:0;padding-bottom:0;">
-    <p style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Why WEXTheory</p>
-    <h2 class="section-title">Built for structured, repeatable practice</h2>
-    <div class="steps-grid" style="margin-top:32px;">
-      <div class="step-card">
-        <div class="step-num">01</div>
-        <div class="step-title">Consistent test structure</div>
-        <p class="step-desc">Each full practice set uses a 25-question pass/fail format, so your study routine stays familiar from one session to the next.</p>
+<main class="landing-page">
+  <section class="landing-shell landing-hero">
+    <div>
+      <div class="landing-kicker"><i class="fa-solid fa-road"></i> Danish theory practice</div>
+      <h1 class="landing-title"><span>Train with</span><span>real road scenes.</span></h1>
+      <p class="landing-sub">
+        WEXTheory turns Danish driving theory into focused photo-based practice: full test sets, saved questions, answer review, and explanations after every attempt.
+      </p>
+      <div class="landing-actions">
+        <a href="/test/0" class="btn-primary">Start free starter test</a>
+        <a href="/pricing" class="btn-ghost">View full library</a>
       </div>
-      <div class="step-card">
-        <div class="step-num">02</div>
-        <div class="step-title">Photo-based practice</div>
-        <p class="step-desc">Study road situations visually, not just with abstract theory, so the practice feels more relevant.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-num">03</div>
-        <div class="step-title">Review and explanations</div>
-        <p class="step-desc">Save difficult questions, review your answers, and read explanations after each attempt.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section style="border-top:1px solid var(--border);padding:64px 0;">
-  <div class="page" style="padding-top:0;padding-bottom:0;">
-    <div style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:48px;align-items:center;">
-      <div>
-        <p style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">How it works</p>
-        <h2 class="section-title">Start with a sample, then move into the full library if it helps your study flow</h2>
-        <p style="color:var(--text-muted);margin:16px 0 32px;line-height:1.7;">
-          You can open the 15-question starter sample right away without creating an account. If you later want the full training path, create an account and continue with the complete library, saved progress, and support tools.
-        </p>
-        <ul class="feature-list">
-          <li>Starter Test 0 is free and available without registration</li>
-          <li>13 tests and 325 questions in total</li>
-          <li>Pass when you reach 20 correct answers out of 25</li>
-          <li>Review explanations after each completed test</li>
-          <li>Save difficult questions for later</li>
-          <li>Works on phone, tablet, and desktop</li>
-        </ul>
-        <div style="margin-top:32px;display:flex;gap:12px;flex-wrap:wrap;">
-          <a href="/test/0" class="btn-primary">Start Starter Test</a>
-          <a href="/register" class="btn-ghost">Create Account</a>
+      <div class="hero-proof">
+        <div class="hero-proof-item">
+          <div class="hero-proof-num">13</div>
+          <div class="hero-proof-label">practice tests</div>
+        </div>
+        <div class="hero-proof-item">
+          <div class="hero-proof-num">325</div>
+          <div class="hero-proof-label">photo questions</div>
+        </div>
+        <div class="hero-proof-item">
+          <div class="hero-proof-num">20/25</div>
+          <div class="hero-proof-label">pass target</div>
+        </div>
+        <div class="hero-proof-item">
+          <div class="hero-proof-num">Review</div>
+          <div class="hero-proof-label">after attempts</div>
         </div>
       </div>
-      <div>
-        <div class="card" style="padding:32px;">
-          <div style="font-size:0.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;">Included in the Practice Library</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-            <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px;">
-              <div style="font-size:1.2rem;font-weight:800;margin-bottom:4px;">13</div>
-              <div style="font-size:0.84rem;color:var(--text-muted);">structured tests</div>
-            </div>
-            <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px;">
-              <div style="font-size:1.2rem;font-weight:800;margin-bottom:4px;">325</div>
-              <div style="font-size:0.84rem;color:var(--text-muted);">practice questions</div>
-            </div>
-            <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px;">
-              <div style="font-size:1.2rem;font-weight:800;margin-bottom:4px;">20/25</div>
-              <div style="font-size:0.84rem;color:var(--text-muted);">pass target</div>
-            </div>
-            <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px;">
-              <div style="font-size:1.2rem;font-weight:800;margin-bottom:4px;">Review</div>
-              <div style="font-size:0.84rem;color:var(--text-muted);">explanations after tests</div>
-            </div>
+    </div>
+
+    <div class="hero-visual" aria-label="WEXTheory practice preview">
+      <div class="image-stack" aria-hidden="true">
+        <img src="/test-images/Test02/screenshots/q03.jpg" alt="">
+        <img src="/test-images/Test05/screenshots/q01.jpg" alt="">
+      </div>
+      <div class="floating-review" aria-hidden="true">
+        <div class="review-head"><span>Latest attempt</span><span>Live</span></div>
+        <div class="review-score">20/25</div>
+        <div class="review-bar"><span></span></div>
+        <p style="color:rgba(255,255,255,0.62);font-size:0.84rem;line-height:1.55;margin-top:12px;">Review wrong answers, save hard questions, then repeat the set.</p>
+      </div>
+      <div class="practice-stage">
+        <img src="/test-images/Test01/screenshots/q01.jpg" alt="Road situation practice preview">
+        <div class="stage-topbar">
+          <span class="stage-pill"><i class="fa-solid fa-play"></i> Question 1 of 25</span>
+          <div class="stage-dots" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+        <div class="question-glass">
+          <h3>You are required to turn right at the signal-controlled junction. How should you proceed?</h3>
+          <div class="answer-preview">
+            <div><i class="fa-regular fa-square"></i> Keep to your own lane until the pedestrian crossing.</div>
+            <div><i class="fa-solid fa-check"></i> Check behind you and move safely into the correct lane.</div>
+            <div><i class="fa-regular fa-square"></i> Pull across the bus lane without checking traffic.</div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section style="border-top:1px solid var(--border);padding:64px 0;" id="pricing">
-  <div class="page" style="padding-top:0;padding-bottom:0;text-align:center;">
-    <p style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Access</p>
-    <h2 class="section-title">A simple path from free practice to the full study library</h2>
-    <p style="color:var(--text-muted);margin:12px 0 40px;">Start with the starter sample for free, then open the access overview if you want the full set of practice tools.</p>
-    <div class="pricing-card">
-      <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);">Practice Library</div>
-      <div class="pricing-price">Full Library</div>
-      <div class="pricing-period">13 tests, review tools, saved questions</div>
-      <ul class="feature-list" style="text-align:left;margin-bottom:28px;">
-        <li>All 13 practice tests</li>
-        <li>325 road-photo questions</li>
-        <li>Detailed answer explanations</li>
-        <li>Saved questions and progress history</li>
-        <li>Support contact from your account</li>
-      </ul>
-      <a href="/pricing" class="btn-primary" style="width:100%;justify-content:center;">See Access Overview</a>
-      <p style="color:var(--text-muted);font-size:0.8rem;margin-top:16px;">You can start with the 15-question starter sample before deciding whether you need the full library.</p>
+  <section class="landing-section">
+    <div class="landing-shell">
+      <div class="section-row">
+        <div>
+          <p class="section-eyebrow">What you practice</p>
+          <h2 class="section-title">A visual library, not a wall of theory text</h2>
+        </div>
+        <p class="section-copy">Each session is built around road scenes and answer feedback, so the page feels close to what you actually need to notice during a Danish theory test.</p>
+      </div>
+      <div class="media-grid">
+        <article class="media-card">
+          <img src="/test-images/Test07/screenshots/q01.jpg" alt="Road situation with traffic lights">
+          <div class="media-caption">
+            <h3>Photo-based questions</h3>
+            <p>Train your eye on signs, lanes, pedestrians, buses, cyclists, and right-of-way details.</p>
+          </div>
+        </article>
+        <div class="side-demo">
+          <div class="mini-panel">
+            <h3><i class="fa-regular fa-bookmark"></i> Save hard questions</h3>
+            <p>Mark questions while training and come back to them later from your saved list.</p>
+          </div>
+          <div class="mini-panel">
+            <h3><i class="fa-solid fa-chart-simple"></i> Review every attempt</h3>
+            <p>Open your completed tests again and see exactly what you selected, missed, and should remember.</p>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
+
+  <section class="landing-section">
+    <div class="landing-shell">
+      <div class="section-row">
+        <div>
+          <p class="section-eyebrow">Inside the library</p>
+          <h2 class="section-title">Structured sets for repeatable practice</h2>
+        </div>
+        <p class="section-copy">Start with the free starter test, then move through the full library when you want more complete preparation.</p>
+      </div>
+      <div class="library-strip">
+        <article class="library-card">
+          <img src="/test-images/Test01/screenshots/q11.jpg" alt="Road practice scene">
+          <div class="library-card-body">
+            <div class="library-card-title">Starter test</div>
+            <p class="library-card-text">A quick free sample you can open before creating an account.</p>
+          </div>
+        </article>
+        <article class="library-card">
+          <img src="/test-images/Test04/screenshots/q02.jpg" alt="Country road practice scene">
+          <div class="library-card-body">
+            <div class="library-card-title">Full test sets</div>
+            <p class="library-card-text">25-question sessions with pass/fail structure and saved progress.</p>
+          </div>
+        </article>
+        <article class="library-card">
+          <img src="/test-images/Test08/screenshots/q04.jpg" alt="Road sign practice scene">
+          <div class="library-card-body">
+            <div class="library-card-title">Answer explanations</div>
+            <p class="library-card-text">Understand why an answer is right instead of only memorising it.</p>
+          </div>
+        </article>
+        <article class="library-card">
+          <img src="/test-images/ExamMode/mock-exam.png" alt="Exam mode preview">
+          <div class="library-card-body">
+            <div class="library-card-title">Exam mode</div>
+            <p class="library-card-text">Mixed questions for a more realistic final practice rhythm.</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-section">
+    <div class="landing-shell">
+      <div class="section-row">
+        <div>
+          <p class="section-eyebrow">How it works</p>
+          <h2 class="section-title">Practice, review, repeat</h2>
+        </div>
+      </div>
+      <div class="flow-grid">
+        <article class="flow-card" data-step="01">
+          <div class="flow-icon"><i class="fa-solid fa-display"></i></div>
+          <h3>Open a test</h3>
+          <p>Work through photo-based questions in a clean test interface with progress, timer, and saved questions.</p>
+        </article>
+        <article class="flow-card" data-step="02">
+          <div class="flow-icon"><i class="fa-solid fa-list-check"></i></div>
+          <h3>Check your answers</h3>
+          <p>After the attempt, review correct, missed, and wrong selections with explanations.</p>
+        </article>
+        <article class="flow-card" data-step="03">
+          <div class="flow-icon"><i class="fa-solid fa-rotate-right"></i></div>
+          <h3>Repeat smarter</h3>
+          <p>Use history and saved questions to focus on the situations that still catch you out.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-section">
+    <div class="landing-shell">
+      <div class="landing-cta">
+        <div>
+          <h2>Start with the free starter test.</h2>
+          <p>Try a short sample first. When the format feels useful, open the full practice library and continue with all test sets.</p>
+        </div>
+        <div class="landing-actions" style="margin:0;">
+          <a href="/test/0" class="btn-primary">Start starter test</a>
+          <a href="/pricing" class="btn-ghost" style="color:#fff;border-color:rgba(255,255,255,0.22);">See access</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
 
 <footer>
   <div class="footer-inner">
@@ -162,4 +837,3 @@
 {% block scripts %}
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/index.js"></script>
 {% endblock %}
-
