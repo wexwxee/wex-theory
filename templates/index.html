@@ -117,184 +117,232 @@
     min-height: 640px;
     animation: landingRise 0.65s ease both;
   }
-  .practice-stage {
+  .product-preview {
     position: absolute;
-    inset: 54px 0 0 0;
-    border-radius: 30px;
+    inset: 44px 0 20px 0;
     overflow: hidden;
-    border: 1px solid color-mix(in srgb, var(--text) 12%, var(--border));
-    background: #0b0b0b;
-    box-shadow: 0 36px 120px rgba(0,0,0,0.26);
+    border: 1px solid var(--border);
+    border-radius: 26px;
+    background: #fff;
+    color: #0a0a0a;
+    box-shadow: 0 36px 110px rgba(0,0,0,0.16);
   }
-  .practice-stage img {
+  [data-theme="dark"] .product-preview {
+    background: #0d0d0d;
+    color: #f8fafc;
+    border-color: rgba(255,255,255,0.10);
+  }
+  .preview-nav {
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 0 18px;
+    border-bottom: 1px solid #e5e5e5;
+    background: rgba(255,255,255,0.92);
+  }
+  [data-theme="dark"] .preview-nav {
+    background: rgba(12,12,12,0.92);
+    border-bottom-color: rgba(255,255,255,0.10);
+  }
+  .preview-nav-left,
+  .preview-nav-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .preview-burger,
+  .preview-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    border-radius: 10px;
+    border: 1px solid #dedede;
+    background: #fff;
+    color: #111;
+    font-size: 0.84rem;
+    font-weight: 760;
+  }
+  .preview-burger {
+    width: 38px;
+  }
+  .preview-chip {
+    padding: 0 12px;
+  }
+  [data-theme="dark"] .preview-burger,
+  [data-theme="dark"] .preview-chip {
+    background: #121212;
+    border-color: rgba(255,255,255,0.13);
+    color: #fff;
+  }
+  .preview-title {
+    font-weight: 850;
+    letter-spacing: -0.03em;
+  }
+  .preview-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
+    gap: 20px;
+    padding: 24px;
+  }
+  .preview-media {
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    background: #0a0a0a;
+    box-shadow: 0 16px 42px rgba(0,0,0,0.12);
+  }
+  .preview-media img {
     width: 100%;
     height: 100%;
+    min-height: 360px;
     object-fit: cover;
     display: block;
-    opacity: 0.78;
-    animation: landingKenBurns 14s ease-in-out infinite alternate;
   }
-  .practice-stage::after {
-    content: "";
+  .preview-media-badge {
     position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(90deg, rgba(0,0,0,0.76), rgba(0,0,0,0.18) 52%, rgba(0,0,0,0.55)),
-      linear-gradient(0deg, rgba(0,0,0,0.72), transparent 45%);
+    left: 14px;
+    top: 14px;
+    min-height: 30px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.92);
+    color: #111;
+    font-size: 0.76rem;
+    font-weight: 800;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
   }
-  .stage-topbar {
-    position: absolute;
-    top: 18px;
-    left: 18px;
-    right: 18px;
-    z-index: 2;
+  .preview-panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .preview-progress {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    color: #fff;
-  }
-  .stage-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 34px;
-    padding: 0 12px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.18);
-    backdrop-filter: blur(12px);
-    font-size: 0.78rem;
-    font-weight: 760;
-  }
-  .stage-dots {
-    display: flex;
-    gap: 5px;
-  }
-  .stage-dots span {
-    width: 7px;
-    height: 7px;
-    border-radius: 99px;
-    background: rgba(255,255,255,0.34);
-  }
-  .stage-dots span:first-child {
-    width: 26px;
-    background: #fff;
-  }
-  .question-glass {
-    position: absolute;
-    z-index: 3;
-    left: 28px;
-    right: 28px;
-    bottom: 28px;
-    border-radius: 24px;
-    border: 1px solid rgba(255,255,255,0.18);
-    background: rgba(10,10,10,0.74);
-    backdrop-filter: blur(18px);
-    color: #fff;
-    padding: 22px;
-  }
-  .question-glass h3 {
-    font-size: clamp(1.1rem, 2vw, 1.55rem);
-    line-height: 1.25;
-    letter-spacing: -0.035em;
+    color: #666;
+    font-size: 0.88rem;
     margin-bottom: 16px;
   }
-  .answer-preview {
-    display: grid;
-    gap: 10px;
+  [data-theme="dark"] .preview-progress {
+    color: rgba(255,255,255,0.62);
   }
-  .answer-preview div {
+  .preview-dots {
     display: flex;
     align-items: center;
-    gap: 10px;
-    min-height: 48px;
+    gap: 5px;
+  }
+  .preview-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #d9d9d9;
+  }
+  .preview-dots span:first-child {
+    background: #0a0a0a;
+  }
+  [data-theme="dark"] .preview-dots span {
+    background: rgba(255,255,255,0.22);
+  }
+  [data-theme="dark"] .preview-dots span:first-child {
+    background: #fff;
+  }
+  .preview-question {
+    font-size: clamp(1.22rem, 2vw, 1.7rem);
+    line-height: 1.2;
+    letter-spacing: -0.045em;
+    font-weight: 850;
+    margin-bottom: 18px;
+  }
+  .preview-answers {
+    display: grid;
+    gap: 12px;
+  }
+  .preview-answer {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 12px;
+    align-items: start;
+    min-height: 66px;
+    padding: 14px 16px;
     border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.12);
-    background: rgba(255,255,255,0.07);
-    padding: 0 14px;
-    color: rgba(255,255,255,0.82);
+    border: 1px solid #dcdcdc;
+    background: #f7f7f7;
+    color: #111;
     font-size: 0.92rem;
+    line-height: 1.42;
   }
-  .answer-preview div:nth-child(2) {
-    border-color: rgba(34,197,94,0.55);
-    background: rgba(34,197,94,0.16);
-    color: #dcfce7;
+  [data-theme="dark"] .preview-answer {
+    background: rgba(255,255,255,0.055);
+    border-color: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.86);
   }
-  .answer-preview i {
+  .preview-box {
     width: 22px;
     height: 22px;
-    border-radius: 8px;
-    display: inline-grid;
-    place-items: center;
-    background: rgba(255,255,255,0.10);
-    font-size: 0.72rem;
+    border-radius: 7px;
+    border: 2px solid #d6d6d6;
+    background: #fff;
+    margin-top: 1px;
   }
-  .floating-review {
-    position: absolute;
-    z-index: 4;
-    right: -14px;
-    top: 0;
-    width: min(310px, 42%);
-    border-radius: 24px;
-    border: 1px solid rgba(255,255,255,0.16);
-    background: #111;
-    color: #fff;
-    padding: 18px;
-    box-shadow: 0 26px 70px rgba(0,0,0,0.28);
-    animation: floatingCard 5s ease-in-out infinite;
+  [data-theme="dark"] .preview-box {
+    background: transparent;
+    border-color: rgba(255,255,255,0.28);
   }
-  .review-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 14px;
-    color: rgba(255,255,255,0.62);
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 820;
-  }
-  .review-score {
-    font-size: 2.25rem;
-    line-height: 1;
-    font-weight: 900;
-    letter-spacing: -0.06em;
-    margin-bottom: 10px;
-  }
-  .review-bar {
-    height: 8px;
-    border-radius: 99px;
-    background: rgba(255,255,255,0.12);
-    overflow: hidden;
-  }
-  .review-bar span {
-    display: block;
-    width: 80%;
-    height: 100%;
-    border-radius: inherit;
-    background: linear-gradient(90deg, #22c55e, #f8fafc);
-    animation: reviewGrow 1.8s ease both;
-  }
-  .image-stack {
-    position: absolute;
-    z-index: 5;
-    left: -24px;
-    top: 28px;
+  .preview-foot {
+    margin-top: auto;
+    padding-top: 18px;
     display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
   }
-  .image-stack img {
-    width: 138px;
-    height: 86px;
-    object-fit: cover;
-    border-radius: 18px;
-    border: 1px solid rgba(255,255,255,0.28);
-    box-shadow: 0 18px 40px rgba(0,0,0,0.22);
-    transform: rotate(-3deg);
+  .preview-stat {
+    border: 1px solid #e0e0e0;
+    border-radius: 14px;
+    padding: 12px;
+    background: #fff;
   }
-  .image-stack img:nth-child(2) {
-    transform: translateX(22px) rotate(4deg);
+  [data-theme="dark"] .preview-stat {
+    background: rgba(255,255,255,0.045);
+    border-color: rgba(255,255,255,0.10);
+  }
+  .preview-stat strong {
+    display: block;
+    font-size: 1.05rem;
+    line-height: 1;
+    margin-bottom: 5px;
+  }
+  .preview-stat span {
+    color: #777;
+    font-size: 0.72rem;
+  }
+  [data-theme="dark"] .preview-stat span {
+    color: rgba(255,255,255,0.55);
+  }
+  .landing-hero {
+    grid-template-columns: minmax(0, 0.82fr) minmax(520px, 1.18fr);
+    gap: 46px;
+  }
+  .landing-title {
+    font-size: clamp(3rem, 5.7vw, 5.8rem);
+    line-height: 0.96;
+    letter-spacing: -0.072em;
+    max-width: 680px;
+  }
+  .landing-sub {
+    max-width: 540px;
+  }
+  .hero-visual {
+    min-height: 560px;
+  }
+  .hero-proof-item {
+    background: var(--bg-card);
   }
   .landing-section {
     border-top: 1px solid var(--border);
@@ -515,21 +563,8 @@
     from { opacity: 0; transform: translateY(18px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  @keyframes landingKenBurns {
-    from { transform: scale(1); }
-    to { transform: scale(1.08) translateX(-1.5%); }
-  }
-  @keyframes floatingCard {
-    0%, 100% { transform: translateY(0) rotate(1deg); }
-    50% { transform: translateY(10px) rotate(-1deg); }
-  }
-  @keyframes reviewGrow {
-    from { width: 0; }
-    to { width: 80%; }
-  }
   @media (prefers-reduced-motion: reduce) {
-    .practice-stage img,
-    .floating-review,
+    .product-preview,
     .hero-proof-item,
     .hero-visual {
       animation: none !important;
@@ -542,7 +577,16 @@
       padding-top: 44px;
     }
     .hero-visual {
-      min-height: 560px;
+      min-height: 640px;
+    }
+    .product-preview {
+      inset: 0;
+    }
+    .preview-body {
+      grid-template-columns: 1fr;
+    }
+    .preview-media img {
+      min-height: 320px;
     }
     .media-grid,
     .landing-cta {
@@ -573,36 +617,54 @@
       grid-template-columns: repeat(2, 1fr);
     }
     .hero-visual {
-      min-height: 520px;
+      min-height: 760px;
     }
-    .practice-stage {
-      inset: 70px 0 0 0;
-      border-radius: 24px;
-    }
-    .floating-review {
-      right: 10px;
-      width: 230px;
-      padding: 14px;
-    }
-    .image-stack {
-      left: 10px;
-      top: 0;
-      grid-template-columns: repeat(2, 1fr);
-    }
-    .image-stack img {
-      width: 112px;
-      height: 72px;
-    }
-    .question-glass {
-      left: 14px;
-      right: 14px;
-      bottom: 14px;
-      padding: 16px;
+    .product-preview {
+      inset: 0;
       border-radius: 20px;
     }
-    .answer-preview div {
-      font-size: 0.82rem;
-      min-height: 44px;
+    .preview-nav {
+      height: auto;
+      padding: 12px;
+      align-items: flex-start;
+    }
+    .preview-nav-left,
+    .preview-nav-right {
+      flex-wrap: wrap;
+    }
+    .preview-nav-right {
+      justify-content: flex-end;
+    }
+    .preview-body {
+      padding: 14px;
+      gap: 16px;
+    }
+    .preview-media {
+      border-radius: 16px;
+    }
+    .preview-media img {
+      min-height: 240px;
+    }
+    .preview-question {
+      font-size: 1.14rem;
+      letter-spacing: -0.03em;
+    }
+    .preview-answer {
+      min-height: 58px;
+      padding: 12px;
+      font-size: 0.83rem;
+    }
+    .preview-foot {
+      grid-template-columns: 1fr;
+      padding-top: 14px;
+    }
+    .preview-stat {
+      padding: 10px 12px;
+    }
+    .preview-stat strong,
+    .preview-stat span {
+      display: inline;
+      margin-right: 6px;
     }
     .section-row {
       align-items: start;
@@ -643,9 +705,9 @@
   <section class="landing-shell landing-hero">
     <div>
       <div class="landing-kicker"><i class="fa-solid fa-road"></i> Danish theory practice</div>
-      <h1 class="landing-title"><span>Train with</span><span>real road scenes.</span></h1>
+      <h1 class="landing-title"><span>Danish theory</span><span>practice with real test scenes.</span></h1>
       <p class="landing-sub">
-        WEXTheory turns Danish driving theory into focused photo-based practice: full test sets, saved questions, answer review, and explanations after every attempt.
+        Practice with the same kind of photo-based situations you see in the app: road signs, lanes, cyclists, buses, signals, and the small details that decide the answer.
       </p>
       <div class="landing-actions">
         <a href="/test/0" class="btn-primary">Start free starter test</a>
@@ -671,31 +733,43 @@
       </div>
     </div>
 
-    <div class="hero-visual" aria-label="WEXTheory practice preview">
-      <div class="image-stack" aria-hidden="true">
-        <img src="/test-images/Test02/screenshots/q03.jpg" alt="">
-        <img src="/test-images/Test05/screenshots/q01.jpg" alt="">
-      </div>
-      <div class="floating-review" aria-hidden="true">
-        <div class="review-head"><span>Latest attempt</span><span>Live</span></div>
-        <div class="review-score">20/25</div>
-        <div class="review-bar"><span></span></div>
-        <p style="color:rgba(255,255,255,0.62);font-size:0.84rem;line-height:1.55;margin-top:12px;">Review wrong answers, save hard questions, then repeat the set.</p>
-      </div>
-      <div class="practice-stage">
-        <img src="/test-images/Test01/screenshots/q01.jpg" alt="Road situation practice preview">
-        <div class="stage-topbar">
-          <span class="stage-pill"><i class="fa-solid fa-play"></i> Question 1 of 25</span>
-          <div class="stage-dots" aria-hidden="true">
-            <span></span><span></span><span></span><span></span><span></span><span></span>
+    <div class="hero-visual" aria-label="WEXTheory test interface preview">
+      <div class="product-preview">
+        <div class="preview-nav">
+          <div class="preview-nav-left">
+            <span class="preview-burger"><i class="fa-solid fa-bars"></i></span>
+            <span class="preview-chip">← Tests</span>
+            <span class="preview-title">Theory Test 1</span>
+          </div>
+          <div class="preview-nav-right">
+            <span class="preview-chip">25:00</span>
+            <span class="preview-chip">EN</span>
+            <span class="preview-chip" style="background:#0a0a0a;color:#fff;border-color:#0a0a0a;">Finish</span>
           </div>
         </div>
-        <div class="question-glass">
-          <h3>You are required to turn right at the signal-controlled junction. How should you proceed?</h3>
-          <div class="answer-preview">
-            <div><i class="fa-regular fa-square"></i> Keep to your own lane until the pedestrian crossing.</div>
-            <div><i class="fa-solid fa-check"></i> Check behind you and move safely into the correct lane.</div>
-            <div><i class="fa-regular fa-square"></i> Pull across the bus lane without checking traffic.</div>
+        <div class="preview-body">
+          <div class="preview-media">
+            <img src="/test-images/Test01/screenshots/q01.jpg" alt="Road situation from a WEXTheory practice test">
+            <span class="preview-media-badge">Question 1 of 25</span>
+          </div>
+          <div class="preview-panel">
+            <div class="preview-progress">
+              <span>Original wording</span>
+              <div class="preview-dots" aria-hidden="true">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+            <h3 class="preview-question">You are required to turn right at the signal-controlled junction. There is no traffic directly behind you. How should you proceed?</h3>
+            <div class="preview-answers">
+              <div class="preview-answer"><span class="preview-box"></span><span>I keep to my own lane all the way to the pedestrian crossing.</span></div>
+              <div class="preview-answer"><span class="preview-box"></span><span>I pull in to the bus lane and remain there all the way to the pedestrian crossing.</span></div>
+              <div class="preview-answer"><span class="preview-box"></span><span>I drive across the bus lane and pull all the way in to the kerb in front of the cycle path.</span></div>
+            </div>
+            <div class="preview-foot" aria-hidden="true">
+              <div class="preview-stat"><strong>325</strong><span>questions</span></div>
+              <div class="preview-stat"><strong>13</strong><span>tests</span></div>
+              <div class="preview-stat"><strong>Review</strong><span>answers</span></div>
+            </div>
           </div>
         </div>
       </div>
