@@ -49,6 +49,36 @@ alter default privileges in schema public revoke all on sequences from authentic
 alter default privileges in schema public revoke all on functions from anon;
 alter default privileges in schema public revoke all on functions from authenticated;
 
+-- 4) Add an explicit deny policy to every public table.
+-- RLS with no policy already denies access, but Supabase Security Advisor reports
+-- that as "RLS Enabled No Policy". These policies keep the same locked-down
+-- behaviour while making the security posture explicit.
+do $$
+declare
+  table_row record;
+begin
+  for table_row in
+    select schemaname, tablename
+    from pg_tables
+    where schemaname = 'public'
+  loop
+    if not exists (
+      select 1
+      from pg_policies
+      where schemaname = table_row.schemaname
+        and tablename = table_row.tablename
+        and policyname = 'deny_supabase_api_access'
+    ) then
+      execute format(
+        'create policy deny_supabase_api_access on %I.%I for all to anon, authenticated using (false) with check (false)',
+        table_row.schemaname,
+        table_row.tablename
+      );
+    end if;
+  end loop;
+end
+$$;
+
 commit;
 
 -- Verification: this should return every public table with rls_enabled = true.
@@ -72,3 +102,17 @@ from information_schema.table_privileges
 where table_schema = 'public'
   and grantee in ('anon', 'authenticated')
 order by table_name, grantee, privilege_type;
+
+-- Verification: this should return one deny policy for each public table.
+select
+  schemaname,
+  tablename,
+  policyname,
+  cmd,
+  roles,
+  qual,
+  with_check
+from pg_policies
+where schemaname = 'public'
+  and policyname = 'deny_supabase_api_access'
+order by tablename;
