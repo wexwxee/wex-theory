@@ -6,7 +6,7 @@
   <title>Starter Test Results - WEX Theory</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/style.css?v=20260504-audio">
+  <link rel="stylesheet" href="/static/style.css?v=20260504-voice-picker">
   <style>
   .result-grid {
     display: grid;
@@ -235,7 +235,15 @@
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <span style="font-size:0.82rem;color:var(--text-muted);" id="modalMeta">Question 1 of 15</span>
           <button class="btn-ghost btn-sm" id="modalTranslateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:0.85rem;">RU</button>
-          <select class="voice-select" id="modalVoiceSelect" title="Voice and accent"></select>
+          <div class="voice-picker" id="modalVoicePicker">
+            <button type="button" class="voice-picker-btn" id="modalVoicePickerBtn" title="Voice and accent">
+              <span id="modalVoicePickerLabel">Voice</span>
+            </button>
+            <div class="voice-picker-panel" id="modalVoicePickerPanel">
+              <input class="voice-search" id="modalVoiceSearchInput" type="search" placeholder="Search voice or accent" autocomplete="off">
+              <div class="voice-list" id="modalVoiceList"></div>
+            </div>
+          </div>
         </div>
         <button class="modal-close" id="modalCloseBtn">&times;</button>
       </div>
@@ -276,7 +284,7 @@
 <textarea id="resultsDataJson" hidden>[]</textarea>
 <div id="resultsPageMeta" hidden data-score="0" data-total="15"></div>
 
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-viewer.js?v=20260504-audio"></script>
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-free.js?v=20260504-audio"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-viewer.js?v=20260504-voice-picker"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-free.js?v=20260504-voice-picker"></script>
 </body>
 </html>

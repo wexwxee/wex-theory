@@ -34,6 +34,8 @@
     let resultsTranslateMode = false;
     let speechVoices = [];
     const speechPrefs = { voiceURI: localStorage.getItem('wexVoiceURI') || '' };
+    let speechState = { button: null, text: '', paused: false };
+    let voiceUsage = {};
     const liveTranslationCache = new Map();
     let liveTranslationRequestKey = '';
     initSpeechControls();
@@ -107,38 +109,158 @@
         });
     }
 
-    function initSpeechControls() {
-      const select = document.getElementById('modalVoiceSelect');
-      if (!('speechSynthesis' in window)) {
-        select?.setAttribute('disabled', 'disabled');
+    function loadVoiceUsage() {
+      try {
+        voiceUsage = JSON.parse(localStorage.getItem('wexVoiceUsage') || '{}') || {};
+      } catch (e) {
+        voiceUsage = {};
+      }
+    }
+
+    function saveVoiceUsage(voiceURI) {
+      if (!voiceURI) return;
+      voiceUsage[voiceURI] = (voiceUsage[voiceURI] || 0) + 1;
+      localStorage.setItem('wexVoiceUsage', JSON.stringify(voiceUsage));
+    }
+
+    function voiceLanguageMode(text) {
+      return /[^\x00-\x7F]/.test(text || '') ? 'ru' : 'en';
+    }
+
+    function isUsefulVoice(voice) {
+      const lang = (voice.lang || '').toLowerCase();
+      return /^en-(gb|us|au|ca|ie|za)/.test(lang) || lang === 'ru-ru';
+    }
+
+    function voiceStudyScore(voice) {
+      const lang = (voice.lang || '').toLowerCase();
+      const name = (voice.name || '').toLowerCase();
+      let score = 0;
+      if (lang === 'en-gb') score += 80;
+      if (lang === 'en-us') score += 70;
+      if (lang === 'en-au' || lang === 'en-ca') score += 45;
+      if (lang === 'ru-ru') score += 30;
+      if (name.includes('google')) score += 35;
+      if (name.includes('female')) score += 16;
+      if (name.includes('male')) score += 12;
+      if (name.includes('microsoft')) score += 10;
+      if (name.includes('aria') || name.includes('libby') || name.includes('sonia')) score += 22;
+      if (name.includes('david') || name.includes('mark') || name.includes('ryan') || name.includes('george')) score += 16;
+      if (name.includes('irina') || name.includes('pavel') || name.includes('google')) score += 10;
+      return score;
+    }
+
+    function voiceDisplayName(voice) {
+      const name = (voice.name || '').replace(/^Google\s+/i, '').replace(/^Microsoft\s+/i, '').trim();
+      return `${voice.lang || 'en'} ${name}`;
+    }
+
+    function filteredVoices() {
+      const seen = new Set();
+      return speechVoices
+        .filter(isUsefulVoice)
+        .filter((voice) => {
+          const key = `${voice.lang}|${voice.name}|${voice.voiceURI}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+    }
+
+    function sortedVoices(searchTerm = '') {
+      const query = searchTerm.trim().toLowerCase();
+      return filteredVoices()
+        .filter((voice) => !query || `${voice.lang} ${voice.name}`.toLowerCase().includes(query))
+        .sort((a, b) => {
+          const used = (voiceUsage[b.voiceURI] || 0) - (voiceUsage[a.voiceURI] || 0);
+          if (used) return used;
+          const recommended = voiceStudyScore(b) - voiceStudyScore(a);
+          if (recommended) return recommended;
+          return voiceDisplayName(a).localeCompare(voiceDisplayName(b));
+        });
+    }
+
+    function updateVoicePickerLabel() {
+      const label = document.getElementById('modalVoicePickerLabel');
+      if (!label) return;
+      const selected = speechVoices.find((voice) => voice.voiceURI === speechPrefs.voiceURI);
+      label.textContent = selected ? voiceDisplayName(selected) : 'Study voice';
+    }
+
+    function renderVoiceList(searchTerm = '') {
+      const list = document.getElementById('modalVoiceList');
+      if (!list) return;
+      list.innerHTML = '';
+      const voices = sortedVoices(searchTerm);
+      if (!voices.length) {
+        const empty = document.createElement('div');
+        empty.className = 'voice-group-title';
+        empty.textContent = 'No matching English or Russian voices';
+        list.appendChild(empty);
         return;
       }
+      let lastGroup = '';
+      voices.forEach((voice) => {
+        const used = voiceUsage[voice.voiceURI] || 0;
+        const score = voiceStudyScore(voice);
+        const group = used ? 'Frequently used' : score >= 80 ? 'Recommended for study' : (voice.lang || '').toLowerCase() === 'ru-ru' ? 'Russian translation' : 'More English voices';
+        if (group !== lastGroup && !searchTerm.trim()) {
+          const title = document.createElement('div');
+          title.className = 'voice-group-title';
+          title.textContent = group;
+          list.appendChild(title);
+          lastGroup = group;
+        }
+        const option = document.createElement('button');
+        option.type = 'button';
+        option.className = 'voice-option' + (voice.voiceURI === speechPrefs.voiceURI ? ' active' : '');
+        const main = document.createElement('span');
+        main.className = 'voice-option-main';
+        main.textContent = voiceDisplayName(voice);
+        const meta = document.createElement('span');
+        meta.className = 'voice-option-meta';
+        meta.textContent = `${(voice.lang || '').toUpperCase()}${score >= 80 ? ' · recommended' : ''}${used ? ` · used ${used}x` : ''}`;
+        option.appendChild(main);
+        option.appendChild(meta);
+        option.addEventListener('click', () => {
+          speechPrefs.voiceURI = voice.voiceURI;
+          localStorage.setItem('wexVoiceURI', speechPrefs.voiceURI);
+          saveVoiceUsage(voice.voiceURI);
+          updateVoicePickerLabel();
+          renderVoiceList(document.getElementById('modalVoiceSearchInput')?.value || '');
+          document.getElementById('modalVoicePicker')?.classList.remove('open');
+        });
+        list.appendChild(option);
+      });
+    }
+
+    function initSpeechControls() {
+      const picker = document.getElementById('modalVoicePicker');
+      const button = document.getElementById('modalVoicePickerBtn');
+      const search = document.getElementById('modalVoiceSearchInput');
+      if (!('speechSynthesis' in window)) {
+        button?.setAttribute('disabled', 'disabled');
+        return;
+      }
+      loadVoiceUsage();
       const populate = () => {
         speechVoices = window.speechSynthesis.getVoices();
-        if (!select) return;
-        const preferred = speechPrefs.voiceURI || select.value;
-        select.innerHTML = '';
-        const auto = document.createElement('option');
-        auto.value = '';
-        auto.textContent = 'Voice';
-        select.appendChild(auto);
-        speechVoices
-          .filter((voice) => /^en|^ru/i.test(voice.lang || ''))
-          .forEach((voice) => {
-            const option = document.createElement('option');
-            option.value = voice.voiceURI;
-            option.textContent = `${voice.lang} ${voice.name}`;
-            select.appendChild(option);
-          });
-        if (preferred && Array.from(select.options).some((option) => option.value === preferred)) {
-          select.value = preferred;
-        }
+        updateVoicePickerLabel();
+        renderVoiceList(search?.value || '');
       };
       populate();
       window.speechSynthesis.onvoiceschanged = populate;
-      select?.addEventListener('change', () => {
-        speechPrefs.voiceURI = select.value;
-        localStorage.setItem('wexVoiceURI', speechPrefs.voiceURI);
+      button?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        picker?.classList.toggle('open');
+        if (picker?.classList.contains('open')) {
+          renderVoiceList(search?.value || '');
+          setTimeout(() => search?.focus(), 0);
+        }
+      });
+      search?.addEventListener('input', () => renderVoiceList(search.value));
+      document.addEventListener('click', (event) => {
+        if (picker && !picker.contains(event.target)) picker.classList.remove('open');
       });
     }
 
@@ -146,29 +268,51 @@
       if (!speechVoices.length && 'speechSynthesis' in window) {
         speechVoices = window.speechSynthesis.getVoices();
       }
+      const mode = voiceLanguageMode(text);
       if (speechPrefs.voiceURI) {
         const selected = speechVoices.find((voice) => voice.voiceURI === speechPrefs.voiceURI);
-        if (selected) return selected;
+        if (selected && (selected.lang || '').toLowerCase().startsWith(mode)) return selected;
       }
-      const wantsRu = /[^\x00-\x7F]/.test(text || '');
-      return speechVoices.find((voice) => (voice.lang || '').toLowerCase().startsWith(wantsRu ? 'ru' : 'en')) || null;
+      return filteredVoices()
+        .filter((voice) => (voice.lang || '').toLowerCase().startsWith(mode))
+        .sort((a, b) => voiceStudyScore(b) - voiceStudyScore(a))[0] || null;
+    }
+
+    function clearSpeechButtons() {
+      document.querySelectorAll('.speak-btn.speaking, .speak-btn.paused').forEach((el) => {
+        el.classList.remove('speaking', 'paused');
+      });
     }
 
     function speakText(text, btn) {
       const spoken = normalizeTranslationText(text);
       if (!spoken || !('speechSynthesis' in window)) return;
-      if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
+      const sameButton = speechState.button === btn && speechState.text === spoken;
+      if (sameButton && window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+        window.speechSynthesis.pause();
+        btn?.classList.remove('speaking');
+        btn?.classList.add('paused');
+        speechState.paused = true;
+        return;
+      }
+      if (window.speechSynthesis.speaking || window.speechSynthesis.paused) {
+        window.speechSynthesis.cancel();
+      }
+      clearSpeechButtons();
       const utterance = new SpeechSynthesisUtterance(spoken);
       const voice = selectedSpeechVoice(spoken);
       if (voice) {
         utterance.voice = voice;
         utterance.lang = voice.lang;
       } else {
-        utterance.lang = /[^\x00-\x7F]/.test(spoken) ? 'ru-RU' : 'en-GB';
+        utterance.lang = voiceLanguageMode(spoken) === 'ru' ? 'ru-RU' : 'en-GB';
       }
-      document.querySelectorAll('.speak-btn.speaking').forEach((el) => el.classList.remove('speaking'));
+      speechState = { button: btn, text: spoken, paused: false };
       if (btn) btn.classList.add('speaking');
-      utterance.onend = utterance.onerror = () => btn?.classList.remove('speaking');
+      utterance.onend = utterance.onerror = () => {
+        if (speechState.button === btn) speechState = { button: null, text: '', paused: false };
+        btn?.classList.remove('speaking', 'paused');
+      };
       window.speechSynthesis.speak(utterance);
     }
 
