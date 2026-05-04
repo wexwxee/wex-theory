@@ -242,8 +242,7 @@ function voiceLanguageMode(text) {
 }
 
 function isUsefulVoice(voice) {
-  const lang = (voice.lang || '').toLowerCase();
-  return /^en-(gb|us|au|ca|ie|za)/.test(lang) || lang === 'ru-ru';
+  return Boolean(voice && (voice.voiceURI || voice.name));
 }
 
 function voiceStudyScore(voice) {
@@ -269,6 +268,15 @@ function voiceDisplayName(voice) {
   return `${voice.lang || 'en'} ${name}`;
 }
 
+function voiceGroupRank(voice) {
+  const lang = (voice.lang || '').toLowerCase();
+  if (voiceStudyScore(voice) >= 80) return 0;
+  if (lang.startsWith('en')) return 1;
+  if (lang.startsWith('ru')) return 2;
+  if (lang.startsWith('da')) return 3;
+  return 4;
+}
+
 function filteredVoices() {
   const seen = new Set();
   return speechVoices
@@ -291,6 +299,8 @@ function sortedVoices(searchTerm = '') {
     .sort((a, b) => {
       const used = (voiceUsage[b.voiceURI] || 0) - (voiceUsage[a.voiceURI] || 0);
       if (used) return used;
+      const group = voiceGroupRank(a) - voiceGroupRank(b);
+      if (group) return group;
       const recommended = voiceStudyScore(b) - voiceStudyScore(a);
       if (recommended) return recommended;
       return voiceDisplayName(a).localeCompare(voiceDisplayName(b));
@@ -312,7 +322,7 @@ function renderVoiceList(searchTerm = '') {
   if (!voices.length) {
     const empty = document.createElement('div');
     empty.className = 'voice-group-title';
-    empty.textContent = 'No matching English or Russian voices';
+    empty.textContent = 'No matching voices';
     list.appendChild(empty);
     return;
   }
@@ -320,7 +330,13 @@ function renderVoiceList(searchTerm = '') {
   voices.forEach((voice) => {
     const used = voiceUsage[voice.voiceURI] || 0;
     const score = voiceStudyScore(voice);
-    const group = used ? 'Frequently used' : score >= 80 ? 'Recommended for study' : (voice.lang || '').toLowerCase() === 'ru-ru' ? 'Russian translation' : 'More English voices';
+        const lang = (voice.lang || '').toLowerCase();
+        let group = 'Other languages';
+        if (used) group = 'Frequently used';
+        else if (score >= 80) group = 'Recommended for study';
+        else if (lang.startsWith('en')) group = 'English voices';
+        else if (lang.startsWith('ru')) group = 'Russian translation';
+        else if (lang.startsWith('da')) group = 'Danish voices';
     if (group !== lastGroup && !searchTerm.trim()) {
       const title = document.createElement('div');
       title.className = 'voice-group-title';
