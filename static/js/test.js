@@ -421,11 +421,10 @@ function speakText(text, btn) {
   const spoken = normalizeTranslationText(text);
   if (!spoken || !('speechSynthesis' in window)) return;
   const sameButton = speechState.button === btn && speechState.text === spoken;
-  if (sameButton && window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
-    window.speechSynthesis.pause();
-    btn?.classList.remove('speaking');
-    btn?.classList.add('paused');
-    speechState.paused = true;
+  if (sameButton && (window.speechSynthesis.speaking || window.speechSynthesis.paused)) {
+    window.speechSynthesis.cancel();
+    clearSpeechButtons();
+    speechState = { button: null, text: '', paused: false };
     return;
   }
   if (window.speechSynthesis.speaking || window.speechSynthesis.paused) {
