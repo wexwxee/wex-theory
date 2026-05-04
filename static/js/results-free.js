@@ -30,14 +30,19 @@
       return {
         index: result.question_index,
         text: question?.question_text || `Question ${result.question_index}`,
+        translation_source_text: question?.translation_source_text || question?.question_text || '',
+        text_ru: question?.question_text_ru || '',
         image: result.image_path || '',
         explanation: result.explanation || question?.explanation || '',
+        explanation_ru: question?.explanation_ru || '',
         is_correct: !!result.is_correct,
         selected_ids: Array.isArray(result.selected_ids) ? result.selected_ids : [],
         correct_ids: Array.isArray(result.correct_ids) ? result.correct_ids : [],
         answers: (question?.answers || []).map((answer) => ({
           id: answer.id,
-          text: answer.text
+          text: answer.text,
+          translation_source_text: answer.translation_source_text || answer.text,
+          text_ru: answer.text_ru || ''
         }))
       };
     });

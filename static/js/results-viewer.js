@@ -32,92 +32,169 @@
 
     let currentModal = 0;
     let resultsTranslateMode = false;
-    const _RESULTS_STOP = new Set(['the','a','an','in','to','of','and','or','is','are','you','at','on','for',
-      'it','be','as','by','with','from','this','that','not','but','if','up','do','so','we','he',
-      'she','they','my','your','all','have','has','had','was','were','will','can','i','its','our',
-      'their','into','also','when','then','than','there','about','been','which','who','what']);
-    let _resultsWordPopup = null;
-    let _resultsPopupHideTimer = null;
-
-    const _resultsWordDictCache = {};
-    async function _lookupResultsWord(word) {
-      const key = (word || '').toLowerCase();
-      if (!key) return { main: null, pos: null };
-      if (_resultsWordDictCache[key]) return _resultsWordDictCache[key];
-      try {
-        const res = await fetch('/api/dictionary/' + encodeURIComponent(key));
-        if (!res.ok) throw new Error('lookup failed');
-        const data = await res.json();
-        const result = { main: data.translation || null, pos: data.pos || null };
-        _resultsWordDictCache[key] = result;
-        return result;
-      } catch (e) {
-        return { main: null, pos: null };
-      }
-    }
-
+    let speechVoices = [];
+    const speechPrefs = { voiceURI: localStorage.getItem('wexVoiceURI') || '' };
+    const liveTranslationCache = new Map();
+    let liveTranslationRequestKey = '';
+    initSpeechControls();
     function _resultTranslated(d) {
       return {
-        q: d.text_ru || '',
-        a: d.answers.map((a) => a.text_ru || ''),
+        q: getTranslatedText(d.text, d.text_ru, d.translation_source_text),
+        a: d.answers.map((a) => getTranslatedText(a.text, a.text_ru, a.translation_source_text)),
         explanation: d.explanation_ru || ''
       };
     }
 
-    function appendResultsWrappedText(parent, text, stopWords) {
-      const fragment = document.createDocumentFragment();
-      const regex = /\b([a-zA-Z]{3,})\b/g;
-      let lastIndex = 0;
-      let match;
-      while ((match = regex.exec(text)) !== null) {
-        if (match.index > lastIndex) {
-          fragment.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
-        }
-        const word = match[0];
-        if (stopWords.has(word.toLowerCase())) {
-          fragment.appendChild(document.createTextNode(word));
-        } else {
-          const wordEl = document.createElement('span');
-          wordEl.className = 'tw';
-          wordEl.textContent = word;
-          fragment.appendChild(wordEl);
-        }
-        lastIndex = regex.lastIndex;
-      }
-      if (lastIndex < text.length) {
-        fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
-      }
-      parent.appendChild(fragment);
+    function normalizeTranslationText(text) {
+      return String(text || '').replace(/\s+/g, ' ').trim();
     }
 
-    function _wrapResultsWords(el) {
-      if (!el || el.dataset.wrapped) return;
-      el.dataset.wrapped = '1';
-
-      function processNode(node) {
-        if (node.nodeType === 3) {
-          const text = node.textContent;
-          if (!/[a-zA-Z]{3,}/.test(text)) return;
-          const wrap = document.createElement('span');
-          appendResultsWrappedText(wrap, text, _RESULTS_STOP);
-          node.parentNode.replaceChild(wrap, node);
-        } else if (node.nodeType === 1 &&
-                  !['SCRIPT','STYLE','INPUT','TEXTAREA'].includes(node.tagName) &&
-                  !node.classList.contains('tw')) {
-          Array.from(node.childNodes).forEach(processNode);
-        }
-      }
-
-      Array.from(el.childNodes).forEach(processNode);
+    function needsLiveTranslation(sourceText, ruText, translationSourceText) {
+      const source = normalizeTranslationText(sourceText);
+      if (!source) return false;
+      if (!ruText) return true;
+      const storedSource = normalizeTranslationText(translationSourceText || sourceText);
+      return storedSource && storedSource !== source;
     }
 
-    function _resultsPopupPos(popup, rect) {
-      const pw = popup.offsetWidth;
-      const ph = popup.offsetHeight;
-      const left = Math.max(4, Math.min(rect.left + rect.width / 2 - pw / 2, window.innerWidth - pw - 4));
-      const top = rect.top + window.scrollY - ph - 10;
-      popup.style.left = left + 'px';
-      popup.style.top = top + 'px';
+    function getTranslatedText(sourceText, storedRu, translationSourceText) {
+      if (!needsLiveTranslation(sourceText, storedRu, translationSourceText)) {
+        return storedRu || '';
+      }
+      const key = normalizeTranslationText(sourceText);
+      return liveTranslationCache.has(key) ? (liveTranslationCache.get(key) || '') : '';
+    }
+
+    function isLiveTranslationPending(sourceText, storedRu, translationSourceText) {
+      const key = normalizeTranslationText(sourceText);
+      return needsLiveTranslation(sourceText, storedRu, translationSourceText) && key && !liveTranslationCache.has(key);
+    }
+
+    function queueLiveTranslationsForReview(d) {
+      if (!resultsTranslateMode || !d) return;
+      const missing = [];
+      const addIfNeeded = (text, ru, translationSourceText) => {
+        const key = normalizeTranslationText(text);
+        if (!needsLiveTranslation(text, ru, translationSourceText) || !key || liveTranslationCache.has(key)) return;
+        missing.push(key);
+      };
+      addIfNeeded(d.text, d.text_ru, d.translation_source_text);
+      d.answers.forEach((a) => addIfNeeded(a.text, a.text_ru, a.translation_source_text));
+      const unique = Array.from(new Set(missing));
+      if (!unique.length) return;
+      const requestKey = unique.join('\n');
+      if (requestKey === liveTranslationRequestKey) return;
+      liveTranslationRequestKey = requestKey;
+      fetch('/api/translate/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texts: unique })
+      })
+        .then((res) => res.ok ? res.json() : null)
+        .then((data) => {
+          const translations = data?.translations || {};
+          unique.forEach((text) => {
+            liveTranslationCache.set(text, translations[text] || '');
+          });
+          if (resultsTranslateMode && DATA[currentModal]?.question_id === d.question_id) renderModal();
+        })
+        .catch(() => {
+          unique.forEach((text) => liveTranslationCache.set(text, ''));
+          if (resultsTranslateMode && DATA[currentModal]?.question_id === d.question_id) renderModal();
+        })
+        .finally(() => {
+          if (liveTranslationRequestKey === requestKey) liveTranslationRequestKey = '';
+        });
+    }
+
+    function initSpeechControls() {
+      const select = document.getElementById('modalVoiceSelect');
+      if (!('speechSynthesis' in window)) {
+        select?.setAttribute('disabled', 'disabled');
+        return;
+      }
+      const populate = () => {
+        speechVoices = window.speechSynthesis.getVoices();
+        if (!select) return;
+        const preferred = speechPrefs.voiceURI || select.value;
+        select.innerHTML = '';
+        const auto = document.createElement('option');
+        auto.value = '';
+        auto.textContent = 'Voice';
+        select.appendChild(auto);
+        speechVoices
+          .filter((voice) => /^en|^ru/i.test(voice.lang || ''))
+          .forEach((voice) => {
+            const option = document.createElement('option');
+            option.value = voice.voiceURI;
+            option.textContent = `${voice.lang} ${voice.name}`;
+            select.appendChild(option);
+          });
+        if (preferred && Array.from(select.options).some((option) => option.value === preferred)) {
+          select.value = preferred;
+        }
+      };
+      populate();
+      window.speechSynthesis.onvoiceschanged = populate;
+      select?.addEventListener('change', () => {
+        speechPrefs.voiceURI = select.value;
+        localStorage.setItem('wexVoiceURI', speechPrefs.voiceURI);
+      });
+    }
+
+    function selectedSpeechVoice(text) {
+      if (!speechVoices.length && 'speechSynthesis' in window) {
+        speechVoices = window.speechSynthesis.getVoices();
+      }
+      if (speechPrefs.voiceURI) {
+        const selected = speechVoices.find((voice) => voice.voiceURI === speechPrefs.voiceURI);
+        if (selected) return selected;
+      }
+      const wantsRu = /[^\x00-\x7F]/.test(text || '');
+      return speechVoices.find((voice) => (voice.lang || '').toLowerCase().startsWith(wantsRu ? 'ru' : 'en')) || null;
+    }
+
+    function speakText(text, btn) {
+      const spoken = normalizeTranslationText(text);
+      if (!spoken || !('speechSynthesis' in window)) return;
+      if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(spoken);
+      const voice = selectedSpeechVoice(spoken);
+      if (voice) {
+        utterance.voice = voice;
+        utterance.lang = voice.lang;
+      } else {
+        utterance.lang = /[^\x00-\x7F]/.test(spoken) ? 'ru-RU' : 'en-GB';
+      }
+      document.querySelectorAll('.speak-btn.speaking').forEach((el) => el.classList.remove('speaking'));
+      if (btn) btn.classList.add('speaking');
+      utterance.onend = utterance.onerror = () => btn?.classList.remove('speaking');
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function createSpeakButton(textGetter, title = 'Listen') {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'speak-btn';
+      btn.title = title;
+      btn.setAttribute('aria-label', title);
+      btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"></path><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M18.5 5.5a9 9 0 0 1 0 13"></path></svg>';
+      btn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        speakText(textGetter(), btn);
+      });
+      return btn;
+    }
+
+    function getQuestionSpeechText(d) {
+      if (!resultsTranslateMode) return d.text;
+      return getTranslatedText(d.text, d.text_ru, d.translation_source_text) || d.text_ru || d.text;
+    }
+
+    function getAnswerSpeechText(answer) {
+      if (!resultsTranslateMode) return answer.text;
+      return getTranslatedText(answer.text, answer.text_ru, answer.translation_source_text) || answer.text_ru || answer.text;
     }
 
     function addResultBadge(parent, className, text) {
@@ -125,18 +202,6 @@
       badge.className = className;
       badge.textContent = text;
       parent.appendChild(badge);
-    }
-
-    function setResultsPopupLoading(popup, word) {
-      popup.replaceChildren();
-      const orig = document.createElement('div');
-      orig.className = 'wp-orig';
-      orig.textContent = word;
-      const loading = document.createElement('div');
-      loading.className = 'wp-load';
-      loading.textContent = '...';
-      popup.appendChild(orig);
-      popup.appendChild(loading);
     }
 
     function setResultsPopupResult(popup, word, result) {
@@ -299,9 +364,14 @@
       qEl.textContent = d.text;
       qEl.dataset.sourceText = d.text;
       delete qEl.dataset.wrapped;
+      const qSpeakWrap = document.getElementById('modalQuestionSpeakWrap');
+      qSpeakWrap?.replaceChildren(createSpeakButton(() => getQuestionSpeechText(d), 'Listen to question'));
       const qRuEl = document.getElementById('modalQuestionRu');
       if (resultsTranslateMode && trans?.q) {
         qRuEl.textContent = trans.q;
+        qRuEl.style.display = 'block';
+      } else if (resultsTranslateMode && isLiveTranslationPending(d.text, d.text_ru, d.translation_source_text)) {
+        qRuEl.textContent = 'Translating...';
         qRuEl.style.display = 'block';
       } else {
         qRuEl.style.display = 'none';
@@ -357,6 +427,11 @@
           answerRu.textContent = trans.a[idx];
           answerRu.style.cssText = 'font-size:0.82rem;color:#6b7280;font-style:italic;margin-top:6px;';
           textWrap.appendChild(answerRu);
+        } else if (resultsTranslateMode && isLiveTranslationPending(a.text, a.text_ru, a.translation_source_text)) {
+          const answerRu = document.createElement('div');
+          answerRu.textContent = 'Translating...';
+          answerRu.style.cssText = 'font-size:0.82rem;color:#6b7280;font-style:italic;margin-top:6px;';
+          textWrap.appendChild(answerRu);
         }
 
         const badgesWrap = document.createElement('span');
@@ -373,9 +448,9 @@
 
         bodyRow.appendChild(textWrap);
         bodyRow.appendChild(badgesWrap);
+        bodyRow.appendChild(createSpeakButton(() => getAnswerSpeechText(a), 'Listen to answer'));
         row.appendChild(bodyRow);
         answersEl.appendChild(row);
-        _wrapResultsWords(answerText);
       });
 
       const expl = document.getElementById('modalExplanation');
@@ -430,8 +505,7 @@
 
       document.getElementById('modalPrev').disabled = currentModal === 0;
       document.getElementById('modalNext').disabled = currentModal === DATA.length - 1;
-      _wrapResultsWords(qEl);
-      if (d.explanation) _wrapResultsWords(explBody);
+      queueLiveTranslationsForReview(d);
     }
 
     document.getElementById('qModal')?.addEventListener('click', (e) => {
@@ -443,42 +517,6 @@
       if (e.key === 'ArrowLeft') modalNav(-1);
       if (e.key === 'ArrowRight') modalNav(1);
       if (e.key === 'Escape') closeModal();
-    });
-
-    document.addEventListener('mouseover', (e) => {
-      if (!e.target.classList.contains('tw')) return;
-      clearTimeout(_resultsPopupHideTimer);
-      const word = e.target.textContent.trim();
-      if (!word || _RESULTS_STOP.has(word.toLowerCase()) || word.length < 3) return;
-      if (_resultsWordPopup) {
-        _resultsWordPopup.remove();
-        _resultsWordPopup = null;
-      }
-
-      const popup = document.createElement('div');
-      popup.className = 'word-popup';
-      setResultsPopupLoading(popup, word);
-      document.body.appendChild(popup);
-      _resultsWordPopup = popup;
-
-      const rect = e.target.getBoundingClientRect();
-      _resultsPopupPos(popup, rect);
-
-      _lookupResultsWord(word).then((result) => {
-        if (_resultsWordPopup !== popup) return;
-        setResultsPopupResult(popup, word, result);
-        _resultsPopupPos(popup, rect);
-      });
-    });
-
-    document.addEventListener('mouseout', (e) => {
-      if (!e.target.classList.contains('tw')) return;
-      _resultsPopupHideTimer = setTimeout(() => {
-        if (_resultsWordPopup) {
-          _resultsWordPopup.remove();
-          _resultsWordPopup = null;
-        }
-      }, 120);
     });
 
     (function animateScore() {

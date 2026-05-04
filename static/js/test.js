@@ -15,6 +15,12 @@ let isSubmitting = false;
 let timeWarningShown = false;
 let bookmarkRequestInFlight = false;
 let testToastTimer = null;
+let speechVoices = [];
+const speechPrefs = {
+  voiceURI: localStorage.getItem('wexVoiceURI') || '',
+};
+const liveTranslationCache = new Map();
+let liveTranslationRequestKey = '';
 
 function getExamAttemptIdFromUrl() {
   const raw = new URLSearchParams(window.location.search).get('attempt_id');
@@ -43,6 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('submitBtn')?.addEventListener('click', () => submitTest());
   document.getElementById('timeWarningCloseBtn')?.addEventListener('click', closeTimeWarningModal);
   document.getElementById('timeWarningOkBtn')?.addEventListener('click', closeTimeWarningModal);
+  initSpeechControls();
   initQuestionPanZoom();
   if (TEST_ID !== FREE_SAMPLE_TEST_ID && !IS_AUTHENTICATED) {
     window.location.href = '/login';
@@ -126,62 +133,6 @@ function updateTimerDisplay() {
 }
 
 // в”Ђв”Ђ Render в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
-function appendWordWrappedText(parent, text, stopWords) {
-  const fragment = document.createDocumentFragment();
-  const regex = /\b([a-zA-Z]{3,})\b/g;
-  let lastIndex = 0;
-  let match;
-  while ((match = regex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      fragment.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
-    }
-    const word = match[0];
-    if (stopWords.has(word.toLowerCase())) {
-      fragment.appendChild(document.createTextNode(word));
-    } else {
-      const wordEl = document.createElement('span');
-      wordEl.className = 'tw';
-      wordEl.textContent = word;
-      fragment.appendChild(wordEl);
-    }
-    lastIndex = regex.lastIndex;
-  }
-  if (lastIndex < text.length) {
-    fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
-  }
-  parent.appendChild(fragment);
-}
-
-function setWordPopupLoading(popup, word) {
-  popup.replaceChildren();
-  const orig = document.createElement('div');
-  orig.className = 'wp-orig';
-  orig.textContent = word;
-  const loading = document.createElement('div');
-  loading.className = 'wp-load';
-  loading.textContent = '...';
-  popup.appendChild(orig);
-  popup.appendChild(loading);
-}
-
-function setWordPopupResult(popup, word, result) {
-  popup.replaceChildren();
-  const orig = document.createElement('div');
-  orig.className = 'wp-orig';
-  orig.textContent = word;
-  const translation = document.createElement('div');
-  translation.className = 'wp-tr';
-  translation.textContent = result.main || '—';
-  popup.appendChild(orig);
-  popup.appendChild(translation);
-  if (result.pos) {
-    const pos = document.createElement('div');
-    pos.className = 'wp-context';
-    pos.textContent = result.pos;
-    popup.appendChild(pos);
-  }
-}
-
 async function ensureExamAttempt(forceFresh = false) {
   if (TEST_ID === EXAM_MODE_TEST_ID && !forceFresh) {
     const existingAttemptId = getExamAttemptIdFromUrl();
@@ -208,6 +159,160 @@ async function ensureExamAttempt(forceFresh = false) {
   syncExamAttemptInUrl();
 }
 
+function normalizeTranslationText(text) {
+  return String(text || '').replace(/\s+/g, ' ').trim();
+}
+
+function needsLiveTranslation(sourceText, ruText, translationSourceText) {
+  const source = normalizeTranslationText(sourceText);
+  if (!source) return false;
+  if (!ruText) return true;
+  const storedSource = normalizeTranslationText(translationSourceText || sourceText);
+  return storedSource && storedSource !== source;
+}
+
+function getTranslatedText(sourceText, storedRu, translationSourceText) {
+  if (!needsLiveTranslation(sourceText, storedRu, translationSourceText)) {
+    return storedRu || '';
+  }
+  const key = normalizeTranslationText(sourceText);
+  return liveTranslationCache.has(key) ? (liveTranslationCache.get(key) || '') : '';
+}
+
+function isLiveTranslationPending(sourceText, storedRu, translationSourceText) {
+  const key = normalizeTranslationText(sourceText);
+  return needsLiveTranslation(sourceText, storedRu, translationSourceText) && key && !liveTranslationCache.has(key);
+}
+
+function queueLiveTranslationsForQuestion(q) {
+  if (!translateMode || !q) return;
+  const missing = [];
+  const addIfNeeded = (text, ru, translationSourceText) => {
+    const key = normalizeTranslationText(text);
+    if (!needsLiveTranslation(text, ru, translationSourceText) || !key || liveTranslationCache.has(key)) return;
+    missing.push(key);
+  };
+  addIfNeeded(q.question_text, q.question_text_ru, q.translation_source_text);
+  q.answers.forEach((a) => addIfNeeded(a.text, a.text_ru, a.translation_source_text));
+  const unique = Array.from(new Set(missing));
+  if (!unique.length) return;
+  const requestKey = unique.join('\n');
+  if (requestKey === liveTranslationRequestKey) return;
+  liveTranslationRequestKey = requestKey;
+  fetch('/api/translate/batch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ texts: unique })
+  })
+    .then((res) => res.ok ? res.json() : null)
+    .then((data) => {
+      const translations = data?.translations || {};
+      unique.forEach((text) => {
+        liveTranslationCache.set(text, translations[text] || '');
+      });
+      if (translateMode && questions[currentIndex]?.id === q.id) renderQuestion();
+    })
+    .catch(() => {
+      unique.forEach((text) => liveTranslationCache.set(text, ''));
+      if (translateMode && questions[currentIndex]?.id === q.id) renderQuestion();
+    })
+    .finally(() => {
+      if (liveTranslationRequestKey === requestKey) liveTranslationRequestKey = '';
+    });
+}
+
+function initSpeechControls() {
+  const select = document.getElementById('voiceSelect');
+  if (!('speechSynthesis' in window)) {
+    select?.setAttribute('disabled', 'disabled');
+    return;
+  }
+
+  const populate = () => {
+    speechVoices = window.speechSynthesis.getVoices();
+    if (!select) return;
+    const preferred = speechPrefs.voiceURI || select.value;
+    select.innerHTML = '';
+    const auto = document.createElement('option');
+    auto.value = '';
+    auto.textContent = 'Voice';
+    select.appendChild(auto);
+    speechVoices
+      .filter((voice) => /^en|^ru/i.test(voice.lang || ''))
+      .forEach((voice) => {
+        const option = document.createElement('option');
+        option.value = voice.voiceURI;
+        option.textContent = `${voice.lang} ${voice.name}`;
+        select.appendChild(option);
+      });
+    if (preferred && Array.from(select.options).some((option) => option.value === preferred)) {
+      select.value = preferred;
+    }
+  };
+
+  populate();
+  window.speechSynthesis.onvoiceschanged = populate;
+  select?.addEventListener('change', () => {
+    speechPrefs.voiceURI = select.value;
+    localStorage.setItem('wexVoiceURI', speechPrefs.voiceURI);
+  });
+}
+
+function selectedSpeechVoice(text) {
+  if (!speechVoices.length && 'speechSynthesis' in window) {
+    speechVoices = window.speechSynthesis.getVoices();
+  }
+  if (speechPrefs.voiceURI) {
+    const selected = speechVoices.find((voice) => voice.voiceURI === speechPrefs.voiceURI);
+    if (selected) return selected;
+  }
+  const wantsRu = /[^\x00-\x7F]/.test(text || '');
+  return speechVoices.find((voice) => (voice.lang || '').toLowerCase().startsWith(wantsRu ? 'ru' : 'en')) || null;
+}
+
+function speakText(text, btn) {
+  const spoken = normalizeTranslationText(text);
+  if (!spoken || !('speechSynthesis' in window)) return;
+  if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(spoken);
+  const voice = selectedSpeechVoice(spoken);
+  if (voice) {
+    utterance.voice = voice;
+    utterance.lang = voice.lang;
+  } else {
+    utterance.lang = /[^\x00-\x7F]/.test(spoken) ? 'ru-RU' : 'en-GB';
+  }
+  document.querySelectorAll('.speak-btn.speaking').forEach((el) => el.classList.remove('speaking'));
+  if (btn) btn.classList.add('speaking');
+  utterance.onend = utterance.onerror = () => btn?.classList.remove('speaking');
+  window.speechSynthesis.speak(utterance);
+}
+
+function getQuestionSpeechText(q) {
+  if (!translateMode) return q.question_text;
+  return getTranslatedText(q.question_text, q.question_text_ru, q.translation_source_text) || q.question_text_ru || q.question_text;
+}
+
+function getAnswerSpeechText(answer) {
+  if (!translateMode) return answer.text;
+  return getTranslatedText(answer.text, answer.text_ru, answer.translation_source_text) || answer.text_ru || answer.text;
+}
+
+function createSpeakButton(textGetter, title = 'Listen') {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'speak-btn';
+  btn.title = title;
+  btn.setAttribute('aria-label', title);
+  btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"></path><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M18.5 5.5a9 9 0 0 1 0 13"></path></svg>';
+  btn.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    speakText(textGetter(), btn);
+  });
+  return btn;
+}
+
 function renderQuestion() {
   if (!questions.length) return;
   const q = questions[currentIndex];
@@ -222,11 +327,20 @@ function renderQuestion() {
 
   // Russian translation below (from pre-translated DB field)
   const qRuEl = document.getElementById('questionTextRu');
-  if (translateMode && q.question_text_ru) {
-    qRuEl.textContent = q.question_text_ru;
+  const questionRu = translateMode ? getTranslatedText(q.question_text, q.question_text_ru, q.translation_source_text) : '';
+  if (translateMode && questionRu) {
+    qRuEl.textContent = questionRu;
+    qRuEl.style.display = 'block';
+  } else if (translateMode && isLiveTranslationPending(q.question_text, q.question_text_ru, q.translation_source_text)) {
+    qRuEl.textContent = 'Translating...';
     qRuEl.style.display = 'block';
   } else {
     qRuEl.style.display = 'none';
+  }
+
+  const qSpeakWrap = document.getElementById('questionSpeakWrap');
+  if (qSpeakWrap) {
+    qSpeakWrap.replaceChildren(createSpeakButton(() => getQuestionSpeechText(q), 'Listen to question'));
   }
 
   // Image
@@ -257,16 +371,23 @@ function renderQuestion() {
     label.className = 'answer-option-label';
     label.textContent = a.text;
     label.dataset.sourceText = a.text;
-    const ruText = (translateMode && a.text_ru) ? a.text_ru : null;
+    const ruText = translateMode ? getTranslatedText(a.text, a.text_ru, a.translation_source_text) : null;
     if (ruText) {
       label.appendChild(document.createElement('br'));
       const ruNode = document.createElement('span');
       ruNode.style.cssText = 'font-size:0.85rem;color:#6b7280;font-style:italic;';
       ruNode.textContent = ruText;
       label.appendChild(ruNode);
+    } else if (translateMode && isLiveTranslationPending(a.text, a.text_ru, a.translation_source_text)) {
+      label.appendChild(document.createElement('br'));
+      const ruNode = document.createElement('span');
+      ruNode.style.cssText = 'font-size:0.85rem;color:#6b7280;font-style:italic;';
+      ruNode.textContent = 'Translating...';
+      label.appendChild(ruNode);
     }
     div.appendChild(checkbox);
     div.appendChild(label);
+    div.appendChild(createSpeakButton(() => getAnswerSpeechText(a), 'Listen to answer'));
     div.addEventListener('click', () => toggleAnswer(q.id, a.id, div));
     container.appendChild(div);
   });
@@ -284,9 +405,7 @@ function renderQuestion() {
   updateDots();
   updateBookmarkBtn();
 
-  // Wrap words for click-to-translate
-  _wrapWords(document.getElementById('questionText'));
-  document.querySelectorAll('#answersContainer .answer-option-label').forEach(_wrapWords);
+  queueLiveTranslationsForQuestion(q);
 }
 
 function toggleAnswer(questionId, answerId, clickedDiv) {
@@ -557,95 +676,6 @@ function toggleTranslate() {
   if (btn) btn.textContent = translateMode ? 'EN' : 'RU';
   renderQuestion();
 }
-
-// Word-popup translations come from /api/dictionary/{word}.
-// Cached in-memory for the session so re-hovering the same word is instant.
-const _wordDictCache = {};
-async function _lookupWord(word) {
-  const key = (word || '').toLowerCase();
-  if (!key) return { main: null, pos: null };
-  if (_wordDictCache[key]) return _wordDictCache[key];
-  try {
-    const res = await fetch('/api/dictionary/' + encodeURIComponent(key));
-    if (!res.ok) throw new Error('lookup failed');
-    const data = await res.json();
-    const result = { main: data.translation || null, pos: data.pos || null };
-    _wordDictCache[key] = result;
-    return result;
-  } catch (e) {
-    return { main: null, pos: null };
-  }
-}
-
-// в”Ђв”Ђ Word-click popup (Duolingo-style) в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
-const _STOP = new Set(['the','a','an','in','to','of','and','or','is','are','you','at','on','for',
-  'it','be','as','by','with','from','this','that','not','but','if','up','do','so','we','he',
-  'she','they','my','your','all','have','has','had','was','were','will','can','i','its','our',
-  'their','into','also','when','then','than','there','about','been','which','who','what']);
-
-let _wordPopup = null;
-
-function _wrapWords(el) {
-  if (!el || el.dataset.wrapped) return;
-  el.dataset.wrapped = '1';
-
-  function processNode(node) {
-    if (node.nodeType === 3) {
-      const text = node.textContent;
-      if (!/[a-zA-Z]{3,}/.test(text)) return;
-      const wrap = document.createElement('span');
-      appendWordWrappedText(wrap, text, _STOP);
-      node.parentNode.replaceChild(wrap, node);
-    } else if (node.nodeType === 1 &&
-               !['SCRIPT','STYLE','INPUT','TEXTAREA'].includes(node.tagName) &&
-               !node.classList.contains('tw')) {
-      Array.from(node.childNodes).forEach(processNode);
-    }
-  }
-
-  Array.from(el.childNodes).forEach(processNode);
-}
-
-function _popupPos(popup, rect) {
-  const pw = popup.offsetWidth;
-  const ph = popup.offsetHeight;
-  const left = Math.max(4, Math.min(rect.left + rect.width / 2 - pw / 2, window.innerWidth - pw - 4));
-  const top = rect.top + window.scrollY - ph - 10;
-  popup.style.left = left + 'px';
-  popup.style.top = top + 'px';
-}
-
-let _popupHideTimer = null;
-
-document.addEventListener('mouseover', (e) => {
-  if (!e.target.classList.contains('tw')) return;
-  clearTimeout(_popupHideTimer);
-  const word = e.target.textContent.trim();
-  if (!word || _STOP.has(word.toLowerCase()) || word.length < 3) return;
-  if (_wordPopup) { _wordPopup.remove(); _wordPopup = null; }
-
-  const popup = document.createElement('div');
-  popup.className = 'word-popup';
-  setWordPopupLoading(popup, word);
-  document.body.appendChild(popup);
-  _wordPopup = popup;
-
-  const rect = e.target.getBoundingClientRect();
-  _popupPos(popup, rect);
-
-  _lookupWord(word).then(result => {
-    if (_wordPopup !== popup) return;
-    setWordPopupResult(popup, word, result);
-    _popupPos(popup, rect);
-  });
-});
-
-document.addEventListener('mouseout', (e) => {
-  if (!e.target.classList.contains('tw')) return;
-  _popupHideTimer = setTimeout(() => {
-    if (_wordPopup) { _wordPopup.remove(); _wordPopup = null; }
-  }, 120);
-});
 
 // ── Question image: click to open lightbox ────────────────────────────────
 function initQuestionPanZoom() {

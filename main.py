@@ -2178,6 +2178,7 @@ def serialize_test_question(question: models.Question, *, display_index: Optiona
         "id": question.id,
         "question_index": display_index or question.question_index,
         "question_text": resolve_question_text(question, wording_mode),
+        "translation_source_text": question.question_text,
         "question_text_ru": question_text_ru,
         "explanation": question.explanation or "",
         "explanation_ru": explanation_ru,
@@ -2186,6 +2187,7 @@ def serialize_test_question(question: models.Question, *, display_index: Optiona
             {
                 "id": a.id,
                 "text": resolve_answer_text(a, wording_mode),
+                "translation_source_text": a.text,
                 "text_ru": answer_text_ru(a),
             }
             for a in ordered_answers(question)
@@ -2215,6 +2217,7 @@ def serialize_review_question(
         review_answers.append({
             "id": answer_payload["id"],
             "text": answer_payload["text"],
+            "translation_source_text": answer_payload.get("translation_source_text") or answer_payload["text"],
             "text_ru": answer_payload.get("text_ru") or "",
             "is_correct": bool(answer.is_correct),
         })
@@ -2227,6 +2230,7 @@ def serialize_review_question(
         "is_bookmarked": bool(is_bookmarked),
         "text": payload["question_text"],
         "question_text": payload["question_text"],
+        "translation_source_text": payload.get("translation_source_text") or payload["question_text"],
         "text_ru": payload.get("question_text_ru") or "",
         "question_text_ru": payload.get("question_text_ru") or "",
         "image": payload.get("image_path") or "",
@@ -3979,6 +3983,7 @@ _GOOGLE_TRANSLATE_HEADERS = {
         "Chrome/120.0.0.0 Safari/537.36"
     )
 }
+_TEXT_TRANSLATION_CACHE: dict[str, Optional[str]] = {}
 
 
 async def _google_translate_word(word: str) -> Optional[str]:
@@ -3988,7 +3993,7 @@ async def _google_translate_word(word: str) -> Optional[str]:
     """
     if not word or not word.strip():
         return None
-    url = _GOOGLE_TRANSLATE_URL.format(q=quote(word.strip()[:120]))
+    url = _GOOGLE_TRANSLATE_URL.format(q=quote(word.strip()[:900]))
     try:
         async with httpx.AsyncClient(timeout=4.0) as client:
             resp = await client.get(url, headers=_GOOGLE_TRANSLATE_HEADERS)
@@ -4006,6 +4011,40 @@ async def _google_translate_word(word: str) -> Optional[str]:
     except Exception as e:
         print(f"[dictionary] google translate failed for {word!r}: {e}")
         return None
+
+
+async def _google_translate_text(text: str) -> Optional[str]:
+    cleaned = re.sub(r"\s+", " ", str(text or "").strip())[:900]
+    if not cleaned:
+        return None
+    if cleaned in _TEXT_TRANSLATION_CACHE:
+        return _TEXT_TRANSLATION_CACHE[cleaned]
+    translated = await _google_translate_word(cleaned)
+    if translated:
+        _TEXT_TRANSLATION_CACHE[cleaned] = translated
+    return translated
+
+
+@app.post("/api/translate/batch")
+async def api_translate_batch(request: Request):
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+    texts = data.get("texts") or []
+    if not isinstance(texts, list):
+        return JSONResponse({"error": "texts must be a list"}, status_code=400)
+
+    normalized: list[str] = []
+    for item in texts[:40]:
+        text = re.sub(r"\s+", " ", str(item or "").strip())[:900]
+        if text and text not in normalized:
+            normalized.append(text)
+
+    translations: dict[str, Optional[str]] = {}
+    for text in normalized:
+        translations[text] = await _google_translate_text(text)
+    return {"translations": translations}
 
 
 @app.get("/api/dictionary/{word}")

@@ -789,6 +789,52 @@ input::placeholder, textarea::placeholder {
   line-height: 1.5;
 }
 
+.voice-select {
+  width: 132px;
+  min-width: 112px;
+  height: 32px;
+  padding: 5px 28px 5px 10px;
+  font-size: 0.82rem;
+}
+
+.speak-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex: 0 0 auto;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.speak-btn:hover,
+.speak-btn.speaking {
+  color: var(--text);
+  border-color: var(--text-muted);
+  background: rgba(255,255,255,0.05);
+}
+.speak-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.question-audio-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+}
+
 /* ── Results ── */
 .results-score {
   font-size: 4rem;
