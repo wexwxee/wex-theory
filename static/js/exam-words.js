@@ -1640,6 +1640,16 @@ const $ = (sel) => document.querySelector(sel);
   });
 
   /* ============== THEME ============== */
+  function withoutThemeMotion(callback) {
+    document.documentElement.classList.add('no-theme-motion');
+    callback();
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.documentElement.classList.remove('no-theme-motion');
+      });
+    });
+  }
+
   function applyTheme(theme) {
     if (theme === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
@@ -1655,7 +1665,7 @@ const $ = (sel) => document.querySelector(sel);
   $('#theme-toggle').addEventListener('click', () => {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const newTheme = isDark ? 'light' : 'dark';
-    applyTheme(newTheme);
+    withoutThemeMotion(() => applyTheme(newTheme));
     try {
       localStorage.setItem('wex-exam-words-2026-theme', newTheme);
       localStorage.setItem('wex-theme', newTheme);
