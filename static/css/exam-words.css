@@ -158,6 +158,25 @@
 
   .topnav-actions { display: flex; gap: 6px; align-items: center; }
 
+  .demo-access-link {
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    display: inline-flex;
+    align-items: center;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .demo-access-link:hover {
+    background: var(--bg-hover);
+    border-color: var(--line-2);
+  }
+
   .icon-btn {
     background: transparent;
     border: 1px solid var(--line);
@@ -195,6 +214,40 @@
   }
 
   .hero-inner { max-width: 920px; margin: 0 auto; }
+
+  .demo-banner {
+    margin: 0 0 28px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--bg-card);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.04);
+    animation: fadeInUp 0.45s ease both;
+  }
+
+  .demo-banner strong {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+
+  .demo-banner span {
+    color: var(--text-3);
+    font-size: 13px;
+  }
+
+  .demo-banner a {
+    flex: 0 0 auto;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+  }
 
   .eyebrow {
     font-family: 'JetBrains Mono', monospace;
@@ -1486,6 +1539,8 @@
     .controls-inner { padding: 12px 16px; }
     .container { padding: 28px 20px 60px; }
     .topnav-inner { padding: 12px 16px; }
+    .demo-access-link { height: 32px; padding: 0 10px; font-size: 12px; }
+    .demo-banner { align-items: flex-start; flex-direction: column; gap: 10px; }
     .status-row { padding: 0 16px 14px; }
     .filter-group { flex-wrap: wrap; }
     .flashcard, .quiz-card { padding: 36px 22px; min-height: 260px; }

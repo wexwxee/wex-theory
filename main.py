@@ -2038,7 +2038,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260505-exam-words"
+templates.env.globals["asset_version"] = "20260505-exam-words-demo"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 
@@ -3194,6 +3194,17 @@ async def exam_words_page(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse(request, "exam_words.html", {
         "request": request,
         "user": user,
+        "demo": False,
+    })
+
+
+@app.get("/exam-words-demo", response_class=HTMLResponse)
+async def exam_words_demo_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    return templates.TemplateResponse(request, "exam_words.html", {
+        "request": request,
+        "user": user,
+        "demo": True,
     })
 
 

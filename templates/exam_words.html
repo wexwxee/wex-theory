@@ -1,19 +1,23 @@
 {% extends "base.html" %}
 
-{% block title %}Exam Words 2026 - WEX Theory{% endblock %}
+{% block title %}{{ 'Exam Words 2026 Demo' if demo else 'Exam Words 2026' }} - WEX Theory{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="/static/css/exam-words.css?v={{ asset_version }}">
 {% endblock %}
 
 {% block body %}
+<div id="exam-words-mode" data-exam-words-demo="{{ '1' if demo else '0' }}"></div>
 <nav class="topnav">
   <div class="topnav-inner">
-    <a href="/dashboard" class="brand">
+    <a href="{{ '/pricing' if demo else '/dashboard' }}" class="brand">
       <span class="brand-mark">EW</span>
-      <span>Exam Words 2026</span>
+      <span>{{ 'Exam Words 2026 Demo' if demo else 'Exam Words 2026' }}</span>
     </a>
     <div class="topnav-actions">
+      {% if demo %}
+      <a class="demo-access-link" href="/pricing">Full access</a>
+      {% endif %}
       <button class="icon-btn" id="tts-settings-btn" aria-label="Voice settings" title="Voice settings">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
       </button>
@@ -30,9 +34,18 @@
 
 <header class="hero">
   <div class="hero-inner">
+    {% if demo %}
+    <div class="demo-banner">
+      <div>
+        <strong>Demo version</strong>
+        <span>A small preview of the vocabulary helper. The full version is included with library access.</span>
+      </div>
+      <a href="/pricing">See access</a>
+    </div>
+    {% endif %}
     <div class="eyebrow">English-first · Russian translations · Danish reference</div>
-    <h1 class="title">Exam words 2026 for driving theory</h1>
-    <p class="subtitle">A premium exam vocabulary trainer with English-first terms, Russian translations, Danish reference, flashcards, quiz mode, and built-in audio playback.</p>
+    <h1 class="title">{{ 'Try Exam Words 2026' if demo else 'Exam words 2026 for driving theory' }}</h1>
+    <p class="subtitle">{{ 'A short preview of the dictionary, cards, quiz, and audio tools.' if demo else 'A 2026 exam vocabulary helper with English terms, Russian translations, Danish reference, flashcards, quiz mode, and audio playback.' }}</p>
     <div class="stats">
       <div class="stat">
         <div class="stat-value" id="meta-total">—</div>
@@ -209,7 +222,7 @@
 </main>
 
 <footer>
-  <div class="copyright">Exam Words 2026 · Built from the official Begrebsliste 30.01.2026</div>
+  <div class="copyright">{{ 'Exam Words 2026 demo' if demo else 'Exam Words 2026' }} · Built from the official Begrebsliste 30.01.2026</div>
 </footer>
 
 <!-- TTS Voice Picker Dialog -->

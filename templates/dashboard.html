@@ -557,10 +557,10 @@
   <section class="study-tool-grid">
     <div class="study-tool-card {% if not has_access %}locked{% endif %}">
       <div class="study-tool-copy">
-        <div class="study-tool-kicker">Premium study tool</div>
+        <div class="study-tool-kicker">Vocabulary helper</div>
         <div class="study-tool-title">Exam Words 2026</div>
         <div class="study-tool-subcopy">
-          English-first exam vocabulary with Russian translations, Danish reference terms, flashcards, quiz mode, saved progress, and the original voice settings from the dictionary file.
+          A separate 2026 exam-word helper with English terms, Russian translation, Danish reference, cards, quiz, and audio.
         </div>
         <div class="study-tool-pills">
           <span class="study-tool-pill">Dictionary</span>
@@ -573,7 +573,8 @@
         {% if has_access %}
           <a href="/exam-words" class="btn-primary btn-sm">Open words</a>
         {% else %}
-          <a href="/pricing" class="btn-primary btn-sm">Unlock</a>
+          <a href="/exam-words-demo" class="btn-primary btn-sm">Preview</a>
+          <a href="/pricing" class="btn-ghost btn-sm">Access</a>
         {% endif %}
       </div>
     </div>

@@ -400,6 +400,20 @@ const DICTIONARY = {
   }
 };
 
+const DEMO_MODE = document.querySelector('[data-exam-words-demo="1"]') !== null;
+
+if (DEMO_MODE) {
+  const demoLimits = {
+    general: 14,
+    motorcycle: 5,
+    trailer: 5,
+    heavy: 5
+  };
+  Object.entries(DICTIONARY).forEach(([key, cat]) => {
+    cat.items = cat.items.slice(0, demoLimits[key] || 4);
+  });
+}
+
 // Stable IDs for each term — used for storing progress in localStorage
 function termId(item) {
   return item.dk.replace(/[^a-zA-Z0-9æøåÆØÅ]/g, '').toLowerCase();
@@ -418,8 +432,9 @@ const $ = (sel) => document.querySelector(sel);
   const escHtml = (s) => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
   /* ============== STATE & STORAGE ============== */
-  const STORAGE_KEY = 'wex-exam-words-2026-progress-v1';
-  const SETTINGS_KEY = 'wex-exam-words-2026-settings-v1';
+  const STORAGE_SCOPE = DEMO_MODE ? 'demo' : 'full';
+  const STORAGE_KEY = `wex-exam-words-2026-${STORAGE_SCOPE}-progress-v1`;
+  const SETTINGS_KEY = `wex-exam-words-2026-${STORAGE_SCOPE}-settings-v1`;
 
   function loadProgress() {
     try {
