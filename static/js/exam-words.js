@@ -610,15 +610,10 @@ const $ = (sel) => document.querySelector(sel);
     const wantDanish = lang === 'da';
     const wantEnglish = lang === 'en';
 
-    // 1. user's explicit choice (only respect if matches requested language family)
+    // 1. user's explicit choice
     if (state.tts.selectedVoiceURI) {
       const v = state.tts.allVoices.find(x => x.voiceURI === state.tts.selectedVoiceURI);
-      if (v) {
-        const vLang = (v.lang || '').toLowerCase();
-        if (wantDanish && vLang.startsWith('da')) return v;
-        if (wantEnglish && vLang.startsWith('en')) return v;
-        // If user picked a voice but it doesn't match the requested language, fall through
-      }
+      if (v) return v;
     }
 
     // 2. find by language family
@@ -732,12 +727,7 @@ const $ = (sel) => document.querySelector(sel);
     const otherVoices = voices.filter(v => !englishVoices.includes(v) && !danishVoices.includes(v));
     otherVoices.sort((a, b) => (a.lang || '').localeCompare(b.lang || ''));
 
-    if (danishVoices.length === 0) {
-      // User is learning in English — Danish absence is fine
-      status.innerHTML = `<span class="good">✓</span> Pick a voice for the audio button. ${voices.filter(v => (v.lang || '').toLowerCase().startsWith('en')).length} English voice${voices.filter(v => (v.lang || '').toLowerCase().startsWith('en')).length !== 1 ? 's' : ''} available.`;
-    } else {
-      status.innerHTML = `<span class="good">✓</span> ${danishVoices.length} Danish voice${danishVoices.length > 1 ? 's' : ''} found, plus other languages.`;
-    }
+    status.innerHTML = `<span class="good">✓</span> ${voices.length} browser voice${voices.length !== 1 ? 's' : ''} available.`;
 
     const renderVoiceItem = (v, langLabel) => {
       const sel = state.tts.selectedVoiceURI === v.voiceURI;
@@ -757,7 +747,7 @@ const $ = (sel) => document.querySelector(sel);
 
     let html = '';
     if (englishVoices.length > 0) {
-      html += '<div class="tts-section-title">English voices (recommended)</div>';
+      html += '<div class="tts-section-title">English voices</div>';
       html += englishVoices.map(v => renderVoiceItem(v, '🇬🇧 ' + (v.lang || 'en'))).join('');
     }
     if (danishVoices.length > 0) {
@@ -766,10 +756,7 @@ const $ = (sel) => document.querySelector(sel);
     }
     if (otherVoices.length > 0) {
       html += `<div class="tts-section-title">Other voices (${otherVoices.length})</div>`;
-      html += otherVoices.slice(0, 30).map(v => renderVoiceItem(v, v.lang || '?')).join('');
-      if (otherVoices.length > 30) {
-        html += `<div class="tts-empty">${otherVoices.length - 30} more not shown</div>`;
-      }
+      html += otherVoices.map(v => renderVoiceItem(v, v.lang || '?')).join('');
     }
 
     list.innerHTML = html;
@@ -1043,9 +1030,6 @@ const $ = (sel) => document.querySelector(sel);
 
   function itemHtml(item, q, catLabel) {
     const status = getStatus(item);
-    const statusBadge = status === 'known' ? '<span class="badge known">✓ Known</span>'
-                : status === 'hard' ? '<span class="badge hard">! Difficult</span>'
-                : '';
     const catBadge = catLabel ? `<span class="badge cat">${escHtml(catLabel)}</span>` : '';
     const knownClass = status === 'known' ? 'is-known' : '';
     return `
@@ -1056,7 +1040,7 @@ const $ = (sel) => document.querySelector(sel);
             <button class="speak-inline" data-action="speak" data-text="${escHtml(item.en)}" data-lang="en" title="Speak English" aria-label="Speak English">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
             </button>
-            ${statusBadge}${catBadge}
+            ${catBadge}
           </div>
           <div class="item-ru">${highlight(item.ru, q)}</div>
           <div class="item-dk">
@@ -1251,15 +1235,6 @@ const $ = (sel) => document.querySelector(sel);
       const item = ALL_TERMS.find(t => t.id === termId);
       if (item) {
         toggleStatus(item, actionBtn.dataset.action);
-        // Bump stat values briefly
-        const target = actionBtn.dataset.action === 'known' ? '#meta-known' : '#meta-hard';
-        const el = $(target);
-        if (el) {
-          el.classList.remove('bumping');
-          void el.offsetWidth; // restart animation
-          el.classList.add('bumping');
-          setTimeout(() => el.classList.remove('bumping'), 400);
-        }
         renderCategories();
       }
     }
@@ -1671,7 +1646,7 @@ const $ = (sel) => document.querySelector(sel);
       $('#icon-sun').style.display = 'none';
       $('#icon-moon').style.display = 'block';
     } else {
-      document.documentElement.removeAttribute('data-theme');
+      document.documentElement.setAttribute('data-theme', 'light');
       $('#icon-sun').style.display = 'block';
       $('#icon-moon').style.display = 'none';
     }
@@ -1681,15 +1656,15 @@ const $ = (sel) => document.querySelector(sel);
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const newTheme = isDark ? 'light' : 'dark';
     applyTheme(newTheme);
-    try { localStorage.setItem('wex-exam-words-2026-theme', newTheme); } catch(e) {}
+    try {
+      localStorage.setItem('wex-exam-words-2026-theme', newTheme);
+      localStorage.setItem('wex-theme', newTheme);
+    } catch(e) {}
   });
 
   try {
-    const saved = localStorage.getItem('wex-exam-words-2026-theme');
-    if (saved) applyTheme(saved);
-    else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      applyTheme('dark');
-    }
+    const saved = localStorage.getItem('wex-exam-words-2026-theme') || localStorage.getItem('wex-theme');
+    applyTheme(saved || 'light');
   } catch(e) {}
 
   /* ============== RESET PROGRESS ============== */
@@ -1709,6 +1684,19 @@ const $ = (sel) => document.querySelector(sel);
   /* ============== INIT ============== */
   function init() {
     document.body.classList.add('mode-list');
+    $('#examWordsBurgerBtn')?.addEventListener('click', () => {
+      if (typeof window.sbOpen === 'function') window.sbOpen();
+    });
+    $('#examWordsBack')?.addEventListener('click', (e) => {
+      const fallback = e.currentTarget.dataset.backFallback || '/dashboard';
+      const referrer = document.referrer ? new URL(document.referrer, window.location.origin) : null;
+      if (window.history.length > 1 && referrer && referrer.origin === window.location.origin) {
+        e.preventDefault();
+        window.history.back();
+      } else {
+        e.currentTarget.href = fallback;
+      }
+    });
     updateStats();
     renderQuickNav();
     renderCategories();

@@ -20,24 +20,24 @@
   }
 
   [data-theme="dark"] {
-    --bg: #0a0a0a;
-    --bg-soft: #141414;
-    --bg-card: #141414;
-    --bg-hover: #1a1a1a;
-    --bg-elev: #161616;
-    --text: #fafafa;
-    --text-2: #d4d4d4;
-    --text-3: #a3a3a3;
-    --text-4: #737373;
-    --line: #1f1f1f;
-    --line-2: #2e2e2e;
-    --known: #4ade80;
-    --known-bg: rgba(74, 222, 128, 0.1);
-    --hard: #fb923c;
-    --hard-bg: rgba(251, 146, 60, 0.1);
-    --correct: #4ade80;
-    --wrong: #f87171;
-    --accent: #fafafa;
+    --bg: #111315;
+    --bg-soft: #171a1d;
+    --bg-card: #15181b;
+    --bg-hover: #1d2125;
+    --bg-elev: #181c20;
+    --text: #eef1f3;
+    --text-2: #cfd5d9;
+    --text-3: #99a2aa;
+    --text-4: #6f7982;
+    --line: #252b31;
+    --line-2: #343c44;
+    --known: #6ee7a0;
+    --known-bg: rgba(110, 231, 160, 0.12);
+    --hard: #f4a261;
+    --hard-bg: rgba(244, 162, 97, 0.12);
+    --correct: #6ee7a0;
+    --wrong: #f28b8b;
+    --accent: #eef1f3;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -128,6 +128,13 @@
     gap: 16px;
   }
 
+  .topnav-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
   .brand {
     font-weight: 600;
     font-size: 15px;
@@ -137,6 +144,13 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    min-width: 0;
+  }
+
+  .brand span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .brand-mark {
@@ -157,6 +171,27 @@
   }
 
   .topnav-actions { display: flex; gap: 6px; align-items: center; }
+
+  .nav-back {
+    height: 36px;
+    padding: 0 11px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-2);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    transition: background 0.16s, border-color 0.16s, color 0.16s;
+  }
+
+  .nav-back:hover {
+    background: var(--bg-hover);
+    border-color: var(--line-2);
+    color: var(--text);
+  }
 
   .demo-access-link {
     height: 36px;
@@ -305,7 +340,7 @@
   .stat-value.known { color: var(--known); }
   .stat-value.hard { color: var(--hard); }
 
-  .stat-value.bumping { animation: pop 0.4s ease; }
+  .stat-value.bumping { animation: none; }
 
   .stat-label {
     font-size: 12px;
@@ -498,7 +533,7 @@
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -694,7 +729,7 @@
 
   .item:last-child { border-bottom: none; }
 
-  .item.is-known { opacity: 0.55; }
+  .item.is-known { opacity: 0.86; }
   .item.is-known:hover { opacity: 1; }
 
   .item-content { min-width: 0; }
@@ -748,7 +783,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     line-height: 0;
     flex-shrink: 0;
     width: 32px;
@@ -758,10 +793,9 @@
     color: var(--text);
     background: var(--bg-hover);
     border-color: var(--text-3);
-    transform: scale(1.08);
   }
   .speak-inline:active {
-    transform: scale(0.94);
+    transform: none;
   }
   .speak-inline.speaking {
     color: var(--known);
@@ -820,11 +854,10 @@
   .action-btn:hover {
     color: var(--text);
     background: var(--bg-soft);
-    transform: scale(1.1);
   }
 
   .action-btn:active {
-    transform: scale(0.92);
+    transform: none;
   }
 
   .action-btn.active.known {
@@ -837,7 +870,7 @@
   }
 
   .action-btn.just-marked {
-    animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: none;
   }
 
   .action-btn.speaking {
@@ -1539,6 +1572,11 @@
     .controls-inner { padding: 12px 16px; }
     .container { padding: 28px 20px 60px; }
     .topnav-inner { padding: 12px 16px; }
+    .topnav-left { gap: 6px; }
+    .nav-back { width: 34px; padding: 0; justify-content: center; }
+    .nav-back span { display: none; }
+    .brand { font-size: 14px; gap: 8px; }
+    .brand-mark { width: 21px; height: 21px; font-size: 11px; }
     .demo-access-link { height: 32px; padding: 0 10px; font-size: 12px; }
     .demo-banner { align-items: flex-start; flex-direction: column; gap: 10px; }
     .status-row { padding: 0 16px 14px; }

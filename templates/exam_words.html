@@ -10,10 +10,19 @@
 <div id="exam-words-mode" data-exam-words-demo="{{ '1' if demo else '0' }}"></div>
 <nav class="topnav">
   <div class="topnav-inner">
-    <a href="{{ '/pricing' if demo else '/dashboard' }}" class="brand">
-      <span class="brand-mark">EW</span>
-      <span>{{ 'Exam Words 2026 Demo' if demo else 'Exam Words 2026' }}</span>
-    </a>
+    <div class="topnav-left">
+      <button class="icon-btn" id="examWordsBurgerBtn" aria-label="Open menu" title="Menu">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/></svg>
+      </button>
+      <a href="{{ '/pricing' if demo else '/dashboard' }}" class="nav-back" id="examWordsBack" data-back-fallback="{{ '/pricing' if demo else '/dashboard' }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+        <span>Back</span>
+      </a>
+      <a href="{{ '/pricing' if demo else '/dashboard' }}" class="brand">
+        <span class="brand-mark">EW</span>
+        <span>{{ 'Exam Words 2026 Demo' if demo else 'Exam Words 2026' }}</span>
+      </a>
+    </div>
     <div class="topnav-actions">
       {% if demo %}
       <a class="demo-access-link" href="/pricing">Full access</a>
@@ -37,15 +46,15 @@
     {% if demo %}
     <div class="demo-banner">
       <div>
-        <strong>Demo version</strong>
-        <span>A small preview of the vocabulary helper. The full version is included with library access.</span>
+        <strong>Demo preview</strong>
+        <span>Limited words. Full version is included with access.</span>
       </div>
       <a href="/pricing">See access</a>
     </div>
     {% endif %}
-    <div class="eyebrow">English-first · Russian translations · Danish reference</div>
+    <div class="eyebrow">EN · RU · DK</div>
     <h1 class="title">{{ 'Try Exam Words 2026' if demo else 'Exam words 2026 for driving theory' }}</h1>
-    <p class="subtitle">{{ 'A short preview of the dictionary, cards, quiz, and audio tools.' if demo else 'A 2026 exam vocabulary helper with English terms, Russian translations, Danish reference, flashcards, quiz mode, and audio playback.' }}</p>
+    <p class="subtitle">{{ 'Preview the dictionary, cards, quiz, and audio.' if demo else 'Exam terms with Russian translation, Danish reference, cards, quiz, and audio.' }}</p>
     <div class="stats">
       <div class="stat">
         <div class="stat-value" id="meta-total">—</div>
@@ -153,7 +162,7 @@
           </div>
           <div class="flash-ru-text" id="flash-ru">—</div>
         </div>
-        <div class="flash-hint">Click to flip · ←/→ to navigate · space to flip · K = known · H = hard</div>
+        <div class="flash-hint">Click to flip</div>
       </div>
 
       <div class="flash-controls">
@@ -238,8 +247,8 @@
     <div class="tts-status" id="tts-status">Loading voices…</div>
     <div class="tts-voice-list" id="tts-voice-list"></div>
     <div class="tts-dialog-footer">
-      <span>Tap 🔊 to test, then tap a voice to select</span>
-      <a id="tts-help-link">Add Danish voice →</a>
+      <span>Tap a voice to select. Use the speaker icon to test.</span>
+      <a id="tts-help-link">Voice help</a>
     </div>
   </div>
 </div>
