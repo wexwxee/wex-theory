@@ -78,8 +78,8 @@ nav {
 }
 
 .nav-inner {
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -92,12 +92,14 @@ nav {
   display: flex;
   gap: 12px;
   align-items: center;
+  min-width: 0;
 }
 
 .nav-right {
   display: flex;
   gap: 12px;
   align-items: center;
+  min-width: 0;
 }
 
 .logo {
@@ -106,6 +108,10 @@ nav {
   color: var(--text);
   text-decoration: none;
   letter-spacing: -0.03em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ── Buttons ── */
@@ -1323,10 +1329,23 @@ footer {
   .admin-table th, .admin-table td,
   .history-table th, .history-table td { padding: 10px 12px; }
   .nav-inner { padding: 0 16px; }
+  .nav-left,
+  .nav-right { gap: 8px; }
+  .logo { font-size: 1.05rem; }
+  .nav-right .btn-sm {
+    max-width: 42vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    justify-content: center;
+  }
   .modal { margin: 16px; padding: 24px 20px; }
 }
 
 @media (max-width: 480px) {
+  nav { height: 56px; }
+  .nav-inner { padding: 0 12px; }
+  .burger-btn { padding: 6px 9px; }
+  .nav-right .btn-sm { padding: 6px 10px; max-width: 38vw; }
   .tests-grid { grid-template-columns: 1fr 1fr; }
   .results-score { font-size: 3rem; }
 }
