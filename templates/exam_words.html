@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Exam Words 2026 - WEX Theory{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/exam-words.css?v={{ asset_version }}">
+{% endblock %}
+
+{% block body %}
+<nav class="topnav">
+  <div class="topnav-inner">
+    <a href="/dashboard" class="brand">
+      <span class="brand-mark">EW</span>
+      <span>Exam Words 2026</span>
+    </a>
+    <div class="topnav-actions">
+      <button class="icon-btn" id="tts-settings-btn" aria-label="Voice settings" title="Voice settings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+      </button>
+      <button class="icon-btn" id="reset-progress" aria-label="Reset progress" title="Reset progress">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      </button>
+      <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
+        <svg id="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+        <svg id="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">English-first · Russian translations · Danish reference</div>
+    <h1 class="title">Exam words 2026 for driving theory</h1>
+    <p class="subtitle">A premium exam vocabulary trainer with English-first terms, Russian translations, Danish reference, flashcards, quiz mode, and built-in audio playback.</p>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value" id="meta-total">—</div>
+        <div class="stat-label">Total terms</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value known" id="meta-known">0</div>
+        <div class="stat-label">Known</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value hard" id="meta-hard">0</div>
+        <div class="stat-label">Difficult</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="meta-cats">—</div>
+        <div class="stat-label">Categories</div>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar">
+        <div class="seg-known" id="bar-known" style="width: 0%;"></div>
+        <div class="seg-hard" id="bar-hard" style="width: 0%;"></div>
+      </div>
+      <div class="progress-label">
+        <span class="legend"><span class="dot known"></span><span id="bar-known-pct">0%</span> learned</span>
+        <span class="legend"><span class="dot hard"></span><span id="bar-hard-pct">0%</span> difficult</span>
+        <span class="legend" style="color: var(--text-4);"><span id="bar-untouched">0</span> untouched</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="controls-inner">
+    <div class="search-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="search" id="search" placeholder="Search anything — typos OK" autocomplete="off" spellcheck="false">
+      <button class="clear-btn" id="clear-search" aria-label="Clear">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="filter-group" id="filter-group">
+      <button class="filter-btn active" data-cat="all">All</button>
+      <button class="filter-btn" data-cat="general">General</button>
+      <button class="filter-btn" data-cat="motorcycle">Motorcycle</button>
+      <button class="filter-btn" data-cat="trailer">Trailer</button>
+      <button class="filter-btn" data-cat="heavy">Heavy</button>
+    </div>
+
+    <div class="mode-toggle">
+      <button class="mode-btn active" data-mode="list">List</button>
+      <button class="mode-btn" data-mode="flash">Cards</button>
+      <button class="mode-btn" data-mode="quiz">Quiz</button>
+    </div>
+  </div>
+  <div class="status-row" id="status-row">
+    <span class="label">Show:</span>
+    <button class="chip active" data-status="all">All <span class="count" id="count-all">0</span></button>
+    <button class="chip" data-status="untouched">Untouched <span class="count" id="count-untouched">0</span></button>
+    <button class="chip" data-status="hard">Difficult <span class="count" id="count-hard">0</span></button>
+    <button class="chip" data-status="known">Known <span class="count" id="count-known">0</span></button>
+  </div>
+</div>
+
+<main class="container">
+  <div class="list-view">
+    <nav class="quick-nav" id="quick-nav"></nav>
+    <div id="categories"></div>
+    <div class="empty" id="empty" style="display:none;">
+      <div class="big">No matches found</div>
+      <div>Search is fuzzy — try fewer letters, a different language, or just the root of the word</div>
+    </div>
+  </div>
+
+  <div class="flashcard-view">
+    <div class="flashcard-stage">
+      <div class="flash-progress">
+        <div>Card <span class="num" id="flash-curr">1</span> of <span id="flash-total">—</span></div>
+        <div id="flash-cat-label">all</div>
+      </div>
+      <div class="flash-bar"><div class="flash-bar-fill" id="flash-bar-fill"></div></div>
+
+      <div class="flashcard" id="flashcard">
+        <div class="flash-actions">
+          <button class="action-btn" id="flash-mark-known" title="Mark as known">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          </button>
+          <button class="action-btn" id="flash-mark-hard" title="Mark as difficult">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17h.01"/><path d="M12 13v-2"/><circle cx="12" cy="12" r="10"/></svg>
+          </button>
+          <button class="action-btn" id="flash-speak" title="Speak">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          </button>
+        </div>
+        <div class="flash-side-label" id="flash-side-label">Front</div>
+        <div class="flash-front">
+          <div class="flash-lang">English</div>
+          <div class="flash-word" id="flash-en">—</div>
+        </div>
+        <div class="flash-back">
+          <div class="flash-lang">Translation</div>
+          <div class="flash-dk-text">
+            <span id="flash-dk">—</span>
+          </div>
+          <div class="flash-ru-text" id="flash-ru">—</div>
+        </div>
+        <div class="flash-hint">Click to flip · ←/→ to navigate · space to flip · K = known · H = hard</div>
+      </div>
+
+      <div class="flash-controls">
+        <button class="flash-btn" id="flash-prev">← Previous</button>
+        <button class="flash-btn primary" id="flash-flip">Flip</button>
+        <button class="flash-btn" id="flash-shuffle">Shuffle</button>
+        <button class="flash-btn" id="flash-next">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-view">
+    <div class="quiz-stage">
+      <div class="quiz-direction-toggle" id="quiz-direction">
+        <button class="active" data-dir="en-to-ru">EN → RU</button>
+        <button data-dir="ru-to-en">RU → EN</button>
+        <button data-dir="en-to-dk">EN → DK</button>
+        <button data-dir="dk-to-en">DK → EN</button>
+      </div>
+      <div class="quiz-score">
+        <div class="quiz-score-item">
+          <div class="val correct" id="quiz-correct">0</div>
+          <div class="lbl">Correct</div>
+        </div>
+        <div class="quiz-score-item">
+          <div class="val wrong" id="quiz-wrong">0</div>
+          <div class="lbl">Wrong</div>
+        </div>
+        <div class="quiz-score-item">
+          <div class="val" id="quiz-streak">0</div>
+          <div class="lbl">Streak</div>
+        </div>
+        <div class="quiz-score-item">
+          <div class="val" id="quiz-accuracy">—</div>
+          <div class="lbl">Accuracy</div>
+        </div>
+      </div>
+      <div class="quiz-progress">
+        <div>Question <span class="num" id="quiz-curr">1</span></div>
+        <div id="quiz-cat-label">all</div>
+      </div>
+      <div class="quiz-bar"><div class="quiz-bar-fill" id="quiz-bar-fill" style="width:0%"></div></div>
+
+      <div class="quiz-card" id="quiz-card">
+        <div class="quiz-question-label" id="quiz-q-label">Translate from English</div>
+        <div class="quiz-question">
+          <span id="quiz-question-text">—</span>
+          <button class="speak-inline" id="quiz-speak" title="Speak Danish" style="display:none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          </button>
+        </div>
+        <div class="quiz-options" id="quiz-options"></div>
+        <div class="quiz-feedback" id="quiz-feedback"></div>
+        <div class="quiz-controls">
+          <button class="flash-btn" id="quiz-skip">Skip →</button>
+          <button class="flash-btn primary" id="quiz-next" style="display:none;">Next question →</button>
+        </div>
+      </div>
+
+      <div class="quiz-empty" id="quiz-empty" style="display:none;">
+        <div class="big">Not enough terms</div>
+        <div>Need at least 4 terms to run a quiz. Choose a different filter.</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="copyright">Exam Words 2026 · Built from the official Begrebsliste 30.01.2026</div>
+</footer>
+
+<!-- TTS Voice Picker Dialog -->
+<div class="tts-dialog" id="tts-dialog" role="dialog" aria-modal="true" aria-labelledby="tts-dialog-title">
+  <div class="tts-dialog-backdrop" id="tts-dialog-backdrop"></div>
+  <div class="tts-dialog-panel">
+    <div class="tts-dialog-header">
+      <div class="tts-dialog-title" id="tts-dialog-title">Voice for audio playback</div>
+      <button class="tts-dialog-close" id="tts-dialog-close" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <div class="tts-status" id="tts-status">Loading voices…</div>
+    <div class="tts-voice-list" id="tts-voice-list"></div>
+    <div class="tts-dialog-footer">
+      <span>Tap 🔊 to test, then tap a voice to select</span>
+      <a id="tts-help-link">Add Danish voice →</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/exam-words.js?v={{ asset_version }}"></script>
+{% endblock %}

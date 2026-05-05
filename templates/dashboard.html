@@ -107,6 +107,82 @@
   .dashboard-link-btn--saved {
     min-width: 0;
   }
+  .study-tool-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    margin: 0 0 22px;
+  }
+  .study-tool-card {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px;
+    align-items: center;
+    padding: 22px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--bg-card) 88%, #fff 12%), var(--bg-card));
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.08);
+  }
+  .study-tool-card::after {
+    content: "2026";
+    position: absolute;
+    right: -10px;
+    bottom: -42px;
+    font-size: 6rem;
+    font-weight: 900;
+    letter-spacing: -0.08em;
+    color: rgba(255, 255, 255, 0.045);
+    pointer-events: none;
+  }
+  [data-theme="light"] .study-tool-card::after {
+    color: rgba(0, 0, 0, 0.035);
+  }
+  .study-tool-copy,
+  .study-tool-actions {
+    position: relative;
+    z-index: 1;
+  }
+  .study-tool-kicker {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-weight: 850;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+  }
+  .study-tool-title {
+    font-size: clamp(1.15rem, 3vw, 1.55rem);
+    font-weight: 900;
+    letter-spacing: -0.045em;
+    line-height: 1.08;
+    margin-bottom: 8px;
+  }
+  .study-tool-subcopy {
+    color: var(--text-muted);
+    max-width: 660px;
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+  .study-tool-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .study-tool-pill {
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+  .study-tool-card.locked {
+    opacity: 0.78;
+  }
   .sub-status-card {
     margin-top: 14px;
     max-width: 420px;
@@ -289,6 +365,15 @@
       flex: 1 1 calc(50% - 6px);
       justify-content: center;
     }
+    .study-tool-card {
+      grid-template-columns: 1fr;
+    }
+    .study-tool-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
     .dashboard-stats {
       grid-template-columns: 1fr 1fr;
       gap: 10px;
@@ -467,6 +552,31 @@
       <div class="dashboard-stat-label">Plan</div>
     </div>
   </div>
+  </section>
+
+  <section class="study-tool-grid">
+    <div class="study-tool-card {% if not has_access %}locked{% endif %}">
+      <div class="study-tool-copy">
+        <div class="study-tool-kicker">Premium study tool</div>
+        <div class="study-tool-title">Exam Words 2026</div>
+        <div class="study-tool-subcopy">
+          English-first exam vocabulary with Russian translations, Danish reference terms, flashcards, quiz mode, saved progress, and the original voice settings from the dictionary file.
+        </div>
+        <div class="study-tool-pills">
+          <span class="study-tool-pill">Dictionary</span>
+          <span class="study-tool-pill">Flashcards</span>
+          <span class="study-tool-pill">Quiz</span>
+          <span class="study-tool-pill">Audio</span>
+        </div>
+      </div>
+      <div class="study-tool-actions">
+        {% if has_access %}
+          <a href="/exam-words" class="btn-primary btn-sm">Open words</a>
+        {% else %}
+          <a href="/pricing" class="btn-primary btn-sm">Unlock</a>
+        {% endif %}
+      </div>
+    </div>
   </section>
 
   <div class="tests-grid">

@@ -2038,7 +2038,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260504-voice-picker"
+templates.env.globals["asset_version"] = "20260505-exam-words"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 
@@ -3178,6 +3178,22 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         "exam_wording_statuses": exam_wording_statuses,
         "access_expires_at": access_expires_at,
         "now": datetime.utcnow(),
+    })
+
+
+@app.get("/exam-words", response_class=HTMLResponse)
+async def exam_words_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        return RedirectResponse("/login", status_code=302)
+    if not user_has_access(user):
+        return RedirectResponse(
+            "/subscription-expired" if getattr(user, "subscription_status", "free") != "free" else "/pricing",
+            status_code=302,
+        )
+    return templates.TemplateResponse(request, "exam_words.html", {
+        "request": request,
+        "user": user,
     })
 
 
