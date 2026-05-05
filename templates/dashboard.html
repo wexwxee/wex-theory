@@ -278,6 +278,68 @@
     text-transform: uppercase;
     margin-top: 10px;
   }
+  .plan-pill-card {
+    min-height: 72px;
+    display: flex;
+    align-items: center;
+  }
+  .plan-pill-card .dashboard-stat-label {
+    margin-top: 12px;
+  }
+  .plan-access-pill {
+    position: relative;
+    overflow: hidden;
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(14, 165, 233, 0.32);
+    background: linear-gradient(135deg, rgba(14,165,233,0.18), rgba(168,85,247,0.17), rgba(34,197,94,0.13));
+    color: color-mix(in srgb, var(--text) 92%, #38bdf8);
+    box-shadow: 0 12px 30px rgba(14, 165, 233, 0.12);
+    font-size: 0.86rem;
+    font-weight: 850;
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+  .plan-access-pill::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
+    transform: translateX(-120%);
+    animation: sbBadgeSheen 5.8s ease-in-out infinite;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .plan-access-pill i,
+  .plan-access-pill span {
+    position: relative;
+    z-index: 1;
+  }
+  .plan-access-pill i {
+    color: #38bdf8;
+    font-size: 0.78rem;
+  }
+  [data-theme="light"] .plan-access-pill {
+    background: linear-gradient(135deg, rgba(14,165,233,0.13), rgba(168,85,247,0.12), rgba(34,197,94,0.10));
+    color: #075985;
+    border-color: rgba(14,165,233,0.32);
+    box-shadow: 0 12px 30px rgba(14, 165, 233, 0.08);
+  }
+  .plan-free-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.86rem;
+    font-weight: 800;
+    line-height: 1;
+  }
   [data-theme="light"] .dashboard-stat-card {
     background:
       linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(248, 248, 248, 0.82));
@@ -529,11 +591,11 @@
       <div class="dashboard-stat-value">{{ latest_scores.values() | list | sum if latest_scores else 0 }}</div>
       <div class="dashboard-stat-label">Total Score</div>
     </div>
-    <div class="card dashboard-stat-card">
+    <div class="card dashboard-stat-card plan-pill-card">
       {% if has_access %}
-        <div class="dashboard-stat-value" style="font-size:1.45rem;color:var(--correct);">Extended</div>
+        <div class="plan-access-pill"><i class="fa-solid fa-bolt"></i><span>All Access</span></div>
       {% else %}
-        <div class="dashboard-stat-value" style="font-size:1.45rem;color:var(--text-muted);">Free</div>
+        <div class="plan-free-pill">Starter</div>
       {% endif %}
       <div class="dashboard-stat-label">Plan</div>
     </div>
