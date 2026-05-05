@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: tg-ai-assistant
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m bot.main
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: NOTION_TOKEN
+        sync: false
+      - key: NOTION_DB_ID
+        sync: false
+      - key: WEBHOOK_URL
+        sync: false
+      - key: MY_CHAT_ID
+        sync: false
+      - key: TIMEZONE
+        value: Europe/Moscow
+      - key: PORT
+        value: "8000"

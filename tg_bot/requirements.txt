@@ -1,0 +1,8 @@
+aiogram==3.13.1
+aiohttp==3.10.10
+google-generativeai==0.8.3
+supabase==2.9.1
+notion-client==2.2.1
+APScheduler==3.10.4
+python-dotenv==1.0.1
+pytz==2024.2
