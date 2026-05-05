@@ -1577,8 +1577,18 @@
   /* ============== RESPONSIVE ============== */
   @media (max-width: 640px) {
     .hero { padding: 36px 20px 28px; }
+    .controls {
+      position: static;
+      top: auto;
+      z-index: auto;
+    }
     .controls-inner { padding: 12px 16px; }
     .container { padding: 28px 20px 60px; }
+    .subtopic-header {
+      position: relative;
+      top: auto;
+      z-index: 1;
+    }
     .topnav-inner { padding: 12px 16px; }
     .topnav-left { gap: 6px; }
     .nav-back { width: 34px; padding: 0; justify-content: center; }
