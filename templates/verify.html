@@ -146,13 +146,15 @@
   </div>
 </nav>
 
-<div class="page">
+<div class="info-page">
   <div class="verify-shell">
-    <p class="verify-eyebrow" style="margin-bottom:14px;">Certificate Verification</p>
-    <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.04em;margin-bottom:8px;">Verify a Theory Master certificate</h1>
-    <p style="color:var(--text-muted);max-width:580px;line-height:1.7;margin-bottom:28px;">
-      Every WEXTheory Theory Master certificate has two parts: a serial number and a security code. If the QR scan opens this page without verification, enter the security code printed next to the QR code.
-    </p>
+    <section class="info-hero info-hero--verify" style="margin-bottom:18px;">
+      <div class="info-eyebrow">Certificate verification</div>
+      <h1 class="info-title" style="font-size:clamp(2rem,5vw,3.8rem);">Verify a WEXTheory certificate</h1>
+      <p class="info-lede">
+        Enter the serial number and security code from the certificate. If the QR scan opens this page without verification, use the security code printed next to the QR code.
+      </p>
+    </section>
 
     {% if mode == "form" %}
       <div class="verify-card">
@@ -172,7 +174,7 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               Verified
             </span>
-            <span style="font-size:0.78rem;color:var(--text-muted);letter-spacing:0.08em;text-transform:uppercase;font-weight:800;">Theory Master · WEXTheory</span>
+            <span style="font-size:0.78rem;color:var(--text-muted);letter-spacing:0.08em;text-transform:uppercase;font-weight:800;">Theory Master &middot; WEXTheory</span>
           </div>
 
           <div style="margin-top:18px;font-size:1.4rem;font-weight:800;letter-spacing:-0.02em;">
@@ -204,7 +206,7 @@
 
           {% if referrer_code %}
           <div class="verify-cta">
-            Start your own driving theory prep at <b>wextheory.cv</b> — sign up with code
+            Start your own driving theory prep at <b>wextheory.cv</b> &mdash; sign up with code
             <b style="font-family:'JetBrains Mono','Courier New',monospace;letter-spacing:0.12em;">{{ referrer_code }}</b>
             for <b>+{{ reward_days_referred }} bonus days</b> on us.
           </div>

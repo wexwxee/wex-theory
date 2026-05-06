@@ -21,50 +21,73 @@
   </div>
 </nav>
 
-<div class="page" style="max-width:760px;">
-  <div style="margin-bottom:48px;">
-    <p style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">About</p>
-    <h1 style="font-size:2.2rem;font-weight:800;letter-spacing:-0.04em;line-height:1.2;margin-bottom:20px;">Built for people learning to drive in Denmark</h1>
-    <p style="color:var(--text-muted);font-size:1rem;line-height:1.8;">
-      WEXTheory was created to support theory study in Denmark. The platform uses structured practice questions, road-scene imagery, and review tools designed to help learners build confidence through repetition.
+<div class="info-page">
+  <section class="info-hero info-hero--about">
+    <div class="info-eyebrow">About WEXTheory</div>
+    <h1 class="info-title">Theory practice, review, and exam words in one place</h1>
+    <p class="info-lede">
+      WEXTheory is built for learners preparing for Danish driving theory. It keeps the core flow simple: practice real-style questions, review mistakes, save difficult items, and use Exam Words 2026 when vocabulary gets in the way.
     </p>
-  </div>
-
-  <hr class="divider">
-
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:32px 0;">
-    <div class="card">
-      <div style="font-size:2rem;font-weight:800;margin-bottom:8px;">13</div>
-      <div style="font-weight:600;margin-bottom:6px;">Structured Tests</div>
-      <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;">13 structured practice sets, each with 25 questions covering a broad range of theory topics.</p>
+    <div class="info-actions">
+      <a href="/test/0" class="btn-primary">Start free test</a>
+      <a href="/exam-words-demo" class="btn-ghost">Preview Exam Words</a>
+      <a href="/pricing" class="btn-ghost">Access options</a>
     </div>
-    <div class="card">
-      <div style="font-size:2rem;font-weight:800;margin-bottom:8px;">325</div>
-      <div style="font-weight:600;margin-bottom:6px;">Question Library</div>
-      <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;">Each question includes a road image and review feedback so you can understand the reasoning behind each answer.</p>
+  </section>
+
+  <section class="info-card-grid" aria-label="Platform highlights">
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-solid fa-list-check"></i></div>
+      <div class="info-card-title">13 structured tests</div>
+      <p class="info-card-copy">Each practice test uses 25 questions, so the study rhythm stays familiar and easy to measure.</p>
     </div>
-  </div>
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-regular fa-image"></i></div>
+      <div class="info-card-title">325 photo questions</div>
+      <p class="info-card-copy">Road-scene questions, answer review, explanations, saved questions, and progress history are included.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-solid fa-book-open"></i></div>
+      <div class="info-card-title">Exam Words 2026</div>
+      <p class="info-card-copy">A separate exam vocabulary helper with English terms, Russian translation, Danish reference, cards, quiz, and audio.</p>
+    </div>
+  </section>
 
-  <hr class="divider">
+  <section class="info-section-stack">
+    <div class="info-section">
+      <h2 class="info-section-title">How the study format works</h2>
+      <p>
+        The main library follows a 25-question test format with a 20/25 pass target. After a test, learners can review answers, explanations, and saved questions instead of guessing what went wrong.
+      </p>
+      <ul class="info-list">
+        <li>Starter Test 0 is available without registration.</li>
+        <li>Full access unlocks the complete practice library and Exam Words 2026.</li>
+        <li>Progress tools help learners return to the questions and terms they still need to repeat.</li>
+      </ul>
+    </div>
 
-  <div style="margin:32px 0;">
-    <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:16px;">How the study format works</h2>
-    <p style="color:var(--text-muted);line-height:1.8;margin-bottom:16px;">
-      Many learners prepare by working through 25-question multiple-choice sets and aiming for at least 20 correct answers. The question library covers topics such as road signs, traffic rules, vehicle awareness, and hazard perception.
-    </p>
-    <p style="color:var(--text-muted);line-height:1.8;">
-      WEXTheory uses the same 25-question structure across the main practice sets, so your study routine stays consistent and easy to track.
-    </p>
-  </div>
+    <div class="info-section">
+      <h2 class="info-section-title">Why Exam Words is separate</h2>
+      <p>
+        Some learners know the traffic rule but lose time on exam vocabulary. Exam Words 2026 is kept as its own tool so it can be used quickly before or after tests, without mixing it into the question flow.
+      </p>
+      <div class="info-meta-row">
+        <span class="info-pill">Dictionary</span>
+        <span class="info-pill">Flashcards</span>
+        <span class="info-pill">Quiz</span>
+        <span class="info-pill">Audio</span>
+      </div>
+    </div>
+  </section>
 
-  <hr class="divider">
-
-  <div style="margin:32px 0;">
-    <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:16px;">Questions or feedback?</h2>
-    <p style="color:var(--text-muted);line-height:1.8;margin-bottom:20px;">
-      We're always working to improve the platform. If you have questions, found an error in a question, or want to give feedback, please reach out.
-    </p>
-    <a href="/contact" class="btn-primary">Contact us</a>
+  <div class="info-callout">
+    <div>
+      <h2 class="info-section-title">Questions or feedback?</h2>
+      <p class="info-callout-copy">
+        If something looks wrong, a translation feels unclear, or an account needs help, send a message and support can continue the conversation in your account chat.
+      </p>
+    </div>
+    <a href="/contact" class="btn-primary">Contact support</a>
   </div>
 </div>
 
@@ -84,7 +107,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/about.js"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/about.js?v={{ asset_version }}"></script>
 {% endblock %}
-
-

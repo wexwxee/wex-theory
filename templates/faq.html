@@ -21,16 +21,28 @@
   </div>
 </nav>
 
-<div class="page" style="max-width:760px;">
-  <p style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">FAQ</p>
-  <h1 style="font-size:2.2rem;font-weight:800;letter-spacing:-0.04em;margin-bottom:40px;">Frequently Asked Questions</h1>
+<div class="info-page">
+  <section class="info-hero info-hero--faq">
+    <div class="info-eyebrow">Help center</div>
+    <h1 class="info-title">Frequently asked questions</h1>
+    <p class="info-lede">
+      Short answers about access, tests, saved progress, Exam Words 2026, audio voices, and account support.
+    </p>
+    <div class="info-actions">
+      <a href="/test/0" class="btn-primary">Try Starter Test</a>
+      <a href="/exam-words-demo" class="btn-ghost">Open words demo</a>
+      <a href="/contact" class="btn-ghost">Contact support</a>
+    </div>
+  </section>
 
   <div id="faqList"></div>
 
-  <div style="margin-top:48px;padding:28px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;text-align:center;">
-    <div style="font-weight:600;margin-bottom:8px;">Need help with support or access?</div>
-    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:16px;">Use the contact form and we will reply through the support chat in your account.</p>
-    <a href="/contact" class="btn-primary btn-sm">Contact Support</a>
+  <div class="info-callout">
+    <div>
+      <h2 class="info-section-title">Need help with access?</h2>
+      <p class="info-callout-copy">Use the contact form for account access, payment questions, content corrections, or technical issues. If you are signed in, replies appear in Messages.</p>
+    </div>
+    <a href="/contact" class="btn-primary">Contact support</a>
   </div>
 </div>
 
@@ -49,7 +61,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/faq.js"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/faq.js?v={{ asset_version }}"></script>
 {% endblock %}
-
-

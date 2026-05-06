@@ -21,25 +21,43 @@
   </div>
 </nav>
 
-<div class="page" style="max-width:640px;">
-  <p style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Contact</p>
-  <h1 style="font-size:2.2rem;font-weight:800;letter-spacing:-0.04em;margin-bottom:12px;">Get in touch</h1>
-  <p style="color:var(--text-muted);margin-bottom:40px;line-height:1.7;">
-    Use this form for support, account help, bug reports, or content issues. This page is for support questions and study-related help.
-    {% if user %}
-    Your message will open a support chat in Messages, where you can continue the conversation and get replies from support.
-    {% endif %}
-  </p>
+<div class="info-page">
+  <section class="info-hero info-hero--contact">
+    <div class="info-eyebrow">Contact</div>
+    <h1 class="info-title">Support for access, study, and content issues</h1>
+    <p class="info-lede">
+      Send account questions, bug reports, content corrections, payment or access issues, and Exam Words 2026 feedback here.
+      {% if user %}Your message opens a support chat in Messages so the conversation stays saved in your account.{% endif %}
+    </p>
+  </section>
 
-  <div id="successState" style="display:none;text-align:center;padding:48px 0;">
+  <div class="info-card-grid" aria-label="Common support topics">
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-solid fa-key"></i></div>
+      <div class="info-card-title">Access</div>
+      <p class="info-card-copy">Questions about account access, subscription periods, renewal, or unlock problems.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-solid fa-bug"></i></div>
+      <div class="info-card-title">Technical issues</div>
+      <p class="info-card-copy">Report broken pages, mobile layout issues, audio problems, or login errors.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-solid fa-pen-to-square"></i></div>
+      <div class="info-card-title">Content</div>
+      <p class="info-card-copy">Send corrections for questions, explanations, translations, or Exam Words terms.</p>
+    </div>
+  </div>
+
+  <div id="successState" class="info-section" style="display:none;text-align:center;">
     <div style="font-size:2rem;margin-bottom:16px;">&#10003;</div>
-    <div style="font-size:1.3rem;font-weight:700;margin-bottom:8px;">Message sent!</div>
-    <p style="color:var(--text-muted);margin-bottom:24px;">We'll get back to you as soon as possible.</p>
+    <div style="font-size:1.3rem;font-weight:800;margin-bottom:8px;">Message sent</div>
+    <p style="color:var(--text-muted);margin-bottom:24px;">We will get back to you as soon as possible.</p>
     <a href="/" class="btn-ghost">Back to home</a>
   </div>
 
   <div id="formWrap">
-    <div class="card">
+    <div class="info-section">
       <div id="formMsg" style="display:none;padding:12px 14px;border-radius:8px;font-size:0.85rem;margin-bottom:16px;"></div>
       <div class="form-group">
         <label class="form-label" for="cName">Your name</label>
@@ -56,6 +74,8 @@
           <option value="Access">Account / access</option>
           <option value="Technical">Technical issue</option>
           <option value="Content">Question error / content</option>
+          <option value="Exam Words">Exam Words 2026 / audio</option>
+          <option value="Certificate">Certificate verification</option>
           <option value="Extend">Extend subscription</option>
           <option value="Other">Other</option>
         </select>
@@ -91,8 +111,6 @@
 {% endblock %}
 
 {% block scripts %}
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/contact.js"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/contact.js?v={{ asset_version }}"></script>
 {% endblock %}
-
-
 
