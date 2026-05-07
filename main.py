@@ -2069,7 +2069,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260507-exam-words-source"
+templates.env.globals["asset_version"] = "20260507-support-inbox-v2"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 
@@ -4692,6 +4692,15 @@ async def api_support_reply(thread_id: int, request: Request, db: Session = Depe
         attachment_name, attachment_path, attachment_type = save_support_attachment(attachment)
 
     if not body and not attachment_name:
+        if user.is_admin and str(form.get("status", thread.status or "open")) != (thread.status or "open"):
+            thread.status = str(form.get("status", thread.status or "open"))
+            thread.updated_at = datetime.utcnow()
+            db.commit()
+            return JSONResponse({
+                "success": True,
+                "thread_id": thread.id,
+                "status": thread.status,
+            })
         return JSONResponse({"error": "Message or attachment is required"}, status_code=400)
 
     sender_role = "admin" if user.is_admin else "user"

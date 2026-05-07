@@ -1,642 +1,93 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block title %}{% if is_admin_view %}Support Inbox{% else %}Messages{% endif %} - WEX Theory{% endblock %}
 
-{% block body %}
-<style>
-  .support-shell {
-    display: grid;
-    grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
-    gap: 18px;
-    min-height: calc(100vh - 180px);
-  }
-  .support-page-head {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 16px;
-    align-items: end;
-    margin-bottom: 24px;
-  }
-  .support-kicker {
-    color: var(--text-muted);
-    font-size: 0.76rem;
-    font-weight: 850;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-  .support-title {
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    font-weight: 900;
-    letter-spacing: -0.055em;
-    line-height: 0.98;
-    margin-bottom: 12px;
-  }
-  .support-lede {
-    color: var(--text-muted);
-    max-width: 760px;
-    font-size: 1rem;
-    line-height: 1.65;
-  }
-  .support-panel {
-    background: linear-gradient(180deg, var(--bg-card) 0%, color-mix(in srgb, var(--bg-card) 80%, var(--bg) 20%) 100%);
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
-  }
-  .thread-list {
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-height: 76vh;
-    overflow: auto;
-  }
-  .thread-tools {
-    padding: 0 18px 14px;
-    display: grid;
-    gap: 10px;
-  }
-  .thread-search {
-    width: 100%;
-    min-height: 42px;
-    padding: 10px 12px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    background: var(--bg);
-    color: var(--text);
-  }
-  .thread-filter-row {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-  .thread-filter {
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--bg-card);
-    color: var(--text-muted);
-    min-height: 32px;
-    padding: 6px 10px;
-    font-size: 0.78rem;
-    font-weight: 800;
-    cursor: pointer;
-  }
-  .thread-filter.active {
-    background: var(--text);
-    color: var(--bg);
-    border-color: var(--text);
-  }
-  .thread-card {
-    position: relative;
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 16px;
-    color: inherit;
-    text-decoration: none;
-    background: color-mix(in srgb, var(--bg-card) 84%, #ffffff 16%);
-    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
-  }
-  .thread-card:hover {
-    transform: translateY(-1px);
-    border-color: color-mix(in srgb, var(--accent, #35c759) 50%, var(--border) 50%);
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
-  }
-  .thread-card.active {
-    background: linear-gradient(135deg, color-mix(in srgb, var(--accent, #35c759) 16%, var(--bg-card) 84%), var(--bg-card));
-    border-color: color-mix(in srgb, var(--accent, #35c759) 62%, var(--border) 38%);
-  }
-  .thread-card.is-closed {
-    opacity: 0.72;
-  }
-  .thread-card.is-unread {
-    border-color: color-mix(in srgb, #ef4444 45%, var(--border) 55%);
-  }
-  .thread-card-head,
-  .chat-header-top,
-  .composer-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-  }
-  .thread-subject,
-  .chat-title {
-    font-size: 1.05rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-  }
-  .thread-meta,
-  .thread-preview,
-  .chat-meta,
-  .empty-copy,
-  .upload-hint,
-  .composer-note,
-  .status-chip,
-  .composer-feedback {
-    color: var(--text-muted);
-  }
-  .thread-preview {
-    margin-top: 8px;
-    font-size: 0.84rem;
-    line-height: 1.45;
-  }
-  .count-pill,
-  .status-badge,
-  .attach-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 28px;
-    padding: 0 10px;
-    height: 28px;
-    border-radius: 999px;
-    font-size: 0.8rem;
-    font-weight: 700;
-  }
-  .count-pill {
-    background: #ef4444;
-    color: #fff;
-    box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2);
-  }
-  .status-badge {
-    background: color-mix(in srgb, var(--accent, #35c759) 18%, var(--bg-card) 82%);
-    color: color-mix(in srgb, var(--accent, #35c759) 82%, #111 18%);
-    border: 1px solid color-mix(in srgb, var(--accent, #35c759) 36%, var(--border) 64%);
-  }
-  .attach-badge {
-    background: color-mix(in srgb, #4da3ff 18%, var(--bg-card) 82%);
-    color: #2563eb;
-    border: 1px solid color-mix(in srgb, #4da3ff 36%, var(--border) 64%);
-  }
-  .chat-wrap {
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    min-height: 76vh;
-  }
-  .chat-header {
-    padding: 22px 24px 18px;
-    border-bottom: 1px solid var(--border);
-    background:
-      radial-gradient(circle at top right, rgba(77, 163, 255, 0.12), transparent 28%),
-      linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 94%, #fff 6%), var(--bg-card));
-  }
-  .chat-header-copy {
-    margin-top: 10px;
-    font-size: 0.88rem;
-    line-height: 1.6;
-  }
-  .chat-scroll {
-    padding: 26px;
-    overflow: auto;
-    background:
-      radial-gradient(circle at top left, rgba(53, 199, 89, 0.08), transparent 24%),
-      radial-gradient(circle at bottom right, rgba(77, 163, 255, 0.08), transparent 28%),
-      var(--bg);
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    scroll-behavior: smooth;
-  }
-  .message-row {
-    display: flex;
-  }
-  .message-row.mine {
-    justify-content: flex-end;
-  }
-  .message-row.system {
-    justify-content: center;
-  }
-  .message-bubble {
-    width: min(760px, 84%);
-    border-radius: 22px;
-    padding: 14px 16px;
-    border: 1px solid var(--border);
-    background: color-mix(in srgb, var(--bg-card) 90%, #ffffff 10%);
-    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.05);
-  }
-  .message-row.mine .message-bubble {
-    background: linear-gradient(135deg, #111 0%, #242424 100%);
-    color: #fff;
-    border-color: rgba(255, 255, 255, 0.08);
-  }
-  .message-row.system .message-bubble {
-    background: linear-gradient(135deg, rgba(77, 163, 255, 0.12), rgba(53, 199, 89, 0.1));
-    border-color: rgba(77, 163, 255, 0.24);
-  }
-  .message-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    font-size: 0.78rem;
-    margin-bottom: 8px;
-    opacity: 0.78;
-  }
-  .message-body {
-    white-space: pre-wrap;
-    line-height: 1.7;
-    font-size: 0.98rem;
-  }
-  .attachment-card {
-    margin-top: 12px;
-    border-radius: 16px;
-    padding: 14px;
-    background: linear-gradient(180deg, rgba(77, 163, 255, 0.08), rgba(77, 163, 255, 0.04));
-    border: 1px dashed rgba(77, 163, 255, 0.34);
-  }
-  .attachment-title {
-    font-size: 0.76rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    opacity: 0.72;
-    margin-bottom: 8px;
-  }
-  .attachment-name {
-    font-weight: 700;
-    line-height: 1.45;
-    word-break: break-word;
-  }
-  .attachment-actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 10px;
-  }
-  .attachment-meta {
-    margin-top: 4px;
-    font-size: 0.82rem;
-    color: var(--text-muted);
-  }
-  .attachment-preview {
-    margin-top: 12px;
-    max-width: 100%;
-    max-height: 420px;
-    object-fit: contain;
-    background: rgba(255,255,255,0.55);
-    border-radius: 14px;
-    border: 1px solid rgba(77, 163, 255, 0.2);
-  }
-  .attachment-preview-error {
-    margin-top: 10px;
-    color: var(--wrong);
-    font-size: 0.84rem;
-  }
-  .composer {
-    padding: 22px 24px 24px;
-    border-top: 1px solid var(--border);
-    background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 92%, #fff 8%), var(--bg-card));
-  }
-  .composer textarea {
-    min-height: 112px;
-    resize: vertical;
-  }
-  .composer textarea,
-  .composer select,
-  .composer input[type="file"] {
-    width: 100%;
-  }
-  .upload-box {
-    margin-top: 14px;
-    border: 1px dashed var(--border);
-    border-radius: 16px;
-    padding: 14px;
-    background: color-mix(in srgb, var(--bg-card) 84%, #ffffff 16%);
-  }
-  .upload-box.has-file {
-    border-color: color-mix(in srgb, var(--accent, #35c759) 42%, var(--border) 58%);
-    background: linear-gradient(180deg, color-mix(in srgb, var(--accent, #35c759) 10%, var(--bg-card) 90%), var(--bg-card));
-  }
-  .upload-name {
-    margin-top: 8px;
-    font-weight: 700;
-  }
-  .upload-preview {
-    display: none;
-    margin-top: 12px;
-    max-width: 220px;
-    border-radius: 14px;
-    border: 1px solid var(--border);
-  }
-  .composer-feedback {
-    display: none;
-    margin-bottom: 14px;
-    padding: 12px 14px;
-    border-radius: 12px;
-    font-size: 0.88rem;
-    border: 1px solid var(--border);
-    background: var(--bg-card);
-  }
-  .composer-feedback.show {
-    display: block;
-  }
-  .composer-feedback.success {
-    color: var(--correct);
-    background: var(--correct-bg);
-    border-color: color-mix(in srgb, var(--correct) 55%, var(--border) 45%);
-  }
-  .composer-feedback.error {
-    color: var(--wrong);
-    background: var(--wrong-bg);
-    border-color: color-mix(in srgb, var(--wrong) 55%, var(--border) 45%);
-  }
-  .composer-feedback.info {
-    color: var(--text);
-    background: color-mix(in srgb, var(--bg-card) 82%, #ffffff 18%);
-  }
-  .chat-empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 76vh;
-    padding: 24px;
-    text-align: center;
-  }
-  .chat-empty-inner {
-    max-width: 480px;
-    padding: 32px;
-    border-radius: 24px;
-    border: 1px dashed var(--border);
-    background: color-mix(in srgb, var(--bg-card) 86%, #fff 14%);
-  }
-  .live-indicator {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #35c759;
-    box-shadow: 0 0 0 6px rgba(53, 199, 89, 0.12);
-  }
-  .live-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 7px 10px;
-    color: var(--text-muted);
-    background: var(--bg-card);
-    font-size: 0.8rem;
-    font-weight: 800;
-  }
-  .live-pill::before {
-    content: "";
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: #35c759;
-    box-shadow: 0 0 0 5px rgba(53, 199, 89, 0.12);
-  }
-  .thread-fresh {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 10px;
-    font-size: 0.76rem;
-    font-weight: 700;
-    color: #b91c1c;
-  }
-  .thread-fresh::before {
-    content: "";
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #ef4444;
-    box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.12);
-  }
-  @media (max-width: 980px) {
-    .support-page-head {
-      grid-template-columns: 1fr;
-      align-items: start;
-    }
-    .support-shell {
-      grid-template-columns: 1fr;
-    }
-    .thread-list,
-    .chat-wrap,
-    .chat-empty {
-      max-height: none;
-      min-height: auto;
-    }
-    .message-bubble {
-      width: 100%;
-    }
-    .chat-header,
-    .composer,
-    .chat-scroll {
-      padding-left: 18px;
-      padding-right: 18px;
-    }
-  }
-  @media (max-width: 640px) {
-    .support-shell {
-      gap: 14px;
-    }
-    .support-page-head {
-      margin-bottom: 16px;
-    }
-    .support-title {
-      font-size: 2rem;
-    }
-    .thread-list {
-      padding: 12px;
-      max-height: none;
-    }
-    .thread-card {
-      padding: 14px;
-    }
-    .chat-title {
-      font-size: 0.98rem;
-    }
-    .message-bubble {
-      border-radius: 18px;
-      padding: 12px 14px;
-    }
-    .composer-row {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    .composer-row .btn-primary {
-      width: 100%;
-    }
-    .upload-preview {
-      max-width: 100%;
-    }
-  }
-</style>
+{% block head %}
+<link rel="stylesheet" href="/static/css/support.css?v={{ asset_version }}">
+{% endblock %}
 
-<nav>
-  <div class="nav-inner">
-    <div class="nav-left">
-      <button class="burger-btn" id="supportBurgerBtn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
-      <a href="/" class="logo">WEXTheory</a>
+{% block body %}
+<nav class="support-topbar">
+  <div class="support-topbar__inner">
+    <div class="support-topbar__left">
+      <button class="support-icon-btn" id="supportBurgerBtn" aria-label="Open menu" title="Menu">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/></svg>
+      </button>
+      <a href="{% if is_admin_view %}/admin{% else %}/dashboard{% endif %}" class="support-brand">
+        <span class="support-brand__mark">W</span>
+        <span>{% if is_admin_view %}Support Inbox{% else %}Messages{% endif %}</span>
+      </a>
     </div>
-    <div class="nav-right">
-      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
-      <a href="{% if is_admin_view %}/admin{% else %}/dashboard{% endif %}" class="btn-ghost btn-sm">{% if is_admin_view %}Admin{% else %}Dashboard{% endif %}</a>
+    <div class="support-topbar__right">
+      <span class="support-live-pill" id="supportLiveState">Connecting</span>
+      <button class="support-icon-btn" id="navThemeBtn" aria-label="Toggle theme" title="Theme">☀</button>
+      <a href="{% if is_admin_view %}/admin{% else %}/dashboard{% endif %}" class="support-ghost-link">{% if is_admin_view %}Admin{% else %}Dashboard{% endif %}</a>
     </div>
   </div>
 </nav>
 
-<div class="page" id="supportPage" data-is-admin-view="{{ 'true' if is_admin_view else 'false' }}" data-active-thread-id="{{ active_thread.id if active_thread else '' }}">
-  <div class="support-page-head">
+<main
+  class="support-app"
+  id="supportPage"
+  data-is-admin-view="{{ 'true' if is_admin_view else 'false' }}"
+  data-active-thread-id="{{ active_thread.id if active_thread else '' }}"
+>
+  <section class="support-hero">
     <div>
-      <div class="support-kicker">{% if is_admin_view %}Admin support{% else %}Support messages{% endif %}</div>
-      <h1 class="support-title">{% if is_admin_view %}Support Inbox{% else %}Messages{% endif %}</h1>
-      <div class="support-lede">
+      <h1>{% if is_admin_view %}Support inbox{% else %}Your support chat{% endif %}</h1>
+      <p>
         {% if is_admin_view %}
-        Reply to users, review screenshots, change ticket status, and keep the inbox moving without refreshing the page.
+        Reply to users, view screenshots in the conversation, change status, and keep the queue moving without refreshing.
         {% else %}
-        Your support requests and replies live here. New messages appear automatically, and screenshots or files are shown inside the chat.
+        Send a message, attach screenshots, and keep every support reply saved in one place.
         {% endif %}
-      </div>
+      </p>
     </div>
-    <div class="live-pill">Live updates</div>
     {% if not is_admin_view %}
-    <a href="/contact" class="btn-primary">New Request</a>
+    <a href="/contact" class="support-primary-link">New request</a>
     {% endif %}
-  </div>
+  </section>
 
-  <div class="support-shell">
-    <section class="support-panel">
-      <div style="padding:18px 18px 8px;">
-        <div class="chat-header-top">
-          <div>
-            <div class="chat-title">{% if is_admin_view %}All Conversations{% else %}Your Conversations{% endif %}</div>
-            <div class="thread-meta">Search, filter, and open the latest request.</div>
-          </div>
-          <div class="live-indicator" title="Live updates enabled"></div>
+  <section class="support-workspace" aria-label="Support workspace">
+    <aside class="support-sidebar" aria-label="Conversation list">
+      <div class="support-sidebar__head">
+        <div>
+          <h2>{% if is_admin_view %}Conversations{% else %}My requests{% endif %}</h2>
+          <p id="threadSummary">Loading conversations</p>
         </div>
+        <span class="support-sync-dot" title="Live updates enabled"></span>
       </div>
-      <div class="thread-tools">
-        <input class="thread-search" id="threadSearch" type="search" placeholder="{% if is_admin_view %}Search user, email, ID, or subject{% else %}Search your messages{% endif %}" autocomplete="off">
-        <div class="thread-filter-row" id="threadFilters">
-          <button type="button" class="thread-filter active" data-filter="all">All</button>
-          <button type="button" class="thread-filter" data-filter="unread">Unread</button>
-          <button type="button" class="thread-filter" data-filter="open">Open</button>
-          <button type="button" class="thread-filter" data-filter="closed">Closed</button>
-        </div>
+
+      <label class="support-search">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="threadSearch" type="search" placeholder="{% if is_admin_view %}Search user, email, subject{% else %}Search messages{% endif %}" autocomplete="off">
+      </label>
+
+      <div class="support-filters" id="threadFilters" aria-label="Conversation filters">
+        <button type="button" class="is-active" data-filter="all">All</button>
+        <button type="button" data-filter="unread">Unread</button>
+        <button type="button" data-filter="open">Open</button>
+        <button type="button" data-filter="answered">Answered</button>
+        <button type="button" data-filter="closed">Closed</button>
       </div>
-      <div class="thread-list" id="threadList">
-        {% if threads %}
-          {% for thread in threads %}
-          <a href="{% if is_admin_view %}/support?thread={{ thread.id }}{% else %}/messages?thread={{ thread.id }}{% endif %}" class="thread-card {% if active_thread and active_thread.id == thread.id %}active{% endif %}">
-            <div class="thread-card-head">
-              <div class="thread-subject">{{ thread.subject }}</div>
-              {% if thread.unread_count > 0 %}
-              <span class="count-pill">{{ thread.unread_count }}</span>
-              {% endif %}
-            </div>
-            {% if is_admin_view %}
-            <div class="thread-meta">{{ thread.user.name }} &middot; {{ thread.user.public_id }}</div>
-            {% endif %}
-            <div class="thread-preview">{{ (thread.messages[-1].body if thread.messages and thread.messages[-1].body else 'Attachment added') if thread.messages else 'No messages yet' }}</div>
-            <div class="thread-meta" style="margin-top:10px;">Updated {{ thread.updated_at.strftime('%d %b %Y %H:%M') }}</div>
-          </a>
-          {% endfor %}
-        {% else %}
-        <div class="chat-empty-inner">
-          <div class="chat-title" style="margin-bottom:8px;">No conversations yet</div>
-          <div class="empty-copy">{% if is_admin_view %}User requests will appear here automatically.{% else %}Open the Contact page to create your first support request.{% endif %}</div>
+
+      <div class="support-thread-list" id="threadList">
+        <div class="support-empty-card">Loading support messages...</div>
+      </div>
+    </aside>
+
+    <section class="support-chat" id="chatPanel" aria-label="Conversation">
+      <div class="support-chat-empty">
+        <div>
+          <h2>Select a conversation</h2>
+          <p>{% if is_admin_view %}Choose a request from the inbox to reply and view attachments.{% else %}Open a request or create a new one from Contact.{% endif %}</p>
         </div>
-        {% endif %}
       </div>
     </section>
-
-    <section class="support-panel" id="chatPanel">
-      {% if active_thread %}
-      <div class="chat-wrap">
-        <div class="chat-header">
-          <div class="chat-header-top">
-            <div>
-              <div class="chat-title">{{ active_thread.subject }}</div>
-              <div class="chat-meta">Status: {{ active_thread.status|capitalize }} &middot; Created {{ active_thread.created_at.strftime('%d %b %Y %H:%M') }}</div>
-            </div>
-            <span class="status-badge">{{ active_thread.status|capitalize }}</span>
-          </div>
-          <div class="chat-header-copy">
-            {% if is_admin_view %}
-            <strong>{{ active_thread.user.name }}</strong> &middot; {{ active_thread.user.email }}<br>
-            User ID: <strong>{{ active_thread.user.public_id }}</strong>
-            {% else %}
-            If you attach a screenshot or file, it will appear directly inside the message below with an <strong>Open attachment</strong> button.
-            {% endif %}
-          </div>
-        </div>
-
-        <div class="chat-scroll" id="chatMessages">
-          {% for msg in active_thread.messages %}
-          {% set is_mine = (msg.sender_role == 'admin' and is_admin_view) or (msg.sender_role == 'user' and not is_admin_view) %}
-          <div class="message-row {% if is_mine %}mine{% elif msg.sender_role == 'system' %}system{% endif %}">
-            <div class="message-bubble">
-              <div class="message-meta">
-                <span>{% if msg.sender_role == 'system' %}{{ msg.sender_name or 'System' }}{% elif msg.sender_role == 'admin' %}{{ msg.sender_name or 'Support' }}{% else %}{{ msg.sender_name or active_thread.user.name }}{% endif %}</span>
-                <span>{{ msg.created_at.strftime('%d %b %Y %H:%M') }}</span>
-              </div>
-              {% if msg.body %}
-              <div class="message-body">{{ msg.body }}</div>
-              {% endif %}
-              {% if msg.attachment_path %}
-              <div class="attachment-card">
-                <div class="attachment-title">Attachment</div>
-                <div class="attachment-name">{{ msg.attachment_name or 'Attached file' }}</div>
-                <div class="attachment-actions">
-                  <a href="{{ msg.attachment_path }}" target="_blank" rel="noopener" class="btn-ghost btn-sm">Open attachment</a>
-                  <a href="{{ msg.attachment_path }}" download class="btn-ghost btn-sm">Download</a>
-                </div>
-                {% if msg.attachment_name and (msg.attachment_name.lower().endswith('.png') or msg.attachment_name.lower().endswith('.jpg') or msg.attachment_name.lower().endswith('.jpeg') or msg.attachment_name.lower().endswith('.webp') or msg.attachment_name.lower().endswith('.gif')) %}
-                <img src="{{ msg.attachment_path }}" alt="{{ msg.attachment_name }}" class="attachment-preview">
-                {% endif %}
-              </div>
-              {% endif %}
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-
-        <form id="replyForm" action="/api/support/threads/{{ active_thread.id }}/reply" method="post" enctype="multipart/form-data" class="composer">
-          <div id="replyFeedback" class="composer-feedback" aria-live="polite"></div>
-          {% if is_admin_view %}
-          <div class="form-group">
-            <label class="form-label" for="replyStatus">Status</label>
-            <select id="replyStatus" name="status">
-              <option value="open" {% if active_thread.status == 'open' %}selected{% endif %}>Open</option>
-              <option value="answered" {% if active_thread.status == 'answered' %}selected{% endif %}>Answered</option>
-              <option value="closed" {% if active_thread.status == 'closed' %}selected{% endif %}>Closed</option>
-            </select>
-          </div>
-          {% endif %}
-          <div class="form-group">
-            <label class="form-label" for="replyMessage">{% if is_admin_view %}Reply{% else %}Message{% endif %}</label>
-            <textarea id="replyMessage" name="message" rows="4" placeholder="{% if is_admin_view %}Reply to the user here...{% else %}Describe the issue in as much detail as possible. If there is an error, you can attach a screenshot or file below.{% endif %}"></textarea>
-          </div>
-          <div class="upload-box">
-            <label class="form-label" for="replyAttachment">Attachment (optional)</label>
-            <input type="file" id="replyAttachment" name="attachment" accept=".png,.jpg,.jpeg,.webp,.gif,.pdf,.txt,.log,.json">
-            <div class="upload-hint">You can attach an error screenshot, PDF, log, JSON, or another supported file up to 10 MB.</div>
-            <div class="upload-name" id="uploadName">No file selected</div>
-            <img id="uploadPreview" class="upload-preview" alt="Selected attachment preview">
-          </div>
-          <div class="composer-row" style="margin-top:14px;">
-            <div class="composer-note">Live mode is on. New messages will appear automatically.</div>
-            <button class="btn-primary" type="submit" id="replySubmit">{% if is_admin_view %}Send Reply{% else %}Send Message{% endif %}</button>
-          </div>
-        </form>
-      </div>
-      {% else %}
-      <div class="chat-empty">
-        <div class="chat-empty-inner">
-          <div class="chat-title" style="margin-bottom:10px;">No active chat selected</div>
-          <div class="empty-copy">{% if is_admin_view %}Choose a conversation on the left, and the dialog, status, and attachments will appear here.{% else %}Open Contact and create a support request. The chat will then appear here automatically.{% endif %}</div>
-        </div>
-      </div>
-      {% endif %}
-    </section>
-  </div>
-</div>
+  </section>
+</main>
 {% endblock %}
 
 {% block scripts %}
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/support.js?v={{ asset_version }}"></script>
 {% endblock %}
-

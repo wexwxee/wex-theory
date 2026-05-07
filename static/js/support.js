@@ -1,557 +1,507 @@
-﻿(function () {
+(function () {
   const currentTheme = localStorage.getItem('wex-theme') || 'dark';
   document.documentElement.setAttribute('data-theme', currentTheme);
+
   const navBtn = document.getElementById('navThemeBtn');
-  if (navBtn) navBtn.textContent = currentTheme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
+  if (navBtn) navBtn.textContent = currentTheme === 'dark' ? '☀' : '☾';
+  document.getElementById('supportBurgerBtn')?.addEventListener('click', () => {
+    if (typeof window.sbOpen === 'function') window.sbOpen();
+  });
+  navBtn?.addEventListener('click', () => {
+    if (typeof window.toggleTheme === 'function') {
+      window.toggleTheme();
+      const nextTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+      navBtn.textContent = nextTheme === 'dark' ? '☀' : '☾';
+    }
+  });
 
-  document.getElementById('supportBurgerBtn')?.addEventListener('click', sbOpen);
-  navBtn?.addEventListener('click', toggleTheme);
+  const page = document.getElementById('supportPage');
+  if (!page) return;
 
-  const supportPage = document.getElementById('supportPage');
-  const isAdminView = supportPage?.dataset.isAdminView === 'true';
-  let activeThreadId = supportPage?.dataset.activeThreadId ? Number(supportPage.dataset.activeThreadId) : null;
-  const dataUrlBase = isAdminView ? '/api/support/threads-data?scope=admin' : '/api/support/threads-data';
+  const isAdminView = page.dataset.isAdminView === 'true';
+  let activeThreadId = page.dataset.activeThreadId ? Number(page.dataset.activeThreadId) : null;
+  let activeFilter = 'all';
+  let searchQuery = '';
+  let isSubmitting = false;
+  let lastThreadSignature = '';
+  let lastActiveSignature = '';
+  let uploadPreviewUrl = null;
+  const drafts = new Map();
+  const statusDrafts = new Map();
+
   const threadList = document.getElementById('threadList');
   const chatPanel = document.getElementById('chatPanel');
   const threadSearch = document.getElementById('threadSearch');
   const threadFilters = document.getElementById('threadFilters');
-  let isSubmitting = false;
-  let lastMessagesSignature = '';
-  let draftByThread = {};
-  let statusDraftByThread = {};
-  let uploadPreviewUrl = null;
-  let activeThreadFilter = 'all';
-  let threadSearchQuery = '';
+  const threadSummary = document.getElementById('threadSummary');
+  const liveState = document.getElementById('supportLiveState');
 
-  function escapeHtml(value) {
-    return String(value || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
-  function createNode(tag, className, text) {
+  function el(tag, className, text) {
     const node = document.createElement(tag);
     if (className) node.className = className;
     if (typeof text === 'string') node.textContent = text;
     return node;
   }
 
-  function clearNode(node) {
-    if (node) node.replaceChildren();
+  function setLiveState(text, offline) {
+    if (!liveState) return;
+    liveState.textContent = text;
+    liveState.classList.toggle('is-offline', !!offline);
   }
 
-  function showComposerFeedback(message, type = 'info') {
-    const feedback = document.getElementById('replyFeedback');
-    if (!feedback) {
-      if (type === 'error') showToast(message, 'error');
-      if (type === 'success') showToast(message, 'success');
-      return;
-    }
-    feedback.className = `composer-feedback show ${type}`;
-    feedback.textContent = message;
-  }
-
-  function clearComposerFeedback() {
-    const feedback = document.getElementById('replyFeedback');
-    if (!feedback) return;
-    feedback.className = 'composer-feedback';
-    feedback.textContent = '';
-  }
-
-  function resetAttachmentPreview(nameNode, previewNode, fileInput) {
-    if (nameNode) nameNode.textContent = 'No file selected';
-    if (previewNode) {
-      previewNode.style.display = 'none';
-      previewNode.removeAttribute('src');
-    }
-    if (uploadPreviewUrl) {
-      URL.revokeObjectURL(uploadPreviewUrl);
-      uploadPreviewUrl = null;
-    }
-    fileInput?.closest('.upload-box')?.classList.remove('has-file');
+  function formatStatus(status) {
+    const raw = String(status || 'open');
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
   }
 
   function formatPreview(thread) {
-    if (thread.preview) return escapeHtml(thread.preview);
+    if (thread.preview) return thread.preview;
     if (thread.has_attachment) return 'Attachment added';
     return 'No messages yet';
   }
 
-  function syncDraftFromComposer() {
-    const textarea = document.getElementById('replyMessage');
-    if (textarea && activeThreadId) {
-      draftByThread[activeThreadId] = textarea.value;
-    }
-    const statusSelect = document.getElementById('replyStatus');
-    if (statusSelect && activeThreadId) {
-      statusDraftByThread[activeThreadId] = statusSelect.value;
-    }
+  function currentDataUrl() {
+    const params = new URLSearchParams();
+    if (isAdminView) params.set('scope', 'admin');
+    if (activeThreadId) params.set('thread', String(activeThreadId));
+    return `/api/support/threads-data?${params.toString()}`;
   }
 
-  function hasPendingAttachment() {
-    const fileInput = document.getElementById('replyAttachment');
-    return !!(fileInput && fileInput.files && fileInput.files.length);
+  function updateUrl(threadId) {
+    const url = new URL(window.location.href);
+    if (threadId) url.searchParams.set('thread', String(threadId));
+    else url.searchParams.delete('thread');
+    window.history.replaceState({}, '', url.toString());
   }
 
-  function buildMessagesSignature(thread) {
-    return (thread.messages || []).map((message) => `${message.id}:${message.created_at}:${message.body}:${message.attachment_name}`).join('|');
-  }
-
-  function messageBubbleClass(message) {
-    if (message.sender_role === 'system') return 'message-row system';
-    const mine = (isAdminView && message.sender_role === 'admin') || (!isAdminView && message.sender_role === 'user');
-    return mine ? 'message-row mine' : 'message-row';
-  }
-
-  function renderAttachment(message) {
-    if (!message.attachment_path) return null;
-    const card = createNode('div', 'attachment-card');
-    card.appendChild(createNode('div', 'attachment-title', 'Attachment'));
-    card.appendChild(createNode('div', 'attachment-name', message.attachment_name || 'Attached file'));
-    const metaText = [];
-    if (message.attachment_type) metaText.push(message.attachment_type);
-    if (message.is_image) metaText.push('Image preview available');
-    if (metaText.length) {
-      card.appendChild(createNode('div', 'attachment-meta', metaText.join(' · ')));
-    }
-
-    const actions = createNode('div', 'attachment-actions');
-
-    const openLink = createNode('a', 'btn-ghost btn-sm', 'Open attachment');
-    openLink.href = message.attachment_path;
-    openLink.target = '_blank';
-    openLink.rel = 'noopener';
-    actions.appendChild(openLink);
-
-    const downloadLink = createNode('a', 'btn-ghost btn-sm', 'Download');
-    downloadLink.href = message.attachment_path;
-    downloadLink.download = '';
-    actions.appendChild(downloadLink);
-
-    card.appendChild(actions);
-
-    if (message.is_image) {
-      const preview = createNode('img', 'attachment-preview');
-      preview.src = message.attachment_path;
-      preview.alt = message.attachment_name || 'attachment';
-      preview.loading = 'lazy';
-      preview.addEventListener('error', () => {
-        preview.style.display = 'none';
-        if (!card.querySelector('.attachment-preview-error')) {
-          card.appendChild(createNode('div', 'attachment-preview-error', 'Image preview could not load. Use Open attachment.'));
-        }
-      });
-      card.appendChild(preview);
-    }
-
-    return card;
-  }
-
-  function filterThreads(threads) {
-    const query = threadSearchQuery.trim().toLowerCase();
+  function visibleThreads(threads) {
+    const query = searchQuery.trim().toLowerCase();
     return threads.filter((thread) => {
-      if (activeThreadFilter === 'unread' && !(thread.unread_count > 0)) return false;
-      if (activeThreadFilter === 'open' && thread.status !== 'open') return false;
-      if (activeThreadFilter === 'closed' && thread.status !== 'closed') return false;
+      if (activeFilter === 'unread' && !(thread.unread_count > 0)) return false;
+      if (activeFilter !== 'all' && activeFilter !== 'unread' && thread.status !== activeFilter) return false;
       if (!query) return true;
       const haystack = [
         thread.subject,
         thread.preview,
+        thread.status,
         thread.user_name,
         thread.user_email,
         thread.user_public_id,
-        thread.status
+        ...(thread.messages || []).map((message) => `${message.body} ${message.attachment_name}`)
       ].join(' ').toLowerCase();
       return haystack.includes(query);
     });
   }
 
-  function renderThreadList(threads) {
+  function threadSignature(threads) {
+    return threads.map((thread) => [
+      thread.id,
+      thread.status,
+      thread.updated_at,
+      thread.unread_count,
+      thread.preview,
+      thread.has_attachment
+    ].join(':')).join('|');
+  }
+
+  function activeSignature(thread) {
+    if (!thread) return '';
+    return [
+      thread.id,
+      thread.status,
+      thread.updated_at,
+      ...(thread.messages || []).map((message) => [
+        message.id,
+        message.sender_role,
+        message.created_at,
+        message.body,
+        message.attachment_name,
+        message.attachment_path
+      ].join(':'))
+    ].join('|');
+  }
+
+  function syncDraft() {
+    if (!activeThreadId) return;
+    const textarea = document.getElementById('supportReplyMessage');
+    if (textarea) drafts.set(activeThreadId, textarea.value);
+    const status = document.getElementById('supportStatus');
+    if (status) statusDrafts.set(activeThreadId, status.value);
+  }
+
+  function renderThreads(threads) {
     if (!threadList) return;
-    clearNode(threadList);
-    const visibleThreads = filterThreads(threads);
-    if (!visibleThreads.length) {
-      const empty = createNode('div', 'chat-empty-inner');
-      const title = createNode('div', 'chat-title', threads.length ? 'No matching conversations' : 'No conversations yet');
-      title.style.marginBottom = '8px';
-      empty.appendChild(title);
-      empty.appendChild(createNode('div', 'empty-copy', threads.length
-        ? 'Try a different search or filter.'
-        : isAdminView
-        ? 'User support conversations will appear here automatically.'
-        : 'Open Contact to create your first support conversation.'
-      ));
-      threadList.appendChild(empty);
+    const filtered = visibleThreads(threads);
+    if (threadSummary) {
+      const unread = threads.reduce((sum, thread) => sum + (thread.unread_count || 0), 0);
+      threadSummary.textContent = `${threads.length} total${unread ? ` · ${unread} unread` : ''}`;
+    }
+    threadList.replaceChildren();
+
+    if (!filtered.length) {
+      threadList.appendChild(el('div', 'support-empty-card', threads.length ? 'No conversations match this filter.' : 'No support conversations yet.'));
       return;
     }
 
-    visibleThreads.forEach((thread) => {
-      const classes = [
-        'thread-card',
-        thread.id === activeThreadId ? 'active' : '',
-        thread.status === 'closed' ? 'is-closed' : '',
+    filtered.forEach((thread) => {
+      const card = el('button', [
+        'support-thread-card',
+        thread.id === activeThreadId ? 'is-active' : '',
         thread.unread_count > 0 ? 'is-unread' : ''
-      ].filter(Boolean).join(' ');
-      const node = createNode('a', classes);
-      node.href = '#';
-      node.dataset.threadId = String(thread.id);
+      ].filter(Boolean).join(' '));
+      card.type = 'button';
+      card.dataset.threadId = String(thread.id);
 
-      const head = createNode('div', 'thread-card-head');
-      head.appendChild(createNode('div', 'thread-subject', thread.subject));
-      const headRight = createNode('div');
-      headRight.style.cssText = 'display:flex;gap:8px;align-items:center;';
-      if (thread.has_attachment) {
-        headRight.appendChild(createNode('span', 'attach-badge', 'File'));
-      }
-      if (thread.unread_count > 0) {
-        headRight.appendChild(createNode('span', 'count-pill', String(thread.unread_count)));
-      }
-      head.appendChild(headRight);
-      node.appendChild(head);
+      const top = el('div', 'support-thread-top');
+      top.appendChild(el('div', 'support-thread-title', thread.subject || 'Support request'));
+      const badges = el('div', 'support-thread-badges');
+      if (thread.has_attachment) badges.appendChild(el('span', 'support-badge support-badge--file', 'File'));
+      if (thread.unread_count > 0) badges.appendChild(el('span', 'support-badge support-badge--new', String(thread.unread_count)));
+      badges.appendChild(el('span', 'support-badge', formatStatus(thread.status)));
+      top.appendChild(badges);
+      card.appendChild(top);
 
       if (isAdminView) {
-        node.appendChild(createNode('div', 'thread-meta', `${thread.user_name || ''} · ${thread.user_public_id || ''}`));
+        card.appendChild(el('div', 'support-thread-meta', `${thread.user_name || 'User'} · ${thread.user_public_id || ''}`));
       }
+      card.appendChild(el('div', 'support-thread-preview', formatPreview(thread)));
+      card.appendChild(el('div', 'support-thread-meta', `Updated ${thread.updated_at || ''}`));
 
-      node.appendChild(createNode('div', 'thread-preview', formatPreview(thread)));
-      if (thread.unread_count > 0) {
-        node.appendChild(createNode('div', 'thread-fresh', 'New message'));
-      }
-      const updated = createNode('div', 'thread-meta', `Updated ${thread.updated_at || ''}`);
-      updated.style.marginTop = '10px';
-      node.appendChild(updated);
-
-      node.addEventListener('click', function (event) {
-        event.preventDefault();
-        activeThreadId = Number(this.getAttribute('data-thread-id'));
+      card.addEventListener('click', () => {
+        syncDraft();
+        activeThreadId = thread.id;
         updateUrl(activeThreadId);
-        loadSupportData(true);
+        loadSupportData({ forceChat: true, scroll: true });
       });
-      threadList.appendChild(node);
+      threadList.appendChild(card);
     });
-    return;
   }
 
-  function renderChat(activeThread, threads) {
-    if (!chatPanel) return;
-    syncDraftFromComposer();
-    clearNode(chatPanel);
+  function senderName(thread, message) {
+    if (message.sender_name) return message.sender_name;
+    if (message.sender_role === 'system') return 'System';
+    if (message.sender_role === 'admin') return 'Support';
+    return thread.user_name || 'User';
+  }
 
-    if (!activeThread) {
-      lastMessagesSignature = '';
-      const empty = createNode('div', 'chat-empty');
-      const inner = createNode('div', 'chat-empty-inner');
-      const title = createNode('div', 'chat-title', 'No active chat selected');
-      title.style.marginBottom = '10px';
-      inner.appendChild(title);
-      inner.appendChild(createNode('div', 'empty-copy', isAdminView
-        ? 'Choose a conversation on the left to view the chat, status, and attachments.'
-        : 'Open Contact and create a request. Your support chat will appear here automatically.'
-      ));
+  function renderAttachment(message) {
+    if (!message.attachment_path) return null;
+    const box = el('div', 'support-attachment');
+    box.appendChild(el('div', 'support-attachment-label', 'Attachment'));
+    box.appendChild(el('div', 'support-attachment-name', message.attachment_name || 'Attached file'));
+
+    const metaParts = [];
+    if (message.attachment_type) metaParts.push(message.attachment_type);
+    if (message.is_image) metaParts.push('image preview');
+    if (metaParts.length) box.appendChild(el('div', 'support-attachment-meta', metaParts.join(' · ')));
+
+    const actions = el('div', 'support-attachment-actions');
+    const open = el('a', 'support-file-btn', 'Open');
+    open.href = message.attachment_path;
+    open.target = '_blank';
+    open.rel = 'noopener';
+    const download = el('a', 'support-file-btn', 'Download');
+    download.href = message.attachment_path;
+    download.download = '';
+    actions.append(open, download);
+    box.appendChild(actions);
+
+    if (message.is_image) {
+      const image = el('img', 'support-attachment-preview');
+      image.src = message.attachment_path;
+      image.alt = message.attachment_name || 'Attachment';
+      image.loading = 'lazy';
+      image.addEventListener('error', () => {
+        image.remove();
+        if (!box.querySelector('.support-preview-error')) {
+          box.appendChild(el('div', 'support-preview-error', 'Preview is not available. Use Open to view the file.'));
+        }
+      });
+      box.appendChild(image);
+    }
+
+    return box;
+  }
+
+  function renderMessages(thread, scroll) {
+    const list = el('div', 'support-message-list');
+    list.id = 'supportMessageList';
+
+    (thread.messages || []).forEach((message) => {
+      const mine = (isAdminView && message.sender_role === 'admin') || (!isAdminView && message.sender_role === 'user');
+      const row = el('div', [
+        'support-message-row',
+        mine ? 'is-mine' : '',
+        message.sender_role === 'system' ? 'is-system' : ''
+      ].filter(Boolean).join(' '));
+      const bubble = el('article', 'support-message');
+
+      const meta = el('div', 'support-message-meta');
+      meta.append(el('span', null, senderName(thread, message)));
+      meta.append(el('span', null, message.created_at || ''));
+      bubble.appendChild(meta);
+
+      if (message.body) bubble.appendChild(el('div', 'support-message-body', message.body));
+      const attachment = renderAttachment(message);
+      if (attachment) bubble.appendChild(attachment);
+
+      row.appendChild(bubble);
+      list.appendChild(row);
+    });
+
+    if (scroll) {
+      requestAnimationFrame(() => {
+        list.scrollTop = list.scrollHeight;
+      });
+    }
+    return list;
+  }
+
+  function renderComposer(thread) {
+    const form = el('form', 'support-composer');
+    form.id = 'supportReplyForm';
+    form.action = `/api/support/threads/${thread.id}/reply`;
+    form.enctype = 'multipart/form-data';
+
+    const feedback = el('div', 'support-feedback');
+    feedback.id = 'supportFeedback';
+    feedback.setAttribute('aria-live', 'polite');
+    form.appendChild(feedback);
+
+    const grid = el('div', 'support-composer-grid');
+    const messageField = el('div', 'support-field');
+    const messageLabel = el('label', null, isAdminView ? 'Reply' : 'Message');
+    messageLabel.setAttribute('for', 'supportReplyMessage');
+    const textarea = el('textarea');
+    textarea.id = 'supportReplyMessage';
+    textarea.name = 'message';
+    textarea.rows = 4;
+    textarea.placeholder = isAdminView ? 'Write a clear reply to the user...' : 'Write what happened. Add a screenshot below if it helps.';
+    textarea.value = drafts.get(thread.id) || '';
+    textarea.addEventListener('input', syncDraft);
+    messageField.append(messageLabel, textarea);
+    grid.appendChild(messageField);
+
+    if (isAdminView) {
+      const statusField = el('div', 'support-field');
+      const statusLabel = el('label', null, 'Status');
+      statusLabel.setAttribute('for', 'supportStatus');
+      const select = el('select');
+      select.id = 'supportStatus';
+      select.name = 'status';
+      ['open', 'answered', 'closed'].forEach((value) => {
+        const option = el('option', null, formatStatus(value));
+        option.value = value;
+        option.selected = (statusDrafts.get(thread.id) || thread.status) === value;
+        select.appendChild(option);
+      });
+      select.addEventListener('change', syncDraft);
+      statusField.append(statusLabel, select);
+      grid.appendChild(statusField);
+    }
+    form.appendChild(grid);
+
+    const upload = el('div', 'support-upload');
+    const uploadRow = el('div', 'support-upload-row');
+    const fileLabel = el('label', 'support-file-btn', 'Attach file');
+    fileLabel.setAttribute('for', 'supportAttachment');
+    const fileInput = el('input');
+    fileInput.id = 'supportAttachment';
+    fileInput.name = 'attachment';
+    fileInput.type = 'file';
+    fileInput.accept = '.png,.jpg,.jpeg,.webp,.gif,.pdf,.txt,.log,.json';
+    const fileName = el('div', 'support-file-name', 'No file selected');
+    fileName.id = 'supportFileName';
+    uploadRow.append(fileLabel, fileInput, fileName);
+    upload.appendChild(uploadRow);
+    upload.appendChild(el('div', 'support-upload-hint', 'Screenshots, images, PDF, logs, JSON, and text files up to 10 MB.'));
+    const preview = el('img', 'support-upload-preview');
+    preview.id = 'supportUploadPreview';
+    preview.alt = 'Selected attachment preview';
+    upload.appendChild(preview);
+    form.appendChild(upload);
+
+    const actions = el('div', 'support-composer-actions');
+    actions.appendChild(el('div', 'support-composer-note', 'Live mode is on. New replies appear automatically.'));
+    const submit = el('button', 'support-send-btn', isAdminView ? 'Send reply' : 'Send message');
+    submit.id = 'supportSubmit';
+    submit.type = 'submit';
+    actions.appendChild(submit);
+    form.appendChild(actions);
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files && fileInput.files[0];
+      if (uploadPreviewUrl) URL.revokeObjectURL(uploadPreviewUrl);
+      uploadPreviewUrl = null;
+      upload.classList.toggle('is-filled', !!file);
+      fileName.textContent = file ? `${file.name} · ${(file.size / 1024 / 1024).toFixed(file.size > 1024 * 1024 ? 1 : 2)} MB` : 'No file selected';
+      if (file && file.type.startsWith('image/')) {
+        uploadPreviewUrl = URL.createObjectURL(file);
+        preview.src = uploadPreviewUrl;
+        preview.style.display = 'block';
+      } else {
+        preview.style.display = 'none';
+        preview.removeAttribute('src');
+      }
+    });
+
+    form.addEventListener('submit', submitReply);
+    return form;
+  }
+
+  function showFeedback(text, type) {
+    const feedback = document.getElementById('supportFeedback');
+    if (!feedback) return;
+    feedback.textContent = text;
+    feedback.className = `support-feedback is-visible ${type ? `is-${type}` : ''}`;
+  }
+
+  function renderChat(thread, scroll) {
+    if (!chatPanel) return;
+    syncDraft();
+    chatPanel.replaceChildren();
+
+    if (!thread) {
+      const empty = el('div', 'support-chat-empty');
+      const inner = el('div');
+      inner.appendChild(el('h2', null, 'No active chat selected'));
+      inner.appendChild(el('p', null, isAdminView ? 'Choose a request from the inbox to reply.' : 'Create a support request from Contact, then follow the conversation here.'));
       empty.appendChild(inner);
       chatPanel.appendChild(empty);
       return;
     }
 
-    const storedDraft = draftByThread[activeThread.id] || '';
-    const storedStatus = statusDraftByThread[activeThread.id] || activeThread.status;
-    const statusText = activeThread.status.charAt(0).toUpperCase() + activeThread.status.slice(1);
-
-    const wrap = createNode('div', 'chat-wrap');
-    const header = createNode('div', 'chat-header');
-    const headerTop = createNode('div', 'chat-header-top');
-    const headerLeft = createNode('div');
-    headerLeft.appendChild(createNode('div', 'chat-title', activeThread.subject));
-    headerLeft.appendChild(createNode('div', 'chat-meta', `Status: ${statusText} · Created ${activeThread.created_at}`));
-    headerTop.appendChild(headerLeft);
-    headerTop.appendChild(createNode('span', 'status-badge', statusText));
-    header.appendChild(headerTop);
-
-    const headerCopy = createNode('div', 'chat-header-copy');
+    const layout = el('div', 'support-chat-layout');
+    const header = el('header', 'support-chat-header');
+    const top = el('div', 'support-chat-header-top');
+    const titleBox = el('div');
+    titleBox.appendChild(el('h2', 'support-chat-title', thread.subject || 'Support request'));
+    titleBox.appendChild(el('div', 'support-chat-sub', `Status: ${formatStatus(thread.status)} · Created ${thread.created_at}`));
+    top.appendChild(titleBox);
+    top.appendChild(el('span', 'support-badge', formatStatus(thread.status)));
+    header.appendChild(top);
     if (isAdminView) {
-      headerCopy.appendChild(createNode('strong', null, activeThread.user_name || ''));
-      headerCopy.appendChild(document.createTextNode(` · ${activeThread.user_email || ''}`));
-      headerCopy.appendChild(document.createElement('br'));
-      headerCopy.appendChild(document.createTextNode('User ID: '));
-      headerCopy.appendChild(createNode('strong', null, activeThread.user_public_id || ''));
+      header.appendChild(el('div', 'support-chat-user', `${thread.user_name || 'User'} · ${thread.user_email || ''} · ID ${thread.user_public_id || ''}`));
     } else {
-      headerCopy.appendChild(document.createTextNode('If you attached a screenshot or file, it will appear directly in the message below with the '));
-      headerCopy.appendChild(createNode('strong', null, 'Open attachment'));
-      headerCopy.appendChild(document.createTextNode(' button.'));
+      header.appendChild(el('div', 'support-chat-user', 'Attach screenshots when something looks wrong. Images will appear inside the chat.'));
     }
-    header.appendChild(headerCopy);
-    wrap.appendChild(header);
-
-    const messagesNode = createNode('div', 'chat-scroll');
-    messagesNode.id = 'chatMessages';
-    (activeThread.messages || []).forEach((message) => {
-      const row = createNode('div', messageBubbleClass(message));
-      const bubble = createNode('div', 'message-bubble');
-      const meta = createNode('div', 'message-meta');
-      meta.appendChild(createNode('span', null, message.sender_name || (message.sender_role === 'system' ? 'System' : message.sender_role === 'admin' ? 'Support' : 'User')));
-      meta.appendChild(createNode('span', null, message.created_at || ''));
-      bubble.appendChild(meta);
-      if (message.body) {
-        bubble.appendChild(createNode('div', 'message-body', message.body));
-      }
-      const attachmentNode = renderAttachment(message);
-      if (attachmentNode) bubble.appendChild(attachmentNode);
-      row.appendChild(bubble);
-      messagesNode.appendChild(row);
-    });
-    wrap.appendChild(messagesNode);
-
-    const form = createNode('form', 'composer');
-    form.id = 'replyForm';
-    form.action = `/api/support/threads/${activeThread.id}/reply`;
-    form.method = 'post';
-    form.enctype = 'multipart/form-data';
-
-    const feedback = createNode('div', 'composer-feedback');
-    feedback.id = 'replyFeedback';
-    feedback.setAttribute('aria-live', 'polite');
-    form.appendChild(feedback);
-
-    if (isAdminView) {
-      const statusGroup = createNode('div', 'form-group');
-      const statusLabel = createNode('label', 'form-label', 'Status');
-      statusLabel.setAttribute('for', 'replyStatus');
-      const statusSelectNode = createNode('select');
-      statusSelectNode.id = 'replyStatus';
-      statusSelectNode.name = 'status';
-      ['open', 'answered', 'closed'].forEach((value) => {
-        const option = createNode('option', null, value.charAt(0).toUpperCase() + value.slice(1));
-        option.value = value;
-        if (value === activeThread.status) option.selected = true;
-        statusSelectNode.appendChild(option);
-      });
-      statusGroup.appendChild(statusLabel);
-      statusGroup.appendChild(statusSelectNode);
-      form.appendChild(statusGroup);
-    }
-
-    const messageGroup = createNode('div', 'form-group');
-    const messageLabel = createNode('label', 'form-label', isAdminView ? 'Reply' : 'Message');
-    messageLabel.setAttribute('for', 'replyMessage');
-    const textarea = createNode('textarea');
-    textarea.id = 'replyMessage';
-    textarea.name = 'message';
-    textarea.rows = 4;
-    textarea.placeholder = isAdminView
-      ? 'Reply to the user here...'
-      : 'Describe the problem in more detail. If there is an error, you can attach a screenshot or file below.';
-    messageGroup.appendChild(messageLabel);
-    messageGroup.appendChild(textarea);
-    form.appendChild(messageGroup);
-
-    const uploadBox = createNode('div', 'upload-box');
-    const uploadLabel = createNode('label', 'form-label', 'Attachment (optional)');
-    uploadLabel.setAttribute('for', 'replyAttachment');
-    const fileInput = createNode('input');
-    fileInput.type = 'file';
-    fileInput.id = 'replyAttachment';
-    fileInput.name = 'attachment';
-    fileInput.accept = '.png,.jpg,.jpeg,.webp,.gif,.pdf,.txt,.log,.json';
-    const uploadHint = createNode('div', 'upload-hint', 'You can attach a screenshot, PDF, log, JSON, or another supported file up to 10 MB.');
-    const uploadName = createNode('div', 'upload-name', 'No file selected');
-    uploadName.id = 'uploadName';
-    const uploadPreview = createNode('img', 'upload-preview');
-    uploadPreview.id = 'uploadPreview';
-    uploadPreview.alt = 'Selected attachment preview';
-    uploadBox.appendChild(uploadLabel);
-    uploadBox.appendChild(fileInput);
-    uploadBox.appendChild(uploadHint);
-    uploadBox.appendChild(uploadName);
-    uploadBox.appendChild(uploadPreview);
-    form.appendChild(uploadBox);
-
-    const composerRow = createNode('div', 'composer-row');
-    composerRow.style.marginTop = '14px';
-    composerRow.appendChild(createNode('div', 'composer-note', 'Live mode is on. New messages will appear automatically.'));
-    const submitBtn = createNode('button', 'btn-primary', isAdminView ? 'Send Reply' : 'Send Message');
-    submitBtn.type = 'submit';
-    submitBtn.id = 'replySubmit';
-    composerRow.appendChild(submitBtn);
-    form.appendChild(composerRow);
-
-    wrap.appendChild(form);
-    chatPanel.appendChild(wrap);
-
-    bindComposer();
-    textarea.value = storedDraft;
-    const statusSelectNode = document.getElementById('replyStatus');
-    if (statusSelectNode && storedStatus) {
-      statusSelectNode.value = storedStatus;
-    }
-    const chatMessages = document.getElementById('chatMessages');
-    if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
-    lastMessagesSignature = buildMessagesSignature(activeThread);
-    return;
-
+    layout.appendChild(header);
+    layout.appendChild(renderMessages(thread, scroll));
+    layout.appendChild(renderComposer(thread));
+    chatPanel.appendChild(layout);
   }
 
-  function bindComposer() {
-    const form = document.getElementById('replyForm');
-    const fileInput = document.getElementById('replyAttachment');
-    const nameNode = document.getElementById('uploadName');
-    const previewNode = document.getElementById('uploadPreview');
-    const uploadBox = fileInput?.closest('.upload-box');
-    if (!form) return;
-
-    const textarea = document.getElementById('replyMessage');
-    if (textarea) {
-      textarea.addEventListener('input', syncDraftFromComposer);
-    }
-    const statusSelect = document.getElementById('replyStatus');
-    if (statusSelect) {
-      statusSelect.addEventListener('change', syncDraftFromComposer);
+  async function submitReply(event) {
+    event.preventDefault();
+    if (isSubmitting) return;
+    const form = event.currentTarget;
+    const submit = document.getElementById('supportSubmit');
+    const original = submit ? submit.textContent : '';
+    isSubmitting = true;
+    syncDraft();
+    showFeedback('Sending...', '');
+    if (submit) {
+      submit.disabled = true;
+      submit.textContent = 'Sending...';
     }
 
-    form.addEventListener('submit', async function (event) {
-      event.preventDefault();
-      if (isSubmitting) return;
-      isSubmitting = true;
-      const submitBtn = document.getElementById('replySubmit');
-      const originalBtnText = submitBtn ? submitBtn.textContent : '';
-      clearComposerFeedback();
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Sending...';
-      }
-      showComposerFeedback('Sending your message...', 'info');
-
-      try {
-        const response = await fetch(form.action, {
-          method: 'POST',
-          body: new FormData(form),
-          headers: {
-            'x-requested-with': 'XMLHttpRequest',
-            'accept': 'application/json'
-          }
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          showComposerFeedback(data.error || 'Failed to send message', 'error');
-          return;
-        }
-        form.reset();
-        if (activeThreadId) {
-          draftByThread[activeThreadId] = '';
-        }
-        resetAttachmentPreview(nameNode, previewNode, fileInput);
-        showComposerFeedback('Message sent successfully.', 'success');
-        showToast('Message sent', 'success');
-        await loadSupportData(true);
-        window.setTimeout(clearComposerFeedback, 2200);
-      } catch (error) {
-        showComposerFeedback('Could not send the message right now.', 'error');
-      } finally {
-        isSubmitting = false;
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.textContent = originalBtnText;
-        }
-      }
-    });
-
-    if (fileInput) {
-      fileInput.addEventListener('change', function () {
-        const file = this.files && this.files[0];
-        clearComposerFeedback();
-        if (nameNode) {
-          nameNode.textContent = file ? `${file.name}${file.size ? ` · ${(file.size / 1024 / 1024).toFixed(file.size > 1024 * 1024 ? 1 : 2)} MB` : ''}` : 'No file selected';
-        }
-        if (uploadPreviewUrl) {
-          URL.revokeObjectURL(uploadPreviewUrl);
-          uploadPreviewUrl = null;
-        }
-        if (file) {
-          uploadBox?.classList.add('has-file');
-        } else {
-          uploadBox?.classList.remove('has-file');
-        }
-        if (!previewNode) return;
-        if (file && file.type && file.type.startsWith('image/')) {
-          uploadPreviewUrl = URL.createObjectURL(file);
-          previewNode.src = uploadPreviewUrl;
-          previewNode.style.display = 'block';
-        } else {
-          previewNode.style.display = 'none';
-          previewNode.removeAttribute('src');
-        }
-      });
-    }
-  }
-
-  function updateUrl(threadId) {
-    const url = new URL(window.location.href);
-    if (threadId) {
-      url.searchParams.set('thread', threadId);
-    } else {
-      url.searchParams.delete('thread');
-    }
-    window.history.replaceState({}, '', url.toString());
-  }
-
-  async function loadSupportData(forceScroll) {
     try {
-      syncDraftFromComposer();
-      const url = `${dataUrlBase}${activeThreadId ? `&thread=${activeThreadId}` : ''}`;
-      const response = await fetch(url, { headers: { accept: 'application/json' } });
-      if (!response.ok) return;
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: {
+          accept: 'application/json',
+          'x-requested-with': 'XMLHttpRequest'
+        },
+        cache: 'no-store'
+      });
       const data = await response.json();
-      if (!activeThreadId && data.active_thread_id) {
-        activeThreadId = data.active_thread_id;
-        updateUrl(activeThreadId);
+      if (!response.ok) {
+        showFeedback(data.error || 'Could not send the message.', 'error');
+        return;
       }
-      const activeThread = data.threads.find((thread) => thread.id === activeThreadId) || data.threads[0] || null;
-      if (activeThread && activeThread.id !== activeThreadId) {
+      drafts.set(activeThreadId, '');
+      statusDrafts.delete(activeThreadId);
+      if (uploadPreviewUrl) URL.revokeObjectURL(uploadPreviewUrl);
+      uploadPreviewUrl = null;
+      showFeedback('Sent.', 'success');
+      await loadSupportData({ forceChat: true, scroll: true });
+      if (typeof window.refreshSupportUnreadUI === 'function') window.refreshSupportUnreadUI();
+    } catch (error) {
+      showFeedback('Connection problem. Please try again.', 'error');
+      setLiveState('Connection issue', true);
+    } finally {
+      isSubmitting = false;
+      if (submit) {
+        submit.disabled = false;
+        submit.textContent = original;
+      }
+    }
+  }
+
+  async function loadSupportData(options = {}) {
+    const { forceChat = false, scroll = false } = options;
+    try {
+      syncDraft();
+      const response = await fetch(currentDataUrl(), {
+        headers: { accept: 'application/json' },
+        cache: 'no-store'
+      });
+      if (!response.ok) throw new Error('Support API failed');
+      const data = await response.json();
+      const threads = data.threads || [];
+      const requested = activeThreadId;
+      let activeThread = threads.find((thread) => thread.id === activeThreadId) || null;
+      if (!activeThread && threads.length) {
+        activeThread = threads[0];
         activeThreadId = activeThread.id;
         updateUrl(activeThreadId);
       }
-      renderThreadList(data.threads);
 
-      const nextSignature = activeThread ? buildMessagesSignature(activeThread) : '';
-      const sameThread = activeThread && activeThread.id === activeThreadId;
-      const shouldSkipChatRerender = !forceScroll && sameThread && hasPendingAttachment();
-
-      if (!shouldSkipChatRerender && (forceScroll || nextSignature !== lastMessagesSignature || !document.getElementById('replyForm'))) {
-        renderChat(activeThread, data.threads);
+      const nextThreadSignature = threadSignature(threads);
+      if (forceChat || nextThreadSignature !== lastThreadSignature) {
+        renderThreads(threads);
+        lastThreadSignature = nextThreadSignature;
       }
 
-      if (forceScroll) {
-        const chatMessages = document.getElementById('chatMessages');
-        if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+      const nextActiveSignature = activeSignature(activeThread);
+      const activeChanged = requested !== activeThreadId;
+      if (forceChat || activeChanged || nextActiveSignature !== lastActiveSignature || !document.getElementById('supportReplyForm')) {
+        renderChat(activeThread, scroll || nextActiveSignature !== lastActiveSignature);
+        lastActiveSignature = nextActiveSignature;
       }
-      if (window.refreshSupportUnreadUI) {
-        window.refreshSupportUnreadUI();
-      }
+      setLiveState('Live', false);
+      if (typeof window.refreshSupportUnreadUI === 'function') window.refreshSupportUnreadUI();
     } catch (error) {
-      console.error('Support refresh failed', error);
+      console.error('Support live refresh failed', error);
+      setLiveState('Offline', true);
     }
   }
 
-  bindComposer();
   threadSearch?.addEventListener('input', (event) => {
-    threadSearchQuery = event.target.value || '';
-    loadSupportData(false);
+    searchQuery = event.target.value || '';
+    lastThreadSignature = '';
+    loadSupportData();
   });
+
   threadFilters?.addEventListener('click', (event) => {
-    const btn = event.target.closest('[data-filter]');
-    if (!btn) return;
-    activeThreadFilter = btn.dataset.filter || 'all';
-    threadFilters.querySelectorAll('.thread-filter').forEach((node) => {
-      node.classList.toggle('active', node === btn);
+    const button = event.target.closest('[data-filter]');
+    if (!button) return;
+    activeFilter = button.dataset.filter || 'all';
+    threadFilters.querySelectorAll('[data-filter]').forEach((node) => {
+      node.classList.toggle('is-active', node === button);
     });
-    loadSupportData(false);
+    lastThreadSignature = '';
+    loadSupportData();
   });
-  loadSupportData(false);
-  window.setInterval(function () {
-    if (!document.hidden) loadSupportData(false);
-  }, 2500);
+
+  window.addEventListener('focus', () => loadSupportData({ forceChat: true }));
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) loadSupportData({ forceChat: true });
+  });
+
+  loadSupportData({ forceChat: true, scroll: true });
+  window.setInterval(() => {
+    if (!document.hidden && !isSubmitting) loadSupportData();
+  }, 1200);
 })();
-
-
