@@ -2,6 +2,68 @@
 
 {% block title %}Access Overview - WEX Theory{% endblock %}
 
+{% block head %}
+<style>
+  .pricing-word-card {
+    margin: -24px auto 30px;
+    max-width: 760px;
+    border: 1px solid color-mix(in srgb, var(--text) 20%, var(--border));
+    border-radius: 18px;
+    background:
+      radial-gradient(circle at top right, rgba(59,130,246,0.10), transparent 42%),
+      var(--bg-card);
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: center;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.06);
+  }
+  .pricing-word-kicker {
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+  }
+  .pricing-word-title {
+    font-size: 1.25rem;
+    font-weight: 850;
+    letter-spacing: -0.025em;
+    margin-bottom: 6px;
+  }
+  .pricing-word-copy {
+    color: var(--text-muted);
+    font-size: 0.94rem;
+    line-height: 1.6;
+  }
+  .pricing-word-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  .pricing-word-actions .btn-primary,
+  .pricing-word-actions .btn-ghost {
+    min-height: 40px;
+    justify-content: center;
+  }
+  @media (max-width: 720px) {
+    .pricing-word-card {
+      grid-template-columns: 1fr;
+      margin-top: -10px;
+    }
+    .pricing-word-actions {
+      justify-content: stretch;
+    }
+    .pricing-word-actions a {
+      width: 100%;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block body %}
 <nav>
   <div class="nav-inner">
@@ -27,6 +89,22 @@
     <h1 style="font-size:clamp(1.9rem,5vw,3rem);font-weight:800;letter-spacing:-0.03em;margin-bottom:14px;">Choose the study mode that fits your practice</h1>
     <p style="color:var(--text-muted);font-size:1rem;max-width:620px;margin:0 auto;">WEXTheory is built as a practice platform for Danish driving theory study. Start with the free starter sample and the Exam Words preview, then move into the full library whenever you need the complete training flow.</p>
   </div>
+
+  {% if from_exam_words and not has_access %}
+  <section class="pricing-word-card" aria-label="Exam Words demo">
+    <div>
+      <div class="pricing-word-kicker">You opened Exam Words 2026</div>
+      <div class="pricing-word-title">You can preview the dictionary before access</div>
+      <p class="pricing-word-copy">
+        The full dictionary is included with access, but the demo lets you see the search, cards, quiz, and audio first.
+      </p>
+    </div>
+    <div class="pricing-word-actions">
+      <a href="/exam-words-demo" class="btn-primary">Open demo</a>
+      <a href="#pricingPurchaseBtn" class="btn-ghost">Access options</a>
+    </div>
+  </section>
+  {% endif %}
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:28px;">
     <div class="card" style="padding:32px;">
@@ -120,4 +198,3 @@
 {% block scripts %}
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/pricing.js"></script>
 {% endblock %}
-

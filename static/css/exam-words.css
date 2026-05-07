@@ -401,6 +401,65 @@
   .dot.known { background: var(--known); }
   .dot.hard { background: var(--hard); }
 
+  .source-file-card {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background:
+      linear-gradient(135deg, rgba(59,130,246,0.08), transparent 48%),
+      var(--bg-card);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    animation: fadeInUp 0.6s ease 0.38s both;
+  }
+
+  .source-file-card strong {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 3px;
+  }
+
+  .source-file-card span {
+    display: block;
+    color: var(--text-3);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .source-file-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    flex: 0 0 auto;
+  }
+
+  .source-file-actions a {
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--line-2);
+    background: var(--bg-elev);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 800;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+
+  .source-file-actions a:hover,
+  .source-file-actions a:focus-visible {
+    border-color: var(--text-3);
+    transform: translateY(-1px);
+    outline: none;
+  }
+
   /* ============== CONTROLS ============== */
   .controls {
     border-bottom: 1px solid var(--line);
@@ -1597,6 +1656,17 @@
     .brand-mark { width: 21px; height: 21px; font-size: 11px; }
     .demo-access-link { height: 32px; padding: 0 10px; font-size: 12px; }
     .demo-banner { align-items: flex-start; flex-direction: column; gap: 10px; }
+    .source-file-card {
+      align-items: stretch;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .source-file-actions {
+      justify-content: stretch;
+    }
+    .source-file-actions a {
+      flex: 1 1 120px;
+    }
     .status-row { padding: 0 16px 14px; }
     .filter-group { flex-wrap: wrap; }
     .flashcard, .quiz-card { padding: 36px 22px; min-height: 260px; }

@@ -2038,7 +2038,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260506-info-pages"
+templates.env.globals["asset_version"] = "20260507-exam-words-entry"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 
@@ -3187,8 +3187,9 @@ async def exam_words_page(request: Request, db: Session = Depends(get_db)):
     if not user:
         return RedirectResponse("/login", status_code=302)
     if not user_has_access(user):
+        access_path = "/subscription-expired" if getattr(user, "subscription_status", "free") != "free" else "/pricing?from=exam-words"
         return RedirectResponse(
-            "/subscription-expired" if getattr(user, "subscription_status", "free") != "free" else "/pricing",
+            access_path,
             status_code=302,
         )
     return templates.TemplateResponse(request, "exam_words.html", {
@@ -5157,12 +5158,14 @@ async def api_regenerate_referral_code(request: Request, db: Session = Depends(g
 @app.get("/pricing", response_class=HTMLResponse)
 async def pricing_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
+    entry_from = (request.query_params.get("from") or "").strip().lower()
     return templates.TemplateResponse(request, "pricing.html", {
         "request": request,
         "user": user,
         "now": datetime.utcnow(),
         "has_access": user_has_access(user) if user else False,
         "access_expires_at": get_user_access_expiry(user) if user and not user.is_admin else None,
+        "from_exam_words": entry_from == "exam-words",
     })
 
 
