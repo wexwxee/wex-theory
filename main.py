@@ -2021,7 +2021,6 @@ async def serve_user_avatar(public_id: str, db: Session = Depends(get_db)):
     )
 
 
-# Uploads served with Content-Disposition: attachment to prevent XSS via uploaded files
 @app.get("/uploads/{subdir:path}/{filename:path}")
 async def serve_upload(subdir: str, filename: str):
     safe_subdir = os.path.basename(subdir)
@@ -2044,13 +2043,32 @@ async def serve_upload(subdir: str, filename: str):
                 media_type=media_types.get(ext, "application/octet-stream"),
                 headers={"Cache-Control": "private, max-age=86400"},
             )
+    if safe_subdir in {"contact", "support"}:
+        ext = Path(safe_filename).suffix.lower()
+        inline_media_types = {
+            ".png": "image/png",
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".webp": "image/webp",
+            ".gif": "image/gif",
+        }
+        if ext in inline_media_types:
+            return FileResponse(
+                path=str(file_path),
+                media_type=inline_media_types[ext],
+                headers={
+                    "Cache-Control": "private, max-age=3600",
+                    "Content-Disposition": f'inline; filename="{safe_filename}"',
+                    "X-Content-Type-Options": "nosniff",
+                },
+            )
     return FileResponse(
         path=str(file_path),
         filename=safe_filename,
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260507-exam-words-sync"
+templates.env.globals["asset_version"] = "20260507-support-chat"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 

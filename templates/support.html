@@ -6,9 +6,37 @@
 <style>
   .support-shell {
     display: grid;
-    grid-template-columns: 340px minmax(0, 1fr);
+    grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
     gap: 18px;
     min-height: calc(100vh - 180px);
+  }
+  .support-page-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: end;
+    margin-bottom: 24px;
+  }
+  .support-kicker {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-weight: 850;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .support-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 900;
+    letter-spacing: -0.055em;
+    line-height: 0.98;
+    margin-bottom: 12px;
+  }
+  .support-lede {
+    color: var(--text-muted);
+    max-width: 760px;
+    font-size: 1rem;
+    line-height: 1.65;
   }
   .support-panel {
     background: linear-gradient(180deg, var(--bg-card) 0%, color-mix(in srgb, var(--bg-card) 80%, var(--bg) 20%) 100%);
@@ -24,6 +52,41 @@
     gap: 10px;
     max-height: 76vh;
     overflow: auto;
+  }
+  .thread-tools {
+    padding: 0 18px 14px;
+    display: grid;
+    gap: 10px;
+  }
+  .thread-search {
+    width: 100%;
+    min-height: 42px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+  }
+  .thread-filter-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .thread-filter {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-card);
+    color: var(--text-muted);
+    min-height: 32px;
+    padding: 6px 10px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .thread-filter.active {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
   }
   .thread-card {
     position: relative;
@@ -43,6 +106,12 @@
   .thread-card.active {
     background: linear-gradient(135deg, color-mix(in srgb, var(--accent, #35c759) 16%, var(--bg-card) 84%), var(--bg-card));
     border-color: color-mix(in srgb, var(--accent, #35c759) 62%, var(--border) 38%);
+  }
+  .thread-card.is-closed {
+    opacity: 0.72;
+  }
+  .thread-card.is-unread {
+    border-color: color-mix(in srgb, #ef4444 45%, var(--border) 55%);
   }
   .thread-card-head,
   .chat-header-top,
@@ -128,6 +197,7 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
+    scroll-behavior: smooth;
   }
   .message-row {
     display: flex;
@@ -202,13 +272,25 @@
   .attachment-preview {
     margin-top: 12px;
     max-width: 100%;
+    max-height: 420px;
+    object-fit: contain;
+    background: rgba(255,255,255,0.55);
     border-radius: 14px;
     border: 1px solid rgba(77, 163, 255, 0.2);
+  }
+  .attachment-preview-error {
+    margin-top: 10px;
+    color: var(--wrong);
+    font-size: 0.84rem;
   }
   .composer {
     padding: 22px 24px 24px;
     border-top: 1px solid var(--border);
     background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 92%, #fff 8%), var(--bg-card));
+  }
+  .composer textarea {
+    min-height: 112px;
+    resize: vertical;
   }
   .composer textarea,
   .composer select,
@@ -285,6 +367,26 @@
     background: #35c759;
     box-shadow: 0 0 0 6px rgba(53, 199, 89, 0.12);
   }
+  .live-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 7px 10px;
+    color: var(--text-muted);
+    background: var(--bg-card);
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
+  .live-pill::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #35c759;
+    box-shadow: 0 0 0 5px rgba(53, 199, 89, 0.12);
+  }
   .thread-fresh {
     display: inline-flex;
     align-items: center;
@@ -303,6 +405,10 @@
     box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.12);
   }
   @media (max-width: 980px) {
+    .support-page-head {
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
     .support-shell {
       grid-template-columns: 1fr;
     }
@@ -325,6 +431,12 @@
   @media (max-width: 640px) {
     .support-shell {
       gap: 14px;
+    }
+    .support-page-head {
+      margin-bottom: 16px;
+    }
+    .support-title {
+      font-size: 2rem;
     }
     .thread-list {
       padding: 12px;
@@ -367,17 +479,19 @@
 </nav>
 
 <div class="page" id="supportPage" data-is-admin-view="{{ 'true' if is_admin_view else 'false' }}" data-active-thread-id="{{ active_thread.id if active_thread else '' }}">
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px;">
+  <div class="support-page-head">
     <div>
-      <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.04em;margin-bottom:8px;">{% if is_admin_view %}Support Inbox{% else %}Messages{% endif %}</h1>
-      <div class="empty-copy" style="max-width:740px;">
+      <div class="support-kicker">{% if is_admin_view %}Admin support{% else %}Support messages{% endif %}</div>
+      <h1 class="support-title">{% if is_admin_view %}Support Inbox{% else %}Messages{% endif %}</h1>
+      <div class="support-lede">
         {% if is_admin_view %}
-        Here you can reply to users directly from the site. Messages and attachments refresh automatically without reloading the page.
+        Reply to users, review screenshots, change ticket status, and keep the inbox moving without refreshing the page.
         {% else %}
-        This is where all your support requests live. New replies appear automatically, and screenshots or files are shown directly inside the chat.
+        Your support requests and replies live here. New messages appear automatically, and screenshots or files are shown inside the chat.
         {% endif %}
       </div>
     </div>
+    <div class="live-pill">Live updates</div>
     {% if not is_admin_view %}
     <a href="/contact" class="btn-primary">New Request</a>
     {% endif %}
@@ -389,9 +503,18 @@
         <div class="chat-header-top">
           <div>
             <div class="chat-title">{% if is_admin_view %}All Conversations{% else %}Your Conversations{% endif %}</div>
-            <div class="thread-meta">Live list with unread counters and last activity.</div>
+            <div class="thread-meta">Search, filter, and open the latest request.</div>
           </div>
           <div class="live-indicator" title="Live updates enabled"></div>
+        </div>
+      </div>
+      <div class="thread-tools">
+        <input class="thread-search" id="threadSearch" type="search" placeholder="{% if is_admin_view %}Search user, email, ID, or subject{% else %}Search your messages{% endif %}" autocomplete="off">
+        <div class="thread-filter-row" id="threadFilters">
+          <button type="button" class="thread-filter active" data-filter="all">All</button>
+          <button type="button" class="thread-filter" data-filter="unread">Unread</button>
+          <button type="button" class="thread-filter" data-filter="open">Open</button>
+          <button type="button" class="thread-filter" data-filter="closed">Closed</button>
         </div>
       </div>
       <div class="thread-list" id="threadList">
@@ -514,8 +637,6 @@
 {% endblock %}
 
 {% block scripts %}
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/support.js"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/support.js?v={{ asset_version }}"></script>
 {% endblock %}
-
-
 

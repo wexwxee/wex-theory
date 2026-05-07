@@ -13,11 +13,15 @@
   const dataUrlBase = isAdminView ? '/api/support/threads-data?scope=admin' : '/api/support/threads-data';
   const threadList = document.getElementById('threadList');
   const chatPanel = document.getElementById('chatPanel');
+  const threadSearch = document.getElementById('threadSearch');
+  const threadFilters = document.getElementById('threadFilters');
   let isSubmitting = false;
   let lastMessagesSignature = '';
   let draftByThread = {};
   let statusDraftByThread = {};
   let uploadPreviewUrl = null;
+  let activeThreadFilter = 'all';
+  let threadSearchQuery = '';
 
   function escapeHtml(value) {
     return String(value || '')
@@ -133,21 +137,50 @@
       const preview = createNode('img', 'attachment-preview');
       preview.src = message.attachment_path;
       preview.alt = message.attachment_name || 'attachment';
+      preview.loading = 'lazy';
+      preview.addEventListener('error', () => {
+        preview.style.display = 'none';
+        if (!card.querySelector('.attachment-preview-error')) {
+          card.appendChild(createNode('div', 'attachment-preview-error', 'Image preview could not load. Use Open attachment.'));
+        }
+      });
       card.appendChild(preview);
     }
 
     return card;
   }
 
+  function filterThreads(threads) {
+    const query = threadSearchQuery.trim().toLowerCase();
+    return threads.filter((thread) => {
+      if (activeThreadFilter === 'unread' && !(thread.unread_count > 0)) return false;
+      if (activeThreadFilter === 'open' && thread.status !== 'open') return false;
+      if (activeThreadFilter === 'closed' && thread.status !== 'closed') return false;
+      if (!query) return true;
+      const haystack = [
+        thread.subject,
+        thread.preview,
+        thread.user_name,
+        thread.user_email,
+        thread.user_public_id,
+        thread.status
+      ].join(' ').toLowerCase();
+      return haystack.includes(query);
+    });
+  }
+
   function renderThreadList(threads) {
     if (!threadList) return;
     clearNode(threadList);
-    if (!threads.length) {
+    const visibleThreads = filterThreads(threads);
+    if (!visibleThreads.length) {
       const empty = createNode('div', 'chat-empty-inner');
-      const title = createNode('div', 'chat-title', 'No conversations yet');
+      const title = createNode('div', 'chat-title', threads.length ? 'No matching conversations' : 'No conversations yet');
       title.style.marginBottom = '8px';
       empty.appendChild(title);
-      empty.appendChild(createNode('div', 'empty-copy', isAdminView
+      empty.appendChild(createNode('div', 'empty-copy', threads.length
+        ? 'Try a different search or filter.'
+        : isAdminView
         ? 'User support conversations will appear here automatically.'
         : 'Open Contact to create your first support conversation.'
       ));
@@ -155,8 +188,14 @@
       return;
     }
 
-    threads.forEach((thread) => {
-      const node = createNode('a', `thread-card${thread.id === activeThreadId ? ' active' : ''}`);
+    visibleThreads.forEach((thread) => {
+      const classes = [
+        'thread-card',
+        thread.id === activeThreadId ? 'active' : '',
+        thread.status === 'closed' ? 'is-closed' : '',
+        thread.unread_count > 0 ? 'is-unread' : ''
+      ].filter(Boolean).join(' ');
+      const node = createNode('a', classes);
       node.href = '#';
       node.dataset.threadId = String(thread.id);
 
@@ -270,6 +309,11 @@
     form.action = `/api/support/threads/${activeThread.id}/reply`;
     form.method = 'post';
     form.enctype = 'multipart/form-data';
+
+    const feedback = createNode('div', 'composer-feedback');
+    feedback.id = 'replyFeedback';
+    feedback.setAttribute('aria-live', 'polite');
+    form.appendChild(feedback);
 
     if (isAdminView) {
       const statusGroup = createNode('div', 'form-group');
@@ -491,10 +535,23 @@
   }
 
   bindComposer();
+  threadSearch?.addEventListener('input', (event) => {
+    threadSearchQuery = event.target.value || '';
+    loadSupportData(false);
+  });
+  threadFilters?.addEventListener('click', (event) => {
+    const btn = event.target.closest('[data-filter]');
+    if (!btn) return;
+    activeThreadFilter = btn.dataset.filter || 'all';
+    threadFilters.querySelectorAll('.thread-filter').forEach((node) => {
+      node.classList.toggle('active', node === btn);
+    });
+    loadSupportData(false);
+  });
   loadSupportData(false);
   window.setInterval(function () {
     if (!document.hidden) loadSupportData(false);
-  }, 4000);
+  }, 2500);
 })();
 
 
