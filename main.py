@@ -1161,6 +1161,17 @@ def ensure_translation_columns(db: Session) -> None:
         print(f"[STARTUP] translation columns setup skipped/error: {e}")
 
 
+def ensure_exam_word_progress_table(db: Session) -> None:
+    try:
+        inspector = sql_inspect(engine)
+        if "exam_word_progress" not in inspector.get_table_names():
+            models.ExamWordProgress.__table__.create(bind=engine, checkfirst=True)
+            print("[STARTUP] Created exam_word_progress table")
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] exam word progress table setup skipped/error: {e}")
+
+
 def _seed_text(value) -> Optional[str]:
     value = (value or "").strip()
     return value or None
@@ -1866,6 +1877,7 @@ async def startup_init():
         ensure_attempt_question_order_column(db)
         ensure_exam_wording_columns(db)
         ensure_translation_columns(db)
+        ensure_exam_word_progress_table(db)
         ensure_question_text_fixes(db)
         ensure_certificates_table(db)
         ensure_referrals_table(db)
@@ -2038,7 +2050,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260507-exam-words-entry"
+templates.env.globals["asset_version"] = "20260507-exam-words-sync"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 
@@ -3207,6 +3219,85 @@ async def exam_words_demo_page(request: Request, db: Session = Depends(get_db)):
         "user": user,
         "demo": True,
     })
+
+
+def _exam_words_user(request: Request, db: Session):
+    user = get_current_user(request, db)
+    if not user:
+        return None, JSONResponse({"error": "Unauthorized"}, status_code=401)
+    if not user_has_access(user):
+        return None, JSONResponse({"error": "Access required"}, status_code=403)
+    return user, None
+
+
+@app.get("/api/exam-words/progress")
+async def api_exam_words_progress(request: Request, db: Session = Depends(get_db)):
+    user, error = _exam_words_user(request, db)
+    if error:
+        return error
+    rows = (
+        db.query(models.ExamWordProgress)
+        .filter(models.ExamWordProgress.user_id == user.id)
+        .all()
+    )
+    progress = {
+        row.term_id: row.status
+        for row in rows
+        if row.status in {"known", "hard"}
+    }
+    return {"success": True, "progress": progress}
+
+
+@app.post("/api/exam-words/progress")
+async def api_exam_words_save_progress(request: Request, db: Session = Depends(get_db)):
+    user, error = _exam_words_user(request, db)
+    if error:
+        return error
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+
+    raw_progress = data.get("progress") or {}
+    if not isinstance(raw_progress, dict):
+        return JSONResponse({"error": "Invalid progress"}, status_code=400)
+    if len(raw_progress) > 1000:
+        return JSONResponse({"error": "Too many terms"}, status_code=400)
+
+    cleaned: dict[str, str] = {}
+    for raw_term_id, raw_status in raw_progress.items():
+        term_id = re.sub(r"[^a-zA-Z0-9_\-]", "", str(raw_term_id or ""))[:120]
+        status = str(raw_status or "")
+        if term_id and status in {"known", "hard"}:
+            cleaned[term_id] = status
+
+    existing_rows = (
+        db.query(models.ExamWordProgress)
+        .filter(models.ExamWordProgress.user_id == user.id)
+        .all()
+    )
+    existing_by_term = {row.term_id: row for row in existing_rows}
+    now = datetime.utcnow()
+
+    for term_id, row in existing_by_term.items():
+        if term_id not in cleaned:
+            db.delete(row)
+
+    for term_id, status in cleaned.items():
+        row = existing_by_term.get(term_id)
+        if row:
+            row.status = status
+            row.updated_at = now
+        else:
+            db.add(models.ExamWordProgress(
+                user_id=user.id,
+                term_id=term_id,
+                status=status,
+                updated_at=now,
+            ))
+
+    db.commit()
+    return {"success": True, "count": len(cleaned)}
 
 
 @app.get("/profile", response_class=HTMLResponse)

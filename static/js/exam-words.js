@@ -435,6 +435,8 @@ const $ = (sel) => document.querySelector(sel);
   const STORAGE_SCOPE = DEMO_MODE ? 'demo' : 'full';
   const STORAGE_KEY = `wex-exam-words-2026-${STORAGE_SCOPE}-progress-v1`;
   const SETTINGS_KEY = `wex-exam-words-2026-${STORAGE_SCOPE}-settings-v1`;
+  const SERVER_SYNC_ENABLED = !DEMO_MODE;
+  let serverSyncTimer = null;
 
   function loadProgress() {
     try {
@@ -444,6 +446,7 @@ const $ = (sel) => document.querySelector(sel);
   }
   function saveProgress() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.progress)); } catch(e) {}
+    scheduleServerProgressSync();
   }
   function loadSettings() {
     try {
@@ -480,6 +483,42 @@ const $ = (sel) => document.querySelector(sel);
 
   // Apply saved settings
   if (state.settings.collapsedSubtopics === undefined) state.settings.collapsedSubtopics = {};
+
+  function scheduleServerProgressSync(delay = 450) {
+    if (!SERVER_SYNC_ENABLED) return;
+    clearTimeout(serverSyncTimer);
+    serverSyncTimer = setTimeout(pushProgressToServer, delay);
+  }
+
+  async function pushProgressToServer() {
+    if (!SERVER_SYNC_ENABLED) return;
+    try {
+      await fetch('/api/exam-words/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ progress: state.progress || {} })
+      });
+    } catch(e) {}
+  }
+
+  async function loadServerProgress() {
+    if (!SERVER_SYNC_ENABLED) return;
+    try {
+      const res = await fetch('/api/exam-words/progress', { credentials: 'same-origin' });
+      if (!res.ok) return;
+      const data = await res.json();
+      const serverProgress = data.progress || {};
+      const localProgress = state.progress || {};
+      state.progress = { ...serverProgress, ...localProgress };
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.progress)); } catch(e) {}
+      updateStats();
+      renderCategories();
+      buildFlashList();
+      showCard();
+      scheduleServerProgressSync(100);
+    } catch(e) {}
+  }
 
   /* ============== ALL TERMS FLAT ============== */
   const ALL_TERMS = [];
@@ -1712,6 +1751,7 @@ const $ = (sel) => document.querySelector(sel);
     renderCategories();
     buildFlashList();
     showCard();
+    loadServerProgress();
 
     // ========== TTS init ==========
     if (state.tts.supported) {

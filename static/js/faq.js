@@ -3,7 +3,7 @@
     {
       group: 'Access',
       q: 'What is included in full access?',
-      a: 'Full access includes all 13 structured practice tests, 325 photo questions, explanations after each test, saved questions, progress history, support messages, and the Exam Words 2026 vocabulary helper.'
+      a: 'Full access includes all 13 structured practice tests, 325 photo questions, explanations after each test, saved questions, progress history, support messages, Test 14 Exam Mode, and the Exam Words 2026 vocabulary helper.'
     },
     {
       group: 'Demo',
@@ -16,6 +16,11 @@
       a: 'Each practice test contains 25 questions. The study target is at least 20 correct answers out of 25.'
     },
     {
+      group: 'Tests',
+      q: 'What is Test 14 / Exam Mode?',
+      a: 'Test 14 is an extra mixed practice mode. Each attempt gives you 25 random questions from across the full practice library, so the questions change every time and appear in a mixed order.'
+    },
+    {
       group: 'Account',
       q: 'Do I need an account?',
       a: 'You do not need an account for Starter Test 0. You need an account for the main library, saved progress, support chat, certificates, and full Exam Words access.'
@@ -23,7 +28,7 @@
     {
       group: 'Progress',
       q: 'Does progress save after I close the site?',
-      a: 'Account test history and saved questions are stored with your account. Exam Words progress is saved in the same browser using local storage, so known and difficult terms stay after refresh, sleep, and reopening the site on that device.'
+      a: 'Account test history, saved questions, and full Exam Words known/difficult progress are stored with your account. Demo progress can still stay only in the current browser.'
     },
     {
       group: 'Exam Words',
@@ -58,7 +63,7 @@
     {
       group: 'Privacy',
       q: 'Can I request deletion of my data?',
-      a: 'Yes. Use the contact page for account deletion or privacy requests. Browser-only Exam Words progress can also be cleared by clearing local site storage in your browser.'
+      a: 'Yes. Use the contact page for account deletion or privacy requests. Full Exam Words progress is part of your account data; demo-only browser progress can be cleared by clearing local site storage.'
     }
   ];
 

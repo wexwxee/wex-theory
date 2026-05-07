@@ -231,6 +231,20 @@ class WordTranslation(Base):
     updated_at = Column(DateTime, default=datetime.utcnow)
 
 
+class ExamWordProgress(Base):
+    __tablename__ = "exam_word_progress"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    term_id = Column(String, nullable=False, index=True)
+    status = Column(String, nullable=False)  # known / hard
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "term_id", name="uq_exam_word_progress_user_term"),
+    )
+
+
 class LiveActivitySession(Base):
     __tablename__ = "live_activity_sessions"
 
