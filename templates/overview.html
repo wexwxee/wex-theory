@@ -97,11 +97,15 @@
     outline: none;
   }
   .wording-option--original {
+    border-color: color-mix(in srgb, var(--text) 26%, var(--border));
     box-shadow: inset 0 0 0 1px rgba(127,127,127,0.04);
+    background:
+      radial-gradient(circle at top right, rgba(59,130,246,0.08), transparent 42%),
+      var(--bg);
   }
   .wording-option--ai {
     background:
-      radial-gradient(circle at top right, rgba(34,197,94,0.12), transparent 42%),
+      radial-gradient(circle at top right, rgba(168,85,247,0.11), transparent 42%),
       var(--bg);
   }
   .wording-label {
@@ -125,8 +129,11 @@
     border-radius: 999px;
     background: var(--text-muted);
   }
+  .wording-option--original .wording-label-dot {
+    background: #3b82f6;
+  }
   .wording-option--ai .wording-label-dot {
-    background: #22c55e;
+    background: #a855f7;
   }
   .wording-card-title {
     font-size: clamp(1.35rem, 3vw, 1.85rem);
@@ -257,28 +264,28 @@
 
     <section class="wording-top" aria-labelledby="wordingTitle">
       <div class="wording-test">{{ test.title }}</div>
-      <h1 class="wording-heading" id="wordingTitle">Choose how the questions are written</h1>
+      <h1 class="wording-heading" id="wordingTitle">Choose your study version</h1>
       <p class="wording-lede">
-        Both versions use the same questions, correct answers, and score. If you are not sure, start with Original.
+        Original is the main version for learning. AI wording is extra practice: the same questions and answers, but rewritten with harder wording.
       </p>
       <div class="wording-quick" aria-label="What stays the same">
-        <span>Same questions</span>
-        <span>Same answers</span>
-        <span>Same pass score</span>
+        <span>Original = main study</span>
+        <span>AI = harder wording</span>
+        <span>Answers stay the same</span>
       </div>
     </section>
 
     <section class="wording-options" aria-label="Wording options">
       <a href="/test/{{ test.id }}?wording={{ wording_original }}" class="wording-option wording-option--original">
-        <span class="wording-label"><span class="wording-label-dot"></span>Recommended first</span>
+        <span class="wording-label"><span class="wording-label-dot"></span>Main study version</span>
         <div>
           <div class="wording-card-title">Original wording</div>
           <p class="wording-card-subtitle">
-            The normal WEXTheory text. Best when you want clear, familiar practice without extra reading difficulty.
+            The standard WEXTheory version. Use this as your main way to study the test and learn the questions.
           </p>
           <ul class="wording-points">
-            <li>Easiest version to start with</li>
-            <li>Good for everyday study</li>
+            <li>Main version for everyday learning</li>
+            <li>Clearer and easier to follow</li>
             <li>No change to test logic</li>
           </ul>
         </div>
@@ -286,16 +293,16 @@
       </a>
 
       <a href="/test/{{ test.id }}?wording={{ wording_exam }}" class="wording-option wording-option--ai">
-        <span class="wording-label"><span class="wording-label-dot"></span>Extra practice</span>
+        <span class="wording-label"><span class="wording-label-dot"></span>Harder text practice</span>
         <div>
           <div class="wording-card-title">AI wording</div>
           <p class="wording-card-subtitle">
-            Same meaning, written differently. Useful after you know the topic and want harder reading practice.
+            The questions and correct answers are the same, but AI tries to rewrite the text with more difficult wording.
           </p>
           <ul class="wording-points">
-            <li>Different phrasing for the same question</li>
+            <li>Good after you finish Original</li>
+            <li>Harder phrases for reading practice</li>
             <li>Same correct answers and score</li>
-            <li>Uses original text if AI text is missing</li>
           </ul>
         </div>
         <span class="wording-action">Start AI wording</span>
@@ -303,7 +310,7 @@
     </section>
 
     <p class="wording-note">
-      You can choose a different version next time. AI wording is practice text, not the official exam wording.
+      You can choose a different version next time. AI wording is only extra practice and does not replace the Original version.
     </p>
   </main>
 </div>
