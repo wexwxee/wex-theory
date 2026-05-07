@@ -4,314 +4,307 @@
 
 {% block head %}
 <style>
-  .wording-grid {
+  .wording-page {
+    width: min(100% - 32px, 920px);
+    margin: 0 auto;
+    padding: 28px 0 54px;
+  }
+  .wording-shell {
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.07), transparent 42%),
+      var(--bg-card);
+    padding: clamp(20px, 4vw, 34px);
+  }
+  [data-theme="light"] .wording-shell {
+    background:
+      linear-gradient(135deg, rgba(0,0,0,0.035), transparent 48%),
+      #fff;
+  }
+  .wording-back {
+    margin-bottom: 22px;
+  }
+  .wording-top {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
-    margin-top: 22px;
+    gap: 12px;
+    margin-bottom: 20px;
   }
-  .wording-card {
-    border: 1px solid var(--border);
-    border-radius: 22px;
-    background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 94%, #fff 6%), var(--bg-card));
-    padding: 24px;
+  .wording-test {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-weight: 850;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
-  .wording-preview {
-    position: relative;
-    overflow: hidden;
-    min-height: 184px;
-    padding: 20px;
-    border-radius: 18px;
-    border: 1px solid var(--border);
-    margin-bottom: 18px;
+  .wording-heading {
+    max-width: 680px;
+    font-size: clamp(2rem, 6vw, 4rem);
+    font-weight: 900;
+    letter-spacing: -0.055em;
+    line-height: 0.98;
+    margin: 0;
+  }
+  .wording-lede {
+    max-width: 700px;
+    color: var(--text-muted);
+    font-size: 1.02rem;
+    line-height: 1.65;
+  }
+  .wording-quick {
     display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: 18px;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
   }
-  .wording-preview::after {
-    content: "";
-    position: absolute;
-    inset: auto -30px -36px auto;
-    width: 150px;
-    height: 150px;
-    border-radius: 999px;
-    opacity: 0.24;
-    pointer-events: none;
-  }
-  .wording-preview.original {
-    background:
-      radial-gradient(circle at top right, rgba(148, 163, 184, 0.12), transparent 42%),
-      linear-gradient(180deg, color-mix(in srgb, var(--bg) 84%, #fff 16%), color-mix(in srgb, var(--bg-card) 96%, #fff 4%));
-  }
-  .wording-preview.original::after {
-    background: rgba(148, 163, 184, 0.16);
-  }
-  .wording-preview.ai {
-    background:
-      radial-gradient(circle at top right, rgba(16, 185, 129, 0.14), transparent 40%),
-      linear-gradient(180deg, color-mix(in srgb, var(--bg) 82%, #ecfdf5 18%), color-mix(in srgb, var(--bg-card) 94%, #ecfdf5 6%));
-  }
-  .wording-preview.ai::after {
-    background: rgba(16, 185, 129, 0.16);
-  }
-  .wording-preview-eyebrow {
+  .wording-quick span {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-size: 0.74rem;
-    font-weight: 800;
+    gap: 6px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 7px 10px;
+    color: var(--text-muted);
+    background: rgba(127,127,127,0.05);
+    font-size: 0.8rem;
+    font-weight: 750;
+  }
+  .wording-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 24px;
+  }
+  .wording-option {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 16px;
+    min-height: 360px;
+    padding: 22px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--bg);
+    color: var(--text);
+    text-decoration: none;
+    overflow: hidden;
+    transition: transform 0.16s ease, border-color 0.16s ease, background-color 0.18s ease;
+  }
+  .wording-option:hover,
+  .wording-option:focus-visible {
+    border-color: var(--text-muted);
+    transform: translateY(-2px);
+    outline: none;
+  }
+  .wording-option--original {
+    box-shadow: inset 0 0 0 1px rgba(127,127,127,0.04);
+  }
+  .wording-option--ai {
+    background:
+      radial-gradient(circle at top right, rgba(34,197,94,0.12), transparent 42%),
+      var(--bg);
+  }
+  .wording-label {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 7px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 10px;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-weight: 850;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--text-muted);
+    background: var(--bg-card);
   }
-  .wording-preview-dot {
+  .wording-label-dot {
     width: 7px;
     height: 7px;
     border-radius: 999px;
     background: var(--text-muted);
   }
-  .wording-preview.ai .wording-preview-dot {
-    background: #10b981;
+  .wording-option--ai .wording-label-dot {
+    background: #22c55e;
   }
-  .wording-preview-copy {
-    position: relative;
-    z-index: 1;
-    max-width: 280px;
-  }
-  .wording-preview-title {
-    font-size: 1.16rem;
-    font-weight: 800;
-    line-height: 1.2;
+  .wording-card-title {
+    font-size: clamp(1.35rem, 3vw, 1.85rem);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
     margin-bottom: 8px;
   }
-  .wording-preview-text {
+  .wording-card-subtitle {
     color: var(--text-muted);
-    line-height: 1.5;
-    font-size: 0.93rem;
-  }
-  .wording-preview-facts {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    width: 100%;
-    max-width: 420px;
-  }
-  .wording-preview-fact {
-    min-height: 58px;
-    padding: 11px 12px;
-    border-radius: 14px;
-    border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
-    background: rgba(255,255,255,0.05);
-  }
-  .wording-preview-fact-label {
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 4px;
-  }
-  .wording-preview-fact-value {
-    font-size: 0.87rem;
-    font-weight: 700;
-    line-height: 1.25;
-    color: var(--text);
-  }
-  .wording-preview.ai .wording-preview-fact {
-    background: rgba(16, 185, 129, 0.08);
-    border-color: rgba(16, 185, 129, 0.14);
-  }
-  .wording-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 10px;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    color: var(--text-muted);
-    font-size: 0.74rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-bottom: 14px;
-  }
-  .wording-title {
-    font-size: 1.18rem;
-    font-weight: 800;
-    margin-bottom: 8px;
-  }
-  .wording-copy {
-    color: var(--text-muted);
+    font-size: 1rem;
     line-height: 1.55;
-    margin-bottom: 14px;
   }
-  .wording-list {
-    margin: 0 0 18px;
-    padding-left: 18px;
+  .wording-points {
+    display: grid;
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+    margin: 18px 0 0;
+  }
+  .wording-points li {
+    display: flex;
+    gap: 9px;
+    align-items: flex-start;
     color: var(--text-muted);
-    line-height: 1.5;
+    font-size: 0.94rem;
+    line-height: 1.45;
   }
-  .wording-list li + li {
-    margin-top: 4px;
-  }
-  .wording-best {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 12px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: var(--text);
-  }
-  .wording-best strong {
-    font-weight: 800;
-  }
-  .wording-best-dot {
+  .wording-points li::before {
+    content: "";
     width: 7px;
     height: 7px;
+    margin-top: 0.55em;
     border-radius: 999px;
     background: var(--text);
+    opacity: 0.35;
     flex: 0 0 7px;
   }
-  .wording-note {
-    margin-top: 18px;
-    padding: 12px 14px;
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    background: var(--bg-card);
-    color: var(--text-muted);
-    font-size: 0.86rem;
-    line-height: 1.5;
+  .wording-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    border-radius: 10px;
+    background: var(--text);
+    color: var(--bg);
+    font-weight: 850;
+    font-size: 0.95rem;
+    padding: 13px 16px;
+    width: 100%;
   }
-  @media (max-width: 768px) {
-    .wording-grid {
-      grid-template-columns: 1fr;
+  .wording-option--ai .wording-action {
+    background: #0a0a0a;
+    color: #fff;
+  }
+  [data-theme="dark"] .wording-option--ai .wording-action {
+    background: #f4f4f5;
+    color: #09090b;
+  }
+  .wording-note {
+    margin-top: 14px;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.55;
+    text-align: center;
+  }
+  @media (max-width: 760px) {
+    .wording-page {
+      width: min(100% - 24px, 920px);
+      padding: 14px 0 34px;
     }
-    .wording-card {
-      padding: 20px;
+    .wording-shell {
+      padding: 18px;
+      border-radius: 20px;
+    }
+    .wording-back {
+      margin-bottom: 18px;
+    }
+    .wording-back .btn-ghost {
+      width: 100%;
+      justify-content: center;
+      min-height: 44px;
+    }
+    .wording-lede {
+      font-size: 0.98rem;
+    }
+    .wording-options {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .wording-option {
+      min-height: auto;
+      padding: 18px;
+      border-radius: 18px;
+      gap: 14px;
+    }
+    .wording-quick span {
+      flex: 1 1 calc(50% - 8px);
+      justify-content: center;
+      text-align: center;
+    }
+  }
+  @media (max-width: 420px) {
+    .wording-page {
+      width: min(100% - 18px, 920px);
+    }
+    .wording-shell {
+      padding: 14px;
       border-radius: 18px;
     }
-    .wording-preview {
-      min-height: 168px;
-      padding: 18px;
-      border-radius: 16px;
+    .wording-heading {
+      font-size: 2rem;
+    }
+    .wording-quick span {
+      flex-basis: 100%;
     }
   }
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="page" style="padding-top:32px;padding-bottom:48px;max-width:1040px;">
-  <div class="card" style="padding:28px;">
-    <div style="margin-bottom:18px;">
+<div class="wording-page">
+  <main class="wording-shell">
+    <div class="wording-back">
       <a href="/dashboard" class="btn-ghost btn-sm" style="display:inline-flex;align-items:center;gap:8px;">&#8592; Back to all tests</a>
     </div>
-    <div style="font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">{{ test.title }}</div>
-    <h1 style="font-size:clamp(1.6rem,4vw,2.25rem);line-height:1.12;margin-bottom:12px;">Choose your wording</h1>
-    <p style="color:var(--text-muted);font-size:0.98rem;line-height:1.6;max-width:720px;">
-      Same test, same answers, same score. Only the wording changes.
+
+    <section class="wording-top" aria-labelledby="wordingTitle">
+      <div class="wording-test">{{ test.title }}</div>
+      <h1 class="wording-heading" id="wordingTitle">Choose how the questions are written</h1>
+      <p class="wording-lede">
+        Both versions use the same questions, correct answers, and score. If you are not sure, start with Original.
+      </p>
+      <div class="wording-quick" aria-label="What stays the same">
+        <span>Same questions</span>
+        <span>Same answers</span>
+        <span>Same pass score</span>
+      </div>
+    </section>
+
+    <section class="wording-options" aria-label="Wording options">
+      <a href="/test/{{ test.id }}?wording={{ wording_original }}" class="wording-option wording-option--original">
+        <span class="wording-label"><span class="wording-label-dot"></span>Recommended first</span>
+        <div>
+          <div class="wording-card-title">Original wording</div>
+          <p class="wording-card-subtitle">
+            The normal WEXTheory text. Best when you want clear, familiar practice without extra reading difficulty.
+          </p>
+          <ul class="wording-points">
+            <li>Easiest version to start with</li>
+            <li>Good for everyday study</li>
+            <li>No change to test logic</li>
+          </ul>
+        </div>
+        <span class="wording-action">Start Original</span>
+      </a>
+
+      <a href="/test/{{ test.id }}?wording={{ wording_exam }}" class="wording-option wording-option--ai">
+        <span class="wording-label"><span class="wording-label-dot"></span>Extra practice</span>
+        <div>
+          <div class="wording-card-title">AI wording</div>
+          <p class="wording-card-subtitle">
+            Same meaning, written differently. Useful after you know the topic and want harder reading practice.
+          </p>
+          <ul class="wording-points">
+            <li>Different phrasing for the same question</li>
+            <li>Same correct answers and score</li>
+            <li>Uses original text if AI text is missing</li>
+          </ul>
+        </div>
+        <span class="wording-action">Start AI wording</span>
+      </a>
+    </section>
+
+    <p class="wording-note">
+      You can choose a different version next time. AI wording is practice text, not the official exam wording.
     </p>
-
-    <div class="wording-grid">
-      <section class="wording-card">
-        <div class="wording-preview original">
-          <div class="wording-preview-copy">
-            <div class="wording-preview-eyebrow">
-              <span class="wording-preview-dot"></span>
-              <span>Default mode</span>
-            </div>
-            <div class="wording-preview-title">Familiar wording you already know</div>
-            <div class="wording-preview-text">The standard version used across the site for calm, everyday practice.</div>
-          </div>
-          <div class="wording-preview-facts" aria-hidden="true">
-            <div class="wording-preview-fact">
-              <div class="wording-preview-fact-label">Mode</div>
-              <div class="wording-preview-fact-value">Default</div>
-            </div>
-            <div class="wording-preview-fact">
-              <div class="wording-preview-fact-label">Style</div>
-              <div class="wording-preview-fact-value">Familiar</div>
-            </div>
-            <div class="wording-preview-fact">
-              <div class="wording-preview-fact-label">Use</div>
-              <div class="wording-preview-fact-value">Everyday study</div>
-            </div>
-            <div class="wording-preview-fact">
-              <div class="wording-preview-fact-label">Logic</div>
-              <div class="wording-preview-fact-value">Same answers</div>
-            </div>
-          </div>
-        </div>
-        <span class="wording-chip">Original wording</span>
-        <div class="wording-title">The usual wording on the site</div>
-        <div class="wording-best">
-          <span class="wording-best-dot"></span>
-          <span><strong>Best for:</strong> familiar practice</span>
-        </div>
-        <p class="wording-copy">
-          Uses the same wording you normally see in WEXTheory.
-        </p>
-        <ul class="wording-list">
-          <li>Most familiar version</li>
-          <li>Good for everyday study</li>
-          <li>No change to test logic</li>
-        </ul>
-        <a href="/test/{{ test.id }}?wording={{ wording_original }}" class="btn-primary">Start with Original wording</a>
-      </section>
-
-      <section class="wording-card">
-        <div class="wording-preview ai">
-          <div class="wording-preview-copy">
-            <div class="wording-preview-eyebrow">
-              <span class="wording-preview-dot"></span>
-              <span>AI practice mode</span>
-            </div>
-            <div class="wording-preview-title">Alternative wording for tougher practice</div>
-            <div class="wording-preview-text">An AI-assisted practice version with the same meaning, but a different phrasing style.</div>
-          </div>
-          <div class="wording-preview-facts" aria-hidden="true">
-            <div class="wording-preview-fact">
-              <div class="wording-preview-fact-label">Mode</div>
-              <div class="wording-preview-fact-value">AI practice</div>
-            </div>
-            <div class="wording-preview-fact">
-              <div class="wording-preview-fact-label">Style</div>
-              <div class="wording-preview-fact-value">Different phrasing</div>
-            </div>
-            <div class="wording-preview-fact">
-              <div class="wording-preview-fact-label">Use</div>
-              <div class="wording-preview-fact-value">Tougher practice</div>
-            </div>
-            <div class="wording-preview-fact">
-              <div class="wording-preview-fact-label">Logic</div>
-              <div class="wording-preview-fact-value">Same answers</div>
-            </div>
-          </div>
-        </div>
-        <span class="wording-chip">AI wording</span>
-        <div class="wording-title">AI-assisted alternative practice wording</div>
-        <div class="wording-best">
-          <span class="wording-best-dot"></span>
-          <span><strong>Best for:</strong> practice with different phrasing</span>
-        </div>
-        <p class="wording-copy">
-          Uses AI-assisted wording designed to feel closer to Danish theory test style, without claiming to be the official exam text.
-        </p>
-        <ul class="wording-list">
-          <li>Same meaning and same correct answers</li>
-          <li>Not the official wording of the real exam</li>
-          <li>If no AI version is available yet, original wording is used</li>
-        </ul>
-        <a href="/test/{{ test.id }}?wording={{ wording_exam }}" class="btn-primary">Start with AI wording</a>
-      </section>
-    </div>
-
-    <div class="wording-note">
-      Your choice stays the same for the full attempt and review. You can choose a different wording next time you start the test.
-    </div>
-  </div>
+  </main>
 </div>
 {% endblock %}
