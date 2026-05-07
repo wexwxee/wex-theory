@@ -195,10 +195,44 @@
   }
   .wording-note {
     margin-top: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: rgba(127,127,127,0.04);
     color: var(--text-muted);
     font-size: 0.88rem;
     line-height: 1.55;
     text-align: center;
+  }
+  .wording-note-text {
+    max-width: 640px;
+  }
+  .wording-dictionary-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text);
+    background: var(--bg-card);
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .wording-dictionary-link:hover,
+  .wording-dictionary-link:focus-visible {
+    border-color: var(--text-muted);
+    transform: translateY(-1px);
+    outline: none;
   }
   @media (max-width: 760px) {
     .wording-page {
@@ -235,6 +269,13 @@
       flex: 1 1 calc(50% - 8px);
       justify-content: center;
       text-align: center;
+    }
+    .wording-note {
+      align-items: stretch;
+      text-align: left;
+    }
+    .wording-dictionary-link {
+      width: 100%;
     }
   }
   @media (max-width: 420px) {
@@ -309,9 +350,12 @@
       </a>
     </section>
 
-    <p class="wording-note">
-      You can choose a different version next time. AI wording is only extra practice and does not replace the Original version.
-    </p>
+    <div class="wording-note">
+      <span class="wording-note-text">
+        AI wording is optional. Use Original for normal study. If words are difficult, open Exam Words 2026 to learn the key exam vocabulary first.
+      </span>
+      <a href="/exam-words" class="wording-dictionary-link">Open dictionary</a>
+    </div>
   </main>
 </div>
 {% endblock %}
