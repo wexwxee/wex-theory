@@ -3,7 +3,7 @@
   document.documentElement.setAttribute('data-theme', currentTheme);
 
   const navBtn = document.getElementById('navThemeBtn');
-  if (navBtn) navBtn.textContent = currentTheme === 'dark' ? '☀' : '☾';
+  if (navBtn) navBtn.textContent = currentTheme === 'dark' ? 'Light' : 'Dark';
   document.getElementById('supportBurgerBtn')?.addEventListener('click', () => {
     if (typeof window.sbOpen === 'function') window.sbOpen();
   });
@@ -11,7 +11,7 @@
     if (typeof window.toggleTheme === 'function') {
       window.toggleTheme();
       const nextTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-      navBtn.textContent = nextTheme === 'dark' ? '☀' : '☾';
+      navBtn.textContent = nextTheme === 'dark' ? 'Light' : 'Dark';
     }
   });
 
@@ -134,7 +134,7 @@
     const filtered = visibleThreads(threads);
     if (threadSummary) {
       const unread = threads.reduce((sum, thread) => sum + (thread.unread_count || 0), 0);
-      threadSummary.textContent = `${threads.length} total${unread ? ` · ${unread} unread` : ''}`;
+      threadSummary.textContent = `${threads.length} total${unread ? ` / ${unread} unread` : ''}`;
     }
     threadList.replaceChildren();
 
@@ -155,14 +155,13 @@
       const top = el('div', 'support-thread-top');
       top.appendChild(el('div', 'support-thread-title', thread.subject || 'Support request'));
       const badges = el('div', 'support-thread-badges');
-      if (thread.has_attachment) badges.appendChild(el('span', 'support-badge support-badge--file', 'File'));
       if (thread.unread_count > 0) badges.appendChild(el('span', 'support-badge support-badge--new', String(thread.unread_count)));
       badges.appendChild(el('span', 'support-badge', formatStatus(thread.status)));
       top.appendChild(badges);
       card.appendChild(top);
 
       if (isAdminView) {
-        card.appendChild(el('div', 'support-thread-meta', `${thread.user_name || 'User'} · ${thread.user_public_id || ''}`));
+        card.appendChild(el('div', 'support-thread-meta', `${thread.user_name || 'User'} / ${thread.user_public_id || ''}`));
       }
       card.appendChild(el('div', 'support-thread-preview', formatPreview(thread)));
       card.appendChild(el('div', 'support-thread-meta', `Updated ${thread.updated_at || ''}`));
@@ -178,22 +177,33 @@
   }
 
   function senderName(thread, message) {
-    if (message.sender_name) return message.sender_name;
     if (message.sender_role === 'system') return 'System';
-    if (message.sender_role === 'admin') return 'Support';
-    return thread.user_name || 'User';
+    if (message.sender_role === 'admin') return isAdminView ? 'You' : 'Support';
+    return isAdminView ? (thread.user_name || 'User') : 'You';
+  }
+
+  function senderSubLabel(message) {
+    if (message.sender_role === 'system') return 'Automatic note';
+    if (message.sender_role === 'admin') return isAdminView ? 'Admin reply' : 'WEXTheory support';
+    return isAdminView ? 'User message' : 'Your message';
+  }
+
+  function avatarText(thread, message) {
+    if (message.sender_role === 'system') return 'S';
+    if (message.sender_role === 'admin') return 'A';
+    const name = isAdminView ? (thread.user_name || 'U') : 'You';
+    return String(name).trim().charAt(0).toUpperCase() || 'U';
   }
 
   function renderAttachment(message) {
     if (!message.attachment_path) return null;
     const box = el('div', 'support-attachment');
-    box.appendChild(el('div', 'support-attachment-label', 'Attachment'));
+    box.appendChild(el('div', 'support-attachment-label', message.is_image ? 'Image attached' : 'File attached'));
     box.appendChild(el('div', 'support-attachment-name', message.attachment_name || 'Attached file'));
 
     const metaParts = [];
     if (message.attachment_type) metaParts.push(message.attachment_type);
-    if (message.is_image) metaParts.push('image preview');
-    if (metaParts.length) box.appendChild(el('div', 'support-attachment-meta', metaParts.join(' · ')));
+    if (metaParts.length) box.appendChild(el('div', 'support-attachment-meta', metaParts.join(' / ')));
 
     const actions = el('div', 'support-attachment-actions');
     const open = el('a', 'support-file-btn', 'Open');
@@ -234,10 +244,17 @@
         mine ? 'is-mine' : '',
         message.sender_role === 'system' ? 'is-system' : ''
       ].filter(Boolean).join(' '));
+      const avatar = el('div', [
+        'support-avatar',
+        `support-avatar--${message.sender_role || 'user'}`
+      ].join(' '), avatarText(thread, message));
       const bubble = el('article', 'support-message');
 
       const meta = el('div', 'support-message-meta');
-      meta.append(el('span', null, senderName(thread, message)));
+      const who = el('div');
+      who.appendChild(el('strong', null, senderName(thread, message)));
+      who.appendChild(el('span', null, senderSubLabel(message)));
+      meta.append(who);
       meta.append(el('span', null, message.created_at || ''));
       bubble.appendChild(meta);
 
@@ -245,7 +262,7 @@
       const attachment = renderAttachment(message);
       if (attachment) bubble.appendChild(attachment);
 
-      row.appendChild(bubble);
+      row.append(avatar, bubble);
       list.appendChild(row);
     });
 
@@ -270,13 +287,13 @@
 
     const grid = el('div', 'support-composer-grid');
     const messageField = el('div', 'support-field');
-    const messageLabel = el('label', null, isAdminView ? 'Reply' : 'Message');
+    const messageLabel = el('label', null, isAdminView ? 'Message to user' : 'Message to support');
     messageLabel.setAttribute('for', 'supportReplyMessage');
     const textarea = el('textarea');
     textarea.id = 'supportReplyMessage';
     textarea.name = 'message';
     textarea.rows = 4;
-    textarea.placeholder = isAdminView ? 'Write a clear reply to the user...' : 'Write what happened. Add a screenshot below if it helps.';
+    textarea.placeholder = isAdminView ? 'Write the reply here...' : 'Write what happened. Add a screenshot if it helps.';
     textarea.value = drafts.get(thread.id) || '';
     textarea.addEventListener('input', syncDraft);
     messageField.append(messageLabel, textarea);
@@ -284,7 +301,7 @@
 
     if (isAdminView) {
       const statusField = el('div', 'support-field');
-      const statusLabel = el('label', null, 'Status');
+      const statusLabel = el('label', null, 'Ticket status');
       statusLabel.setAttribute('for', 'supportStatus');
       const select = el('select');
       select.id = 'supportStatus';
@@ -303,7 +320,7 @@
 
     const upload = el('div', 'support-upload');
     const uploadRow = el('div', 'support-upload-row');
-    const fileLabel = el('label', 'support-file-btn', 'Attach file');
+    const fileLabel = el('label', 'support-file-btn', 'Attach');
     fileLabel.setAttribute('for', 'supportAttachment');
     const fileInput = el('input');
     fileInput.id = 'supportAttachment';
@@ -314,7 +331,7 @@
     fileName.id = 'supportFileName';
     uploadRow.append(fileLabel, fileInput, fileName);
     upload.appendChild(uploadRow);
-    upload.appendChild(el('div', 'support-upload-hint', 'Screenshots, images, PDF, logs, JSON, and text files up to 10 MB.'));
+    upload.appendChild(el('div', 'support-upload-hint', 'Images, PDF, logs, JSON, and text files up to 10 MB.'));
     const preview = el('img', 'support-upload-preview');
     preview.id = 'supportUploadPreview';
     preview.alt = 'Selected attachment preview';
@@ -322,7 +339,7 @@
     form.appendChild(upload);
 
     const actions = el('div', 'support-composer-actions');
-    actions.appendChild(el('div', 'support-composer-note', 'Live mode is on. New replies appear automatically.'));
+    actions.appendChild(el('div', 'support-composer-note', 'Live updates are on.'));
     const submit = el('button', 'support-send-btn', isAdminView ? 'Send reply' : 'Send message');
     submit.id = 'supportSubmit';
     submit.type = 'submit';
@@ -334,7 +351,7 @@
       if (uploadPreviewUrl) URL.revokeObjectURL(uploadPreviewUrl);
       uploadPreviewUrl = null;
       upload.classList.toggle('is-filled', !!file);
-      fileName.textContent = file ? `${file.name} · ${(file.size / 1024 / 1024).toFixed(file.size > 1024 * 1024 ? 1 : 2)} MB` : 'No file selected';
+      fileName.textContent = file ? `${file.name} / ${(file.size / 1024 / 1024).toFixed(file.size > 1024 * 1024 ? 1 : 2)} MB` : 'No file selected';
       if (file && file.type.startsWith('image/')) {
         uploadPreviewUrl = URL.createObjectURL(file);
         preview.src = uploadPreviewUrl;
@@ -376,14 +393,18 @@
     const top = el('div', 'support-chat-header-top');
     const titleBox = el('div');
     titleBox.appendChild(el('h2', 'support-chat-title', thread.subject || 'Support request'));
-    titleBox.appendChild(el('div', 'support-chat-sub', `Status: ${formatStatus(thread.status)} · Created ${thread.created_at}`));
+    titleBox.appendChild(el('div', 'support-chat-sub', `Created ${thread.created_at}`));
     top.appendChild(titleBox);
     top.appendChild(el('span', 'support-badge', formatStatus(thread.status)));
     header.appendChild(top);
     if (isAdminView) {
-      header.appendChild(el('div', 'support-chat-user', `${thread.user_name || 'User'} · ${thread.user_email || ''} · ID ${thread.user_public_id || ''}`));
+      const details = el('div', 'support-chat-details');
+      details.appendChild(el('div', 'support-detail-card', `User: ${thread.user_name || 'User'}`));
+      details.appendChild(el('div', 'support-detail-card', `Email: ${thread.user_email || ''}`));
+      details.appendChild(el('div', 'support-detail-card', `ID: ${thread.user_public_id || ''}`));
+      header.appendChild(details);
     } else {
-      header.appendChild(el('div', 'support-chat-user', 'Attach screenshots when something looks wrong. Images will appear inside the chat.'));
+      header.appendChild(el('div', 'support-chat-user', 'Attach screenshots when something looks wrong. Images appear inside the chat.'));
     }
     layout.appendChild(header);
     layout.appendChild(renderMessages(thread, scroll));

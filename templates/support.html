@@ -20,7 +20,7 @@
     </div>
     <div class="support-topbar__right">
       <span class="support-live-pill" id="supportLiveState">Connecting</span>
-      <button class="support-icon-btn" id="navThemeBtn" aria-label="Toggle theme" title="Theme">☀</button>
+      <button class="support-icon-btn support-theme-btn" id="navThemeBtn" aria-label="Toggle theme" title="Theme">Theme</button>
       <a href="{% if is_admin_view %}/admin{% else %}/dashboard{% endif %}" class="support-ghost-link">{% if is_admin_view %}Admin{% else %}Dashboard{% endif %}</a>
     </div>
   </div>
@@ -34,12 +34,12 @@
 >
   <section class="support-hero">
     <div>
-      <h1>{% if is_admin_view %}Support inbox{% else %}Your support chat{% endif %}</h1>
+      <h1>{% if is_admin_view %}Support Inbox{% else %}Support Messages{% endif %}</h1>
       <p>
         {% if is_admin_view %}
-        Reply to users, view screenshots in the conversation, change status, and keep the queue moving without refreshing.
+        Clean live chat for replies, screenshots, and ticket status.
         {% else %}
-        Send a message, attach screenshots, and keep every support reply saved in one place.
+        Send a message, attach screenshots, and follow every reply here.
         {% endif %}
       </p>
     </div>
