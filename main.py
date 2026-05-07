@@ -77,6 +77,7 @@ TRANSLATION_SEED_PATH = BASE_DIR / "data" / "translation_seed.json"
 CONTACT_UPLOAD_DIR = BASE_DIR / "uploads" / "contact"
 SUPPORT_UPLOAD_DIR = BASE_DIR / "uploads" / "support"
 AVATAR_UPLOAD_DIR = BASE_DIR / "uploads" / "avatars"
+EXAM_WORDS_SOURCE_PDF = BASE_DIR / "data" / "protected" / "begrebsliste_DA_EN_RU.pdf"
 ALLOWED_CONTACT_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".pdf", ".txt", ".log", ".json"}
 ALLOWED_AVATAR_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
 MAX_CONTACT_UPLOAD_BYTES = 10 * 1024 * 1024
@@ -2068,7 +2069,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260507-support-chat"
+templates.env.globals["asset_version"] = "20260507-exam-words-source"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 
@@ -3237,6 +3238,46 @@ async def exam_words_demo_page(request: Request, db: Session = Depends(get_db)):
         "user": user,
         "demo": True,
     })
+
+
+def _exam_words_pdf_user(request: Request, db: Session):
+    user = get_current_user(request, db)
+    if not user:
+        return None, RedirectResponse("/login", status_code=302)
+    if not user_has_access(user):
+        access_path = "/subscription-expired" if getattr(user, "subscription_status", "free") != "free" else "/pricing?from=exam-words"
+        return None, RedirectResponse(access_path, status_code=302)
+    if not EXAM_WORDS_SOURCE_PDF.is_file():
+        return None, JSONResponse({"error": "PDF source file is not available"}, status_code=404)
+    return user, None
+
+
+@app.get("/exam-words/source-pdf")
+async def exam_words_source_pdf(request: Request, db: Session = Depends(get_db)):
+    _, response = _exam_words_pdf_user(request, db)
+    if response is not None:
+        return response
+    return FileResponse(
+        path=str(EXAM_WORDS_SOURCE_PDF),
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": 'inline; filename="begrebsliste_DA_EN_RU.pdf"',
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
+
+
+@app.get("/exam-words/source-pdf/download")
+async def exam_words_source_pdf_download(request: Request, db: Session = Depends(get_db)):
+    _, response = _exam_words_pdf_user(request, db)
+    if response is not None:
+        return response
+    return FileResponse(
+        path=str(EXAM_WORDS_SOURCE_PDF),
+        media_type="application/pdf",
+        filename="begrebsliste_DA_EN_RU.pdf",
+        headers={"X-Content-Type-Options": "nosniff"},
+    )
 
 
 def _exam_words_user(request: Request, db: Session):

@@ -48,7 +48,10 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+    touch-action: manipulation;
+  }
 
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -58,11 +61,15 @@
     -webkit-font-smoothing: antialiased;
     min-height: 100vh;
     transition: none;
+    touch-action: manipulation;
   }
 
   ::selection { background: var(--text); color: var(--bg); }
 
-  button { font-family: inherit; }
+  button, a, input, select, textarea {
+    font-family: inherit;
+    touch-action: manipulation;
+  }
 
   /* ============== GLOBAL ANIMATIONS ============== */
   @keyframes fadeInUp {
@@ -463,9 +470,9 @@
   /* ============== CONTROLS ============== */
   .controls {
     border-bottom: 1px solid var(--line);
-    position: sticky;
-    top: 65px;
-    z-index: 50;
+    position: relative;
+    top: auto;
+    z-index: 1;
     background: var(--bg);
   }
 
@@ -702,9 +709,9 @@
     cursor: pointer;
     user-select: none;
     transition: background 0.2s ease, transform 0.15s ease;
-    position: sticky;
-    top: 132px;
-    z-index: 10;
+    position: relative;
+    top: auto;
+    z-index: 1;
   }
 
   .subtopic-header:hover {
@@ -798,6 +805,12 @@
 
   .item.is-known { opacity: 0.86; }
   .item.is-known:hover { opacity: 1; }
+  .item.is-hard {
+    background: linear-gradient(90deg, rgba(234,88,12,0.05), transparent 42%);
+  }
+  .item.is-untouched .item-en {
+    color: var(--text);
+  }
 
   .item-content { min-width: 0; }
 
@@ -934,6 +947,11 @@
   .action-btn.active.hard {
     color: var(--hard);
     background: var(--hard-bg);
+  }
+  .action-btn.active.unknown {
+    color: var(--text-3);
+    background: var(--bg-soft);
+    border-color: var(--line-2);
   }
 
   .action-btn.just-marked {

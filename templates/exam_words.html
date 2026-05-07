@@ -62,11 +62,11 @@
       </div>
       <div class="stat">
         <div class="stat-value known" id="meta-known">0</div>
-        <div class="stat-label">Known</div>
+        <div class="stat-label">Learned</div>
       </div>
       <div class="stat">
         <div class="stat-value hard" id="meta-hard">0</div>
-        <div class="stat-label">Difficult</div>
+        <div class="stat-label">Hard to remember</div>
       </div>
       <div class="stat">
         <div class="stat-value" id="meta-cats">—</div>
@@ -80,18 +80,22 @@
       </div>
       <div class="progress-label">
         <span class="legend"><span class="dot known"></span><span id="bar-known-pct">0%</span> learned</span>
-        <span class="legend"><span class="dot hard"></span><span id="bar-hard-pct">0%</span> difficult</span>
-        <span class="legend" style="color: var(--text-4);"><span id="bar-untouched">0</span> untouched</span>
+        <span class="legend"><span class="dot hard"></span><span id="bar-hard-pct">0%</span> hard</span>
+        <span class="legend" style="color: var(--text-4);"><span id="bar-untouched">0</span> do not know yet</span>
       </div>
     </div>
     <div class="source-file-card">
       <div>
-        <strong>Original PDF file</strong>
-        <span>Prefer the source list? Open or download the official DA / EN / RU vocabulary PDF.</span>
+        <strong>Source PDF</strong>
+        <span>The original source list contains Danish and English. The Russian translation in this WEXTheory PDF was added with AI for study help.</span>
       </div>
       <div class="source-file-actions">
-        <a href="/static/docs/begrebsliste_DA_EN_RU.pdf" target="_blank" rel="noopener">Open PDF</a>
-        <a href="/static/docs/begrebsliste_DA_EN_RU.pdf" download>Download</a>
+        {% if demo %}
+        <a href="/pricing?from=exam-words">Unlock PDF</a>
+        {% else %}
+        <a href="/exam-words/source-pdf" target="_blank" rel="noopener">Open PDF</a>
+        <a href="/exam-words/source-pdf/download">Download</a>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -123,10 +127,10 @@
   </div>
   <div class="status-row" id="status-row">
     <span class="label">Show:</span>
-    <button class="chip active" data-status="all">All <span class="count" id="count-all">0</span></button>
-    <button class="chip" data-status="untouched">Untouched <span class="count" id="count-untouched">0</span></button>
-    <button class="chip" data-status="hard">Difficult <span class="count" id="count-hard">0</span></button>
-    <button class="chip" data-status="known">Known <span class="count" id="count-known">0</span></button>
+    <button class="chip active" data-status="all">All words <span class="count" id="count-all">0</span></button>
+    <button class="chip" data-status="untouched">Do not know <span class="count" id="count-untouched">0</span></button>
+    <button class="chip" data-status="hard">Hard to remember <span class="count" id="count-hard">0</span></button>
+    <button class="chip" data-status="known">Learned <span class="count" id="count-known">0</span></button>
   </div>
 </div>
 
@@ -150,11 +154,14 @@
 
       <div class="flashcard" id="flashcard">
         <div class="flash-actions">
-          <button class="action-btn" id="flash-mark-known" title="Mark as known">
+          <button class="action-btn" id="flash-mark-known" title="Mark as learned">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
           </button>
-          <button class="action-btn" id="flash-mark-hard" title="Mark as difficult">
+          <button class="action-btn" id="flash-mark-hard" title="Mark as hard to remember">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17h.01"/><path d="M12 13v-2"/><circle cx="12" cy="12" r="10"/></svg>
+          </button>
+          <button class="action-btn" id="flash-mark-unknown" title="Mark as do not know">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
           <button class="action-btn" id="flash-speak" title="Speak">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>

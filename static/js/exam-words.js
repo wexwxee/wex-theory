@@ -466,7 +466,7 @@ const $ = (sel) => document.querySelector(sel);
     flashIdx: 0,
     flashList: [],
     flashFlipped: false,
-    progress: loadProgress(), // { termId: 'known' | 'hard' }
+    progress: loadProgress(), // { termId: 'known' | 'hard' }; missing means "do not know yet"
     settings: loadSettings(),
     quiz: {
       direction: 'en-to-ru',
@@ -549,6 +549,14 @@ const $ = (sel) => document.querySelector(sel);
       setStatus(item, 'untouched');
     } else {
       setStatus(item, target);
+    }
+  }
+
+  function markStatus(item, target) {
+    if (target === 'untouched') {
+      setStatus(item, 'untouched');
+    } else {
+      toggleStatus(item, target);
     }
   }
 
@@ -1070,9 +1078,9 @@ const $ = (sel) => document.querySelector(sel);
   function itemHtml(item, q, catLabel) {
     const status = getStatus(item);
     const catBadge = catLabel ? `<span class="badge cat">${escHtml(catLabel)}</span>` : '';
-    const knownClass = status === 'known' ? 'is-known' : '';
+    const statusClass = `is-${status}`;
     return `
-      <div class="item ${knownClass}" data-term-id="${item.id}">
+      <div class="item ${statusClass}" data-term-id="${item.id}">
         <div class="item-content">
           <div class="item-en-row">
             <div class="item-en">${highlight(item.en, q)}</div>
@@ -1087,11 +1095,14 @@ const $ = (sel) => document.querySelector(sel);
           </div>
         </div>
         <div class="item-actions">
-          <button class="action-btn ${status === 'known' ? 'active known' : ''}" data-action="known" data-term-id="${item.id}" title="Mark as known">
+          <button class="action-btn ${status === 'known' ? 'active known' : ''}" data-action="known" data-term-id="${item.id}" title="Mark as learned" aria-label="Mark as learned">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
           </button>
-          <button class="action-btn ${status === 'hard' ? 'active hard' : ''}" data-action="hard" data-term-id="${item.id}" title="Mark as difficult">
+          <button class="action-btn ${status === 'hard' ? 'active hard' : ''}" data-action="hard" data-term-id="${item.id}" title="Mark as hard to remember" aria-label="Mark as hard to remember">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17h.01"/><path d="M12 13v-2"/><circle cx="12" cy="12" r="10"/></svg>
+          </button>
+          <button class="action-btn ${status === 'untouched' ? 'active unknown' : ''}" data-action="untouched" data-term-id="${item.id}" title="Mark as do not know" aria-label="Mark as do not know">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
         </div>
       </div>
@@ -1267,13 +1278,13 @@ const $ = (sel) => document.querySelector(sel);
       return;
     }
 
-    // Mark known/hard
+    // Mark learned / hard / do not know
     const actionBtn = e.target.closest('[data-action]');
-    if (actionBtn && (actionBtn.dataset.action === 'known' || actionBtn.dataset.action === 'hard')) {
+    if (actionBtn && ['known', 'hard', 'untouched'].includes(actionBtn.dataset.action)) {
       const termId = actionBtn.dataset.termId;
       const item = ALL_TERMS.find(t => t.id === termId);
       if (item) {
-        toggleStatus(item, actionBtn.dataset.action);
+        markStatus(item, actionBtn.dataset.action);
         renderCategories();
       }
     }
@@ -1386,6 +1397,8 @@ const $ = (sel) => document.querySelector(sel);
     $('#flash-mark-known').classList.toggle('known', status === 'known');
     $('#flash-mark-hard').classList.toggle('active', status === 'hard');
     $('#flash-mark-hard').classList.toggle('hard', status === 'hard');
+    $('#flash-mark-unknown').classList.toggle('active', status === 'untouched');
+    $('#flash-mark-unknown').classList.toggle('unknown', status === 'untouched');
   }
 
   function flipCard() {
@@ -1436,7 +1449,7 @@ const $ = (sel) => document.querySelector(sel);
     e.stopPropagation();
     if (state.flashList.length === 0) return;
     const item = state.flashList[state.flashIdx];
-    toggleStatus(item, 'known');
+    markStatus(item, 'known');
     showCard();
   });
 
@@ -1444,7 +1457,15 @@ const $ = (sel) => document.querySelector(sel);
     e.stopPropagation();
     if (state.flashList.length === 0) return;
     const item = state.flashList[state.flashIdx];
-    toggleStatus(item, 'hard');
+    markStatus(item, 'hard');
+    showCard();
+  });
+
+  $('#flash-mark-unknown').addEventListener('click', e => {
+    e.stopPropagation();
+    if (state.flashList.length === 0) return;
+    const item = state.flashList[state.flashIdx];
+    markStatus(item, 'untouched');
     showCard();
   });
 
@@ -1471,12 +1492,12 @@ const $ = (sel) => document.querySelector(sel);
       else if (e.key === 'k' || e.key === 'K') {
         if (state.flashList.length === 0) return;
         const item = state.flashList[state.flashIdx];
-        toggleStatus(item, 'known');
+        markStatus(item, 'known');
         showCard();
       } else if (e.key === 'h' || e.key === 'H') {
         if (state.flashList.length === 0) return;
         const item = state.flashList[state.flashIdx];
-        toggleStatus(item, 'hard');
+        markStatus(item, 'hard');
         showCard();
       } else if (e.key === 's' || e.key === 'S') {
         if (state.flashList.length === 0) return;
@@ -1622,13 +1643,13 @@ const $ = (sel) => document.querySelector(sel);
     } else {
       state.quiz.score.wrong++;
       state.quiz.score.streak = 0;
-      // Auto-mark as difficult after 2 wrong attempts? For now, just mark as hard if user wants — let's auto-mark on first wrong
+      // Auto-mark wrong quiz answers as hard to remember.
       if (getStatus(item) === 'untouched') {
         setStatus(item, 'hard');
       }
     }
 
-    // If got it right and not already marked: don't auto-mark known (user decides)
+    // If got it right and not already marked: don't auto-mark learned (user decides).
     updateQuizScore();
 
     // Feedback
@@ -1722,7 +1743,7 @@ const $ = (sel) => document.querySelector(sel);
       alert('No progress to reset.');
       return;
     }
-    if (confirm('Reset all progress? This will clear all "known" and "difficult" marks.')) {
+    if (confirm('Reset all progress? This will clear all learned and hard-to-remember marks.')) {
       state.progress = {};
       saveProgress();
       updateStats();
