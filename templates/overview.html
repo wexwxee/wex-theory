@@ -196,21 +196,24 @@
   .wording-note {
     margin-top: 14px;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: flex-start;
+    justify-content: space-between;
     flex-wrap: wrap;
     gap: 10px 12px;
-    padding: 12px 14px;
+    padding: 14px 16px;
     border: 1px solid var(--border);
     border-radius: 16px;
     background: rgba(127,127,127,0.04);
     color: var(--text-muted);
     font-size: 0.88rem;
     line-height: 1.55;
-    text-align: center;
+    text-align: left;
   }
   .wording-note-text {
-    max-width: 640px;
+    max-width: 760px;
+  }
+  .wording-note-text strong {
+    color: var(--text);
   }
   .wording-dictionary-link {
     display: inline-flex;
@@ -270,10 +273,7 @@
       justify-content: center;
       text-align: center;
     }
-    .wording-note {
-      align-items: stretch;
-      text-align: left;
-    }
+    .wording-note { align-items: stretch; }
     .wording-dictionary-link {
       width: 100%;
     }
@@ -352,7 +352,7 @@
 
     <div class="wording-note">
       <span class="wording-note-text">
-        AI wording is optional. Use Original for normal study. If words are difficult, open Exam Words 2026 to learn the key exam vocabulary first.
+        <strong>AI wording is optional</strong> and is still in beta, but it can be useful for extra practice. We also recommend going through Exam Words 2026: it is based on the official vocabulary list published on their site, and real exam wording can be more difficult. Prepare well and try learning different translation variants for the same word.
       </span>
       <a href="/exam-words" class="wording-dictionary-link">Open dictionary</a>
     </div>
