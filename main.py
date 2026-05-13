@@ -400,7 +400,7 @@ def get_request_base_url(request: Request) -> str:
 
 
 def normalize_activity_path(path: str) -> str:
-    raw = str(path or "").strip()
+    raw = str(path or "").strip()[:240]
     if not raw:
         return "/"
     if not raw.startswith("/"):
@@ -430,9 +430,59 @@ def normalize_activity_path(path: str) -> str:
         if re.fullmatch(r"[0-9a-fA-F\-]{8,}", part):
             normalized_parts.append(":id")
             continue
-        normalized_parts.append(part)
+        safe_part = re.sub(r"[^A-Za-z0-9._~:-]", "-", part)[:64].strip("-")
+        normalized_parts.append(safe_part or "path")
 
     return "/" + "/".join(normalized_parts)
+
+
+def include_in_admin_visit_analytics(path: str) -> bool:
+    normalized = normalize_activity_path(path)
+    if not normalized:
+        return False
+    admin_only_prefixes = ("/admin", "/api", "/static", "/uploads", "/test-images")
+    return not any(normalized == prefix or normalized.startswith(prefix + "/") for prefix in admin_only_prefixes)
+
+
+def describe_activity_path(path: str) -> dict:
+    normalized = normalize_activity_path(path)
+    exact = {
+        "/": ("Home", "Landing page"),
+        "/welcome": ("Welcome", "Guest entry"),
+        "/dashboard": ("Dashboard", "Practice library"),
+        "/pricing": ("Access options", "Subscription and demo page"),
+        "/exam-words": ("Exam Words", "Vocabulary helper"),
+        "/exam-words-demo": ("Exam Words demo", "Free vocabulary preview"),
+        "/study-guide": ("Study guide", "How to prepare"),
+        "/faq": ("FAQ", "Help page"),
+        "/about": ("About", "Platform info"),
+        "/privacy": ("Privacy", "Data and cookies"),
+        "/contact": ("Contact", "Support entry"),
+        "/saved": ("Saved questions", "Review list"),
+        "/history": ("History", "Past attempts"),
+        "/profile": ("Profile", "Account settings"),
+    }
+    if normalized in exact:
+        title, meta = exact[normalized]
+        return {"path": normalized, "label": title, "meta": meta}
+
+    test_overview = re.fullmatch(r"/test/(\d+)/overview", normalized)
+    if test_overview:
+        number = test_overview.group(1)
+        return {"path": normalized, "label": f"Theory Test {number} setup", "meta": "Wording and start screen"}
+
+    test_page = re.fullmatch(r"/test/(\d+)", normalized)
+    if test_page:
+        number = test_page.group(1)
+        return {"path": normalized, "label": f"Theory Test {number}", "meta": "Question practice"}
+
+    result_page = re.fullmatch(r"/results/(\d+)", normalized)
+    if result_page:
+        return {"path": normalized, "label": "Test results", "meta": "Score and review"}
+
+    first_segment = normalized.strip("/").split("/", 1)[0] or "page"
+    title = first_segment.replace("-", " ").replace("_", " ").title()
+    return {"path": normalized, "label": title, "meta": "Site page"}
 
 
 def build_live_activity_overview(db: Session) -> dict:
@@ -491,7 +541,7 @@ def record_privacy_friendly_visit(
     if not consent_granted:
         return False
     normalized_path = normalize_activity_path(page_path)
-    if not normalized_path:
+    if not normalized_path or not include_in_admin_visit_analytics(normalized_path):
         return False
 
     now = now or datetime.utcnow()
@@ -549,6 +599,8 @@ def build_analytics_overview(db: Session) -> dict:
     guest_week = 0
 
     for row in rows:
+        if not include_in_admin_visit_analytics(row.page_path or "/"):
+            continue
         logged_in = int(row.logged_in_visits or 0)
         guests = int(row.guest_visits or 0)
         total = logged_in + guests
@@ -566,7 +618,10 @@ def build_analytics_overview(db: Session) -> dict:
     user_rows = (
         db.query(models.UserVisitStat, models.User)
         .join(models.User, models.UserVisitStat.user_id == models.User.id)
-        .filter(models.UserVisitStat.day >= start_day)
+        .filter(
+            models.UserVisitStat.day >= start_day,
+            sql_or_(models.User.is_admin.is_(False), models.User.is_admin.is_(None)),
+        )
         .all()
     )
     user_totals: dict[int, dict] = {}
@@ -610,7 +665,10 @@ def build_analytics_overview(db: Session) -> dict:
         "logged_in_week": logged_in_week,
         "guest_week": guest_week,
         "daily": daily,
-        "top_pages": [{"path": path, "visits": count} for path, count in page_counter.most_common(8)],
+        "top_pages": [
+            {**describe_activity_path(path), "visits": count}
+            for path, count in page_counter.most_common(8)
+        ],
         "top_users": top_users,
     }
 

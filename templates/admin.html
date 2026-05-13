@@ -132,6 +132,7 @@
     grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.8fr);
     gap: 14px;
     margin-bottom: 32px;
+    align-items: start;
   }
   .admin-analytics-panel {
     padding: 20px;
@@ -173,6 +174,13 @@
     transform: translateY(-1px);
     border-color: color-mix(in srgb, var(--text) 18%, var(--border) 82%);
   }
+  .admin-mini-row--page,
+  .admin-mini-row--user {
+    align-items: stretch;
+  }
+  .admin-mini-content {
+    min-width: 0;
+  }
   .admin-mini-index {
     width: 30px;
     height: 30px;
@@ -192,17 +200,60 @@
     white-space: nowrap;
     font-weight: 800;
   }
+  .admin-mini-path {
+    display: inline-flex;
+    max-width: 100%;
+    margin-top: 5px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--text) 6%, transparent);
+    color: var(--text-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.7rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .admin-mini-meta {
     color: var(--text-muted);
     font-size: 0.76rem;
     margin-top: 2px;
     overflow-wrap: anywhere;
   }
+  .admin-mini-bar {
+    height: 5px;
+    margin-top: 9px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--text) 7%, transparent);
+    overflow: hidden;
+  }
+  .admin-mini-bar span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #2563eb, #0ea5e9);
+  }
   .admin-mini-count {
     min-width: 70px;
     text-align: right;
     font-size: 0.95rem;
     font-weight: 900;
+  }
+  .admin-mini-count span {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .analytics-note {
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--text) 5%, transparent);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    line-height: 1.5;
   }
   .activity-modal-grid {
     display: grid;
@@ -587,18 +638,26 @@
     <div class="admin-analytics-panel">
       <div class="admin-panel-label">Visits · 7 days</div>
       <div style="position:relative;height:240px;"><canvas id="chartVisits"></canvas></div>
+      <div class="analytics-note" style="margin-top:14px;">
+        Counts page visits only after cookie consent. Admin-only pages are hidden here so the chart shows learner activity more clearly.
+      </div>
     </div>
     <div class="admin-analytics-panel">
       <div class="admin-panel-label">Most visited pages</div>
       <div class="admin-mini-table">
+        {% set top_page_max = analytics_overview.top_pages[0].visits if analytics_overview.top_pages else 1 %}
         {% for item in analytics_overview.top_pages %}
-        <div class="admin-mini-row">
+        {% set width = ((item.visits / top_page_max) * 100) | round(0, 'ceil') %}
+        {% set safe_width = width if width > 6 else 6 %}
+        <div class="admin-mini-row admin-mini-row--page">
           <span class="admin-mini-index">{{ loop.index }}</span>
-          <div>
-            <div class="admin-mini-title">{{ item.path }}</div>
-            <div class="admin-mini-meta">last 7 days</div>
+          <div class="admin-mini-content">
+            <div class="admin-mini-title">{{ item.label }}</div>
+            <div class="admin-mini-meta">{{ item.meta }} · last 7 days</div>
+            <span class="admin-mini-path">{{ item.path }}</span>
+            <div class="admin-mini-bar"><span style="width:{{ safe_width }}%;"></span></div>
           </div>
-          <strong class="admin-mini-count">{{ item.visits }}</strong>
+          <strong class="admin-mini-count">{{ item.visits }}<span>visits</span></strong>
         </div>
         {% else %}
         <div style="color:var(--text-muted);font-size:0.86rem;line-height:1.6;">No consent-based visits recorded yet.</div>
@@ -610,22 +669,25 @@
   <div class="admin-analytics-panel" style="margin-bottom:32px;">
     <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px;">
       <div>
-        <div class="admin-panel-label" style="margin-bottom:4px;">Signed-in user visits</div>
-        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:4px;">Only users who accepted analytics cookies appear here.</div>
+        <div class="admin-panel-label" style="margin-bottom:4px;">Learner account visits</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:4px;">
+          Page visits from signed-in learners who accepted analytics. This is not a login counter; admin accounts are hidden.
+        </div>
       </div>
     </div>
     <div class="admin-mini-table">
       {% for item in analytics_overview.top_users %}
-      <div class="admin-mini-row">
+      <div class="admin-mini-row admin-mini-row--user">
         <span class="admin-mini-index">{{ loop.index }}</span>
-        <div>
+        <div class="admin-mini-content">
           <div class="admin-mini-title">{{ item.name }} · {{ item.public_id }}</div>
-          <div class="admin-mini-meta">{{ item.email }} · last seen {{ item.last_seen_at.strftime('%d %b %Y %H:%M') if item.last_seen_at else 'not yet' }}</div>
+          <div class="admin-mini-meta">{{ item.email }}</div>
+          <div class="admin-mini-meta">Last seen {{ item.last_seen_at.strftime('%d %b %Y %H:%M') if item.last_seen_at else 'not yet' }}</div>
         </div>
-        <strong class="admin-mini-count">{{ item.visits }} visits</strong>
+        <strong class="admin-mini-count">{{ item.visits }}<span>visits</span></strong>
       </div>
       {% else %}
-      <div style="color:var(--text-muted);font-size:0.86rem;line-height:1.6;">No signed-in visit stats yet.</div>
+      <div style="color:var(--text-muted);font-size:0.86rem;line-height:1.6;">No learner account visits yet. A learner appears here only after accepting analytics.</div>
       {% endfor %}
     </div>
   </div>
