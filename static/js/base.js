@@ -350,6 +350,103 @@
       sendActivityPing('interval');
     }, HEARTBEAT_INTERVAL_MS);
   })();
+  (function () {
+    const IMPORTANT_TEXT = /start|access|pricing|demo|words|study|support|contact|saved|history|review|test|library|continue/i;
+    const sentLongView = new Set();
+    let lastClick = { key: '', at: 0, count: 0 };
+    let lastEventAt = 0;
+
+    function currentPath() {
+      return window.location.pathname || '/';
+    }
+
+    function canSendJourneyEvent() {
+      const path = currentPath();
+      return hasAnalyticsConsent()
+        && !document.hidden
+        && !path.startsWith('/admin')
+        && !path.startsWith('/api/')
+        && !path.startsWith('/static/');
+    }
+
+    function classifyAction(target, label) {
+      const href = target?.getAttribute?.('href') || '';
+      let path = currentPath();
+      try {
+        path = href ? new URL(href, window.location.origin).pathname : path;
+      } catch (e) {}
+      if (path.startsWith('/pricing')) return 'pricing_open';
+      if (path.startsWith('/exam-words')) return 'words_open';
+      if (path.startsWith('/study-guide')) return 'study_guide_open';
+      if (path.startsWith('/support') || path.startsWith('/contact')) return 'support_open';
+      if (path.startsWith('/test/')) return 'test_start';
+      if (IMPORTANT_TEXT.test(label)) return 'important_click';
+      return '';
+    }
+
+    async function sendJourneyEvent(eventType, label) {
+      if (!canSendJourneyEvent() || !eventType) return;
+      const now = Date.now();
+      if (now - lastEventAt < 900 && eventType !== 'repeat_click') return;
+      lastEventAt = now;
+
+      try {
+        await fetch('/api/activity/event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event_type: eventType,
+            path: currentPath(),
+            label: String(label || '').slice(0, 90),
+            analytics_consent: true,
+          }),
+        });
+      } catch (error) {
+        console.debug('Journey event skipped', error);
+      }
+    }
+    window.sendJourneyEvent = sendJourneyEvent;
+
+    document.addEventListener('click', (event) => {
+      const target = event.target.closest('a, button');
+      if (!target || target.closest('.sidebar, .cookie-consent')) return;
+
+      const label = (target.dataset.journeyLabel || target.textContent || target.getAttribute('aria-label') || '').replace(/\s+/g, ' ').trim();
+      if (!label || label.length < 2) return;
+
+      const key = `${currentPath()}|${label.toLowerCase()}`;
+      const now = Date.now();
+      if (lastClick.key === key && now - lastClick.at < 4200) {
+        lastClick.count += 1;
+      } else {
+        lastClick = { key, at: now, count: 1 };
+      }
+      lastClick.at = now;
+
+      if (lastClick.count >= 3) {
+        sendJourneyEvent('repeat_click', label);
+        lastClick.count = 0;
+        return;
+      }
+
+      const eventType = classifyAction(target, label);
+      if (eventType) sendJourneyEvent(eventType, label);
+    }, true);
+
+    window.setTimeout(() => {
+      const path = currentPath();
+      const shouldTrackLongView = path === '/pricing'
+        || path === '/exam-words-demo'
+        || path === '/study-guide'
+        || path.startsWith('/test/')
+        || path.startsWith('/support')
+        || path.startsWith('/contact');
+      if (shouldTrackLongView && !sentLongView.has(path)) {
+        sentLongView.add(path);
+        sendJourneyEvent('long_view', `Long view: ${path}`);
+      }
+    }, 75000);
+  })();
   if (window.WEX_SUPPORT_UNREAD_URL) {
     refreshSupportUnreadUI();
     window.setInterval(() => {

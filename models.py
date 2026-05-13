@@ -286,6 +286,18 @@ class UserVisitStat(Base):
     )
 
 
+class JourneyEvent(Base):
+    __tablename__ = "journey_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    session_key = Column(String, nullable=False, index=True)
+    event_type = Column(String, nullable=False, index=True)
+    page_path = Column(String, nullable=False, index=True)
+    label = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+
+
 class Certificate(Base):
     __tablename__ = "certificates"
 

@@ -255,6 +255,60 @@
     font-size: 0.8rem;
     line-height: 1.5;
   }
+  .journey-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+  .journey-signal {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    padding: 13px 14px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--bg-card) 82%, transparent);
+  }
+  .journey-signal strong {
+    display: block;
+    font-size: 0.9rem;
+    letter-spacing: -0.02em;
+  }
+  .journey-signal span {
+    display: block;
+    margin-top: 4px;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    line-height: 1.4;
+  }
+  .journey-count {
+    align-self: center;
+    min-width: 42px;
+    text-align: right;
+    font-size: 1.05rem;
+    font-weight: 900;
+  }
+  .journey-step-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .journey-step-row:last-child {
+    border-bottom: 0;
+  }
+  .journey-step-title {
+    font-weight: 850;
+    font-size: 0.88rem;
+  }
+  .journey-step-meta {
+    margin-top: 3px;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    line-height: 1.45;
+  }
   .activity-modal-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -392,6 +446,9 @@
       grid-template-columns: repeat(2, 1fr);
     }
     .admin-analytics-layout {
+      grid-template-columns: 1fr;
+    }
+    .journey-grid {
       grid-template-columns: 1fr;
     }
     .admin-table-wrap {
@@ -688,6 +745,47 @@
       </div>
       {% else %}
       <div style="color:var(--text-muted);font-size:0.86rem;line-height:1.6;">No learner account visits yet. A learner appears here only after accepting analytics.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="admin-analytics-intro">
+    <div>
+      <h2>Journey signals</h2>
+      <p>Consent-based behavior hints from learner actions. Use this to spot confusing steps: repeated clicks, long page views, support opens, and key study transitions.</p>
+    </div>
+    <span class="admin-privacy-pill"><i class="fa-solid fa-chart-line"></i> {{ journey_insights.total_events }} events</span>
+  </div>
+
+  <div class="journey-grid">
+    <div class="admin-analytics-panel">
+      <div class="admin-panel-label">Possible friction</div>
+      <div class="admin-mini-table">
+        {% for signal in journey_insights.signals %}
+        <div class="journey-signal">
+          <div>
+            <strong>{{ signal.label }}</strong>
+            <span>{{ signal.meaning }}</span>
+          </div>
+          <div class="journey-count">{{ signal.count }}</div>
+        </div>
+        {% else %}
+        <div class="analytics-note">No behavior signals yet. They appear only after a learner accepts analytics and uses key actions.</div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="admin-analytics-panel">
+      <div class="admin-panel-label">Recent learner steps</div>
+      {% for step in journey_insights.recent %}
+      <div class="journey-step-row">
+        <div>
+          <div class="journey-step-title">{{ step.user_name }}{% if step.public_id %} · {{ step.public_id }}{% endif %}</div>
+          <div class="journey-step-meta">{{ step.label }} on {{ step.page_label }} · {{ step.page_path }}</div>
+        </div>
+        <div class="admin-mini-meta" style="text-align:right;white-space:nowrap;">{{ step.time.strftime('%d %b %H:%M') }}</div>
+      </div>
+      {% else %}
+      <div class="analytics-note">No recent learner steps yet.</div>
       {% endfor %}
     </div>
   </div>

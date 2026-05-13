@@ -71,6 +71,7 @@ ACTIVITY_ONLINE_WINDOW = timedelta(minutes=2)
 ACTIVITY_5_MIN_WINDOW = timedelta(minutes=5)
 ACTIVITY_10_MIN_WINDOW = timedelta(minutes=10)
 ACTIVITY_RETENTION_WINDOW = timedelta(hours=24)
+JOURNEY_EVENT_RETENTION_DAYS = 30
 PUBLIC_ID_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 BASE_DIR = Path(__file__).resolve().parent
 TRANSLATION_SEED_PATH = BASE_DIR / "data" / "translation_seed.json"
@@ -485,6 +486,64 @@ def describe_activity_path(path: str) -> dict:
     return {"path": normalized, "label": title, "meta": "Site page"}
 
 
+def _activity_session_key(session_id: str) -> str:
+    raw = str(session_id or "").strip()
+    return hmac.new(SECRET_KEY.encode(), raw.encode(), hashlib.sha256).hexdigest()[:32]
+
+
+def _clean_journey_label(label: str) -> str:
+    cleaned = re.sub(r"\s+", " ", str(label or "")).strip()
+    cleaned = re.sub(r"[^A-Za-z0-9А-Яа-яЁёÆØÅæøå.,:;!?()/_ +#-]", "", cleaned)
+    return cleaned[:90]
+
+
+def record_journey_event(
+    db: Session,
+    *,
+    event_type: str,
+    page_path: str,
+    label: str,
+    current_user: Optional[models.User],
+    session_id: str,
+    consent_granted: bool,
+    now: Optional[datetime] = None,
+) -> bool:
+    if not consent_granted:
+        return False
+    if current_user and current_user.is_admin:
+        return False
+
+    allowed_events = {
+        "important_click",
+        "repeat_click",
+        "long_view",
+        "support_open",
+        "test_start",
+        "pricing_open",
+        "words_open",
+        "study_guide_open",
+    }
+    clean_event = re.sub(r"[^a-z_]", "", str(event_type or "").lower())[:32]
+    if clean_event not in allowed_events:
+        return False
+
+    normalized_path = normalize_activity_path(page_path)
+    if not normalized_path or not include_in_admin_visit_analytics(normalized_path):
+        return False
+
+    session_key = _activity_session_key(session_id)
+    event = models.JourneyEvent(
+        user_id=current_user.id if current_user else None,
+        session_key=session_key,
+        event_type=clean_event,
+        page_path=normalized_path,
+        label=_clean_journey_label(label),
+        created_at=now or datetime.utcnow(),
+    )
+    db.add(event)
+    return True
+
+
 def build_live_activity_overview(db: Session) -> dict:
     now = datetime.utcnow()
     recent_cutoff = now - ACTIVITY_10_MIN_WINDOW
@@ -670,6 +729,77 @@ def build_analytics_overview(db: Session) -> dict:
             for path, count in page_counter.most_common(8)
         ],
         "top_users": top_users,
+    }
+
+
+def build_journey_insights(db: Session) -> dict:
+    now = datetime.utcnow()
+    start_at = now - timedelta(days=7)
+    rows = (
+        db.query(models.JourneyEvent)
+        .outerjoin(models.User, models.JourneyEvent.user_id == models.User.id)
+        .filter(models.JourneyEvent.created_at >= start_at)
+        .filter(sql_or_(models.JourneyEvent.user_id.is_(None), models.User.is_admin.is_(False), models.User.is_admin.is_(None)))
+        .order_by(models.JourneyEvent.created_at.desc())
+        .limit(500)
+        .all()
+    )
+
+    event_counts = Counter(row.event_type for row in rows)
+    path_counts = Counter(row.page_path for row in rows)
+    signal_map = {
+        "repeat_click": ("Repeated clicks", "User tapped the same action several times quickly"),
+        "long_view": ("Long page view", "User stayed on one page for a long time"),
+        "pricing_open": ("Opened access page", "User checked subscription/access options"),
+        "words_open": ("Opened Exam Words", "User looked at the vocabulary helper"),
+        "study_guide_open": ("Opened study guide", "User needed preparation guidance"),
+        "support_open": ("Opened support", "User may need help"),
+        "test_start": ("Started a test", "User moved into practice"),
+        "important_click": ("Important click", "User clicked a key study action"),
+    }
+
+    signals = []
+    for event_type, count in event_counts.most_common(8):
+        title, meaning = signal_map.get(event_type, (event_type.replace("_", " ").title(), "Learner action"))
+        signals.append({
+            "event_type": event_type,
+            "label": title,
+            "meaning": meaning,
+            "count": count,
+        })
+
+    recent_query = (
+        db.query(models.JourneyEvent, models.User)
+        .outerjoin(models.User, models.JourneyEvent.user_id == models.User.id)
+        .filter(models.JourneyEvent.created_at >= start_at)
+        .filter(sql_or_(models.JourneyEvent.user_id.is_(None), models.User.is_admin.is_(False), models.User.is_admin.is_(None)))
+        .order_by(models.JourneyEvent.created_at.desc())
+        .limit(12)
+        .all()
+    )
+    recent = []
+    for event, account in recent_query:
+        path_info = describe_activity_path(event.page_path)
+        recent.append({
+            "time": event.created_at,
+            "event_type": event.event_type,
+            "label": event.label or signal_map.get(event.event_type, ("Action", ""))[0],
+            "page_label": path_info["label"],
+            "page_path": path_info["path"],
+            "user_name": account.name if account else "Guest",
+            "public_id": account.public_id if account else "",
+        })
+
+    top_paths = []
+    for path, count in path_counts.most_common(5):
+        path_info = describe_activity_path(path)
+        top_paths.append({**path_info, "count": count})
+
+    return {
+        "signals": signals,
+        "recent": recent,
+        "top_paths": top_paths,
+        "total_events": len(rows),
     }
 
 
@@ -2266,7 +2396,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260513-study-flow"
+templates.env.globals["asset_version"] = "20260513-journey-signals"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 
@@ -3776,6 +3906,7 @@ async def admin_page(request: Request, db: Session = Depends(get_db)):
     unread_count = sum(1 for m in messages if not m.is_read)
     activity_overview = build_live_activity_overview(db)
     analytics_overview = build_analytics_overview(db)
+    journey_insights = build_journey_insights(db)
     active_tab = str(request.query_params.get("tab", "users") or "users").strip().lower()
     if active_tab not in {"users", "messages", "promos"}:
         active_tab = "users"
@@ -3790,6 +3921,7 @@ async def admin_page(request: Request, db: Session = Depends(get_db)):
         "can_manage_admin_roles": can_manage_admin_roles(user),
         "activity_overview": activity_overview,
         "analytics_overview": analytics_overview,
+        "journey_insights": journey_insights,
     })
 
 
@@ -3860,6 +3992,43 @@ async def api_activity_ping(request: Request, db: Session = Depends(get_db)):
 
 
 # ─── Free test (no auth) ───────────────────────────────────────────────────────
+
+@app.post("/api/activity/event")
+async def api_activity_event(request: Request, db: Session = Depends(get_db)):
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+
+    analytics_consent = bool(data.get("analytics_consent", False))
+    if not analytics_consent:
+        return JSONResponse({"success": True, "tracked": False, "reason": "analytics_consent_required"})
+
+    session_id = get_or_create_activity_session_id(request)
+    current_user = get_current_user(request, db)
+    tracked = record_journey_event(
+        db,
+        event_type=str(data.get("event_type", "") or ""),
+        page_path=str(data.get("path", "") or ""),
+        label=str(data.get("label", "") or ""),
+        current_user=current_user,
+        session_id=session_id,
+        consent_granted=analytics_consent,
+        now=datetime.utcnow(),
+    )
+
+    if tracked and random.random() < 0.03:
+        cutoff = datetime.utcnow() - timedelta(days=JOURNEY_EVENT_RETENTION_DAYS)
+        db.query(models.JourneyEvent).filter(
+            models.JourneyEvent.created_at < cutoff
+        ).delete(synchronize_session=False)
+
+    db.commit()
+    response = JSONResponse({"success": True, "tracked": tracked})
+    if analytics_consent:
+        set_activity_cookie(response, session_id, request)
+    return response
+
 
 @app.get("/test/1/free", response_class=HTMLResponse)
 async def free_test_page(request: Request, db: Session = Depends(get_db)):
