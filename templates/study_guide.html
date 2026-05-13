@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}How to Study - WEX Theory{% endblock %}
+
+{% block body %}
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" id="guideBurgerBtn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
+      <a href="/" class="logo">WEXTheory</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
+      {% if user %}
+      <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
+      {% else %}
+      <a href="/login" class="btn-ghost btn-sm">Sign In</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="info-page">
+  <section class="info-hero">
+    <div class="info-eyebrow">Study flow</div>
+    <h1 class="info-title">A clear way to prepare</h1>
+    <p class="info-lede">
+      Use the starter sample, learn the exam vocabulary, then move through the full tests and review the mistakes that matter.
+    </p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:22px;">
+      {% if user %}
+      <a href="/dashboard" class="btn-primary btn-sm">Open dashboard</a>
+      {% else %}
+      <a href="/pricing" class="btn-primary btn-sm">Try free demo</a>
+      {% endif %}
+      <a href="/exam-words-demo" class="btn-ghost btn-sm">Preview Exam Words</a>
+    </div>
+  </section>
+
+  <div class="info-card-grid">
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-solid fa-play"></i></div>
+      <h3>1. Start with the sample</h3>
+      <p>Use Starter Test 0 to understand the format before going into the full practice library.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-solid fa-language"></i></div>
+      <h3>2. Check Exam Words</h3>
+      <p>Review key Danish/English exam terms and the Russian helper translation before harder tests.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-solid fa-list-check"></i></div>
+      <h3>3. Complete tests 1-13</h3>
+      <p>Work through the structured tests with road photos, explanations, saved questions, and progress.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-solid fa-shuffle"></i></div>
+      <h3>4. Use mixed practice</h3>
+      <p>The extra mixed test gives 25 questions from across the library, reshuffled each time.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-regular fa-bookmark"></i></div>
+      <h3>5. Review saved questions</h3>
+      <p>Bookmark unclear questions during tests and return to them from Saved when you revise.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-solid fa-rotate-right"></i></div>
+      <h3>6. Repeat weak areas</h3>
+      <p>After each result, review wrong answers first, then repeat the test after a short break.</p>
+    </div>
+  </div>
+
+  <section class="info-callout">
+    <div>
+      <strong>Good order for most learners</strong>
+      <p>Starter sample -> Exam Words preview -> tests 1-13 -> saved questions -> mixed practice.</p>
+    </div>
+    <a href="/dashboard" class="btn-primary btn-sm">Continue studying</a>
+  </section>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/faq">FAQ</a>
+      <a href="/contact">Contact</a>
+      <a href="/privacy">Privacy</a>
+    </div>
+    <div>&copy; 2026 WEXTheory</div>
+  </div>
+</footer>
+{% endblock %}
+

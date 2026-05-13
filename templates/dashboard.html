@@ -169,6 +169,68 @@
   .study-tool-card.locked {
     opacity: 0.78;
   }
+  .study-start {
+    margin: 0 0 18px;
+    padding: 18px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background:
+      radial-gradient(circle at 0 0, rgba(14,165,233,0.10), transparent 34%),
+      linear-gradient(135deg, color-mix(in srgb, var(--bg-card) 92%, #fff 8%), var(--bg-card));
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 16px;
+    align-items: center;
+  }
+  .study-start-title {
+    font-size: 1.15rem;
+    font-weight: 900;
+    letter-spacing: -0.035em;
+    margin-bottom: 6px;
+  }
+  .study-start-copy {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+  .study-start-steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .study-start-step {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 12px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg-card) 86%, transparent);
+    min-width: 0;
+  }
+  .study-start-step i {
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #0ea5e9;
+    background: rgba(14,165,233,0.11);
+    flex: 0 0 auto;
+  }
+  .study-start-step strong {
+    display: block;
+    font-size: 0.84rem;
+    line-height: 1.2;
+  }
+  .study-start-step span {
+    display: block;
+    margin-top: 3px;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
   .sub-status-card {
     margin-top: 14px;
     max-width: 420px;
@@ -480,6 +542,12 @@
     .study-tool-card {
       grid-template-columns: 1fr;
     }
+    .study-start {
+      grid-template-columns: 1fr;
+    }
+    .study-start-steps {
+      grid-template-columns: 1fr;
+    }
     .study-tool-actions {
       display: flex;
       align-items: center;
@@ -694,6 +762,33 @@
     </div>
   </div>
   </section>
+
+  {% if show_study_start %}
+  <section class="study-start">
+    <div>
+      <div class="study-start-title">Start here</div>
+      <p class="study-start-copy">A simple first path: try the sample, preview the vocabulary, then move into the full tests when you are ready.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
+        <a href="/study-guide" class="btn-primary btn-sm">How to study</a>
+        <a href="/exam-words-demo" class="btn-ghost btn-sm">Words demo</a>
+      </div>
+    </div>
+    <div class="study-start-steps">
+      <div class="study-start-step">
+        <i class="fa-solid fa-play"></i>
+        <div><strong>Sample</strong><span>Start with Test 0.</span></div>
+      </div>
+      <div class="study-start-step">
+        <i class="fa-solid fa-language"></i>
+        <div><strong>Words</strong><span>Check key exam terms.</span></div>
+      </div>
+      <div class="study-start-step">
+        <i class="fa-solid fa-list-check"></i>
+        <div><strong>Tests</strong><span>Continue through 1-13.</span></div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
 
   <section class="study-tool-grid">
     <div class="study-tool-card {% if not has_access %}locked{% endif %}">

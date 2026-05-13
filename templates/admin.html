@@ -204,6 +204,59 @@
     font-size: 0.95rem;
     font-weight: 900;
   }
+  .activity-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin: 16px 0;
+  }
+  .activity-stat {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--bg-card) 86%, transparent);
+  }
+  .activity-stat strong {
+    display: block;
+    font-size: 1.25rem;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .activity-stat span {
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .activity-list {
+    display: grid;
+    gap: 8px;
+  }
+  .activity-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .activity-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--bg-card) 82%, transparent);
+  }
+  .activity-row-title {
+    font-weight: 800;
+    font-size: 0.88rem;
+  }
+  .activity-row-meta {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    margin-top: 2px;
+  }
   .sensitive-toggle {
     position: relative;
     display: inline-flex;
@@ -382,6 +435,12 @@
       margin: 12px;
       max-height: calc(100vh - 24px);
       overflow: auto;
+    }
+    .activity-modal-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .activity-detail-grid {
+      grid-template-columns: 1fr;
     }
   }
   @media (max-width: 560px) {
@@ -640,6 +699,9 @@
                 {% set can_edit_target = can_manage_admin_roles or not u.is_admin or u.id == user.id %}
                 {% set can_delete_target = u.id != user.id and (can_manage_admin_roles or not u.is_admin) and not u.is_super_admin %}
                 {% if can_edit_target %}
+                <button class="btn-ghost btn-sm user-activity-btn"
+                        data-user-id="{{ u.id }}"
+                        data-user-name='{{ u.name | tojson | safe }}'>Activity</button>
                 <button class="btn-ghost btn-sm user-edit-btn"
                         data-user-id="{{ u.id }}"
                         data-user-name='{{ u.name | tojson | safe }}'
@@ -1029,6 +1091,19 @@
     <div id="msgModalAttachment" style="display:none;margin-bottom:16px;padding:12px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);"></div>
     <hr class="divider" style="margin:16px 0;">
     <div id="msgModalBody" style="white-space:pre-wrap;font-size:0.9rem;line-height:1.7;color:var(--text-muted);"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="activityModal">
+  <div class="modal modal-wide" style="max-width:760px;">
+    <div class="modal-header">
+      <h3 style="font-weight:800;font-size:1.15rem;" id="activityModalTitle">User activity</h3>
+      <button class="modal-close" id="closeActivityModalBtn">&times;</button>
+    </div>
+    <div id="activityModalMeta" style="color:var(--text-muted);font-size:0.84rem;line-height:1.6;"></div>
+    <div id="activityModalBody">
+      <div style="padding:28px;text-align:center;color:var(--text-muted);">Loading activity...</div>
+    </div>
   </div>
 </div>
 

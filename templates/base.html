@@ -272,7 +272,10 @@
       <a href="/dashboard" class="sb-item{% if current_path.startswith('/dashboard') %} is-current{% endif %}">
         <span class="sb-ic sb-ic--dashboard"><i class="fa-solid fa-table-columns"></i></span><span>Dashboard</span>
       </a>
-      <a href="/exam-words" class="sb-item{% if current_path.startswith('/exam-words') %} is-current{% endif %}">
+      <a href="/study-guide" class="sb-item{% if current_path.startswith('/study-guide') %} is-current{% endif %}">
+        <span class="sb-ic sb-ic--about"><i class="fa-solid fa-route"></i></span><span>How to Study</span>
+      </a>
+      <a href="{% if user.is_admin or user.subscription_status == 'active' %}/exam-words{% else %}/exam-words-demo{% endif %}" class="sb-item{% if current_path.startswith('/exam-words') %} is-current{% endif %}">
         <span class="sb-ic sb-ic--words"><i class="fa-solid fa-language"></i></span><span>Exam Words 2026</span>
       </a>
       <a href="/profile" class="sb-item{% if current_path.startswith('/profile') %} is-current{% endif %}">
@@ -312,6 +315,11 @@
       <a href="/faq" class="sb-item{% if current_path.startswith('/faq') %} is-current{% endif %}">
         <span class="sb-ic sb-ic--faq"><i class="fa-regular fa-circle-question"></i></span><span>FAQ</span>
       </a>
+      {% if not (user is defined and user) %}
+        <a href="/study-guide" class="sb-item{% if current_path.startswith('/study-guide') %} is-current{% endif %}">
+          <span class="sb-ic sb-ic--about"><i class="fa-solid fa-route"></i></span><span>How to Study</span>
+        </a>
+      {% endif %}
       <a href="/contact" class="sb-item{% if current_path.startswith('/contact') %} is-current{% endif %}">
         <span class="sb-ic sb-ic--contact"><i class="fa-regular fa-envelope"></i></span><span>Contact</span>
       </a>

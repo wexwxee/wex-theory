@@ -2208,7 +2208,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260513-dashboard-access-ui"
+templates.env.globals["asset_version"] = "20260513-study-flow"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 
@@ -2924,6 +2924,12 @@ async def faq_page(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse(request, "faq.html", {"request": request, "user": user})
 
 
+@app.get("/study-guide", response_class=HTMLResponse)
+async def study_guide_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    return templates.TemplateResponse(request, "study_guide.html", {"request": request, "user": user})
+
+
 @app.get("/contact", response_class=HTMLResponse)
 async def contact_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
@@ -3345,6 +3351,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         "latest_scores_by_mode": latest_scores_by_mode,
         "completed": completed, "has_access": has_full_access,
         "library_total": library_total,
+        "show_study_start": completed == 0,
         "exam_wording_statuses": exam_wording_statuses,
         "access_expires_at": access_expires_at,
         "now": datetime.utcnow(),
@@ -5041,6 +5048,116 @@ async def api_admin_users(request: Request, db: Session = Depends(get_db)):
          "active": u.expires_at > now}
         for u in db.query(models.User).order_by(models.User.created_at.desc()).all()
     ]
+
+
+@app.get("/api/admin/users/{user_id}/activity")
+async def api_admin_user_activity(user_id: int, request: Request, db: Session = Depends(get_db)):
+    admin = get_current_user(request, db)
+    if not admin or not admin.is_admin:
+        return JSONResponse({"error": "Forbidden"}, status_code=403)
+
+    target = db.query(models.User).filter(models.User.id == user_id).first()
+    if not target:
+        return JSONResponse({"error": "User not found"}, status_code=404)
+
+    now = datetime.utcnow()
+    week_start = now.date() - timedelta(days=6)
+    attempts = (
+        db.query(models.UserTestAttempt)
+        .filter(models.UserTestAttempt.user_id == target.id)
+        .order_by(models.UserTestAttempt.started_at.desc())
+        .limit(12)
+        .all()
+    )
+    finished_attempts = [attempt for attempt in attempts if attempt.finished_at is not None]
+    scored_attempts = [attempt for attempt in finished_attempts if attempt.score is not None]
+    visit_rows = (
+        db.query(models.UserVisitStat)
+        .filter(
+            models.UserVisitStat.user_id == target.id,
+            models.UserVisitStat.day >= week_start,
+        )
+        .order_by(models.UserVisitStat.day.asc())
+        .all()
+    )
+    word_rows = (
+        db.query(models.ExamWordProgress.status, sql_func.count(models.ExamWordProgress.id))
+        .filter(models.ExamWordProgress.user_id == target.id)
+        .group_by(models.ExamWordProgress.status)
+        .all()
+    )
+    word_counts = {str(status or ""): int(count or 0) for status, count in word_rows}
+    support_threads = db.query(sql_func.count(models.SupportThread.id)).filter(
+        models.SupportThread.user_id == target.id
+    ).scalar() or 0
+    support_messages = (
+        db.query(sql_func.count(models.SupportMessage.id))
+        .join(models.SupportThread, models.SupportMessage.thread_id == models.SupportThread.id)
+        .filter(models.SupportThread.user_id == target.id)
+        .scalar()
+        or 0
+    )
+    saved_count = db.query(sql_func.count(models.Bookmark.id)).filter(
+        models.Bookmark.user_id == target.id
+    ).scalar() or 0
+
+    total_week_visits = sum(int(row.visits or 0) for row in visit_rows)
+    last_seen = max((row.last_seen_at for row in visit_rows if row.last_seen_at), default=None)
+
+    recent_attempts = []
+    for attempt in attempts[:6]:
+        title = getattr(attempt.test, "title", None) if attempt.test else None
+        if is_exam_mode_test(attempt.test_id):
+            title = EXAM_MODE_TEST_TITLE
+        recent_attempts.append({
+            "id": attempt.id,
+            "test_id": attempt.test_id,
+            "title": title or f"Test {attempt.test_id}",
+            "score": attempt.score,
+            "passed": bool(attempt.passed) if attempt.passed is not None else None,
+            "finished_at": attempt.finished_at.isoformat() if attempt.finished_at else None,
+            "started_at": attempt.started_at.isoformat() if attempt.started_at else None,
+            "wording_mode": normalize_wording_mode(getattr(attempt, "wording_mode", None), test_id=attempt.test_id),
+        })
+
+    daily_visits = []
+    rows_by_day = {row.day: row for row in visit_rows}
+    for i in range(7):
+        day_value = week_start + timedelta(days=i)
+        row = rows_by_day.get(day_value)
+        daily_visits.append({
+            "date": day_value.strftime("%Y-%m-%d"),
+            "label": _day_start(day_value).strftime("%a"),
+            "visits": int(row.visits or 0) if row else 0,
+        })
+
+    return {
+        "user": {
+            "id": target.id,
+            "public_id": target.public_id,
+            "name": target.name,
+            "email": target.email,
+            "created_at": target.created_at.isoformat() if target.created_at else None,
+            "expires_at": target.expires_at.isoformat() if target.expires_at else None,
+            "subscription_status": target.subscription_status,
+            "is_admin": bool(target.is_admin),
+        },
+        "summary": {
+            "attempts": len(attempts),
+            "finished_attempts": len(finished_attempts),
+            "passed_attempts": sum(1 for attempt in finished_attempts if attempt.passed),
+            "average_score": round(sum((attempt.score or 0) for attempt in scored_attempts) / len(scored_attempts), 1) if scored_attempts else 0,
+            "saved_questions": int(saved_count),
+            "word_known": word_counts.get("known", 0),
+            "word_hard": word_counts.get("hard", 0),
+            "week_visits": total_week_visits,
+            "last_seen": last_seen.isoformat() if last_seen else None,
+            "support_threads": int(support_threads),
+            "support_messages": int(support_messages),
+        },
+        "daily_visits": daily_visits,
+        "recent_attempts": recent_attempts,
+    }
 
 
 @app.post("/api/admin/users")

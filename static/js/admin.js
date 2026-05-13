@@ -11,6 +11,29 @@
     }
   }
 
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    }[char]));
+  }
+
+  function formatDateTime(value) {
+    if (!value) return 'Not yet';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Not yet';
+    return date.toLocaleString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
   function switchTab(tab) {
     document.getElementById('panelUsers').style.display = tab === 'users' ? 'block' : 'none';
     document.getElementById('panelMessages').style.display = tab === 'messages' ? 'block' : 'none';
@@ -304,6 +327,87 @@
   }
   function closeReset() { document.getElementById('resetModal').classList.remove('open'); }
 
+  async function openActivityModal(id, name) {
+    const modal = document.getElementById('activityModal');
+    const title = document.getElementById('activityModalTitle');
+    const meta = document.getElementById('activityModalMeta');
+    const body = document.getElementById('activityModalBody');
+    if (!modal || !title || !meta || !body) return;
+
+    title.textContent = `Activity · ${name}`;
+    meta.textContent = 'Loading account activity, visits, attempts, words, and support history.';
+    body.innerHTML = '<div style="padding:28px;text-align:center;color:var(--text-muted);">Loading activity...</div>';
+    modal.classList.add('open');
+
+    try {
+      const res = await fetch(`/api/admin/users/${id}/activity`, { credentials: 'same-origin' });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        body.innerHTML = `<div style="padding:20px;color:var(--wrong);">${escapeHtml(data.error || 'Could not load activity')}</div>`;
+        return;
+      }
+
+      const user = data.user || {};
+      const summary = data.summary || {};
+      const attempts = Array.isArray(data.recent_attempts) ? data.recent_attempts : [];
+      const visits = Array.isArray(data.daily_visits) ? data.daily_visits : [];
+      meta.textContent = `${user.public_id || 'No public ID'} · ${user.email || ''} · access ${formatDateTime(user.expires_at)}`;
+
+      const maxVisits = Math.max(1, ...visits.map((item) => Number(item.visits || 0)));
+      const visitRows = visits.map((item) => {
+        const width = Math.max(4, Math.round((Number(item.visits || 0) / maxVisits) * 100));
+        return `
+          <div class="activity-row">
+            <div>
+              <div class="activity-row-title">${escapeHtml(item.label)}</div>
+              <div class="activity-row-meta">${escapeHtml(item.date)}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;min-width:130px;">
+              <div style="height:8px;flex:1;border-radius:999px;background:color-mix(in srgb,var(--text) 8%,transparent);overflow:hidden;">
+                <div style="height:100%;width:${width}%;background:#2563eb;border-radius:999px;"></div>
+              </div>
+              <strong>${Number(item.visits || 0)}</strong>
+            </div>
+          </div>`;
+      }).join('');
+
+      const attemptRows = attempts.length ? attempts.map((attempt) => `
+        <div class="activity-row">
+          <div>
+            <div class="activity-row-title">${escapeHtml(attempt.title || `Test ${attempt.test_id}`)}</div>
+            <div class="activity-row-meta">${escapeHtml(attempt.wording_mode || 'original')} · ${formatDateTime(attempt.finished_at || attempt.started_at)}</div>
+          </div>
+          <strong>${attempt.score == null ? 'open' : `${attempt.score}/25`}</strong>
+        </div>
+      `).join('') : '<div style="color:var(--text-muted);font-size:0.86rem;">No attempts yet.</div>';
+
+      body.innerHTML = `
+        <div class="activity-modal-grid">
+          <div class="activity-stat"><strong>${Number(summary.week_visits || 0)}</strong><span>7d visits</span></div>
+          <div class="activity-stat"><strong>${Number(summary.finished_attempts || 0)}</strong><span>finished tests</span></div>
+          <div class="activity-stat"><strong>${Number(summary.average_score || 0)}</strong><span>avg score</span></div>
+          <div class="activity-stat"><strong>${Number(summary.saved_questions || 0)}</strong><span>saved</span></div>
+          <div class="activity-stat"><strong>${Number(summary.word_known || 0)}</strong><span>known words</span></div>
+          <div class="activity-stat"><strong>${Number(summary.word_hard || 0)}</strong><span>hard words</span></div>
+          <div class="activity-stat"><strong>${Number(summary.support_threads || 0)}</strong><span>threads</span></div>
+          <div class="activity-stat"><strong>${formatDateTime(summary.last_seen).split(',')[0]}</strong><span>last seen</span></div>
+        </div>
+        <div class="activity-detail-grid">
+          <div>
+            <h4 style="font-size:0.9rem;font-weight:900;margin:0 0 10px;">Visits this week</h4>
+            <div class="activity-list">${visitRows}</div>
+          </div>
+          <div>
+            <h4 style="font-size:0.9rem;font-weight:900;margin:0 0 10px;">Recent attempts</h4>
+            <div class="activity-list">${attemptRows}</div>
+          </div>
+        </div>
+      `;
+    } catch (e) {
+      body.innerHTML = '<div style="padding:20px;color:var(--wrong);">Connection error.</div>';
+    }
+  }
+
   async function saveReset() {
     const id = document.getElementById('resetUserId').value;
     const password = document.getElementById('resetPassword').value;
@@ -507,6 +611,13 @@
     ));
   });
 
+  document.querySelectorAll('.user-activity-btn').forEach((btn) => {
+    btn.addEventListener('click', () => openActivityModal(
+      Number(btn.dataset.userId),
+      parseJsonDataset(btn.dataset.userName, 'User')
+    ));
+  });
+
   document.querySelectorAll('.user-delete-btn').forEach((btn) => {
     btn.addEventListener('click', () => deleteUser(
       Number(btn.dataset.userId),
@@ -547,6 +658,9 @@
   document.getElementById('resetBtn')?.addEventListener('click', saveReset);
   document.getElementById('closeMsgModalBtn')?.addEventListener('click', () => {
     document.getElementById('msgModal').classList.remove('open');
+  });
+  document.getElementById('closeActivityModalBtn')?.addEventListener('click', () => {
+    document.getElementById('activityModal').classList.remove('open');
   });
   document.getElementById('createPromoBtn')?.addEventListener('click', createPromoCode);
   bindPromoCopyButtons();
