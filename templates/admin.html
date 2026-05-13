@@ -44,11 +44,115 @@
     gap: 12px;
     margin-bottom: 16px;
   }
+  .admin-analytics-intro {
+    padding: 18px 20px;
+    margin: 8px 0 14px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background:
+      radial-gradient(circle at 0 0, rgba(59,130,246,0.12), transparent 34%),
+      color-mix(in srgb, var(--bg-card) 72%, transparent);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .admin-analytics-intro h2 {
+    font-size: 1.08rem;
+    font-weight: 900;
+    letter-spacing: -0.025em;
+    margin: 0 0 4px;
+  }
+  .admin-analytics-intro p {
+    margin: 0;
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    line-height: 1.55;
+    max-width: 780px;
+  }
+  .admin-privacy-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(34,197,94,0.28);
+    background: rgba(34,197,94,0.10);
+    color: #16a34a;
+    font-size: 0.74rem;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .admin-stat-card {
+    position: relative;
+    overflow: hidden;
+    min-height: 118px;
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--bg-card) 88%, #fff 12%), var(--bg-card));
+    box-shadow: 0 18px 44px rgba(0,0,0,0.04);
+  }
+  .admin-stat-card::after {
+    content: "";
+    position: absolute;
+    right: -34px;
+    top: -42px;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: var(--stat-glow, rgba(59,130,246,0.12));
+    pointer-events: none;
+  }
+  .admin-stat-label {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .admin-stat-value {
+    margin-top: 16px;
+    font-size: 2.28rem;
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.05em;
+  }
+  .admin-stat-sub {
+    margin-top: 8px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
   .admin-analytics-layout {
     display: grid;
     grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.8fr);
     gap: 14px;
     margin-bottom: 32px;
+  }
+  .admin-analytics-panel {
+    padding: 20px;
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--bg-card) 88%, transparent);
+    border: 1px solid var(--border);
+  }
+  [data-theme="light"] .admin-analytics-panel,
+  [data-theme="light"] .admin-stat-card,
+  [data-theme="light"] .admin-analytics-intro {
+    background:
+      radial-gradient(circle at 100% 0, rgba(59,130,246,0.08), transparent 30%),
+      #fff;
+  }
+  .admin-panel-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
   }
   .admin-mini-table {
     display: grid;
@@ -56,13 +160,30 @@
   }
   .admin-mini-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 12px;
     align-items: center;
-    padding: 10px 12px;
+    padding: 12px;
     border: 1px solid var(--border);
-    border-radius: 12px;
-    background: color-mix(in srgb, var(--bg-card) 84%, transparent);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--bg-card) 78%, transparent);
+    transition: transform 0.16s ease, border-color 0.16s ease, background-color 0.16s ease;
+  }
+  .admin-mini-row:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--text) 18%, var(--border) 82%);
+  }
+  .admin-mini-index {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--text) 8%, transparent);
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-weight: 900;
   }
   .admin-mini-title {
     min-width: 0;
@@ -76,6 +197,12 @@
     font-size: 0.76rem;
     margin-top: 2px;
     overflow-wrap: anywhere;
+  }
+  .admin-mini-count {
+    min-width: 70px;
+    text-align: right;
+    font-size: 0.95rem;
+    font-weight: 900;
   }
   .sensitive-toggle {
     position: relative;
@@ -264,6 +391,16 @@
     .admin-analytics-grid {
       grid-template-columns: 1fr;
     }
+    .admin-mini-row {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+    .admin-mini-count {
+      grid-column: 2;
+      min-width: 0;
+      text-align: left;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
   }
 </style>
 {% endblock %}
@@ -356,47 +493,53 @@
     </div>
   </div>
 
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:8px 0 14px;">
+  <div class="admin-analytics-intro">
     <div>
-      <h2 style="font-size:1.02rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:4px;">Visit analytics</h2>
-      <div style="font-size:0.82rem;color:var(--text-muted);max-width:760px;">Consent-based counts only. Guests are counted as totals; signed-in users are shown by account so you can see who uses the platform most.</div>
+      <h2>Visit analytics</h2>
+      <p>Consent-based visits for the admin dashboard. Guests stay aggregated; signed-in users appear by account only after accepting analytics.</p>
     </div>
+    <span class="admin-privacy-pill"><i class="fa-solid fa-shield-halved"></i> Privacy-safe</span>
   </div>
 
   <div class="admin-analytics-grid">
-    <div class="card" style="padding:18px;text-align:center;">
-      <div style="font-size:1.75rem;font-weight:800;line-height:1;">{{ analytics_overview.today_total }}</div>
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">Visits today</div>
+    <div class="admin-stat-card" style="--stat-glow:rgba(59,130,246,0.16);">
+      <div class="admin-stat-label">Today</div>
+      <div class="admin-stat-value">{{ analytics_overview.today_total }}</div>
+      <div class="admin-stat-sub">Visits today</div>
     </div>
-    <div class="card" style="padding:18px;text-align:center;">
-      <div style="font-size:1.75rem;font-weight:800;line-height:1;">{{ analytics_overview.week_total }}</div>
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">Visits · 7 days</div>
+    <div class="admin-stat-card" style="--stat-glow:rgba(168,85,247,0.14);">
+      <div class="admin-stat-label">Last 7 days</div>
+      <div class="admin-stat-value">{{ analytics_overview.week_total }}</div>
+      <div class="admin-stat-sub">Total visits</div>
     </div>
-    <div class="card" style="padding:18px;text-align:center;">
-      <div style="font-size:1.75rem;font-weight:800;line-height:1;">{{ analytics_overview.logged_in_week }}</div>
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">Signed-in visits</div>
+    <div class="admin-stat-card" style="--stat-glow:rgba(34,197,94,0.15);">
+      <div class="admin-stat-label">Accounts</div>
+      <div class="admin-stat-value">{{ analytics_overview.logged_in_week }}</div>
+      <div class="admin-stat-sub">Signed-in visits</div>
     </div>
-    <div class="card" style="padding:18px;text-align:center;">
-      <div style="font-size:1.75rem;font-weight:800;line-height:1;">{{ analytics_overview.guest_week }}</div>
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">Guest visits</div>
+    <div class="admin-stat-card" style="--stat-glow:rgba(148,163,184,0.18);">
+      <div class="admin-stat-label">Guests</div>
+      <div class="admin-stat-value">{{ analytics_overview.guest_week }}</div>
+      <div class="admin-stat-sub">Guest visits</div>
     </div>
   </div>
 
   <div class="admin-analytics-layout">
-    <div class="card" style="padding:18px;">
-      <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">Visits · 7 days</div>
+    <div class="admin-analytics-panel">
+      <div class="admin-panel-label">Visits · 7 days</div>
       <div style="position:relative;height:240px;"><canvas id="chartVisits"></canvas></div>
     </div>
-    <div class="card" style="padding:18px;">
-      <div style="font-size:0.82rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:12px;">Most visited pages</div>
+    <div class="admin-analytics-panel">
+      <div class="admin-panel-label">Most visited pages</div>
       <div class="admin-mini-table">
         {% for item in analytics_overview.top_pages %}
         <div class="admin-mini-row">
+          <span class="admin-mini-index">{{ loop.index }}</span>
           <div>
             <div class="admin-mini-title">{{ item.path }}</div>
             <div class="admin-mini-meta">last 7 days</div>
           </div>
-          <strong>{{ item.visits }}</strong>
+          <strong class="admin-mini-count">{{ item.visits }}</strong>
         </div>
         {% else %}
         <div style="color:var(--text-muted);font-size:0.86rem;line-height:1.6;">No consent-based visits recorded yet.</div>
@@ -405,21 +548,22 @@
     </div>
   </div>
 
-  <div class="card" style="padding:18px;margin-bottom:32px;">
+  <div class="admin-analytics-panel" style="margin-bottom:32px;">
     <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px;">
       <div>
-        <div style="font-size:0.82rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">Signed-in user visits</div>
+        <div class="admin-panel-label" style="margin-bottom:4px;">Signed-in user visits</div>
         <div style="font-size:0.82rem;color:var(--text-muted);margin-top:4px;">Only users who accepted analytics cookies appear here.</div>
       </div>
     </div>
     <div class="admin-mini-table">
       {% for item in analytics_overview.top_users %}
       <div class="admin-mini-row">
+        <span class="admin-mini-index">{{ loop.index }}</span>
         <div>
           <div class="admin-mini-title">{{ item.name }} · {{ item.public_id }}</div>
           <div class="admin-mini-meta">{{ item.email }} · last seen {{ item.last_seen_at.strftime('%d %b %Y %H:%M') if item.last_seen_at else 'not yet' }}</div>
         </div>
-        <strong>{{ item.visits }} visits</strong>
+        <strong class="admin-mini-count">{{ item.visits }} visits</strong>
       </div>
       {% else %}
       <div style="color:var(--text-muted);font-size:0.86rem;line-height:1.6;">No signed-in visit stats yet.</div>
