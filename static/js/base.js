@@ -298,9 +298,10 @@
   injectThemeIcons();
   setupCookieConsentBanner();
   (function () {
-    const HEARTBEAT_INTERVAL_MS = 60000;
+    const HEARTBEAT_INTERVAL_MS = 90000;
     const MIN_REPEAT_MS = 15000;
     let lastPingAt = 0;
+    let pingInFlight = false;
 
     function getActivityTabId() {
       try {
@@ -319,15 +320,18 @@
       const path = window.location.pathname || '/';
       if (!path || path.startsWith('/api/') || path.startsWith('/static/')) return;
       if (document.hidden && reason === 'interval') return;
+      if (pingInFlight && reason === 'interval') return;
 
       const now = Date.now();
       if (now - lastPingAt < MIN_REPEAT_MS) return;
       lastPingAt = now;
 
       try {
+        pingInFlight = true;
         await fetch('/api/activity/ping', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          keepalive: true,
           body: JSON.stringify({
             path,
             tab_id: getActivityTabId(),
@@ -337,11 +341,22 @@
         });
       } catch (error) {
         console.debug('Activity ping skipped', error);
+      } finally {
+        pingInFlight = false;
       }
     }
     window.sendActivityPing = sendActivityPing;
 
-    sendActivityPing('load');
+    const schedulePing = (reason, delay = 0) => {
+      const run = () => sendActivityPing(reason);
+      if ('requestIdleCallback' in window && delay === 0) {
+        window.requestIdleCallback(run, { timeout: 2500 });
+      } else {
+        window.setTimeout(run, delay);
+      }
+    };
+
+    schedulePing('load', 1800);
     window.addEventListener('pageshow', () => sendActivityPing('pageshow'));
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) sendActivityPing('visible');
@@ -394,6 +409,7 @@
         await fetch('/api/activity/event', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          keepalive: true,
           body: JSON.stringify({
             event_type: eventType,
             path: currentPath(),
@@ -448,9 +464,9 @@
     }, 75000);
   })();
   if (window.WEX_SUPPORT_UNREAD_URL) {
-    refreshSupportUnreadUI();
+    window.setTimeout(refreshSupportUnreadUI, 1500);
     window.setInterval(() => {
       if (!document.hidden) refreshSupportUnreadUI();
-    }, 8000);
+    }, 20000);
   }
 })();

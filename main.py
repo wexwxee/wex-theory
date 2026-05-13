@@ -72,6 +72,7 @@ ACTIVITY_5_MIN_WINDOW = timedelta(minutes=5)
 ACTIVITY_10_MIN_WINDOW = timedelta(minutes=10)
 ACTIVITY_RETENTION_WINDOW = timedelta(hours=24)
 JOURNEY_EVENT_RETENTION_DAYS = 30
+_ACTIVITY_TABLES_READY = False
 PUBLIC_ID_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 BASE_DIR = Path(__file__).resolve().parent
 TRANSLATION_SEED_PATH = BASE_DIR / "data" / "translation_seed.json"
@@ -1544,6 +1545,9 @@ def ensure_exam_word_progress_table(db: Session) -> None:
 
 
 def ensure_activity_tables(db: Session) -> None:
+    global _ACTIVITY_TABLES_READY
+    if _ACTIVITY_TABLES_READY:
+        return
     try:
         inspector = sql_inspect(engine)
         existing_tables = set(inspector.get_table_names())
@@ -1557,6 +1561,7 @@ def ensure_activity_tables(db: Session) -> None:
                 table.create(bind=engine, checkfirst=True)
                 print(f"[STARTUP] Created {table_name} table")
         db.commit()
+        _ACTIVITY_TABLES_READY = True
     except Exception as e:
         db.rollback()
         print(f"[STARTUP] activity tables setup skipped/error: {e}")
@@ -2159,6 +2164,25 @@ def should_disable_cache(request: Request) -> bool:
     return any(path.startswith(prefix) for prefix in prefix_paths)
 
 
+def should_refresh_auth_cookie(request: Request) -> bool:
+    """Refresh long-lived auth only on real page navigation, not background APIs."""
+    path = (request.url.path or "").rstrip("/") or "/"
+    if request.method.upper() not in {"GET", "HEAD"}:
+        return False
+    if path.startswith(("/api/", "/static/", "/test-images/", "/uploads/")):
+        return False
+    auth_managed_paths = {
+        "/api/auth/logout",
+        "/logout",
+        "/api/auth/login",
+        "/api/auth/register",
+        "/api/auth/google/callback",
+        "/auth/google/callback",
+        "/auth/telegram/callback",
+    }
+    return path not in auth_managed_paths
+
+
 @app.middleware("http")
 async def refresh_auth_session(request: Request, call_next):
     # Generate per-request CSP nonce for inline scripts
@@ -2171,23 +2195,11 @@ async def refresh_auth_session(request: Request, call_next):
             return JSONResponse({"error": "CSRF validation failed"}, status_code=403)
 
     response = await call_next(request)
-    # Skip auth-refresh on routes that explicitly manage the auth cookie themselves
-    # (login sets a fresh token; logout clears it). Refreshing here would overwrite
-    # the route's Set-Cookie with a stale-payload refresh built from the request's
-    # *previous* cookie — which can resurrect a token for a user that no longer
-    # exists (e.g. after a DB swap).
-    auth_managed_paths = {
-        "/api/auth/logout",
-        "/logout",
-        "/api/auth/login",
-        "/api/auth/register",
-        "/api/auth/google/callback",
-        "/auth/google/callback",
-        "/auth/telegram/callback",
-    }
+    # Skip auth-refresh on APIs/background polling. Page navigation is enough to
+    # keep the session alive and avoids an extra DB hit on every lightweight fetch.
     token = request.cookies.get(AUTH_COOKIE_NAME)
     payload = decode_token(token) if token else None
-    if payload and payload.get("sub") and request.url.path not in auth_managed_paths:
+    if payload and payload.get("sub") and should_refresh_auth_cookie(request):
         sub = payload.get("sub")
         try:
             user_id = int(sub)
@@ -2459,7 +2471,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260513-admin-mobile-voice"
+templates.env.globals["asset_version"] = "20260513-activity-performance"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 
@@ -5376,6 +5388,13 @@ async def admin_api_stats(request: Request, db: Session = Depends(get_db)):
         active_sessions = 0
         authed_sessions = 0
 
+    try:
+        visits_7d = build_analytics_overview(db)["daily"]
+    except Exception as e:
+        db.rollback()
+        print(f"[ADMIN API] visit analytics unavailable: {e}")
+        visits_7d = empty_analytics_overview()["daily"]
+
     return {
         "registrations_7d": registrations,
         "roles": roles,
@@ -5384,7 +5403,7 @@ async def admin_api_stats(request: Request, db: Session = Depends(get_db)):
             "authenticated": int(authed_sessions),
             "anonymous": max(int(active_sessions) - int(authed_sessions), 0),
         },
-        "visits_7d": build_analytics_overview(db)["daily"],
+        "visits_7d": visits_7d,
         "generated_at": now.isoformat(),
     }
 
