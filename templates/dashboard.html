@@ -172,30 +172,86 @@
   .sub-status-card {
     margin-top: 14px;
     max-width: 420px;
-    padding: 14px 16px;
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 90%, #fff 10%), var(--bg-card));
+    padding: 14px;
+    border-radius: 18px;
+    border: 1px solid color-mix(in srgb, var(--border) 72%, var(--text) 8%);
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--bg-card) 92%, #fff 8%), var(--bg-card));
+    box-shadow: 0 16px 42px rgba(0, 0, 0, 0.045);
+  }
+  .sub-status-content {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+  }
+  .sub-status-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #0ea5e9;
+    border: 1px solid rgba(14,165,233,0.22);
+    background: linear-gradient(135deg, rgba(14,165,233,0.14), rgba(168,85,247,0.10));
   }
   .sub-status-title {
-    font-size: 0.82rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 6px;
+    font-size: 0.92rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+    color: var(--text);
   }
   .sub-status-meta {
     color: var(--text-muted);
-    font-size: 0.88rem;
-    line-height: 1.6;
+    font-size: 0.84rem;
+    line-height: 1.55;
   }
   .sub-status-card.active {
-    border-color: rgba(34, 197, 94, 0.35);
-    background: linear-gradient(180deg, rgba(34, 197, 94, 0.08), var(--bg-card));
+    border-color: rgba(14, 165, 233, 0.22);
+    background:
+      radial-gradient(circle at 0 0, rgba(14,165,233,0.11), transparent 36%),
+      linear-gradient(135deg, color-mix(in srgb, var(--bg-card) 94%, #fff 6%), var(--bg-card));
   }
   .sub-status-card.expired {
     border-color: rgba(239, 68, 68, 0.35);
     background: linear-gradient(180deg, rgba(239, 68, 68, 0.08), var(--bg-card));
+  }
+  .access-pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .access-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 30px;
+    padding: 0 11px;
+    border-radius: 999px;
+    border: 1px solid rgba(14,165,233,0.26);
+    background: linear-gradient(135deg, rgba(14,165,233,0.12), rgba(168,85,247,0.10));
+    color: var(--text);
+    font-size: 0.75rem;
+    font-weight: 850;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+  }
+  .access-pill i {
+    color: #0ea5e9;
+    font-size: 0.72rem;
+  }
+  .access-pill--free {
+    border-color: var(--border);
+    background: color-mix(in srgb, var(--bg-card) 88%, #fff 12%);
+    color: var(--text-muted);
+  }
+  .access-pill--admin {
+    border-color: rgba(168,85,247,0.25);
+    background: linear-gradient(135deg, rgba(168,85,247,0.13), rgba(14,165,233,0.10));
   }
   .dashboard-head {
     display: flex;
@@ -284,6 +340,13 @@
     justify-content: center;
     gap: 11px;
   }
+  .plan-status-card.has-access {
+    border-color: rgba(14,165,233,0.22);
+    background:
+      radial-gradient(circle at 0 0, rgba(14,165,233,0.13), transparent 32%),
+      radial-gradient(circle at 100% 0, rgba(168,85,247,0.10), transparent 34%),
+      linear-gradient(145deg, color-mix(in srgb, var(--bg-card) 94%, #fff 6%), var(--bg-card));
+  }
   .plan-status-card .dashboard-stat-label {
     margin-top: 0;
   }
@@ -306,6 +369,10 @@
     color: #38bdf8;
     box-shadow: 0 10px 26px rgba(14, 165, 233, 0.08);
     font-size: 0.86rem;
+  }
+  .plan-status-card.has-access .plan-status-icon {
+    color: #0ea5e9;
+    background: linear-gradient(135deg, rgba(14,165,233,0.18), rgba(168,85,247,0.13));
   }
   .plan-status-title {
     font-size: 1.05rem;
@@ -530,35 +597,52 @@
       <p class="dashboard-subcopy">
         Train through the official WEXTheory set, keep your saved questions close, and return to any finished attempt for a full answer review.
       </p>
+      <div class="access-pill-row">
       {% if user.is_admin %}
-        <span style="font-size:0.75rem;color:var(--correct);border:1px solid var(--correct);padding:2px 10px;border-radius:999px;display:inline-block;">Admin</span>
-        <a href="/admin/triumph-preview" style="margin-left:8px;font-size:0.75rem;color:#fbbf24;border:1px solid #fbbf24;padding:2px 10px;border-radius:999px;display:inline-block;text-decoration:none;font-weight:700;" title="Preview Triumph Screen (admin only, no DB writes)">🏆 Preview Triumph</a>
+        <span class="access-pill access-pill--admin"><i class="fa-solid fa-shield-halved"></i> Admin access</span>
+        <a href="/admin/triumph-preview" class="access-pill access-pill--admin" title="Preview Triumph Screen (admin only, no DB writes)"><i class="fa-solid fa-trophy"></i> Preview Triumph</a>
       {% elif has_access %}
-        <span style="font-size:0.75rem;color:var(--correct);border:1px solid var(--correct);padding:2px 10px;border-radius:999px;display:inline-block;">Extended Access</span>
+        <span class="access-pill"><i class="fa-solid fa-bolt"></i> All Access</span>
       {% else %}
-        <span style="font-size:0.75rem;color:var(--text-muted);border:1px solid var(--border);padding:2px 10px;border-radius:999px;display:inline-block;">Free Plan</span>
+        <span class="access-pill access-pill--free"><i class="fa-regular fa-circle"></i> Starter plan</span>
       {% endif %}
+      </div>
       {% if not user.is_admin %}
         {% if has_access and access_expires_at %}
         <div class="sub-status-card active">
-          <div class="sub-status-title" style="color:var(--correct);">Active</div>
-          <div class="sub-status-meta">
-            Access valid until {{ access_expires_at.strftime('%d %b %Y %H:%M') }}.
+          <div class="sub-status-content">
+            <span class="sub-status-icon"><i class="fa-solid fa-unlock-keyhole"></i></span>
+            <div>
+              <div class="sub-status-title">Access active</div>
+              <div class="sub-status-meta">
+                Valid until {{ access_expires_at.strftime('%d %b %Y %H:%M') }}.
+              </div>
+              <div id="subTimer" class="sub-status-meta" style="margin-top:4px;" data-access-expiry="{{ access_expires_at.isoformat() }}Z"></div>
+            </div>
           </div>
-          <div id="subTimer" class="sub-status-meta" style="margin-top:6px;" data-access-expiry="{{ access_expires_at.isoformat() }}Z"></div>
         </div>
 {% elif user.subscription_status != 'free' %}
         <div class="sub-status-card expired">
-          <div class="sub-status-title" style="color:var(--wrong);">Expired</div>
-          <div class="sub-status-meta">Your extended access has ended. Tests 1 to 13 are currently unavailable until access is renewed.</div>
-          <div style="margin-top:12px;">
-            <a href="/pricing" class="btn-primary btn-sm">Review Access</a>
+          <div class="sub-status-content">
+            <span class="sub-status-icon" style="color:var(--wrong);border-color:rgba(239,68,68,0.25);background:rgba(239,68,68,0.09);"><i class="fa-solid fa-lock"></i></span>
+            <div>
+              <div class="sub-status-title">Access expired</div>
+              <div class="sub-status-meta">Tests 1 to 13 are unavailable until access is renewed.</div>
+              <div style="margin-top:12px;">
+                <a href="/pricing" class="btn-primary btn-sm">Review Access</a>
+              </div>
+            </div>
           </div>
         </div>
       {% else %}
         <div class="sub-status-card">
-          <div class="sub-status-title" style="color:var(--text);">Free</div>
-          <div class="sub-status-meta">You can use the starter sample for free. Open the access overview when you want the full 13-test library and study tools.</div>
+          <div class="sub-status-content">
+            <span class="sub-status-icon" style="color:var(--text-muted);border-color:var(--border);background:color-mix(in srgb, var(--bg-card) 88%, #fff 12%);"><i class="fa-regular fa-circle"></i></span>
+            <div>
+              <div class="sub-status-title">Starter access</div>
+              <div class="sub-status-meta">Use the free sample now. Open access options for the full test library and study tools.</div>
+            </div>
+          </div>
         </div>
         {% endif %}
       {% endif %}
@@ -588,13 +672,13 @@
       <div class="dashboard-stat-value">{{ latest_scores.values() | list | sum if latest_scores else 0 }}</div>
       <div class="dashboard-stat-label">Total Score</div>
     </div>
-    <div class="card dashboard-stat-card plan-status-card">
+    <div class="card dashboard-stat-card plan-status-card{% if has_access %} has-access{% endif %}">
       {% if has_access %}
         <div class="plan-status">
           <span class="plan-status-icon"><i class="fa-solid fa-bolt"></i></span>
           <span>
             <span class="plan-status-title">All Access</span>
-            <span class="plan-status-sub">Library unlocked</span>
+            <span class="plan-status-sub">Tests, words, review</span>
           </span>
         </div>
       {% else %}
