@@ -149,10 +149,20 @@
       return score;
     }
 
-    function voiceDisplayName(voice) {
-      const name = (voice.name || '').replace(/^Google\s+/i, '').replace(/^Microsoft\s+/i, '').trim();
-      return `${voice.lang || 'en'} ${name}`;
-    }
+function voiceDisplayName(voice) {
+  const lang = (voice.lang || '').toLowerCase();
+  const rawName = (voice.name || '').replace(/^Google\s+/i, '').replace(/^Microsoft\s+/i, '').trim();
+  const cleaned = rawName
+    .replace(/\bUS English\b/i, 'English')
+    .replace(/\bUK English\b/i, 'English')
+    .replace(/\s+-\s+/g, ' ')
+    .trim();
+  if (lang === 'en-us') return cleaned && cleaned !== 'English' ? `US ${cleaned}` : 'US English';
+  if (lang === 'en-gb') return cleaned && cleaned !== 'English' ? `UK ${cleaned}` : 'UK English';
+  if (lang === 'ru-ru') return cleaned || 'Russian';
+  if (lang === 'da-dk') return cleaned || 'Danish';
+  return cleaned || (voice.lang || 'Voice');
+}
 
     function voiceGroupRank(voice) {
       const lang = (voice.lang || '').toLowerCase();

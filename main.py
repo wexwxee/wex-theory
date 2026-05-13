@@ -585,6 +585,17 @@ def build_live_activity_overview(db: Session) -> dict:
     }
 
 
+def empty_live_activity_overview() -> dict:
+    return {
+        "online_now": 0,
+        "active_5m": 0,
+        "active_10m": 0,
+        "logged_in_now": 0,
+        "guests_now": 0,
+        "top_pages": [],
+    }
+
+
 def _day_start(value: date) -> datetime:
     return datetime(value.year, value.month, value.day)
 
@@ -732,6 +743,29 @@ def build_analytics_overview(db: Session) -> dict:
     }
 
 
+def empty_analytics_overview() -> dict:
+    today = datetime.utcnow().date()
+    start_day = today - timedelta(days=6)
+    return {
+        "today_total": 0,
+        "week_total": 0,
+        "logged_in_week": 0,
+        "guest_week": 0,
+        "daily": [
+            {
+                "date": (start_day + timedelta(days=i)).strftime("%Y-%m-%d"),
+                "label": _day_start(start_day + timedelta(days=i)).strftime("%a"),
+                "logged_in": 0,
+                "guests": 0,
+                "total": 0,
+            }
+            for i in range(7)
+        ],
+        "top_pages": [],
+        "top_users": [],
+    }
+
+
 def build_journey_insights(db: Session) -> dict:
     now = datetime.utcnow()
     start_at = now - timedelta(days=7)
@@ -800,6 +834,15 @@ def build_journey_insights(db: Session) -> dict:
         "recent": recent,
         "top_paths": top_paths,
         "total_events": len(rows),
+    }
+
+
+def empty_journey_insights() -> dict:
+    return {
+        "signals": [],
+        "recent": [],
+        "top_paths": [],
+        "total_events": 0,
     }
 
 
@@ -1498,6 +1541,25 @@ def ensure_exam_word_progress_table(db: Session) -> None:
     except Exception as e:
         db.rollback()
         print(f"[STARTUP] exam word progress table setup skipped/error: {e}")
+
+
+def ensure_activity_tables(db: Session) -> None:
+    try:
+        inspector = sql_inspect(engine)
+        existing_tables = set(inspector.get_table_names())
+        for table_name, table in (
+            ("live_activity_sessions", models.LiveActivitySession.__table__),
+            ("page_visit_stats", models.PageVisitStat.__table__),
+            ("user_visit_stats", models.UserVisitStat.__table__),
+            ("journey_events", models.JourneyEvent.__table__),
+        ):
+            if table_name not in existing_tables:
+                table.create(bind=engine, checkfirst=True)
+                print(f"[STARTUP] Created {table_name} table")
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] activity tables setup skipped/error: {e}")
 
 
 def _seed_text(value) -> Optional[str]:
@@ -2206,6 +2268,7 @@ async def startup_init():
         ensure_exam_wording_columns(db)
         ensure_translation_columns(db)
         ensure_exam_word_progress_table(db)
+        ensure_activity_tables(db)
         ensure_question_text_fixes(db)
         ensure_certificates_table(db)
         ensure_referrals_table(db)
@@ -2396,7 +2459,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260513-journey-signals"
+templates.env.globals["asset_version"] = "20260513-admin-mobile-voice"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 
@@ -3904,9 +3967,25 @@ async def admin_page(request: Request, db: Session = Depends(get_db)):
         models.PromoCode.created_at.desc()
     ).all()
     unread_count = sum(1 for m in messages if not m.is_read)
-    activity_overview = build_live_activity_overview(db)
-    analytics_overview = build_analytics_overview(db)
-    journey_insights = build_journey_insights(db)
+    try:
+        ensure_activity_tables(db)
+        activity_overview = build_live_activity_overview(db)
+    except Exception as e:
+        db.rollback()
+        print(f"[ADMIN] live activity unavailable: {e}")
+        activity_overview = empty_live_activity_overview()
+    try:
+        analytics_overview = build_analytics_overview(db)
+    except Exception as e:
+        db.rollback()
+        print(f"[ADMIN] analytics unavailable: {e}")
+        analytics_overview = empty_analytics_overview()
+    try:
+        journey_insights = build_journey_insights(db)
+    except Exception as e:
+        db.rollback()
+        print(f"[ADMIN] journey insights unavailable: {e}")
+        journey_insights = empty_journey_insights()
     active_tab = str(request.query_params.get("tab", "users") or "users").strip().lower()
     if active_tab not in {"users", "messages", "promos"}:
         active_tab = "users"
@@ -3949,6 +4028,12 @@ async def api_activity_ping(request: Request, db: Session = Depends(get_db)):
     session_id = get_or_create_activity_session_id(request)
     now = datetime.utcnow()
     current_user = get_current_user(request, db)
+    try:
+        ensure_activity_tables(db)
+    except Exception as e:
+        db.rollback()
+        print(f"[ACTIVITY] tables unavailable: {e}")
+        return JSONResponse({"success": True, "tracked": False})
 
     existing = (
         db.query(models.LiveActivitySession)
@@ -3971,20 +4056,31 @@ async def api_activity_ping(request: Request, db: Session = Depends(get_db)):
     existing.last_seen = now
     analytics_recorded = False
     if ping_reason in {"load", "pageshow", "consent"}:
-        analytics_recorded = record_privacy_friendly_visit(
-            db,
-            page_path=page_path,
-            current_user=current_user,
-            consent_granted=analytics_consent,
-            now=now,
-        )
+        try:
+            ensure_activity_tables(db)
+            analytics_recorded = record_privacy_friendly_visit(
+                db,
+                page_path=page_path,
+                current_user=current_user,
+                consent_granted=analytics_consent,
+                now=now,
+            )
+        except Exception as e:
+            db.rollback()
+            print(f"[ACTIVITY] visit tracking unavailable: {e}")
+            analytics_recorded = False
 
     if random.random() < 0.04:
         db.query(models.LiveActivitySession).filter(
             models.LiveActivitySession.last_seen < (now - ACTIVITY_RETENTION_WINDOW)
         ).delete(synchronize_session=False)
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"[ACTIVITY] ping commit unavailable: {e}")
+        return JSONResponse({"success": True, "tracked": False})
     response = JSONResponse({"success": True, "tracked": True, "analytics_recorded": analytics_recorded})
     if analytics_consent:
         set_activity_cookie(response, session_id, request)
@@ -4006,16 +4102,22 @@ async def api_activity_event(request: Request, db: Session = Depends(get_db)):
 
     session_id = get_or_create_activity_session_id(request)
     current_user = get_current_user(request, db)
-    tracked = record_journey_event(
-        db,
-        event_type=str(data.get("event_type", "") or ""),
-        page_path=str(data.get("path", "") or ""),
-        label=str(data.get("label", "") or ""),
-        current_user=current_user,
-        session_id=session_id,
-        consent_granted=analytics_consent,
-        now=datetime.utcnow(),
-    )
+    try:
+        ensure_activity_tables(db)
+        tracked = record_journey_event(
+            db,
+            event_type=str(data.get("event_type", "") or ""),
+            page_path=str(data.get("path", "") or ""),
+            label=str(data.get("label", "") or ""),
+            current_user=current_user,
+            session_id=session_id,
+            consent_granted=analytics_consent,
+            now=datetime.utcnow(),
+        )
+    except Exception as e:
+        db.rollback()
+        print(f"[ACTIVITY] journey event unavailable: {e}")
+        tracked = False
 
     if tracked and random.random() < 0.03:
         cutoff = datetime.utcnow() - timedelta(days=JOURNEY_EVENT_RETENTION_DAYS)
@@ -4023,7 +4125,12 @@ async def api_activity_event(request: Request, db: Session = Depends(get_db)):
             models.JourneyEvent.created_at < cutoff
         ).delete(synchronize_session=False)
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"[ACTIVITY] event commit unavailable: {e}")
+        tracked = False
     response = JSONResponse({"success": True, "tracked": tracked})
     if analytics_consent:
         set_activity_cookie(response, session_id, request)
