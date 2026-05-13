@@ -14,6 +14,7 @@
   window.WEX_SUPPORT_BANNER_MODE = body.dataset.supportBannerMode || null;
   window.WEX_SUPPORT_TARGET_URL = body.dataset.supportTargetUrl || null;
   window.WEX_CSRF_COOKIE_NAME = body.dataset.csrfCookieName || 'csrf_token';
+  window.WEX_USER_AUTHENTICATED = body.dataset.userAuthenticated === 'true';
   window.wexPurchaseUser = body.dataset.purchasePublicId
     ? {
         public_id: body.dataset.purchasePublicId || '',
@@ -29,6 +30,49 @@
     return '';
   }
   window.getCookieValue = getCookieValue;
+
+  const COOKIE_CONSENT_KEY = 'wex-cookie-consent';
+
+  function getCookieConsentChoice() {
+    try {
+      return window.localStorage.getItem(COOKIE_CONSENT_KEY) || '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function setCookieConsentChoice(choice) {
+    try {
+      window.localStorage.setItem(COOKIE_CONSENT_KEY, choice);
+    } catch (e) {}
+  }
+
+  function hasAnalyticsConsent() {
+    return getCookieConsentChoice() === 'analytics';
+  }
+  window.hasAnalyticsConsent = hasAnalyticsConsent;
+
+  function setupCookieConsentBanner() {
+    const banner = document.getElementById('cookieConsentBanner');
+    if (!banner || getCookieConsentChoice()) return;
+
+    const acceptBtn = document.getElementById('cookieAcceptBtn');
+    const essentialBtn = document.getElementById('cookieEssentialBtn');
+    banner.classList.add('show');
+
+    acceptBtn?.addEventListener('click', () => {
+      setCookieConsentChoice('analytics');
+      banner.classList.remove('show');
+      if (typeof window.sendActivityPing === 'function') {
+        window.sendActivityPing('consent');
+      }
+    });
+
+    essentialBtn?.addEventListener('click', () => {
+      setCookieConsentChoice('essential');
+      banner.classList.remove('show');
+    });
+  }
 
   (function () {
     const nativeFetch = window.fetch.bind(window);
@@ -252,6 +296,7 @@
   });
 
   injectThemeIcons();
+  setupCookieConsentBanner();
   (function () {
     const HEARTBEAT_INTERVAL_MS = 60000;
     const MIN_REPEAT_MS = 15000;
@@ -270,6 +315,7 @@
     }
 
     async function sendActivityPing(reason = 'interval') {
+      if (!hasAnalyticsConsent()) return;
       const path = window.location.pathname || '/';
       if (!path || path.startsWith('/api/') || path.startsWith('/static/')) return;
       if (document.hidden && reason === 'interval') return;
@@ -285,12 +331,15 @@
           body: JSON.stringify({
             path,
             tab_id: getActivityTabId(),
+            reason,
+            analytics_consent: true,
           }),
         });
       } catch (error) {
         console.debug('Activity ping skipped', error);
       }
     }
+    window.sendActivityPing = sendActivityPing;
 
     sendActivityPing('load');
     window.addEventListener('pageshow', () => sendActivityPing('pageshow'));

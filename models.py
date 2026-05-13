@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, Float, UniqueConstraint, LargeBinary
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Date, ForeignKey, Text, Float, UniqueConstraint, LargeBinary
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from database import Base
@@ -255,6 +255,35 @@ class LiveActivitySession(Base):
     is_authenticated = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     last_seen = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+
+
+class PageVisitStat(Base):
+    __tablename__ = "page_visit_stats"
+
+    id = Column(Integer, primary_key=True, index=True)
+    day = Column(Date, nullable=False, index=True)
+    page_path = Column(String, nullable=False, index=True)
+    logged_in_visits = Column(Integer, nullable=False, default=0)
+    guest_visits = Column(Integer, nullable=False, default=0)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("day", "page_path", name="uq_page_visit_stats_day_path"),
+    )
+
+
+class UserVisitStat(Base):
+    __tablename__ = "user_visit_stats"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    day = Column(Date, nullable=False, index=True)
+    visits = Column(Integer, nullable=False, default=0)
+    last_seen_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "day", name="uq_user_visit_stats_user_day"),
+    )
 
 
 class Certificate(Base):

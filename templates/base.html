@@ -84,6 +84,61 @@
       background: #ef4444;
       box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.12);
     }
+    .cookie-consent {
+      position: fixed;
+      left: 18px;
+      right: 18px;
+      bottom: 18px;
+      z-index: 1000;
+      display: none;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--bg-panel) 94%, transparent);
+      box-shadow: 0 22px 70px rgba(0,0,0,0.18);
+      backdrop-filter: blur(16px);
+      gap: 14px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .cookie-consent.show {
+      display: flex;
+    }
+    .cookie-consent strong {
+      display: block;
+      font-size: 0.9rem;
+      margin-bottom: 3px;
+    }
+    .cookie-consent p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+    .cookie-actions {
+      display: flex;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+    @media (max-width: 640px) {
+      .cookie-consent {
+        align-items: stretch;
+        flex-direction: column;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+      }
+      .cookie-actions {
+        width: 100%;
+      }
+      .cookie-actions .btn-primary,
+      .cookie-actions .btn-ghost {
+        flex: 1;
+        justify-content: center;
+      }
+    }
   </style>
   {% block head %}{% endblock %}
 </head>
@@ -92,6 +147,7 @@
   data-support-banner-mode="{% if user is defined and user and user.is_admin %}admin{% elif user is defined and user %}user{% endif %}"
   data-support-target-url="{% if user is defined and user %}{{ '/support' if user.is_admin else '/messages' }}{% endif %}"
   data-csrf-cookie-name="csrf_token"
+  data-user-authenticated="{% if user is defined and user %}true{% else %}false{% endif %}"
   data-purchase-public-id="{% if user is defined and user %}{{ user.public_id }}{% endif %}"
   data-purchase-name="{% if user is defined and user %}{{ user.name }}{% endif %}"
   data-purchase-email="{% if user is defined and user %}{{ user.email }}{% endif %}">
@@ -231,6 +287,17 @@
   {% endif %}
 
   <div id="toast-container"></div>
+
+  <div class="cookie-consent" id="cookieConsentBanner" role="dialog" aria-live="polite" aria-label="Cookie settings">
+    <div>
+      <strong>Cookie settings</strong>
+      <p>Essential cookies keep login and security working. Optional analytics only counts page visits and active sessions; no IP, location, or device fingerprint is stored.</p>
+    </div>
+    <div class="cookie-actions">
+      <button type="button" class="btn-ghost btn-sm" id="cookieEssentialBtn">Essential only</button>
+      <button type="button" class="btn-primary btn-sm" id="cookieAcceptBtn">Accept analytics</button>
+    </div>
+  </div>
 
   <script nonce="{{ request.state.csp_nonce }}" src="/static/js/base.js?v={{ asset_version }}"></script>
   {% block scripts %}{% endblock %}

@@ -8,7 +8,7 @@ import secrets
 from collections import Counter, defaultdict, deque
 import traceback
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from types import SimpleNamespace
 from typing import Optional
 from urllib.parse import urlencode, quote
@@ -473,6 +473,145 @@ def build_live_activity_overview(db: Session) -> dict:
         "logged_in_now": logged_in_online,
         "guests_now": guests_online,
         "top_pages": top_pages,
+    }
+
+
+def _day_start(value: date) -> datetime:
+    return datetime(value.year, value.month, value.day)
+
+
+def record_privacy_friendly_visit(
+    db: Session,
+    *,
+    page_path: str,
+    current_user: Optional[models.User],
+    consent_granted: bool,
+    now: Optional[datetime] = None,
+) -> bool:
+    if not consent_granted:
+        return False
+    normalized_path = normalize_activity_path(page_path)
+    if not normalized_path:
+        return False
+
+    now = now or datetime.utcnow()
+    today = now.date()
+    page_stat = (
+        db.query(models.PageVisitStat)
+        .filter(
+            models.PageVisitStat.day == today,
+            models.PageVisitStat.page_path == normalized_path,
+        )
+        .first()
+    )
+    if not page_stat:
+        page_stat = models.PageVisitStat(day=today, page_path=normalized_path)
+        db.add(page_stat)
+
+    if current_user:
+        page_stat.logged_in_visits = int(page_stat.logged_in_visits or 0) + 1
+        user_stat = (
+            db.query(models.UserVisitStat)
+            .filter(
+                models.UserVisitStat.user_id == current_user.id,
+                models.UserVisitStat.day == today,
+            )
+            .first()
+        )
+        if not user_stat:
+            user_stat = models.UserVisitStat(user_id=current_user.id, day=today)
+            db.add(user_stat)
+        user_stat.visits = int(user_stat.visits or 0) + 1
+        user_stat.last_seen_at = now
+    else:
+        page_stat.guest_visits = int(page_stat.guest_visits or 0) + 1
+
+    page_stat.updated_at = now
+    return True
+
+
+def build_analytics_overview(db: Session) -> dict:
+    today = datetime.utcnow().date()
+    start_day = today - timedelta(days=6)
+    rows = (
+        db.query(models.PageVisitStat)
+        .filter(models.PageVisitStat.day >= start_day)
+        .all()
+    )
+    by_day: dict[date, dict[str, int]] = {
+        start_day + timedelta(days=i): {"logged_in": 0, "guests": 0, "total": 0}
+        for i in range(7)
+    }
+    page_counter: Counter[str] = Counter()
+    today_total = 0
+    week_total = 0
+    logged_in_week = 0
+    guest_week = 0
+
+    for row in rows:
+        logged_in = int(row.logged_in_visits or 0)
+        guests = int(row.guest_visits or 0)
+        total = logged_in + guests
+        bucket = by_day.setdefault(row.day, {"logged_in": 0, "guests": 0, "total": 0})
+        bucket["logged_in"] += logged_in
+        bucket["guests"] += guests
+        bucket["total"] += total
+        page_counter[row.page_path or "/"] += total
+        week_total += total
+        logged_in_week += logged_in
+        guest_week += guests
+        if row.day == today:
+            today_total += total
+
+    user_rows = (
+        db.query(models.UserVisitStat, models.User)
+        .join(models.User, models.UserVisitStat.user_id == models.User.id)
+        .filter(models.UserVisitStat.day >= start_day)
+        .all()
+    )
+    user_totals: dict[int, dict] = {}
+    for stat, account in user_rows:
+        entry = user_totals.setdefault(
+            account.id,
+            {
+                "public_id": account.public_id or f"DB #{account.id}",
+                "name": account.name,
+                "email": account.email,
+                "visits": 0,
+                "last_seen_at": stat.last_seen_at,
+            },
+        )
+        entry["visits"] += int(stat.visits or 0)
+        if stat.last_seen_at and stat.last_seen_at > entry["last_seen_at"]:
+            entry["last_seen_at"] = stat.last_seen_at
+
+    top_users = sorted(
+        user_totals.values(),
+        key=lambda item: (item["visits"], item["last_seen_at"] or datetime.min),
+        reverse=True,
+    )[:8]
+
+    daily = []
+    for day_value in sorted(by_day.keys()):
+        if day_value < start_day or day_value > today:
+            continue
+        bucket = by_day[day_value]
+        daily.append({
+            "date": day_value.strftime("%Y-%m-%d"),
+            "label": _day_start(day_value).strftime("%a"),
+            "logged_in": bucket["logged_in"],
+            "guests": bucket["guests"],
+            "total": bucket["total"],
+        })
+
+    return {
+        "today_total": today_total,
+        "week_total": week_total,
+        "logged_in_week": logged_in_week,
+        "guest_week": guest_week,
+        "daily": daily,
+        "top_pages": [{"path": path, "visits": count} for path, count in page_counter.most_common(8)],
+        "top_users": top_users,
     }
 
 
@@ -2069,7 +2208,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260507-support-inbox-polish"
+templates.env.globals["asset_version"] = "20260513-privacy-analytics"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 
@@ -3571,6 +3710,7 @@ async def admin_page(request: Request, db: Session = Depends(get_db)):
     ).all()
     unread_count = sum(1 for m in messages if not m.is_read)
     activity_overview = build_live_activity_overview(db)
+    analytics_overview = build_analytics_overview(db)
     active_tab = str(request.query_params.get("tab", "users") or "users").strip().lower()
     if active_tab not in {"users", "messages", "promos"}:
         active_tab = "users"
@@ -3584,6 +3724,7 @@ async def admin_page(request: Request, db: Session = Depends(get_db)):
         "now": datetime.utcnow(),
         "can_manage_admin_roles": can_manage_admin_roles(user),
         "activity_overview": activity_overview,
+        "analytics_overview": analytics_overview,
     })
 
 
@@ -3596,12 +3737,17 @@ async def api_activity_ping(request: Request, db: Session = Depends(get_db)):
 
     raw_path = str(data.get("path", "") or "").strip()
     tab_id = str(data.get("tab_id", "") or "").strip()
+    ping_reason = str(data.get("reason", "") or "").strip().lower()
+    analytics_consent = bool(data.get("analytics_consent", False))
     page_path = normalize_activity_path(raw_path)
     if not page_path or not tab_id:
         return JSONResponse({"success": True, "tracked": False})
 
     if len(tab_id) > 80:
         tab_id = tab_id[:80]
+
+    if not analytics_consent:
+        return JSONResponse({"success": True, "tracked": False, "reason": "analytics_consent_required"})
 
     session_id = get_or_create_activity_session_id(request)
     now = datetime.utcnow()
@@ -3626,6 +3772,15 @@ async def api_activity_ping(request: Request, db: Session = Depends(get_db)):
     existing.page_path = page_path
     existing.is_authenticated = bool(current_user)
     existing.last_seen = now
+    analytics_recorded = False
+    if ping_reason in {"load", "pageshow", "consent"}:
+        analytics_recorded = record_privacy_friendly_visit(
+            db,
+            page_path=page_path,
+            current_user=current_user,
+            consent_granted=analytics_consent,
+            now=now,
+        )
 
     if random.random() < 0.04:
         db.query(models.LiveActivitySession).filter(
@@ -3633,8 +3788,9 @@ async def api_activity_ping(request: Request, db: Session = Depends(get_db)):
         ).delete(synchronize_session=False)
 
     db.commit()
-    response = JSONResponse({"success": True, "tracked": True})
-    set_activity_cookie(response, session_id, request)
+    response = JSONResponse({"success": True, "tracked": True, "analytics_recorded": analytics_recorded})
+    if analytics_consent:
+        set_activity_cookie(response, session_id, request)
     return response
 
 
@@ -4867,6 +5023,7 @@ async def admin_api_stats(request: Request, db: Session = Depends(get_db)):
             "authenticated": int(authed_sessions),
             "anonymous": max(int(active_sessions) - int(authed_sessions), 0),
         },
+        "visits_7d": build_analytics_overview(db)["daily"],
         "generated_at": now.isoformat(),
     }
 

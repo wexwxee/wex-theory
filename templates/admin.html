@@ -38,6 +38,45 @@
     gap: 12px;
     margin-bottom: 20px;
   }
+  .admin-analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .admin-analytics-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.8fr);
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+  .admin-mini-table {
+    display: grid;
+    gap: 8px;
+  }
+  .admin-mini-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--bg-card) 84%, transparent);
+  }
+  .admin-mini-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 800;
+  }
+  .admin-mini-meta {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    margin-top: 2px;
+    overflow-wrap: anywhere;
+  }
   .sensitive-toggle {
     position: relative;
     display: inline-flex;
@@ -117,6 +156,12 @@
     }
     .admin-live-grid {
       grid-template-columns: repeat(2, 1fr);
+    }
+    .admin-analytics-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .admin-analytics-layout {
+      grid-template-columns: 1fr;
     }
     .admin-table-wrap {
       overflow-x: auto;
@@ -216,6 +261,9 @@
     .admin-live-grid {
       grid-template-columns: 1fr;
     }
+    .admin-analytics-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
 {% endblock %}
@@ -305,6 +353,77 @@
     <div class="card" style="padding:18px;text-align:center;">
       <div style="font-size:1.75rem;font-weight:800;line-height:1;">{{ activity_overview.guests_now }}</div>
       <div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">Guests now</div>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:8px 0 14px;">
+    <div>
+      <h2 style="font-size:1.02rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:4px;">Visit analytics</h2>
+      <div style="font-size:0.82rem;color:var(--text-muted);max-width:760px;">Consent-based counts only. Guests are counted as totals; signed-in users are shown by account so you can see who uses the platform most.</div>
+    </div>
+  </div>
+
+  <div class="admin-analytics-grid">
+    <div class="card" style="padding:18px;text-align:center;">
+      <div style="font-size:1.75rem;font-weight:800;line-height:1;">{{ analytics_overview.today_total }}</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">Visits today</div>
+    </div>
+    <div class="card" style="padding:18px;text-align:center;">
+      <div style="font-size:1.75rem;font-weight:800;line-height:1;">{{ analytics_overview.week_total }}</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">Visits · 7 days</div>
+    </div>
+    <div class="card" style="padding:18px;text-align:center;">
+      <div style="font-size:1.75rem;font-weight:800;line-height:1;">{{ analytics_overview.logged_in_week }}</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">Signed-in visits</div>
+    </div>
+    <div class="card" style="padding:18px;text-align:center;">
+      <div style="font-size:1.75rem;font-weight:800;line-height:1;">{{ analytics_overview.guest_week }}</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">Guest visits</div>
+    </div>
+  </div>
+
+  <div class="admin-analytics-layout">
+    <div class="card" style="padding:18px;">
+      <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">Visits · 7 days</div>
+      <div style="position:relative;height:240px;"><canvas id="chartVisits"></canvas></div>
+    </div>
+    <div class="card" style="padding:18px;">
+      <div style="font-size:0.82rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:12px;">Most visited pages</div>
+      <div class="admin-mini-table">
+        {% for item in analytics_overview.top_pages %}
+        <div class="admin-mini-row">
+          <div>
+            <div class="admin-mini-title">{{ item.path }}</div>
+            <div class="admin-mini-meta">last 7 days</div>
+          </div>
+          <strong>{{ item.visits }}</strong>
+        </div>
+        {% else %}
+        <div style="color:var(--text-muted);font-size:0.86rem;line-height:1.6;">No consent-based visits recorded yet.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="padding:18px;margin-bottom:32px;">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px;">
+      <div>
+        <div style="font-size:0.82rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">Signed-in user visits</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:4px;">Only users who accepted analytics cookies appear here.</div>
+      </div>
+    </div>
+    <div class="admin-mini-table">
+      {% for item in analytics_overview.top_users %}
+      <div class="admin-mini-row">
+        <div>
+          <div class="admin-mini-title">{{ item.name }} · {{ item.public_id }}</div>
+          <div class="admin-mini-meta">{{ item.email }} · last seen {{ item.last_seen_at.strftime('%d %b %Y %H:%M') if item.last_seen_at else 'not yet' }}</div>
+        </div>
+        <strong>{{ item.visits }} visits</strong>
+      </div>
+      {% else %}
+      <div style="color:var(--text-muted);font-size:0.86rem;line-height:1.6;">No signed-in visit stats yet.</div>
+      {% endfor %}
     </div>
   </div>
 
@@ -862,11 +981,41 @@
           }
         });
       }
+
+      var visitsCtx = document.getElementById('chartVisits');
+      if (visitsCtx && Array.isArray(data.visits_7d)) {
+        new Chart(visitsCtx, {
+          type: 'bar',
+          data: {
+            labels: data.visits_7d.map(function(d) { return d.label; }),
+            datasets: [
+              {
+                label: 'Signed-in',
+                data: data.visits_7d.map(function(d) { return d.logged_in; }),
+                backgroundColor: '#2563eb',
+                borderWidth: 0
+              },
+              {
+                label: 'Guests',
+                data: data.visits_7d.map(function(d) { return d.guests; }),
+                backgroundColor: '#94a3b8',
+                borderWidth: 0
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10 } } },
+            scales: {
+              x: { stacked: true },
+              y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } }
+            }
+          }
+        });
+      }
     })
     .catch(function(err) { console.warn('[admin charts] stats fetch failed:', err); });
 })();
 </script>
 {% endblock %}
-
-
-
