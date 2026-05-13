@@ -2691,6 +2691,24 @@ def parse_selected_answer_ids(raw_value: Optional[str]) -> list[int]:
     return answer_ids
 
 
+def normalize_selected_answer_ids(question: models.Question, raw_answer_ids) -> list[int]:
+    if not isinstance(raw_answer_ids, list):
+        return []
+    valid_answer_ids = {answer.id for answer in ordered_answers(question)}
+    selected_ids: list[int] = []
+    seen: set[int] = set()
+    for raw_id in raw_answer_ids:
+        try:
+            answer_id = int(raw_id)
+        except (TypeError, ValueError):
+            continue
+        if answer_id not in valid_answer_ids or answer_id in seen:
+            continue
+        selected_ids.append(answer_id)
+        seen.add(answer_id)
+    return selected_ids
+
+
 def get_attempt_expected_question_total(db: Session, attempt: models.UserTestAttempt, *, default_total: int = 25) -> int:
     if is_exam_mode_test(attempt.test_id):
         return EXAM_MODE_QUESTION_COUNT
@@ -4163,7 +4181,7 @@ async def api_free_check(request: Request, db: Session = Depends(get_db)):
     score = 0
     for q in questions:
         correct_ids = [a.id for a in ordered_answers(q) if a.is_correct]
-        selected = user_answers.get(str(q.id), [])
+        selected = normalize_selected_answer_ids(q, user_answers.get(str(q.id), []))
         is_correct = set(selected) == set(correct_ids)
         if is_correct:
             score += 1
@@ -4508,6 +4526,7 @@ async def api_save_answer(attempt_id: int, request: Request, db: Session = Depen
     if not question:
         return JSONResponse({"error": "Not found"}, status_code=404)
 
+    answer_ids = normalize_selected_answer_ids(question, answer_ids)
     correct_ids = {a.id for a in ordered_answers(question) if a.is_correct}
     is_correct  = set(answer_ids) == correct_ids
 
@@ -4558,12 +4577,13 @@ async def api_save_answers_batch(attempt_id: int, request: Request, db: Session 
         q = q_map.get(ans["question_id"])
         if not q:
             continue
+        answer_ids = normalize_selected_answer_ids(q, ans.get("answer_ids", []))
         correct_ids = {a.id for a in ordered_answers(q) if a.is_correct}
-        is_correct = set(ans.get("answer_ids", [])) == correct_ids
+        is_correct = set(answer_ids) == correct_ids
         db.add(models.UserAnswer(
             attempt_id=attempt_id,
             question_id=ans["question_id"],
-            selected_answer_ids=json.dumps(ans.get("answer_ids", [])),
+            selected_answer_ids=json.dumps(answer_ids),
             is_correct=is_correct,
         ))
 
