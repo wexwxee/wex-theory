@@ -2210,7 +2210,13 @@ async def refresh_auth_session(request: Request, call_next):
     # Generate per-request CSP nonce for inline scripts
     request.state.csp_nonce = secrets.token_urlsafe(16)
 
-    if request.method.upper() not in {"GET", "HEAD", "OPTIONS"} and request.url.path not in {"/stripe/webhook", "/api/stripe/webhook"}:
+    csrf_exempt_paths = {
+        "/stripe/webhook",
+        "/api/stripe/webhook",
+        "/api/activity/ping",
+        "/api/activity/event",
+    }
+    if request.method.upper() not in {"GET", "HEAD", "OPTIONS"} and request.url.path not in csrf_exempt_paths:
         cookie_token = (request.cookies.get(CSRF_COOKIE_NAME) or "").strip()
         header_token = (request.headers.get("x-csrf-token") or "").strip()
         if not cookie_token or not header_token or cookie_token != header_token or not is_same_origin_request(request):
@@ -2501,7 +2507,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260519-support-mobile-fix"
+templates.env.globals["asset_version"] = "20260519-contact-analytics-thumb"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 templates.env.globals["test_image_url"] = test_image_url
@@ -4067,6 +4073,9 @@ async def admin_page(request: Request, db: Session = Depends(get_db)):
 
 @app.post("/api/activity/ping")
 async def api_activity_ping(request: Request, db: Session = Depends(get_db)):
+    if not is_same_origin_request(request):
+        return JSONResponse({"success": True, "tracked": False})
+
     try:
         data = await request.json()
     except Exception:
@@ -4152,6 +4161,9 @@ async def api_activity_ping(request: Request, db: Session = Depends(get_db)):
 
 @app.post("/api/activity/event")
 async def api_activity_event(request: Request, db: Session = Depends(get_db)):
+    if not is_same_origin_request(request):
+        return JSONResponse({"success": True, "tracked": False})
+
     try:
         data = await request.json()
     except Exception:

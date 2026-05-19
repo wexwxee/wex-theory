@@ -255,6 +255,20 @@
     font-size: 0.8rem;
     line-height: 1.5;
   }
+  .admin-empty-state {
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--text) 5%, transparent);
+    color: var(--text-muted);
+    font-size: 0.84rem;
+    line-height: 1.55;
+  }
+  .admin-empty-state strong {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--text);
+    font-size: 0.88rem;
+  }
   .journey-grid {
     display: grid;
     grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
@@ -663,7 +677,7 @@
   <div class="admin-analytics-intro">
     <div>
       <h2>Visit analytics</h2>
-      <p>Consent-based visits for the admin dashboard. Guests stay aggregated; signed-in users appear by account only after accepting analytics.</p>
+      <p>Shows visits after a learner accepts analytics cookies. Admin pages and admin accounts are hidden so the numbers stay focused on learner behavior.</p>
     </div>
     <span class="admin-privacy-pill"><i class="fa-solid fa-shield-halved"></i> Privacy-safe</span>
   </div>
@@ -696,7 +710,7 @@
       <div class="admin-panel-label">Visits · 7 days</div>
       <div style="position:relative;height:240px;"><canvas id="chartVisits"></canvas></div>
       <div class="analytics-note" style="margin-top:14px;">
-        Counts page visits only after cookie consent. Admin-only pages are hidden here so the chart shows learner activity more clearly.
+        To test this, open the site as a learner or guest, choose Accept analytics in the cookie banner, then visit a few pages. New visits appear here after refresh.
       </div>
     </div>
     <div class="admin-analytics-panel">
@@ -717,7 +731,10 @@
           <strong class="admin-mini-count">{{ item.visits }}<span>visits</span></strong>
         </div>
         {% else %}
-        <div style="color:var(--text-muted);font-size:0.86rem;line-height:1.6;">No consent-based visits recorded yet.</div>
+        <div class="admin-empty-state">
+          <strong>No learner visits yet</strong>
+          Waiting for a non-admin visitor who accepted analytics. Admin browsing is intentionally excluded.
+        </div>
         {% endfor %}
       </div>
     </div>
@@ -728,7 +745,7 @@
       <div>
         <div class="admin-panel-label" style="margin-bottom:4px;">Learner account visits</div>
         <div style="font-size:0.82rem;color:var(--text-muted);margin-top:4px;">
-          Page visits from signed-in learners who accepted analytics. This is not a login counter; admin accounts are hidden.
+          Signed-in learner page visits after analytics consent. This is not a login counter; admin accounts are hidden.
         </div>
       </div>
     </div>
@@ -744,7 +761,10 @@
         <strong class="admin-mini-count">{{ item.visits }}<span>visits</span></strong>
       </div>
       {% else %}
-      <div style="color:var(--text-muted);font-size:0.86rem;line-height:1.6;">No learner account visits yet. A learner appears here only after accepting analytics.</div>
+      <div class="admin-empty-state">
+        <strong>No learner accounts yet</strong>
+        A learner appears here after they accept analytics and browse while signed in.
+      </div>
       {% endfor %}
     </div>
   </div>
@@ -752,7 +772,7 @@
   <div class="admin-analytics-intro">
     <div>
       <h2>Journey signals</h2>
-      <p>Consent-based behavior hints from learner actions. Use this to spot confusing steps: repeated clicks, long page views, support opens, and key study transitions.</p>
+      <p>Behavior hints from learners who accepted analytics: repeated clicks, long page views, support opens, and key study transitions.</p>
     </div>
     <span class="admin-privacy-pill"><i class="fa-solid fa-chart-line"></i> {{ journey_insights.total_events }} events</span>
   </div>
@@ -770,7 +790,10 @@
           <div class="journey-count">{{ signal.count }}</div>
         </div>
         {% else %}
-        <div class="analytics-note">No behavior signals yet. They appear only after a learner accepts analytics and uses key actions.</div>
+        <div class="admin-empty-state">
+          <strong>No friction signals yet</strong>
+          Repeated clicks, long views, and support opens will appear here after analytics consent.
+        </div>
         {% endfor %}
       </div>
     </div>
@@ -785,7 +808,10 @@
         <div class="admin-mini-meta" style="text-align:right;white-space:nowrap;">{{ step.time.strftime('%d %b %H:%M') }}</div>
       </div>
       {% else %}
-      <div class="analytics-note">No recent learner steps yet.</div>
+      <div class="admin-empty-state">
+        <strong>No recent learner steps yet</strong>
+        Important clicks and study transitions will appear here after analytics consent.
+      </div>
       {% endfor %}
     </div>
   </div>
