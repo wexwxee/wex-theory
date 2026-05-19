@@ -456,6 +456,42 @@ input::placeholder, textarea::placeholder {
 }
 
 /* ── Tests Grid ── */
+.profile-page .profile-info-card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg-card);
+  padding: 18px;
+}
+.profile-page .profile-info-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 1rem;
+  line-height: 1.2;
+  font-weight: 850;
+  letter-spacing: -0.02em;
+}
+.profile-page .profile-info-title i {
+  flex: 0 0 auto;
+  font-size: 1.35rem;
+}
+.profile-page .profile-info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.86rem;
+}
+.profile-page .profile-info-row b {
+  color: var(--text);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
 .tests-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -478,7 +514,8 @@ input::placeholder, textarea::placeholder {
   aspect-ratio: 16/9;
   object-fit: cover;
   display: block;
-  background: #000;
+  background:
+    linear-gradient(110deg, rgba(148,163,184,0.14), rgba(148,163,184,0.05), rgba(148,163,184,0.14));
 }
 .test-card-body {
   padding: 16px;

@@ -27,7 +27,8 @@
   aspect-ratio: 16/9;
   object-fit: cover;
   display: block;
-  background: #000;
+  background:
+    linear-gradient(110deg, rgba(148,163,184,0.14), rgba(148,163,184,0.05), rgba(148,163,184,0.14));
 }
 .result-card .rc-num {
   position: absolute;
@@ -891,7 +892,13 @@
     {% for qr in question_results %}
     <div class="result-card {% if qr.is_correct %}correct{% else %}wrong{% endif %}" data-modal-index="{{ loop.index0 }}">
       {% if qr.question.image_path %}
-      <img src="/test-images/{{ qr.question.image_path }}" alt="" loading="lazy">
+      <img
+        src="{{ test_image_url(qr.question.image_path, thumb=True) }}"
+        data-full-src="{{ test_image_url(qr.question.image_path) }}"
+        alt="Question {{ qr.display_index }}"
+        loading="{% if loop.index <= 10 %}eager{% else %}lazy{% endif %}"
+        decoding="async"
+        fetchpriority="{% if loop.index <= 5 %}high{% else %}low{% endif %}">
       {% else %}
       <div style="aspect-ratio:16/9;background:#111;display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#444;">No image</div>
       {% endif %}
@@ -917,7 +924,13 @@
       {% for qr in saved_question_results %}
       <div class="saved-review-card" data-saved-question-id="{{ qr.question.id }}">
         {% if qr.question.image_path %}
-        <img src="/test-images/{{ qr.question.image_path }}" alt="" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#000;">
+        <img
+          src="{{ test_image_url(qr.question.image_path, thumb=True) }}"
+          data-full-src="{{ test_image_url(qr.question.image_path) }}"
+          alt="Saved question {{ qr.display_index }}"
+          loading="lazy"
+          decoding="async"
+          style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:linear-gradient(110deg, rgba(148,163,184,0.14), rgba(148,163,184,0.05), rgba(148,163,184,0.14));">
         {% endif %}
         <div class="saved-review-head">
           <div>

@@ -401,6 +401,24 @@ def get_request_base_url(request: Request) -> str:
     return str(request.base_url).rstrip("/")
 
 
+def test_image_url(image_path: str, *, thumb: bool = False) -> str:
+    clean = str(image_path or "").strip().replace("\\", "/").lstrip("/")
+    if not clean:
+        return ""
+    if clean.startswith("test-images/"):
+        clean = clean[len("test-images/"):]
+    safe_parts = [part for part in clean.split("/") if part and part not in {".", ".."}]
+    if not safe_parts:
+        return ""
+    safe_rel = "/".join(safe_parts)
+    if thumb:
+        thumb_rel = str(Path(safe_rel).with_suffix(".webp")).replace("\\", "/")
+        thumb_file = BASE_DIR / "test-images" / "_thumbs" / thumb_rel
+        if thumb_file.is_file():
+            return f"/test-images/_thumbs/{thumb_rel}"
+    return f"/test-images/{safe_rel}"
+
+
 def normalize_activity_path(path: str) -> str:
     raw = str(path or "").strip()[:240]
     if not raw:
@@ -2398,8 +2416,16 @@ async def startup_init():
         db.close()
 
 
+class CachedImageStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope):
+        response = await super().get_response(path, scope)
+        if response.status_code == 200:
+            response.headers.setdefault("Cache-Control", "public, max-age=2592000, immutable")
+        return response
+
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
-app.mount("/test-images", StaticFiles(directory="test-images"), name="test-images")
+app.mount("/test-images", CachedImageStaticFiles(directory="test-images"), name="test-images")
 
 @app.get("/favicon.ico")
 async def favicon():
@@ -2471,9 +2497,10 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260513-activity-performance"
+templates.env.globals["asset_version"] = "20260519-profile-footer-thumbs"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
+templates.env.globals["test_image_url"] = test_image_url
 
 FREE_SAMPLE_TEST_ID = 0
 FREE_SAMPLE_TEST_TITLE = "Test 0"

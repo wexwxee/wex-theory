@@ -469,14 +469,14 @@
     flex-direction: column;
     gap: 14px;
   }
-  .info-card {
+  .profile-info-card {
     border: 1px solid var(--border);
     border-radius: 16px;
     background: var(--bg-card);
     padding: 18px;
     animation: profileRise 0.46s ease both;
   }
-  .info-title {
+  .profile-info-title {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -484,8 +484,10 @@
     margin-bottom: 12px;
     font-weight: 850;
     letter-spacing: -0.02em;
+    font-size: 1rem;
+    line-height: 1.2;
   }
-  .info-row {
+  .profile-info-row {
     display: flex;
     justify-content: space-between;
     gap: 16px;
@@ -494,7 +496,7 @@
     color: var(--text-muted);
     font-size: 0.86rem;
   }
-  .info-row b {
+  .profile-info-row b {
     color: var(--text);
     text-align: right;
     overflow-wrap: anywhere;
@@ -643,13 +645,13 @@
     border-color: rgba(244,114,182,0.30);
   }
   [data-theme="dark"] .stat-card,
-  [data-theme="dark"] .info-card,
+  [data-theme="dark"] .profile-info-card,
   [data-theme="dark"] .card {
     background: linear-gradient(145deg, rgba(255,255,255,0.065), rgba(255,255,255,0.028));
     border-color: rgba(244,114,182,0.13);
   }
   [data-theme="dark"] .stat-card:hover,
-  [data-theme="dark"] .info-card:hover {
+  [data-theme="dark"] .profile-info-card:hover {
     border-color: rgba(244,114,182,0.28);
     box-shadow: 0 22px 70px rgba(244,114,182,0.10), 0 22px 70px rgba(0,0,0,0.22);
   }
@@ -735,14 +737,14 @@
     box-shadow: 0 0 20px rgba(244,114,182,0.30);
   }
   [data-theme="light"] .stat-card,
-  [data-theme="light"] .info-card,
+  [data-theme="light"] .profile-info-card,
   [data-theme="light"] .card {
     background: linear-gradient(145deg, rgba(255,255,255,0.96), rgba(247,247,247,0.86));
     border-color: rgba(0,0,0,0.08);
     box-shadow: 0 16px 42px rgba(0,0,0,0.045);
   }
   [data-theme="light"] .stat-card:hover,
-  [data-theme="light"] .info-card:hover {
+  [data-theme="light"] .profile-info-card:hover {
     border-color: rgba(0,0,0,0.16);
     box-shadow: 0 24px 64px rgba(0,0,0,0.075);
   }
@@ -798,7 +800,7 @@
   .profile-hero,
   .access-card,
   .stat-card,
-  .info-card {
+  .profile-info-card {
     transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
   }
   .profile-hero:hover {
@@ -1024,29 +1026,29 @@
     </div>
 
     <aside class="side-stack">
-      <div class="info-card">
-        <div class="info-title">
+      <div class="profile-info-card">
+        <div class="profile-info-title">
           <span>Account details</span>
           <i class="fa-solid fa-fingerprint" style="color:var(--text-muted);"></i>
         </div>
-        <div class="info-row"><span>Member since</span><b>{{ user.created_at.strftime('%b %Y') }}</b></div>
-        <div class="info-row"><span>Access expires</span><b>{{ user.expires_at.strftime('%d %b %Y') }}</b></div>
-        <div class="info-row"><span>Plan</span><b>{{ 'Admin' if user.is_admin else user.subscription_status|capitalize }}</b></div>
+        <div class="profile-info-row"><span>Member since</span><b>{{ user.created_at.strftime('%b %Y') }}</b></div>
+        <div class="profile-info-row"><span>Access expires</span><b>{{ user.expires_at.strftime('%d %b %Y') }}</b></div>
+        <div class="profile-info-row"><span>Plan</span><b>{{ 'Admin' if user.is_admin else user.subscription_status|capitalize }}</b></div>
         {% if user.telegram_username %}
-        <div class="info-row"><span>Telegram</span><b>@{{ user.telegram_username }}</b></div>
+        <div class="profile-info-row"><span>Telegram</span><b>@{{ user.telegram_username }}</b></div>
         {% elif user.telegram_id %}
-        <div class="info-row"><span>Telegram</span><b>Connected</b></div>
+        <div class="profile-info-row"><span>Telegram</span><b>Connected</b></div>
         {% endif %}
       </div>
 
-      <div class="info-card">
-        <div class="info-title">
+      <div class="profile-info-card">
+        <div class="profile-info-title">
           <span>Certificate</span>
           <i class="fa-solid fa-award" style="color:var(--text-muted);"></i>
         </div>
         {% if profile_stats.certificate %}
-          <div class="info-row"><span>Serial</span><b>{{ profile_stats.certificate.serial }}</b></div>
-          <div class="info-row"><span>Issued</span><b>{{ profile_stats.certificate.issued_at.strftime('%d %b %Y') }}</b></div>
+          <div class="profile-info-row"><span>Serial</span><b>{{ profile_stats.certificate.serial }}</b></div>
+          <div class="profile-info-row"><span>Issued</span><b>{{ profile_stats.certificate.issued_at.strftime('%d %b %Y') }}</b></div>
           <a class="btn-ghost btn-sm" style="width:100%;justify-content:center;margin-top:14px;" href="/verify/{{ profile_stats.certificate.serial }}?h={{ profile_stats.certificate.verification_hash }}">Open certificate check</a>
         {% else %}
           <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:14px;">Finish all 14 tests perfectly to unlock your verified certificate.</p>
@@ -1054,8 +1056,8 @@
         {% endif %}
       </div>
 
-      <div class="info-card">
-        <div class="info-title">
+      <div class="profile-info-card">
+        <div class="profile-info-title">
           <span>Quick help</span>
           <i class="fa-regular fa-message" style="color:var(--text-muted);"></i>
         </div>

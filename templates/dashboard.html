@@ -821,7 +821,13 @@
          data-test-url="/test/{{ t.id }}">
       {% if images[t.id] %}
       {% set img_src = images[t.id] %}
-      <img src="{% if img_src.startswith('/') %}{{ img_src }}{% else %}/test-images/{{ img_src }}{% endif %}" alt="Test {{ t.id }}">
+      <img
+        src="{{ test_image_url(img_src, thumb=True) }}"
+        data-full-src="{{ test_image_url(img_src) }}"
+        alt="Test {{ t.id }}"
+        loading="{% if loop.index <= 4 %}eager{% else %}lazy{% endif %}"
+        decoding="async"
+        fetchpriority="{% if loop.index <= 2 %}high{% else %}low{% endif %}">
       {% else %}
       <div style="aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center;color:#333;font-size:0.8rem;">No image</div>
       {% endif %}

@@ -574,6 +574,18 @@ function renderQuestion() {
   updateBookmarkBtn();
 
   queueLiveTranslationsForQuestion(q);
+  preloadNearbyQuestionImages();
+}
+
+function preloadNearbyQuestionImages() {
+  const preloadIndexes = [currentIndex + 1, currentIndex + 2];
+  preloadIndexes.forEach((idx) => {
+    const next = questions[idx];
+    if (!next || !next.image_path) return;
+    const image = new Image();
+    image.decoding = 'async';
+    image.src = '/test-images/' + next.image_path;
+  });
 }
 
 function toggleAnswer(questionId, answerId, clickedDiv) {
