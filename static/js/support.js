@@ -129,6 +129,28 @@
     if (status) statusDrafts.set(activeThreadId, status.value);
   }
 
+  function clearComposerForm(form) {
+    if (!form) return;
+    const textarea = form.querySelector('#supportReplyMessage');
+    const fileInput = form.querySelector('#supportAttachment');
+    const fileName = form.querySelector('#supportFileName');
+    const upload = form.querySelector('.support-upload');
+    const preview = form.querySelector('#supportUploadPreview');
+    const remove = form.querySelector('#supportFileRemove');
+
+    if (textarea) textarea.value = '';
+    if (fileInput) fileInput.value = '';
+    if (fileName) fileName.textContent = 'No file selected';
+    if (upload) upload.classList.remove('is-filled');
+    if (remove) remove.hidden = true;
+    if (preview) {
+      preview.style.display = 'none';
+      preview.removeAttribute('src');
+    }
+    if (uploadPreviewUrl) URL.revokeObjectURL(uploadPreviewUrl);
+    uploadPreviewUrl = null;
+  }
+
   function renderThreads(threads) {
     if (!threadList) return;
     const filtered = visibleThreads(threads);
@@ -326,12 +348,16 @@
     fileInput.id = 'supportAttachment';
     fileInput.name = 'attachment';
     fileInput.type = 'file';
-    fileInput.accept = '.png,.jpg,.jpeg,.webp,.gif,.pdf,.txt,.log,.json';
+    fileInput.accept = '.png,.jpg,.jpeg,.webp,.gif,.heic,.heif,.pdf,.txt,.log,.json,image/*';
     const fileName = el('div', 'support-file-name', 'No file selected');
     fileName.id = 'supportFileName';
-    uploadRow.append(fileLabel, fileInput, fileName);
+    const removeFile = el('button', 'support-file-remove', 'Remove');
+    removeFile.id = 'supportFileRemove';
+    removeFile.type = 'button';
+    removeFile.hidden = true;
+    uploadRow.append(fileLabel, fileInput, fileName, removeFile);
     upload.appendChild(uploadRow);
-    upload.appendChild(el('div', 'support-upload-hint', 'Images, PDF, logs, JSON, and text files up to 10 MB.'));
+    upload.appendChild(el('div', 'support-upload-hint', 'Images, phone photos, PDF, logs, JSON, and text files up to 10 MB.'));
     const preview = el('img', 'support-upload-preview');
     preview.id = 'supportUploadPreview';
     preview.alt = 'Selected attachment preview';
@@ -346,11 +372,12 @@
     actions.appendChild(submit);
     form.appendChild(actions);
 
-    fileInput.addEventListener('change', () => {
+    function updateSelectedFile() {
       const file = fileInput.files && fileInput.files[0];
       if (uploadPreviewUrl) URL.revokeObjectURL(uploadPreviewUrl);
       uploadPreviewUrl = null;
       upload.classList.toggle('is-filled', !!file);
+      removeFile.hidden = !file;
       fileName.textContent = file ? `${file.name} / ${(file.size / 1024 / 1024).toFixed(file.size > 1024 * 1024 ? 1 : 2)} MB` : 'No file selected';
       if (file && file.type.startsWith('image/')) {
         uploadPreviewUrl = URL.createObjectURL(file);
@@ -360,6 +387,12 @@
         preview.style.display = 'none';
         preview.removeAttribute('src');
       }
+    }
+
+    fileInput.addEventListener('change', updateSelectedFile);
+    removeFile.addEventListener('click', () => {
+      fileInput.value = '';
+      updateSelectedFile();
     });
 
     form.addEventListener('submit', submitReply);
@@ -427,9 +460,14 @@
     }
 
     try {
+      const payload = new FormData(form);
+      const fileInput = form.querySelector('#supportAttachment');
+      const selectedFile = fileInput && fileInput.files && fileInput.files[0];
+      if (selectedFile) payload.set('attachment', selectedFile, selectedFile.name);
+
       const response = await fetch(form.action, {
         method: 'POST',
-        body: new FormData(form),
+        body: payload,
         headers: {
           accept: 'application/json',
           'x-requested-with': 'XMLHttpRequest'
@@ -441,10 +479,9 @@
         showFeedback(data.error || 'Could not send the message.', 'error');
         return;
       }
+      clearComposerForm(form);
       drafts.set(activeThreadId, '');
       statusDrafts.delete(activeThreadId);
-      if (uploadPreviewUrl) URL.revokeObjectURL(uploadPreviewUrl);
-      uploadPreviewUrl = null;
       showFeedback('Sent.', 'success');
       await loadSupportData({ forceChat: true, scroll: true });
       if (typeof window.refreshSupportUnreadUI === 'function') window.refreshSupportUnreadUI();

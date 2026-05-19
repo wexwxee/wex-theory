@@ -175,11 +175,92 @@
     }
   }
   @media (max-width: 768px) {
+    .test-nav {
+      height: auto !important;
+      min-height: 92px;
+    }
+    .test-nav .nav-inner {
+      height: auto;
+      min-height: 92px;
+      padding: 8px 10px;
+      flex-wrap: wrap;
+      align-content: center;
+      gap: 7px;
+    }
+    .test-nav .nav-left {
+      width: 100%;
+      justify-content: space-between;
+      gap: 7px;
+    }
+    .test-nav .back-btn {
+      min-width: 36px;
+      min-height: 34px;
+      padding: 5px 9px;
+    }
+    .test-nav .nav-test-title {
+      display: inline-block;
+      flex: 1 1 auto;
+      min-width: 0;
+      max-width: none;
+      text-align: left;
+    }
+    .test-nav .nav-right {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 66px 42px minmax(92px, 1fr) 38px 62px;
+      gap: 6px !important;
+      align-items: center;
+    }
+    .test-nav .timer,
+    .test-nav #translateBtn,
+    .test-nav .theme-btn,
+    .test-nav #finishBtn,
+    .test-nav .voice-picker-btn {
+      height: 34px;
+      min-height: 34px;
+      border-radius: 9px;
+      font-size: 0.78rem !important;
+      padding: 0 8px !important;
+    }
+    .test-nav .timer {
+      min-width: 0 !important;
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .test-nav .voice-picker {
+      width: 100%;
+      min-width: 0;
+    }
+    .test-nav .voice-picker-btn {
+      max-width: none;
+      text-align: left;
+    }
+    .test-nav #voicePickerLabel {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: calc(100% - 16px);
+    }
+    .test-nav .voice-picker-panel {
+      left: 50%;
+      right: auto;
+      width: min(330px, calc(100vw - 20px));
+      transform: translateX(-50%);
+    }
+    .test-nav .theme-btn {
+      width: 38px;
+      padding: 0 !important;
+    }
+    .test-nav #finishBtn {
+      width: 62px;
+    }
     #testContainer {
       max-width: none;
       padding-left: 10px;
       padding-right: 10px;
-      padding-top: 16px !important;
+      padding-top: 12px !important;
       padding-bottom: 86px !important;
     }
     .test-layout {
@@ -243,16 +324,46 @@
     .nav-buttons .btn-primary {
       min-width: 118px;
     }
-    .nav-right {
-      gap: 6px !important;
-      flex-wrap: nowrap;
-    }
-    .nav-right .timer {
-      min-width: 86px;
-      text-align: center;
-    }
   }
   @media (max-width: 480px) {
+    .test-nav {
+      min-height: 88px;
+    }
+    .test-nav .nav-inner {
+      min-height: 88px;
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+    .test-nav .nav-left {
+      gap: 6px;
+    }
+    .test-nav .nav-right {
+      grid-template-columns: 58px 39px minmax(82px, 1fr) 36px 58px;
+      gap: 5px !important;
+    }
+    .test-nav .timer,
+    .test-nav #translateBtn,
+    .test-nav .theme-btn,
+    .test-nav #finishBtn,
+    .test-nav .voice-picker-btn {
+      height: 32px;
+      min-height: 32px;
+      font-size: 0.73rem !important;
+      padding-left: 6px !important;
+      padding-right: 6px !important;
+    }
+    .test-nav .burger-btn {
+      width: 36px;
+      height: 34px;
+      padding: 0;
+    }
+    .test-nav .theme-btn {
+      width: 36px;
+      padding: 0 !important;
+    }
+    .test-nav #finishBtn {
+      width: 58px;
+    }
     #testContainer {
       padding-left: 8px;
       padding-right: 8px;
@@ -286,7 +397,7 @@
 {% endblock %}
 
 {% block body %}
-<nav>
+<nav class="test-nav">
   <div class="nav-inner">
     <div class="nav-left">
       <button class="burger-btn" id="testBurgerBtn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
@@ -410,5 +521,5 @@
 
 {% block scripts %}
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/lightbox-zoom.js?v=20260408-lbz"></script>
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/test.js?v=20260505-speech-restart"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/test.js?v={{ asset_version }}"></script>
 {% endblock %}

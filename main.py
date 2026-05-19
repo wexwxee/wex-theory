@@ -80,7 +80,7 @@ CONTACT_UPLOAD_DIR = BASE_DIR / "uploads" / "contact"
 SUPPORT_UPLOAD_DIR = BASE_DIR / "uploads" / "support"
 AVATAR_UPLOAD_DIR = BASE_DIR / "uploads" / "avatars"
 EXAM_WORDS_SOURCE_PDF = BASE_DIR / "data" / "protected" / "begrebsliste_DA_EN_RU.pdf"
-ALLOWED_CONTACT_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".pdf", ".txt", ".log", ".json"}
+ALLOWED_CONTACT_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".heic", ".heif", ".pdf", ".txt", ".log", ".json"}
 ALLOWED_AVATAR_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
 MAX_CONTACT_UPLOAD_BYTES = 10 * 1024 * 1024
 MAX_AVATAR_UPLOAD_BYTES = 2 * 1024 * 1024
@@ -93,6 +93,8 @@ MAGIC_SIGNATURES: dict[str, list[bytes]] = {
     ".gif":  [b"GIF87a", b"GIF89a"],
     ".pdf":  [b"%PDF"],
     ".webp": [b"RIFF"],  # RIFF....WEBP
+    ".heic": [b"ftyp"],
+    ".heif": [b"ftyp"],
 }
 # Text-based extensions (.txt, .log, .json) are not checked by magic bytes
 
@@ -108,6 +110,8 @@ def validate_file_magic(file_obj, ext: str) -> bool:
         return False
     if ext == ".webp":
         return header[:4] == b"RIFF" and header[8:12] == b"WEBP"
+    if ext in {".heic", ".heif"}:
+        return header[4:8] == b"ftyp"
     return any(header.startswith(sig) for sig in signatures)
 CONTACT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 SUPPORT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -2497,7 +2501,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260519-profile-footer-thumbs"
+templates.env.globals["asset_version"] = "20260519-support-mobile-fix"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 templates.env.globals["test_image_url"] = test_image_url
@@ -5245,7 +5249,10 @@ async def api_support_reply(thread_id: int, request: Request, db: Session = Depe
     attachment_type = None
 
     if attachment:
-        attachment_name, attachment_path, attachment_type = save_support_attachment(attachment)
+        try:
+            attachment_name, attachment_path, attachment_type = save_support_attachment(attachment)
+        except ValueError as e:
+            return JSONResponse({"error": str(e)}, status_code=400)
 
     if not body and not attachment_name:
         if user.is_admin and str(form.get("status", thread.status or "open")) != (thread.status or "open"):

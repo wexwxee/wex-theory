@@ -676,6 +676,23 @@ select {
   overflow-wrap: anywhere;
 }
 
+.support-file-remove {
+  min-height: 34px;
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--support-red);
+  padding: 0 12px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.support-file-remove[hidden] {
+  display: none;
+}
+
 .support-upload-preview {
   display: none;
   margin-top: 12px;
