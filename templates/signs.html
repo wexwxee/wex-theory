@@ -49,6 +49,25 @@
     color: var(--text);
     border-color: var(--text);
   }
+  .lang-switch {
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-card);
+  }
+  .lang-btn {
+    padding: 5px 12px;
+    border: none;
+    border-radius: 999px;
+    background: none;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+  }
+  .lang-btn.is-active { background: var(--text); color: var(--bg); }
   .signs-group { margin-bottom: 34px; }
   .signs-group-head {
     display: flex;
@@ -130,6 +149,10 @@
       <a href="/" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" class="lang-btn is-active" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="ru">RU</button>
+      </div>
       <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
       {% if user %}
       <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
@@ -143,17 +166,19 @@
 
 <div class="info-page">
   <section class="info-hero info-hero--signs">
-    <div class="info-eyebrow">Free reference</div>
-    <h1 class="info-title">Danish road signs</h1>
-    <p class="info-lede">
+    <div class="info-eyebrow" data-en="Free reference" data-ru="Бесплатный справочник">Free reference</div>
+    <h1 class="info-title" data-en="Danish road signs" data-ru="Дорожные знаки Дании">Danish road signs</h1>
+    <p class="info-lede"
+       data-en="{{ meta.count }} signs, grouped by family. The theory test asks you to state what a sign means by picking the right answer, so learn them by family first - the shape and colour already tell you half the answer."
+       data-ru="{{ meta.count }} знаков по семьям. На экзамене надо выбрать значение знака из нескольких вариантов, поэтому учите семьями: форма и цвет уже подсказывают половину ответа.">
       {{ meta.count }} signs, grouped by family. The theory test asks you to state what a sign means by
       picking the right answer, so learn them by family first &mdash; the shape and colour already tell you
       half the answer.
     </p>
     <div class="info-actions">
-      <a href="/signs/learn" class="btn-primary">Practise signs</a>
-      <a href="/test/0" class="btn-ghost">See them in real scenes</a>
-      <a href="/exam-day" class="btn-ghost">How the test works</a>
+      <a href="/signs/learn" class="btn-primary" data-en="Practise signs" data-ru="Тренажёр знаков">Practise signs</a>
+      <a href="/test/0" class="btn-ghost" data-en="See them in real scenes" data-ru="Увидеть на фото">See them in real scenes</a>
+      <a href="/exam-day" class="btn-ghost" data-en="How the test works" data-ru="Как проходит экзамен">How the test works</a>
     </div>
   </section>
 
@@ -171,16 +196,16 @@
     {% for group in groups %}
     <section class="signs-group" data-group="{{ group.group }}">
       <div class="signs-group-head">
-        <span class="signs-group-title">{{ group.label }}</span>
+        <span class="signs-group-title" data-en="{{ group.label }}" data-ru="{{ group.label_ru }}">{{ group.label }}</span>
         <span class="signs-group-count">{{ group.group }} &middot; {{ group.count }} signs</span>
       </div>
-      {% if group.note %}<p class="signs-group-note">{{ group.note }}</p>{% endif %}
+      {% if group.note %}<p class="signs-group-note" data-en="{{ group.note }}" data-ru="{{ group.note_ru }}">{{ group.note }}</p>{% endif %}
       <div class="signs-grid">
         {% for sign in signs if sign.group == group.group %}
-        <a class="sign-card" href="/signs/{{ sign.code }}" data-code="{{ sign.code|lower }}" data-name="{{ sign.name_en|lower }}">
+        <a class="sign-card" href="/signs/{{ sign.code }}" data-code="{{ sign.code|lower }}" data-name="{{ sign.name_en|lower }} {{ sign.name_ru|lower }}">
           <img src="{{ sign.image }}?v={{ asset_version }}" alt="{{ sign.code }}: {{ sign.name_en }}" loading="lazy">
           <span class="sign-card-code">{{ sign.code }}</span>
-          <span class="sign-card-name">{{ sign.name_en }}</span>
+          <span class="sign-card-name" data-en="{{ sign.name_en }}" data-ru="{{ sign.name_ru }}">{{ sign.name_en }}</span>
         </a>
         {% endfor %}
       </div>

@@ -84,6 +84,38 @@ def test_meanings_do_not_leak_into_the_generated_file():
     assert all("meaning" not in sign for sign in raw["signs"])
 
 
+def test_every_sign_has_a_russian_name(all_signs):
+    """The audience reads Russian faster than English - names must all be there."""
+    missing = [sign["code"] for sign in all_signs if not sign["name_ru"].strip()]
+    assert missing == []
+
+
+def test_russian_explanations_match_the_english_ones(all_signs):
+    """Wherever we explain a sign in English, the Russian must exist too."""
+    missing = [
+        sign["code"]
+        for sign in all_signs
+        if sign["meaning"].strip() and not sign["meaning_ru"].strip()
+    ]
+    assert missing == []
+
+
+def test_every_family_has_a_russian_label_and_note():
+    for group in catalogue.groups():
+        assert group["label_ru"].strip()
+        assert group["note_ru"].strip()
+
+
+def test_signs_sharing_a_name_exist_in_the_same_family(all_signs):
+    """Why the quiz must never offer two options with the same wording:
+    D11.1-D11.8 are all called "Mandatory direction", so two identical answers
+    would both be correct. The trainer picks distractors by distinct label."""
+    from collections import Counter
+
+    names = Counter((sign["group"], sign["name_en"]) for sign in all_signs)
+    assert any(count > 1 for count in names.values())
+
+
 def test_groups_are_counted_and_ordered(all_signs):
     groups = catalogue.groups()
     assert sum(group["count"] for group in groups) == len(all_signs)

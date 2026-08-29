@@ -3581,6 +3581,8 @@ async def api_signs():
                 "group_label": sign["group_label"],
                 "name": sign["name_en"],
                 "meaning": sign.get("meaning", ""),
+                "name_ru": sign.get("name_ru", ""),
+                "meaning_ru": sign.get("meaning_ru", ""),
                 "image": sign["image"],
             }
             for sign in signs_catalogue.all_signs()
@@ -3601,6 +3603,7 @@ async def sign_detail_page(code: str, request: Request, db: Session = Depends(ge
         "user": user,
         "sign": sign,
         "group_note": signs_catalogue.group_note(sign["group"]),
+        "group_note_ru": signs_catalogue.group_note_ru(sign["group"]),
         "related": signs_catalogue.related_signs(sign),
     })
 

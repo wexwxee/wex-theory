@@ -5,27 +5,46 @@
 {% block head %}
 <style>
   .learn-shell {
-    max-width: 760px;
+    max-width: 780px;
     margin: 0 auto;
-    padding: 0 4px 60px;
+    padding: 0 4px 70px;
   }
   .learn-head {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: 12px;
     flex-wrap: wrap;
-    margin-bottom: 14px;
+    margin-bottom: 6px;
   }
   .learn-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; }
-  .learn-stats { font-size: 0.85rem; color: var(--text-muted); }
+  .lang-switch {
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-card);
+  }
+  .lang-btn {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 999px;
+    background: none;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+  }
+  .lang-btn.is-active { background: var(--text); color: var(--bg); }
+  .learn-stats { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px; }
   .learn-stats b { color: var(--text); }
   .learn-controls {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
   .mode-switch {
     display: inline-flex;
@@ -33,31 +52,20 @@
     border: 1px solid var(--border);
     border-radius: 999px;
     background: var(--bg-card);
+    flex-wrap: wrap;
   }
   .mode-btn {
-    padding: 7px 16px;
+    padding: 7px 14px;
     border: none;
     border-radius: 999px;
     background: none;
     color: var(--text-muted);
-    font-size: 0.84rem;
+    font-size: 0.82rem;
     font-weight: 700;
     cursor: pointer;
+    white-space: nowrap;
   }
   .mode-btn.is-active { background: var(--text); color: var(--bg); }
-  .learn-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .learn-chip {
-    padding: 7px 12px;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    background: var(--bg-card);
-    color: var(--text-muted);
-    font-size: 0.8rem;
-    font-weight: 700;
-    cursor: pointer;
-  }
-  .learn-chip:hover { color: var(--text); border-color: var(--text-muted); }
-  .learn-chip.is-active { color: var(--text); border-color: var(--text); }
   .learn-reset {
     margin-left: auto;
     background: none;
@@ -69,14 +77,47 @@
     padding: 6px 2px;
   }
   .learn-reset:hover { color: var(--text); }
-  .learn-progress {
+  .learn-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .learn-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .learn-chip:hover { color: var(--text); border-color: var(--text-muted); }
+  .learn-chip.is-active { color: var(--text); border-color: var(--text); }
+  .chip-meter {
+    width: 34px;
     height: 4px;
     border-radius: 999px;
     background: var(--border);
     overflow: hidden;
-    margin: 14px 0 18px;
   }
-  .learn-progress span {
+  .chip-meter span { display: block; height: 100%; background: currentColor; width: 0; }
+  .session-line {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0 14px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .session-bar {
+    flex: 1;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--border);
+    overflow: hidden;
+  }
+  .session-bar span {
     display: block;
     height: 100%;
     width: 0;
@@ -87,13 +128,13 @@
     border: 1px solid var(--border);
     border-radius: 22px;
     background: var(--bg-card);
-    padding: clamp(20px, 4vw, 32px);
+    padding: clamp(20px, 4vw, 30px);
     text-align: center;
   }
   .learn-art {
-    width: min(230px, 60vw);
+    width: min(210px, 55vw);
     aspect-ratio: 1 / 1;
-    margin: 0 auto 18px;
+    margin: 0 auto 16px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -102,20 +143,35 @@
     background: var(--bg);
   }
   .learn-art img { width: 78%; height: 78%; object-fit: contain; }
+  .learn-prompt {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
   .learn-code {
     font-size: 0.78rem;
     font-weight: 800;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--text-muted);
     margin-bottom: 8px;
   }
-  .learn-name { font-size: 1.3rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.01em; }
+  .learn-name { font-size: 1.25rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.01em; }
   .learn-meaning {
     color: var(--text-muted);
     line-height: 1.6;
     max-width: 54ch;
-    margin: 0 auto 4px;
+    margin: 0 auto;
+  }
+  .learn-question {
+    font-size: 1.12rem;
+    font-weight: 700;
+    line-height: 1.5;
+    max-width: 52ch;
+    margin: 0 auto 18px;
   }
   .learn-actions {
     display: flex;
@@ -126,17 +182,13 @@
   }
   .learn-actions .btn-primary,
   .learn-actions .btn-ghost { min-width: 150px; justify-content: center; }
-  .learn-options {
-    display: grid;
-    gap: 10px;
-    margin-top: 4px;
-    text-align: left;
-  }
+  .learn-options { display: grid; gap: 9px; text-align: left; }
   .learn-option {
-    display: flex;
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
     align-items: center;
     gap: 12px;
-    padding: 13px 16px;
+    padding: 13px 15px;
     border: 1px solid var(--border);
     border-radius: 14px;
     background: var(--bg);
@@ -149,30 +201,86 @@
   }
   .learn-option:hover:not(:disabled) { border-color: var(--text-muted); }
   .learn-option:disabled { cursor: default; }
-  .learn-option.is-correct {
-    border-color: #16a34a;
-    background: rgba(22, 163, 74, 0.09);
+  .option-key {
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--text-muted);
   }
-  .learn-option.is-wrong {
-    border-color: #dc2626;
-    background: rgba(220, 38, 38, 0.09);
+  .learn-option.is-correct { border-color: #16a34a; background: rgba(22, 163, 74, 0.10); }
+  .learn-option.is-correct .option-key { border-color: #16a34a; color: #16a34a; }
+  .learn-option.is-wrong { border-color: #dc2626; background: rgba(220, 38, 38, 0.10); }
+  .learn-option.is-wrong .option-key { border-color: #dc2626; color: #dc2626; }
+  .learn-images {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
+  .image-option {
+    position: relative;
+    padding: 14px 10px 10px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--bg);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .image-option:hover:not(:disabled) { border-color: var(--text-muted); }
+  .image-option img { width: 78px; height: 78px; object-fit: contain; display: block; margin: 0 auto; }
+  .image-option .option-key { position: absolute; top: 8px; left: 8px; }
+  .image-option.is-correct { border-color: #16a34a; background: rgba(22, 163, 74, 0.10); }
+  .image-option.is-wrong { border-color: #dc2626; background: rgba(220, 38, 38, 0.10); }
   .learn-feedback {
-    margin-top: 14px;
-    font-size: 0.92rem;
-    color: var(--text-muted);
-    line-height: 1.55;
-    min-height: 22px;
-  }
-  .learn-done { padding: 20px 0; }
-  .learn-done-title { font-size: 1.25rem; font-weight: 800; margin-bottom: 10px; }
-  .learn-hint {
     margin-top: 16px;
-    font-size: 0.82rem;
+    font-size: 0.93rem;
+    line-height: 1.55;
     color: var(--text-muted);
+    min-height: 20px;
+  }
+  .learn-feedback b { color: var(--text); }
+  .learn-explain {
+    margin-top: 10px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    text-align: left;
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+  .learn-explain .explain-code { font-weight: 800; margin-right: 6px; }
+  .summary-score { font-size: 2.4rem; font-weight: 800; letter-spacing: -0.03em; }
+  .summary-line { color: var(--text-muted); margin-bottom: 18px; }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+    margin: 14px 0 4px;
     text-align: center;
   }
+  .summary-item {
+    padding: 12px 8px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--bg);
+    text-decoration: none;
+    color: inherit;
+  }
+  .summary-item img { width: 54px; height: 54px; object-fit: contain; }
+  .summary-item span { display: block; font-size: 0.74rem; color: var(--text-muted); margin-top: 6px; line-height: 1.3; }
+  .learn-hint { margin-top: 16px; font-size: 0.82rem; color: var(--text-muted); text-align: center; }
   .learn-hint a { color: inherit; }
+  .keys-hint { margin-top: 6px; font-size: 0.76rem; color: var(--text-muted); text-align: center; }
+  @media (max-width: 560px) {
+    .learn-images { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .keys-hint { display: none; }
+  }
 </style>
 {% endblock %}
 
@@ -198,35 +306,45 @@
 <div class="page" style="padding-top:18px;">
   <div class="learn-shell" id="learnShell" data-group="{{ group }}">
     <div class="learn-head">
-      <div class="learn-title">Practise road signs</div>
-      <div class="learn-stats" id="learnStats"></div>
+      <div class="learn-title" id="learnTitle">Practise road signs</div>
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" class="lang-btn is-active" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="ru">RU</button>
+      </div>
     </div>
+    <div class="learn-stats" id="learnStats"></div>
 
     <div class="learn-controls">
       <div class="mode-switch" role="group" aria-label="Practice mode">
-        <button type="button" class="mode-btn is-active" data-mode="cards">Cards</button>
-        <button type="button" class="mode-btn" data-mode="quiz">Quiz</button>
+        <button type="button" class="mode-btn is-active" data-mode="cards" id="modeCards">Cards</button>
+        <button type="button" class="mode-btn" data-mode="name" id="modeName">Sign &rarr; meaning</button>
+        <button type="button" class="mode-btn" data-mode="image" id="modeImage">Meaning &rarr; sign</button>
       </div>
       <button type="button" class="learn-reset" id="learnReset">Reset my progress</button>
     </div>
 
     <div class="learn-chips" id="learnChips">
-      <button type="button" class="learn-chip is-active" data-group="all">All signs</button>
+      <button type="button" class="learn-chip is-active" data-group="all"><span data-chip-label>All signs</span><span class="chip-meter"><span data-meter></span></span></button>
       {% for group_item in groups %}
-      <button type="button" class="learn-chip" data-group="{{ group_item.group }}">{{ group_item.group }} &middot; {{ group_item.label }}</button>
+      <button type="button" class="learn-chip" data-group="{{ group_item.group }}"><span data-chip-label>{{ group_item.group }} &middot; {{ group_item.label }}</span><span class="chip-meter"><span data-meter></span></span></button>
       {% endfor %}
     </div>
 
-    <div class="learn-progress"><span id="learnProgressBar"></span></div>
+    <div class="session-line">
+      <span id="sessionCounter"></span>
+      <span class="session-bar"><span id="sessionBar"></span></span>
+      <span id="sessionScore"></span>
+    </div>
 
-    <div class="learn-stage" id="learnStage">
+    <div class="learn-stage" id="learnStage" aria-live="polite">
       <div class="learn-meaning">Loading the signs&hellip;</div>
     </div>
 
-    <p class="learn-hint">
-      Progress is kept in this browser only. Signs you miss come back sooner.
-      Full catalogue: <a href="/signs">all {{ meta.count }} signs</a>.
+    <p class="learn-hint" id="learnHint">
+      Progress stays in this browser. Signs you miss come back sooner, and a sign counts as learned after
+      three correct answers in a row.
     </p>
+    <p class="keys-hint" id="keysHint">Keyboard: 1-4 to answer, Enter to continue.</p>
   </div>
 </div>
 {% endblock %}

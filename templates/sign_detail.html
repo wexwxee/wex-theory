@@ -48,6 +48,24 @@
     margin-bottom: 12px;
   }
   .sign-note { color: var(--text-muted); line-height: 1.6; max-width: 62ch; font-size: 0.92rem; }
+  .lang-switch {
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-card);
+  }
+  .lang-btn {
+    padding: 5px 12px;
+    border: none;
+    border-radius: 999px;
+    background: none;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .lang-btn.is-active { background: var(--text); color: var(--bg); }
   .sign-note-label {
     font-weight: 800;
     letter-spacing: 0.06em;
@@ -115,6 +133,10 @@
       <a href="/signs" class="logo">Road signs</a>
     </div>
     <div class="nav-right">
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" class="lang-btn is-active" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="ru">RU</button>
+      </div>
       <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
       {% if user %}
       <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
@@ -133,28 +155,28 @@
     </div>
     <div>
       <div class="sign-code">{{ sign.code }} &middot; {{ sign.group_label }}</div>
-      <h1 class="sign-name">{{ sign.name_en }}</h1>
-      {% if sign.meaning %}<p class="sign-meaning">{{ sign.meaning }}</p>{% endif %}
-      {% if group_note %}<p class="sign-note"><span class="sign-note-label">{{ sign.group }} signs</span> {{ group_note }}</p>{% endif %}
+      <h1 class="sign-name" data-en="{{ sign.name_en }}" data-ru="{{ sign.name_ru }}">{{ sign.name_en }}</h1>
+      {% if sign.meaning %}<p class="sign-meaning" data-en="{{ sign.meaning }}" data-ru="{{ sign.meaning_ru }}">{{ sign.meaning }}</p>{% endif %}
+      {% if group_note %}<p class="sign-note"><span class="sign-note-label">{{ sign.group }}</span> <span data-en="{{ group_note }}" data-ru="{{ group_note_ru }}">{{ group_note }}</span></p>{% endif %}
       <div class="sign-actions">
-        <a href="/signs/learn?group={{ sign.group }}" class="btn-primary">Practise {{ sign.group }} signs</a>
-        <a href="/signs" class="btn-ghost">All signs</a>
-        <a href="/test/0" class="btn-ghost">See it in a real scene</a>
+        <a href="/signs/learn?group={{ sign.group }}" class="btn-primary" data-en="Practise {{ sign.group }} signs" data-ru="Тренировать {{ sign.group }}">Practise {{ sign.group }} signs</a>
+        <a href="/signs" class="btn-ghost" data-en="All signs" data-ru="Все знаки">All signs</a>
+        <a href="/test/0" class="btn-ghost" data-en="See it in a real scene" data-ru="Увидеть на фото">See it in a real scene</a>
       </div>
     </div>
   </section>
 
   {% if related %}
   <div class="related-head">
-    <span class="related-title">Neighbours in the same family</span>
-    <span class="related-hint">These are the ones people mix up &mdash; compare them side by side.</span>
+    <span class="related-title" data-en="Neighbours in the same family" data-ru="Соседи по семье">Neighbours in the same family</span>
+    <span class="related-hint" data-en="These are the ones people mix up - compare them side by side." data-ru="Именно их чаще всего путают - сравните рядом.">These are the ones people mix up &mdash; compare them side by side.</span>
   </div>
   <div class="signs-grid">
     {% for other in related %}
     <a class="sign-card" href="/signs/{{ other.code }}">
       <img src="{{ other.image }}?v={{ asset_version }}" alt="{{ other.code }}: {{ other.name_en }}" loading="lazy">
       <span class="sign-card-code">{{ other.code }}</span>
-      <span class="sign-card-name">{{ other.name_en }}</span>
+      <span class="sign-card-name" data-en="{{ other.name_en }}" data-ru="{{ other.name_ru }}">{{ other.name_en }}</span>
     </a>
     {% endfor %}
   </div>
