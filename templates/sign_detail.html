@@ -41,7 +41,21 @@
     margin-bottom: 12px;
     text-wrap: balance;
   }
-  .sign-note { color: var(--text-muted); line-height: 1.6; max-width: 62ch; }
+  .sign-meaning {
+    font-size: 1.05rem;
+    line-height: 1.65;
+    max-width: 62ch;
+    margin-bottom: 12px;
+  }
+  .sign-note { color: var(--text-muted); line-height: 1.6; max-width: 62ch; font-size: 0.92rem; }
+  .sign-note-label {
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    color: var(--text);
+    margin-right: 4px;
+  }
   .sign-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
   .related-head {
     display: flex;
@@ -120,10 +134,12 @@
     <div>
       <div class="sign-code">{{ sign.code }} &middot; {{ sign.group_label }}</div>
       <h1 class="sign-name">{{ sign.name_en }}</h1>
-      {% if group_note %}<p class="sign-note">{{ group_note }}</p>{% endif %}
+      {% if sign.meaning %}<p class="sign-meaning">{{ sign.meaning }}</p>{% endif %}
+      {% if group_note %}<p class="sign-note"><span class="sign-note-label">{{ sign.group }} signs</span> {{ group_note }}</p>{% endif %}
       <div class="sign-actions">
+        <a href="/signs/learn?group={{ sign.group }}" class="btn-primary">Practise {{ sign.group }} signs</a>
         <a href="/signs" class="btn-ghost">All signs</a>
-        <a href="/test/0" class="btn-primary">See it in a real scene</a>
+        <a href="/test/0" class="btn-ghost">See it in a real scene</a>
       </div>
     </div>
   </section>

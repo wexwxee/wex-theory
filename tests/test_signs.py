@@ -66,6 +66,24 @@ def test_related_signs_stay_in_the_same_family(all_signs):
     assert all(other["code"] != sign["code"] for other in related)
 
 
+def test_every_exam_family_sign_is_explained(all_signs):
+    """A, B, C, D, E and the subpanels are what the test asks about."""
+    unexplained = [
+        sign["code"]
+        for sign in all_signs
+        if sign["group"] in {"A", "B", "C", "D", "E", "U"} and not sign["meaning"].strip()
+    ]
+    assert unexplained == []
+
+
+def test_meanings_do_not_leak_into_the_generated_file():
+    """Rebuilding the catalogue must never be able to wipe our own wording."""
+    import json
+
+    raw = json.loads((ROOT / "data" / "signs" / "signs.json").read_text(encoding="utf-8"))
+    assert all("meaning" not in sign for sign in raw["signs"])
+
+
 def test_groups_are_counted_and_ordered(all_signs):
     groups = catalogue.groups()
     assert sum(group["count"] for group in groups) == len(all_signs)

@@ -3558,6 +3558,36 @@ async def signs_page(request: Request, db: Session = Depends(get_db)):
     })
 
 
+@app.get("/signs/learn", response_class=HTMLResponse)
+async def signs_learn_page(request: Request, group: str = "all", db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    known_groups = {item["group"] for item in signs_catalogue.groups()}
+    return templates.TemplateResponse(request, "sign_learn.html", {
+        "request": request,
+        "user": user,
+        "group": group if group in known_groups else "all",
+        "groups": signs_catalogue.groups(),
+        "meta": signs_catalogue.catalogue_meta(),
+    })
+
+
+@app.get("/api/signs")
+async def api_signs():
+    return {
+        "signs": [
+            {
+                "code": sign["code"],
+                "group": sign["group"],
+                "group_label": sign["group_label"],
+                "name": sign["name_en"],
+                "meaning": sign.get("meaning", ""),
+                "image": sign["image"],
+            }
+            for sign in signs_catalogue.all_signs()
+        ]
+    }
+
+
 @app.get("/signs/{code}", response_class=HTMLResponse)
 async def sign_detail_page(code: str, request: Request, db: Session = Depends(get_db)):
     sign = signs_catalogue.by_code(code)

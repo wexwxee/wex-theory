@@ -14,7 +14,9 @@ import threading
 from pathlib import Path
 from typing import Optional
 
-DATA_FILE = Path(__file__).resolve().parent / "data" / "signs" / "signs.json"
+DATA_DIR = Path(__file__).resolve().parent / "data" / "signs"
+DATA_FILE = DATA_DIR / "signs.json"
+MEANINGS_FILE = DATA_DIR / "meanings.json"
 
 # Order the groups the way a learner meets them, not alphabetically.
 GROUP_ORDER = ["A", "B", "C", "D", "E", "U", "F", "H", "I", "J", "K", "G", "M"]
@@ -58,9 +60,24 @@ def _load() -> dict:
             print(f"[signs] catalogue unreadable: {error}")
             payload = {"signs": [], "count": 0, "fetched": "", "source": ""}
         payload.setdefault("signs", [])
+        meanings = _load_meanings()
+        for sign in payload["signs"]:
+            sign["meaning"] = meanings.get(sign["code"], "")
         payload["signs"].sort(key=lambda sign: (_group_rank(sign["group"]), code_key(sign["code"])))
+        payload["explained"] = sum(1 for sign in payload["signs"] if sign["meaning"])
         _cache = payload
         return _cache
+
+
+def _load_meanings() -> dict:
+    """Our own study wording, kept in its own file so rebuilding never eats it."""
+    if not MEANINGS_FILE.exists():
+        return {}
+    try:
+        return json.loads(MEANINGS_FILE.read_text(encoding="utf-8")).get("meanings", {})
+    except (OSError, json.JSONDecodeError) as error:
+        print(f"[signs] meanings unreadable: {error}")
+        return {}
 
 
 def code_key(code: str) -> tuple:
@@ -89,6 +106,7 @@ def catalogue_meta() -> dict:
     payload = _load()
     return {
         "count": len(payload["signs"]),
+        "explained": payload.get("explained", 0),
         "fetched": payload.get("fetched", ""),
         "source": payload.get("source", ""),
     }
