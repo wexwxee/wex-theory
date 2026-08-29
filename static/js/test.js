@@ -46,6 +46,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('bookmarkBtn')?.addEventListener('click', toggleBookmark);
   document.getElementById('prevBtn')?.addEventListener('click', prevQuestion);
   document.getElementById('nextBtn')?.addEventListener('click', nextQuestion);
+  document.getElementById('flagBtn')?.addEventListener('click', toggleFlag);
+  document.getElementById('mapBtn')?.addEventListener('click', toggleQuestionMap);
+  document.getElementById('mapCloseBtn')?.addEventListener('click', closeQuestionMap);
+  document.getElementById('questionMap')?.addEventListener('click', (event) => {
+    if (event.target === event.currentTarget) closeQuestionMap();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeQuestionMap();
+  });
   document.getElementById('finishModalCloseBtn')?.addEventListener('click', closeFinishModal);
   document.getElementById('finishKeepGoingBtn')?.addEventListener('click', closeFinishModal);
   document.getElementById('submitBtn')?.addEventListener('click', () => submitTest());
@@ -65,6 +74,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
   await loadQuestions();
+  loadFlags();
+  updateFlagBtn();
+  refreshQuestionMap();
   startTimer();
 });
 
@@ -572,6 +584,8 @@ function renderQuestion() {
   // Dots
   updateDots();
   updateBookmarkBtn();
+  updateFlagBtn();
+  refreshQuestionMap();
 
   queueLiveTranslationsForQuestion(q);
   preloadNearbyQuestionImages();
@@ -599,6 +613,113 @@ function toggleAnswer(questionId, answerId, clickedDiv) {
   selectedAnswers[questionId] = current;
   clickedDiv.classList.toggle('selected', current.includes(answerId));
   updateDots();
+  refreshQuestionMap();
+}
+
+const FLAG_STORAGE_KEY = `wexFlags:${TEST_ID}`;
+let flaggedQuestions = new Set();
+
+function loadFlags() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(FLAG_STORAGE_KEY) || '[]');
+    const known = new Set(questions.map((q) => q.id));
+    flaggedQuestions = new Set((Array.isArray(stored) ? stored : []).filter((id) => known.has(id)));
+  } catch (e) {
+    flaggedQuestions = new Set();
+  }
+  saveFlags();
+}
+
+function saveFlags() {
+  try {
+    localStorage.setItem(FLAG_STORAGE_KEY, JSON.stringify([...flaggedQuestions]));
+  } catch (e) {
+    // private mode or storage disabled: flags stay for this session only
+  }
+}
+
+function toggleFlag() {
+  const q = questions[currentIndex];
+  if (!q) return;
+  if (flaggedQuestions.has(q.id)) {
+    flaggedQuestions.delete(q.id);
+  } else {
+    flaggedQuestions.add(q.id);
+  }
+  saveFlags();
+  updateFlagBtn();
+  refreshQuestionMap();
+}
+
+function updateFlagBtn() {
+  const btn = document.getElementById('flagBtn');
+  const q = questions[currentIndex];
+  if (!btn || !q) return;
+  const on = flaggedQuestions.has(q.id);
+  btn.classList.toggle('is-flagged', on);
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  btn.title = on ? 'Remove flag' : 'Flag for review';
+}
+
+function answeredCount() {
+  return questions.filter((q) => (selectedAnswers[q.id] || []).length > 0).length;
+}
+
+function refreshQuestionMap() {
+  const label = document.getElementById('mapBtnLabel');
+  if (label) label.textContent = `${answeredCount()}/${questions.length} answered`;
+  const flags = document.getElementById('mapBtnFlags');
+  if (flags) {
+    flags.textContent = flaggedQuestions.size ? `${flaggedQuestions.size} flagged` : '';
+    flags.style.display = flaggedQuestions.size ? 'inline' : 'none';
+  }
+  const overlay = document.getElementById('questionMap');
+  if (overlay && !overlay.hidden) renderQuestionMap();
+}
+
+function renderQuestionMap() {
+  const grid = document.getElementById('questionMapGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  questions.forEach((q, i) => {
+    const cell = document.createElement('button');
+    cell.type = 'button';
+    cell.className = 'qmap-cell';
+    if ((selectedAnswers[q.id] || []).length > 0) cell.classList.add('is-answered');
+    if (flaggedQuestions.has(q.id)) cell.classList.add('is-flagged');
+    if (i === currentIndex) cell.classList.add('is-current');
+    cell.textContent = String(i + 1);
+    cell.setAttribute('aria-label', `Question ${i + 1}`);
+    cell.addEventListener('click', () => {
+      currentIndex = i;
+      closeQuestionMap();
+      renderQuestion();
+    });
+    grid.appendChild(cell);
+  });
+}
+
+function openQuestionMap() {
+  const overlay = document.getElementById('questionMap');
+  if (!overlay || !questions.length) return;
+  renderQuestionMap();
+  overlay.hidden = false;
+  document.getElementById('mapBtn')?.setAttribute('aria-expanded', 'true');
+  document.getElementById('mapCloseBtn')?.focus();
+}
+
+function closeQuestionMap() {
+  const overlay = document.getElementById('questionMap');
+  if (!overlay) return;
+  overlay.hidden = true;
+  document.getElementById('mapBtn')?.setAttribute('aria-expanded', 'false');
+}
+
+function toggleQuestionMap() {
+  const overlay = document.getElementById('questionMap');
+  if (!overlay) return;
+  if (overlay.hidden) openQuestionMap();
+  else closeQuestionMap();
 }
 
 function renderDots() {
