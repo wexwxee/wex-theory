@@ -202,7 +202,7 @@
       {% if group.note %}<p class="signs-group-note" data-en="{{ group.note }}" data-ru="{{ group.note_ru }}">{{ group.note }}</p>{% endif %}
       <div class="signs-grid">
         {% for sign in signs if sign.group == group.group %}
-        <a class="sign-card" href="/signs/{{ sign.code }}" data-code="{{ sign.code|lower }}" data-name="{{ sign.name_en|lower }} {{ sign.name_ru|lower }}">
+        <a class="sign-card" href="/signs/{{ sign.code }}" data-code="{{ sign.code|lower }}" data-name="{{ sign.name_en|lower }} {{ sign.name_ru|lower }} {{ sign.name_da|lower }}" title="{% if sign.name_da %}{{ sign.name_da }} · {% endif %}{{ sign.code }}">
           <img src="{{ sign.image }}?v={{ asset_version }}" alt="{{ sign.code }}: {{ sign.name_en }}" loading="lazy">
           <span class="sign-card-code">{{ sign.code }}</span>
           <span class="sign-card-name" data-en="{{ sign.name_en }}" data-ru="{{ sign.name_ru }}">{{ sign.name_en }}</span>

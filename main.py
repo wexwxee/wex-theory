@@ -3582,6 +3582,7 @@ async def api_signs():
                 "name": sign["name_en"],
                 "meaning": sign.get("meaning", ""),
                 "name_ru": sign.get("name_ru", ""),
+                "name_da": sign.get("name_da", ""),
                 "meaning_ru": sign.get("meaning_ru", ""),
                 "image": sign["image"],
             }

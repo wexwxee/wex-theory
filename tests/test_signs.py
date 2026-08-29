@@ -66,14 +66,18 @@ def test_related_signs_stay_in_the_same_family(all_signs):
     assert all(other["code"] != sign["code"] for other in related)
 
 
-def test_every_exam_family_sign_is_explained(all_signs):
-    """A, B, C, D, E and the subpanels are what the test asks about."""
-    unexplained = [
-        sign["code"]
-        for sign in all_signs
-        if sign["group"] in {"A", "B", "C", "D", "E", "U"} and not sign["meaning"].strip()
-    ]
+def test_every_sign_is_explained(all_signs):
+    """A name is not an explanation - every sign says what you do about it."""
+    unexplained = [sign["code"] for sign in all_signs if not sign["meaning"].strip()]
     assert unexplained == []
+
+
+def test_most_signs_carry_their_official_danish_name(all_signs):
+    """The Danish name is what the driving school and the examiner use.
+    A handful of subpanels are named only as a family in the order, so this
+    checks the bulk rather than demanding every single one."""
+    named = [sign for sign in all_signs if sign["name_da"].strip()]
+    assert len(named) > len(all_signs) * 0.9
 
 
 def test_meanings_do_not_leak_into_the_generated_file():

@@ -47,6 +47,19 @@
     max-width: 62ch;
     margin-bottom: 12px;
   }
+  .sign-danish {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+  .sign-danish-label {
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 0.68rem;
+    color: var(--text);
+    margin-right: 6px;
+  }
   .sign-note { color: var(--text-muted); line-height: 1.6; max-width: 62ch; font-size: 0.92rem; }
   .lang-switch {
     display: inline-flex;
@@ -156,6 +169,7 @@
     <div>
       <div class="sign-code">{{ sign.code }} &middot; {{ sign.group_label }}</div>
       <h1 class="sign-name" data-en="{{ sign.name_en }}" data-ru="{{ sign.name_ru }}">{{ sign.name_en }}</h1>
+      {% if sign.name_da %}<p class="sign-danish"><span class="sign-danish-label">På dansk</span> {{ sign.name_da }}</p>{% endif %}
       {% if sign.meaning %}<p class="sign-meaning" data-en="{{ sign.meaning }}" data-ru="{{ sign.meaning_ru }}">{{ sign.meaning }}</p>{% endif %}
       {% if group_note %}<p class="sign-note"><span class="sign-note-label">{{ sign.group }}</span> <span data-en="{{ group_note }}" data-ru="{{ group_note_ru }}">{{ group_note }}</span></p>{% endif %}
       <div class="sign-actions">

@@ -18,6 +18,7 @@ DATA_DIR = Path(__file__).resolve().parent / "data" / "signs"
 DATA_FILE = DATA_DIR / "signs.json"
 MEANINGS_FILE = DATA_DIR / "meanings.json"
 RU_FILE = DATA_DIR / "ru.json"
+DA_FILE = DATA_DIR / "da.json"
 
 # Order the groups the way a learner meets them, not alphabetically.
 GROUP_ORDER = ["A", "B", "C", "D", "E", "U", "F", "H", "I", "J", "K", "G", "M"]
@@ -99,14 +100,17 @@ def _load() -> dict:
         meanings = _read_side_file(MEANINGS_FILE, "meanings")
         ru_names = _read_side_file(RU_FILE, "names")
         ru_meanings = _read_side_file(RU_FILE, "meanings")
+        da_names = _read_side_file(DA_FILE, "names")
         for sign in payload["signs"]:
             code = sign["code"]
             sign["meaning"] = meanings.get(code, "")
             sign["name_ru"] = ru_names.get(code, "")
             sign["meaning_ru"] = ru_meanings.get(code, "")
+            sign["name_da"] = da_names.get(code, "")
         payload["signs"].sort(key=lambda sign: (_group_rank(sign["group"]), code_key(sign["code"])))
         payload["explained"] = sum(1 for sign in payload["signs"] if sign["meaning"])
         payload["translated"] = sum(1 for sign in payload["signs"] if sign["name_ru"])
+        payload["danish"] = sum(1 for sign in payload["signs"] if sign["name_da"])
         _cache = payload
         return _cache
 
@@ -150,6 +154,7 @@ def catalogue_meta() -> dict:
         "count": len(payload["signs"]),
         "explained": payload.get("explained", 0),
         "translated": payload.get("translated", 0),
+        "danish": payload.get("danish", 0),
         "fetched": payload.get("fetched", ""),
         "source": payload.get("source", ""),
     }

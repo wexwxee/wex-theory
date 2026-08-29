@@ -43,6 +43,7 @@
         'Progress stays in this browser. Signs you miss come back sooner, and a sign counts as learned after three correct answers in a row.',
       keys: 'Keyboard: 1-4 to answer, Enter to continue.',
       failed: 'Could not load the signs. Reload the page to try again.',
+      danish: 'In Danish',
       groups: {
         A: 'Warning', B: 'Priority', C: 'Prohibitory', D: 'Mandatory', E: 'Information',
         U: 'Subpanels', F: 'Direction', G: 'Portal', H: 'Distance', I: 'Exits',
@@ -78,6 +79,7 @@
         'Прогресс хранится в этом браузере. Знаки, где вы ошиблись, возвращаются раньше, а выученным знак считается после трёх верных ответов подряд.',
       keys: 'С клавиатуры: 1-4 — ответ, Enter — дальше.',
       failed: 'Не удалось загрузить знаки. Обновите страницу.',
+      danish: 'По-датски',
       groups: {
         A: 'Предупреждающие', B: 'Приоритет', C: 'Запрещающие', D: 'Предписывающие',
         E: 'Информационные', U: 'Таблички', F: 'Указатели', G: 'Порталы', H: 'Расстояния',
@@ -256,6 +258,7 @@
     const explain = el('div', 'learn-explain');
     explain.appendChild(el('span', 'explain-code', sign.code));
     explain.appendChild(document.createTextNode(explanation(sign) || label(sign)));
+    if (sign.name_da) explain.appendChild(el('div', 'explain-danish', `${t().danish}: ${sign.name_da}`));
     feedback.appendChild(explain);
 
     const actions = el('div', 'learn-actions');
@@ -289,6 +292,7 @@
 
     stage.appendChild(el('div', 'learn-code', `${sign.code} · ${sign.group_label}`));
     stage.appendChild(el('div', 'learn-name', label(sign)));
+    if (sign.name_da) stage.appendChild(el('div', 'learn-danish', `${t().danish}: ${sign.name_da}`));
     if (explanation(sign)) stage.appendChild(el('p', 'learn-meaning', explanation(sign)));
 
     const actions = el('div', 'learn-actions');
