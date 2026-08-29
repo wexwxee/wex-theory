@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Danish road signs - WEX Theory{% endblock %}
+
+{% block head %}
+<style>
+  .info-hero--signs::after { content: "A11"; }
+  .signs-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    padding: 12px 0;
+    margin-bottom: 6px;
+    background: var(--bg);
+  }
+  .signs-search {
+    flex: 1 1 240px;
+    min-height: 44px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+  .signs-search:focus { outline: 2px solid var(--text-muted); outline-offset: 1px; }
+  .signs-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .signs-chip {
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .signs-chip:hover { color: var(--text); border-color: var(--text-muted); }
+  .signs-chip.is-active {
+    color: var(--text);
+    border-color: var(--text);
+  }
+  .signs-group { margin-bottom: 34px; }
+  .signs-group-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .signs-group-title { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.01em; }
+  .signs-group-count { font-size: 0.8rem; color: var(--text-muted); }
+  .signs-group-note {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.55;
+    max-width: 70ch;
+    margin-bottom: 16px;
+  }
+  .signs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    gap: 12px;
+  }
+  .sign-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--bg-card);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .sign-card:hover { border-color: var(--text-muted); transform: translateY(-2px); }
+  .sign-card img {
+    width: 68px;
+    height: 68px;
+    object-fit: contain;
+  }
+  .sign-card-code {
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+  }
+  .sign-card-name {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.35;
+  }
+  .signs-empty {
+    display: none;
+    padding: 40px 0;
+    text-align: center;
+    color: var(--text-muted);
+  }
+  .facts-source {
+    margin-top: 8px;
+    padding: 14px 18px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--bg-card);
+    color: var(--text-muted);
+    font-size: 0.86rem;
+    line-height: 1.6;
+  }
+  .facts-source a { color: inherit; text-decoration: underline; }
+  .facts-source strong { color: var(--text); }
+</style>
+{% endblock %}
+
+{% block body %}
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" id="signsBurgerBtn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
+      <a href="/" class="logo">WEXTheory</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
+      {% if user %}
+      <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
+      {% else %}
+      <a href="/login" class="btn-ghost btn-sm">Sign In</a>
+      <a href="/register" class="btn-primary btn-sm">Create Account</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="info-page">
+  <section class="info-hero info-hero--signs">
+    <div class="info-eyebrow">Free reference</div>
+    <h1 class="info-title">Danish road signs</h1>
+    <p class="info-lede">
+      {{ meta.count }} signs, grouped by family. The theory test asks you to state what a sign means by
+      picking the right answer, so learn them by family first &mdash; the shape and colour already tell you
+      half the answer.
+    </p>
+    <div class="info-actions">
+      <a href="/test/0" class="btn-primary">Practise with real scenes</a>
+      <a href="/exam-day" class="btn-ghost">How the test works</a>
+    </div>
+  </section>
+
+  <div class="signs-toolbar">
+    <input type="search" class="signs-search" id="signsSearch" placeholder="Search by code or name, e.g. C55 or roundabout" autocomplete="off" aria-label="Search signs">
+    <div class="signs-chips" id="signsChips">
+      <button type="button" class="signs-chip is-active" data-group="all">All</button>
+      {% for group in groups %}
+      <button type="button" class="signs-chip" data-group="{{ group.group }}">{{ group.group }} &middot; {{ group.count }}</button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div id="signsResults">
+    {% for group in groups %}
+    <section class="signs-group" data-group="{{ group.group }}">
+      <div class="signs-group-head">
+        <span class="signs-group-title">{{ group.label }}</span>
+        <span class="signs-group-count">{{ group.group }} &middot; {{ group.count }} signs</span>
+      </div>
+      {% if group.note %}<p class="signs-group-note">{{ group.note }}</p>{% endif %}
+      <div class="signs-grid">
+        {% for sign in signs if sign.group == group.group %}
+        <a class="sign-card" href="/signs/{{ sign.code }}" data-code="{{ sign.code|lower }}" data-name="{{ sign.name_en|lower }}">
+          <img src="{{ sign.image }}?v={{ asset_version }}" alt="{{ sign.code }}: {{ sign.name_en }}" loading="lazy">
+          <span class="sign-card-code">{{ sign.code }}</span>
+          <span class="sign-card-name">{{ sign.name_en }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% endfor %}
+  </div>
+
+  <div class="signs-empty" id="signsEmpty">Nothing matches that. Try a code like <strong>C55</strong> or a word like <strong>cycle</strong>.</div>
+
+  <p class="facts-source">
+    <strong>Where this comes from:</strong> codes and names follow the signs of executive order 425 of
+    13 April 2023 on road marking, as listed on
+    <a href="https://en.wikipedia.org/wiki/Road_signs_in_Denmark" target="_blank" rel="noopener">Wikipedia</a>;
+    the drawings come from
+    <a href="https://commons.wikimedia.org/wiki/Category:SVG_road_signs_in_Denmark" target="_blank" rel="noopener">Wikimedia Commons</a>,
+    where they are free of copyright under section 9 of the Danish copyright act.
+    Catalogue built {{ meta.fetched }}. The signs are amended from time to time &mdash; most recently with effect
+    from 1 May 2026 &mdash; so treat this as study material, not as the legal text.
+  </p>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/signs">Road signs</a>
+      <a href="/rules-2026">2026 rules</a>
+      <a href="/exam-language">Test language</a>
+      <a href="/exam-day">Test day</a>
+      <a href="/faq">FAQ</a>
+      <a href="/contact">Contact</a>
+    </div>
+    <div>&copy; 2026 WEXTheory</div>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/signs.js?v={{ asset_version }}"></script>
+{% endblock %}

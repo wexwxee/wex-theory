@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}{{ sign.code }} {{ sign.name_en }} - Danish road signs - WEX Theory{% endblock %}
+
+{% block head %}
+<style>
+  .sign-hero {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 28px;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    background: var(--bg-card);
+    padding: clamp(22px, 4vw, 34px);
+    margin-bottom: 18px;
+  }
+  .sign-hero-art {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1 / 1;
+    border-radius: 18px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+  }
+  .sign-hero-art img { width: 76%; height: 76%; object-fit: contain; }
+  .sign-code {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+  .sign-name {
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 12px;
+    text-wrap: balance;
+  }
+  .sign-note { color: var(--text-muted); line-height: 1.6; max-width: 62ch; }
+  .sign-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  .related-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 26px 0 12px;
+  }
+  .related-title { font-size: 1.1rem; font-weight: 800; }
+  .related-hint { color: var(--text-muted); font-size: 0.86rem; }
+  .signs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(126px, 1fr));
+    gap: 12px;
+  }
+  .sign-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--bg-card);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .sign-card:hover { border-color: var(--text-muted); transform: translateY(-2px); }
+  .sign-card img { width: 62px; height: 62px; object-fit: contain; }
+  .sign-card-code { font-size: 0.8rem; font-weight: 800; }
+  .sign-card-name { font-size: 0.76rem; color: var(--text-muted); text-align: center; line-height: 1.35; }
+  .facts-source {
+    margin-top: 22px;
+    padding: 14px 18px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--bg-card);
+    color: var(--text-muted);
+    font-size: 0.86rem;
+    line-height: 1.6;
+  }
+  .facts-source a { color: inherit; text-decoration: underline; }
+  @media (max-width: 640px) {
+    .sign-hero { grid-template-columns: 1fr; gap: 18px; }
+    .sign-hero-art { width: 150px; aspect-ratio: 1 / 1; }
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" id="signsBurgerBtn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
+      <a href="/signs" class="logo">Road signs</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
+      {% if user %}
+      <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
+      {% else %}
+      <a href="/login" class="btn-ghost btn-sm">Sign In</a>
+      <a href="/register" class="btn-primary btn-sm">Create Account</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="info-page">
+  <section class="sign-hero">
+    <div class="sign-hero-art">
+      <img src="{{ sign.image }}?v={{ asset_version }}" alt="{{ sign.code }}: {{ sign.name_en }}">
+    </div>
+    <div>
+      <div class="sign-code">{{ sign.code }} &middot; {{ sign.group_label }}</div>
+      <h1 class="sign-name">{{ sign.name_en }}</h1>
+      {% if group_note %}<p class="sign-note">{{ group_note }}</p>{% endif %}
+      <div class="sign-actions">
+        <a href="/signs" class="btn-ghost">All signs</a>
+        <a href="/test/0" class="btn-primary">See it in a real scene</a>
+      </div>
+    </div>
+  </section>
+
+  {% if related %}
+  <div class="related-head">
+    <span class="related-title">Neighbours in the same family</span>
+    <span class="related-hint">These are the ones people mix up &mdash; compare them side by side.</span>
+  </div>
+  <div class="signs-grid">
+    {% for other in related %}
+    <a class="sign-card" href="/signs/{{ other.code }}">
+      <img src="{{ other.image }}?v={{ asset_version }}" alt="{{ other.code }}: {{ other.name_en }}" loading="lazy">
+      <span class="sign-card-code">{{ other.code }}</span>
+      <span class="sign-card-name">{{ other.name_en }}</span>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <p class="facts-source">
+    Drawing from
+    <a href="https://commons.wikimedia.org/wiki/Category:SVG_road_signs_in_Denmark" target="_blank" rel="noopener">Wikimedia Commons</a>,
+    free of copyright under section 9 of the Danish copyright act. Code and name follow executive order
+    425 of 13 April 2023 on road marking. Study material, not the legal text.
+  </p>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/signs">Road signs</a>
+      <a href="/rules-2026">2026 rules</a>
+      <a href="/exam-language">Test language</a>
+      <a href="/exam-day">Test day</a>
+      <a href="/faq">FAQ</a>
+    </div>
+    <div>&copy; 2026 WEXTheory</div>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/signs.js?v={{ asset_version }}"></script>
+{% endblock %}

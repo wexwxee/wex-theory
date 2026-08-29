@@ -1,0 +1,2392 @@
+{
+  "source": "Codes and names: English Wikipedia, 'Road signs in Denmark', listing the signs of executive order 425 of 13 April 2023. Images: Wikimedia Commons, free of copyright under section 9 of the Danish copyright act.",
+  "fetched": "2026-08-30",
+  "count": 265,
+  "signs": [
+    {
+      "code": "A11",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Dangerous junction with a non-priority road (Variants: and )",
+      "commons_file": "Denmark road sign A11.svg",
+      "image": "/static/signs/A11.svg"
+    },
+    {
+      "code": "A16",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Roundabout",
+      "commons_file": "Denmark road sign A16.svg",
+      "image": "/static/signs/A16.svg"
+    },
+    {
+      "code": "A17",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Pedestrian crossing",
+      "commons_file": "Denmark road sign A17.svg",
+      "image": "/static/signs/A17.svg"
+    },
+    {
+      "code": "A18",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Two-way traffic",
+      "commons_file": "Denmark road sign A18.svg",
+      "image": "/static/signs/A18.svg"
+    },
+    {
+      "code": "A19",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Traffic signals",
+      "commons_file": "Denmark road sign A19.svg",
+      "image": "/static/signs/A19.svg"
+    },
+    {
+      "code": "A20",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Traffic queue",
+      "commons_file": "Denmark road sign A20.svg",
+      "image": "/static/signs/A20.svg"
+    },
+    {
+      "code": "A21",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Cyclists",
+      "commons_file": "Denmark road sign A21.svg",
+      "image": "/static/signs/A21.svg"
+    },
+    {
+      "code": "A22",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Children",
+      "commons_file": "Denmark road sign A22.svg",
+      "image": "/static/signs/A22.svg"
+    },
+    {
+      "code": "A23",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Equestrians",
+      "commons_file": "Denmark road sign A23.svg",
+      "image": "/static/signs/A23.svg"
+    },
+    {
+      "code": "A26",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Wild animals crossing",
+      "commons_file": "Denmark road sign A26.svg",
+      "image": "/static/signs/A26.svg"
+    },
+    {
+      "code": "A27",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Domestic animals",
+      "commons_file": "Denmark road sign A27.svg",
+      "image": "/static/signs/A27.svg"
+    },
+    {
+      "code": "A31",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Slippery road",
+      "commons_file": "Denmark road sign A31.svg",
+      "image": "/static/signs/A31.svg"
+    },
+    {
+      "code": "A33",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Loose chippings",
+      "commons_file": "Denmark road sign A33.svg",
+      "image": "/static/signs/A33.svg"
+    },
+    {
+      "code": "A34",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Rockfall",
+      "commons_file": "Denmark road sign A34.svg",
+      "image": "/static/signs/A34.svg"
+    },
+    {
+      "code": "A35",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Dangerous shoulder",
+      "commons_file": "Denmark road sign A35.svg",
+      "image": "/static/signs/A35.svg"
+    },
+    {
+      "code": "A36",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Speed bump",
+      "commons_file": "Denmark road sign A36.svg",
+      "image": "/static/signs/A36.svg"
+    },
+    {
+      "code": "A36.1",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Actibump",
+      "commons_file": "A36. 1 actibump.svg",
+      "image": "/static/signs/A36.1.svg"
+    },
+    {
+      "code": "A37",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Uneven road",
+      "commons_file": "Denmark road sign A37.svg",
+      "image": "/static/signs/A37.svg"
+    },
+    {
+      "code": "A38",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Dip",
+      "commons_file": "A38 dip.svg",
+      "image": "/static/signs/A38.svg"
+    },
+    {
+      "code": "A39",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Roadworks",
+      "commons_file": "Denmark road sign A39.svg",
+      "image": "/static/signs/A39.svg"
+    },
+    {
+      "code": "A41.1",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Curve to the right",
+      "commons_file": "Denmark road sign A41.1.svg",
+      "image": "/static/signs/A41.1.svg"
+    },
+    {
+      "code": "A41.2",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Curve to the left",
+      "commons_file": "Denmark road sign A41.2.svg",
+      "image": "/static/signs/A41.2.svg"
+    },
+    {
+      "code": "A42.1",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Multiple curves, first to the right",
+      "commons_file": "Denmark road sign A42.1.svg",
+      "image": "/static/signs/A42.1.svg"
+    },
+    {
+      "code": "A42.2",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Multiple curves, first to the left",
+      "commons_file": "Denmark road sign A42.2.svg",
+      "image": "/static/signs/A42.2.svg"
+    },
+    {
+      "code": "A43.1",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Road narrows",
+      "commons_file": "Denmark road sign A43.1.svg",
+      "image": "/static/signs/A43.1.svg"
+    },
+    {
+      "code": "A43.2",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Road narrows to the left",
+      "commons_file": "Denmark road sign A43.2.svg",
+      "image": "/static/signs/A43.2.svg"
+    },
+    {
+      "code": "A43.3",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Road narrows to the right",
+      "commons_file": "Denmark road sign A43.3.svg",
+      "image": "/static/signs/A43.3.svg"
+    },
+    {
+      "code": "A44",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Tunnel (formerly used )",
+      "commons_file": "A44 dk.svg",
+      "image": "/static/signs/A44.svg"
+    },
+    {
+      "code": "A46.2",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Upward gradient",
+      "commons_file": "Denmark road sign A46.2.svg",
+      "image": "/static/signs/A46.2.svg"
+    },
+    {
+      "code": "A72",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Level crossing without gates",
+      "commons_file": "Denmark road sign A72.svg",
+      "image": "/static/signs/A72.svg"
+    },
+    {
+      "code": "A73",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Level crossing with gates",
+      "commons_file": "Denmark road sign A73.svg",
+      "image": "/static/signs/A73.svg"
+    },
+    {
+      "code": "A74.1",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Single track level crossing",
+      "commons_file": "Denmark road sign A74.1.svg",
+      "image": "/static/signs/A74.1.svg"
+    },
+    {
+      "code": "A74.2",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Multi track level crossing",
+      "commons_file": "Denmark road sign A74.2.svg",
+      "image": "/static/signs/A74.2.svg"
+    },
+    {
+      "code": "A75",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Distance to level crossing",
+      "commons_file": "Denmark road sign A75.svg",
+      "image": "/static/signs/A75.svg"
+    },
+    {
+      "code": "A91",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Opening bridge",
+      "commons_file": "Denmark road sign A91.svg",
+      "image": "/static/signs/A91.svg"
+    },
+    {
+      "code": "A92",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Quayside",
+      "commons_file": "Denmark road sign A92.svg",
+      "image": "/static/signs/A92.svg"
+    },
+    {
+      "code": "A95",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Side winds",
+      "commons_file": "Denmark road sign A95.svg",
+      "image": "/static/signs/A95.svg"
+    },
+    {
+      "code": "A96",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Low airplanes",
+      "commons_file": "Denmark road sign A96.svg",
+      "image": "/static/signs/A96.svg"
+    },
+    {
+      "code": "A97",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Low helicopters",
+      "commons_file": "Denmark road sign A97.svg",
+      "image": "/static/signs/A97.svg"
+    },
+    {
+      "code": "A99",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Other danger (specified on subpanel)",
+      "commons_file": "Denmark road sign A99.svg",
+      "image": "/static/signs/A99.svg"
+    },
+    {
+      "code": "B11",
+      "group": "B",
+      "group_label": "Priority signs",
+      "section": "Priority signs",
+      "name_en": "Yield",
+      "commons_file": "Denmark road sign B11.svg",
+      "image": "/static/signs/B11.svg"
+    },
+    {
+      "code": "B13",
+      "group": "B",
+      "group_label": "Priority signs",
+      "section": "Priority signs",
+      "name_en": "Stop",
+      "commons_file": "Denmark road sign B13.svg",
+      "image": "/static/signs/B13.svg"
+    },
+    {
+      "code": "B15",
+      "group": "B",
+      "group_label": "Priority signs",
+      "section": "Priority signs",
+      "name_en": "Lane merge",
+      "commons_file": "Denmark road sign B15.svg",
+      "image": "/static/signs/B15.svg"
+    },
+    {
+      "code": "B16",
+      "group": "B",
+      "group_label": "Priority signs",
+      "section": "Priority signs",
+      "name_en": "Main road",
+      "commons_file": "Denmark road sign B16.svg",
+      "image": "/static/signs/B16.svg"
+    },
+    {
+      "code": "B17",
+      "group": "B",
+      "group_label": "Priority signs",
+      "section": "Priority signs",
+      "name_en": "End of main road",
+      "commons_file": "Denmark road sign B17.svg",
+      "image": "/static/signs/B17.svg"
+    },
+    {
+      "code": "B18",
+      "group": "B",
+      "group_label": "Priority signs",
+      "section": "Priority signs",
+      "name_en": "Priority for oncoming vehicles",
+      "commons_file": "Denmark road sign B18.svg",
+      "image": "/static/signs/B18.svg"
+    },
+    {
+      "code": "B19",
+      "group": "B",
+      "group_label": "Priority signs",
+      "section": "Priority signs",
+      "name_en": "Priority over oncoming vehicles",
+      "commons_file": "Denmark road sign B19.svg",
+      "image": "/static/signs/B19.svg"
+    },
+    {
+      "code": "C11.1",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "No right turn",
+      "commons_file": "Denmark road sign C11.1.svg",
+      "image": "/static/signs/C11.1.svg"
+    },
+    {
+      "code": "C11.2",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "No left turn",
+      "commons_file": "Denmark road sign C11.2.svg",
+      "image": "/static/signs/C11.2.svg"
+    },
+    {
+      "code": "C12",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "No U-turns",
+      "commons_file": "Denmark road sign C12.svg",
+      "image": "/static/signs/C12.svg"
+    },
+    {
+      "code": "C19",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "No entry",
+      "commons_file": "Denmark road sign C19.svg",
+      "image": "/static/signs/C19.svg"
+    },
+    {
+      "code": "C21",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "Driving in both directions prohibited",
+      "commons_file": "Denmark road sign C21.svg",
+      "image": "/static/signs/C21.svg"
+    },
+    {
+      "code": "C22.1",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "No motor vehicles",
+      "commons_file": "Denmark road sign C22.1.svg",
+      "image": "/static/signs/C22.1.svg"
+    },
+    {
+      "code": "C22.2",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "No motorcycles or large mopeds",
+      "commons_file": "Denmark road sign C22.2.svg",
+      "image": "/static/signs/C22.2.svg"
+    },
+    {
+      "code": "C23.1",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "No heavy goods vehicles",
+      "commons_file": "Denmark road sign C23.1.svg",
+      "image": "/static/signs/C23.1.svg"
+    },
+    {
+      "code": "C23.2",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "No buses",
+      "commons_file": "Denmark road sign C23.2.svg",
+      "image": "/static/signs/C23.2.svg"
+    },
+    {
+      "code": "C23.3",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "No vehicles carrying dangerous goods",
+      "commons_file": "Denmark road sign C23.3.svg",
+      "image": "/static/signs/C23.3.svg"
+    },
+    {
+      "code": "C24.1",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "No tractors or motorized equipment",
+      "commons_file": "Denmark road sign C24.1.svg",
+      "image": "/static/signs/C24.1.svg"
+    },
+    {
+      "code": "C24.2",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "No horse-drawn vehicles or similar",
+      "commons_file": "Denmark road sign C24.2.svg",
+      "image": "/static/signs/C24.2.svg"
+    },
+    {
+      "code": "C25.1",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "No bicycles or small mopeds",
+      "commons_file": "Denmark road sign C25.1.svg",
+      "image": "/static/signs/C25.1.svg"
+    },
+    {
+      "code": "C25.2",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "No small mopeds",
+      "commons_file": "Denmark road sign C25.2.svg",
+      "image": "/static/signs/C25.2.svg"
+    },
+    {
+      "code": "C26.1",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "No riding or leading a horse",
+      "commons_file": "Denmark road sign C26.1.svg",
+      "image": "/static/signs/C26.1.svg"
+    },
+    {
+      "code": "C26.2",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "No pedestrians",
+      "commons_file": "Denmark road sign C26.2.svg",
+      "image": "/static/signs/C26.2.svg"
+    },
+    {
+      "code": "C31",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "Max weight",
+      "commons_file": "Denmark road sign C31.svg",
+      "image": "/static/signs/C31.svg"
+    },
+    {
+      "code": "C32",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "Max weight of roadtrain",
+      "commons_file": "Denmark road sign C32.svg",
+      "image": "/static/signs/C32.svg"
+    },
+    {
+      "code": "C35",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "Max axle load",
+      "commons_file": "Denmark road sign C35.svg",
+      "image": "/static/signs/C35.svg"
+    },
+    {
+      "code": "C36",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "Max bogie load",
+      "commons_file": "Denmark road sign C36.svg",
+      "image": "/static/signs/C36.svg"
+    },
+    {
+      "code": "C41",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "Max width of vehicle with load",
+      "commons_file": "Denmark road sign C41.svg",
+      "image": "/static/signs/C41.svg"
+    },
+    {
+      "code": "C42",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "Max height of vehicle with load",
+      "commons_file": "Denmark road sign C42.svg",
+      "image": "/static/signs/C42.svg"
+    },
+    {
+      "code": "C43",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "Max length of vehicle",
+      "commons_file": "Denmark road sign C43.svg",
+      "image": "/static/signs/C43.svg"
+    },
+    {
+      "code": "C51",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "No overtaking",
+      "commons_file": "Denmark road sign C51.svg",
+      "image": "/static/signs/C51.svg"
+    },
+    {
+      "code": "C52",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "No overtaking by heavy goods vehicle",
+      "commons_file": "Denmark road sign C52.svg",
+      "image": "/static/signs/C52.svg"
+    },
+    {
+      "code": "C53",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "End of no overtaking",
+      "commons_file": "Denmark road sign C53.svg",
+      "image": "/static/signs/C53.svg"
+    },
+    {
+      "code": "C54",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "End of no overtaking by heavy goods vehicle",
+      "commons_file": "Denmark road sign C54.svg",
+      "image": "/static/signs/C54.svg"
+    },
+    {
+      "code": "C55",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "Local speed limit",
+      "commons_file": "Denmark road sign C55.svg",
+      "image": "/static/signs/C55.svg"
+    },
+    {
+      "code": "C56",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "End of local speed limit",
+      "commons_file": "Denmark road sign C56.svg",
+      "image": "/static/signs/C56.svg"
+    },
+    {
+      "code": "C59",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "End of prohibition",
+      "commons_file": "Denmark road sign C59.svg",
+      "image": "/static/signs/C59.svg"
+    },
+    {
+      "code": "C61",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "No stopping",
+      "commons_file": "Denmark road sign C61.svg",
+      "image": "/static/signs/C61.svg"
+    },
+    {
+      "code": "C62",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "No parking",
+      "commons_file": "Denmark road sign C62.svg",
+      "image": "/static/signs/C62.svg"
+    },
+    {
+      "code": "C63",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "No parking for bicycles",
+      "commons_file": "Denmark road sign C63.svg",
+      "image": "/static/signs/C63.svg"
+    },
+    {
+      "code": "C92",
+      "group": "C",
+      "group_label": "Prohibitory signs",
+      "section": "Prohibitory signs",
+      "name_en": "Continuing without stop prohibited",
+      "commons_file": "Denmark road sign C92.svg",
+      "image": "/static/signs/C92.svg"
+    },
+    {
+      "code": "D11.1",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Mandatory direction",
+      "commons_file": "Denmark road sign D11.1.svg",
+      "image": "/static/signs/D11.1.svg"
+    },
+    {
+      "code": "D11.2",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Mandatory direction",
+      "commons_file": "Denmark road sign D11.2.svg",
+      "image": "/static/signs/D11.2.svg"
+    },
+    {
+      "code": "D11.3",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Mandatory direction",
+      "commons_file": "Denmark road sign D11.3.svg",
+      "image": "/static/signs/D11.3.svg"
+    },
+    {
+      "code": "D11.4",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Mandatory direction",
+      "commons_file": "Denmark road sign D11.4.svg",
+      "image": "/static/signs/D11.4.svg"
+    },
+    {
+      "code": "D11.5",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Mandatory direction",
+      "commons_file": "Denmark road sign D11.5.svg",
+      "image": "/static/signs/D11.5.svg"
+    },
+    {
+      "code": "D11.6",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Mandatory direction",
+      "commons_file": "Denmark road sign D11.6.svg",
+      "image": "/static/signs/D11.6.svg"
+    },
+    {
+      "code": "D11.7",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Mandatory direction",
+      "commons_file": "Denmark road sign D11.7.svg",
+      "image": "/static/signs/D11.7.svg"
+    },
+    {
+      "code": "D11.8",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Mandatory direction",
+      "commons_file": "Denmark road sign D11.8.svg",
+      "image": "/static/signs/D11.8.svg"
+    },
+    {
+      "code": "D12",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Mandatory direction in the roundabout",
+      "commons_file": "Denmark road sign D12.svg",
+      "image": "/static/signs/D12.svg"
+    },
+    {
+      "code": "D15.2",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Mandatory passage",
+      "commons_file": "Denmark road sign D15.2.svg",
+      "image": "/static/signs/D15.2.svg"
+    },
+    {
+      "code": "D15.3",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Mandatory passage",
+      "commons_file": "Denmark road sign D15.3.svg",
+      "image": "/static/signs/D15.3.svg"
+    },
+    {
+      "code": "D16",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Passage",
+      "commons_file": "Denmark road sign D16.svg",
+      "image": "/static/signs/D16.svg"
+    },
+    {
+      "code": "D21",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Cycleway",
+      "commons_file": "Denmark road sign D21.svg",
+      "image": "/static/signs/D21.svg"
+    },
+    {
+      "code": "D22",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Footway",
+      "commons_file": "Denmark road sign D22.svg",
+      "image": "/static/signs/D22.svg"
+    },
+    {
+      "code": "D23",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Bridleway",
+      "commons_file": "Denmark road sign D23.svg",
+      "image": "/static/signs/D23.svg"
+    },
+    {
+      "code": "D26",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Segregated path",
+      "commons_file": "Denmark road sign D26.svg",
+      "image": "/static/signs/D26.svg"
+    },
+    {
+      "code": "D26.1",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Segregated path",
+      "commons_file": "Denmark road sign D26.1.svg",
+      "image": "/static/signs/D26.1.svg"
+    },
+    {
+      "code": "D26.2",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Segregated path",
+      "commons_file": "Denmark road sign D26.2.svg",
+      "image": "/static/signs/D26.2.svg"
+    },
+    {
+      "code": "D26.3",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Segregated path",
+      "commons_file": "Denmark road sign D26.3.svg",
+      "image": "/static/signs/D26.3.svg"
+    },
+    {
+      "code": "D26.4",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Segregated path",
+      "commons_file": "Denmark road sign D26.4.svg",
+      "image": "/static/signs/D26.4.svg"
+    },
+    {
+      "code": "D26.5",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Segregated path",
+      "commons_file": "Denmark road sign D26.5.svg",
+      "image": "/static/signs/D26.5.svg"
+    },
+    {
+      "code": "D27",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Combined path",
+      "commons_file": "Denmark road sign D27.svg",
+      "image": "/static/signs/D27.svg"
+    },
+    {
+      "code": "D27.1",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Combined path",
+      "commons_file": "Denmark road sign D27.1.svg",
+      "image": "/static/signs/D27.1.svg"
+    },
+    {
+      "code": "D55",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "Minimum speed",
+      "commons_file": "Denmark road sign D55.svg",
+      "image": "/static/signs/D55.svg"
+    },
+    {
+      "code": "D56",
+      "group": "D",
+      "group_label": "Mandatory signs",
+      "section": "Mandatory signs",
+      "name_en": "End of minimum speed",
+      "commons_file": "Denmark road sign D56.svg",
+      "image": "/static/signs/D56.svg"
+    },
+    {
+      "code": "E11.1",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Continue straight",
+      "commons_file": "Denmark road sign E11 1.svg",
+      "image": "/static/signs/E11.1.svg"
+    },
+    {
+      "code": "E11.4",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Turn left",
+      "commons_file": "Denmark road sign E11 4.svg",
+      "image": "/static/signs/E11.4.svg"
+    },
+    {
+      "code": "E11.5",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Turn right",
+      "commons_file": "Denmark road sign E11 5.svg",
+      "image": "/static/signs/E11.5.svg"
+    },
+    {
+      "code": "E11.6",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Continue straight or turn left",
+      "commons_file": "Denmark road sign E11 6.svg",
+      "image": "/static/signs/E11.6.svg"
+    },
+    {
+      "code": "E11.7",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Continue straight or turn right",
+      "commons_file": "Denmark road sign E11 7.svg",
+      "image": "/static/signs/E11.7.svg"
+    },
+    {
+      "code": "E11.8",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Turn left or right",
+      "commons_file": "Denmark road sign E11 8.svg",
+      "image": "/static/signs/E11.8.svg"
+    },
+    {
+      "code": "E11.9",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Continue straight, turn left or right",
+      "commons_file": "Denmark road sign E11 9.svg",
+      "image": "/static/signs/E11.9.svg"
+    },
+    {
+      "code": "E15",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Lanes at intersection",
+      "commons_file": "Denmark road sign E15.svg",
+      "image": "/static/signs/E15.svg"
+    },
+    {
+      "code": "E16.1",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Reduction of number of lanes with lane-merge",
+      "commons_file": "Denmark road sign E16 1.svg",
+      "image": "/static/signs/E16.1.svg"
+    },
+    {
+      "code": "E16.2",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Reduction of number of lanes with lane-change",
+      "commons_file": "Denmark road sign E16 2.svg",
+      "image": "/static/signs/E16.2.svg"
+    },
+    {
+      "code": "E17",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Pedestrian crossing. (Variant: )",
+      "commons_file": "Denmark road sign E17.svg",
+      "image": "/static/signs/E17.svg"
+    },
+    {
+      "code": "E18",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Dead end",
+      "commons_file": "Denmark road sign E18.svg",
+      "image": "/static/signs/E18.svg"
+    },
+    {
+      "code": "E19",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "One way",
+      "commons_file": "Denmark road sign E19.svg",
+      "image": "/static/signs/E19.svg"
+    },
+    {
+      "code": "E21.1",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Recommended route for cyclists",
+      "commons_file": "Denmark road sign E21.1.svg",
+      "image": "/static/signs/E21.1.svg"
+    },
+    {
+      "code": "E21.2",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Recommended route for pedestrians",
+      "commons_file": "Denmark road sign E21.2.svg",
+      "image": "/static/signs/E21.2.svg"
+    },
+    {
+      "code": "E21.3",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Recommended route for equestrians",
+      "commons_file": "Denmark road sign E21.3.svg",
+      "image": "/static/signs/E21.3.svg"
+    },
+    {
+      "code": "E21.4",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Recommended route for mopeds",
+      "commons_file": "Denmark road sign E21.4.svg",
+      "image": "/static/signs/E21.4.svg"
+    },
+    {
+      "code": "E22.1",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Recommended route for heavy goods vehicles",
+      "commons_file": "Denmark road sign E22.1.svg",
+      "image": "/static/signs/E22.1.svg"
+    },
+    {
+      "code": "E22.2",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Recommended route for hazardous goods vehicles",
+      "commons_file": "Denmark road sign E22 2.svg",
+      "image": "/static/signs/E22.2.svg"
+    },
+    {
+      "code": "E22.3",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Recommended route for tractors and motorized equipment",
+      "commons_file": "Denmark road sign E22 3.svg",
+      "image": "/static/signs/E22.3.svg"
+    },
+    {
+      "code": "E22.4",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Recommended route for busses",
+      "commons_file": "Denmark road sign E22 4.svg",
+      "image": "/static/signs/E22.4.svg"
+    },
+    {
+      "code": "E23",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Instructions for disabled",
+      "commons_file": "Denmark road sign E23.svg",
+      "image": "/static/signs/E23.svg"
+    },
+    {
+      "code": "E24",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Instructions for visually impaired",
+      "commons_file": "Denmark road sign E24.svg",
+      "image": "/static/signs/E24.svg"
+    },
+    {
+      "code": "E26.1",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Pedestrian overpass",
+      "commons_file": "Denmark road sign E26.1.svg",
+      "image": "/static/signs/E26.1.svg"
+    },
+    {
+      "code": "E26.2",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Pedestrian underpass",
+      "commons_file": "Denmark road sign E26.2.svg",
+      "image": "/static/signs/E26.2.svg"
+    },
+    {
+      "code": "E30",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Light rail stop",
+      "commons_file": "Denmark road sign E30.svg",
+      "image": "/static/signs/E30.svg"
+    },
+    {
+      "code": "E31",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Bus stop",
+      "commons_file": "Denmark road sign E31.svg",
+      "image": "/static/signs/E31.svg"
+    },
+    {
+      "code": "E33.1",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Parking",
+      "commons_file": "Denmark road sign E33.1.svg",
+      "image": "/static/signs/E33.1.svg"
+    },
+    {
+      "code": "E33.2",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Indoor parking",
+      "commons_file": "Denmark road sign E33.2.svg",
+      "image": "/static/signs/E33.2.svg"
+    },
+    {
+      "code": "E34",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Breakdown bay (formerly used )",
+      "commons_file": "Denmark road sign E34 2023.svg",
+      "image": "/static/signs/E34.svg"
+    },
+    {
+      "code": "E35",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Tunnel",
+      "commons_file": "Denmark road sign E35.svg",
+      "image": "/static/signs/E35.svg"
+    },
+    {
+      "code": "E37",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Crawler lane begins",
+      "commons_file": "Denmark road sign E37.svg",
+      "image": "/static/signs/E37.svg"
+    },
+    {
+      "code": "E39",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Advisory maxspeed",
+      "commons_file": "Denmark road sign E39.svg",
+      "image": "/static/signs/E39.svg"
+    },
+    {
+      "code": "E40",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "End of advisory maxspeed",
+      "commons_file": "Denmark road sign E40.svg",
+      "image": "/static/signs/E40.svg"
+    },
+    {
+      "code": "E41",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Recommended max speed on slip road",
+      "commons_file": "Denmark road sign E41.svg",
+      "image": "/static/signs/E41.svg"
+    },
+    {
+      "code": "E42",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Motorway",
+      "commons_file": "Denmark road sign E42.svg",
+      "image": "/static/signs/E42.svg"
+    },
+    {
+      "code": "E43",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Expressway",
+      "commons_file": "Denmark road sign E43.svg",
+      "image": "/static/signs/E43.svg"
+    },
+    {
+      "code": "E44",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "End of Motorway",
+      "commons_file": "Denmark road sign E44.svg",
+      "image": "/static/signs/E44.svg"
+    },
+    {
+      "code": "E45",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "End of Expressway",
+      "commons_file": "Denmark road sign E45.svg",
+      "image": "/static/signs/E45.svg"
+    },
+    {
+      "code": "E47",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Bicycle boulevard",
+      "commons_file": "Denmark road sign E47.svg",
+      "image": "/static/signs/E47.svg"
+    },
+    {
+      "code": "E48",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "End of Bicycle boulevard",
+      "commons_file": "Denmark road sign E48.svg",
+      "image": "/static/signs/E48.svg"
+    },
+    {
+      "code": "E49",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Pedestrian zone",
+      "commons_file": "Denmark road sign E49.svg",
+      "image": "/static/signs/E49.svg"
+    },
+    {
+      "code": "E50",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "End of Pedestrian zone",
+      "commons_file": "Denmark road sign E50.svg",
+      "image": "/static/signs/E50.svg"
+    },
+    {
+      "code": "E51",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Living street",
+      "commons_file": "Denmark road sign E51.svg",
+      "image": "/static/signs/E51.svg"
+    },
+    {
+      "code": "E52",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "End of living street",
+      "commons_file": "Denmark road sign E52.svg",
+      "image": "/static/signs/E52.svg"
+    },
+    {
+      "code": "E53",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Zone with traffic calming",
+      "commons_file": "Denmark road sign E53.svg",
+      "image": "/static/signs/E53.svg"
+    },
+    {
+      "code": "E55",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Urban area",
+      "commons_file": "Denmark road sign E55.svg",
+      "image": "/static/signs/E55.svg"
+    },
+    {
+      "code": "E56",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "End of urban area",
+      "commons_file": "Denmark road sign E56.svg",
+      "image": "/static/signs/E56.svg"
+    },
+    {
+      "code": "E68",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Zone with no parking",
+      "commons_file": "Denmark road sign E68.svg",
+      "image": "/static/signs/E68.svg"
+    },
+    {
+      "code": "E68.2",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Zone with no stopping",
+      "commons_file": "Denmark road sign E68.2.svg",
+      "image": "/static/signs/E68.2.svg"
+    },
+    {
+      "code": "E68.3",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Zone with parking",
+      "commons_file": "Denmark road sign E68 3.svg",
+      "image": "/static/signs/E68.3.svg"
+    },
+    {
+      "code": "E68.4",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Zone with local speed limit",
+      "commons_file": "Denmark road sign E68.4.svg",
+      "image": "/static/signs/E68.4.svg"
+    },
+    {
+      "code": "E68.5",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "No heavy goods vehicles permitted zone",
+      "commons_file": "Denmark road sign E68.5.svg",
+      "image": "/static/signs/E68.5.svg"
+    },
+    {
+      "code": "E68.9",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Low-emission zone",
+      "commons_file": "E68 9.svg",
+      "image": "/static/signs/E68.9.svg"
+    },
+    {
+      "code": "E69",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "End of zone with no parking",
+      "commons_file": "Denmark road sign E69.svg",
+      "image": "/static/signs/E69.svg"
+    },
+    {
+      "code": "E69.3",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "End of zone with parking",
+      "commons_file": "Denmark road sign E69.3.svg",
+      "image": "/static/signs/E69.3.svg"
+    },
+    {
+      "code": "E69.4",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "End of zone with local speed limit",
+      "commons_file": "Denmark road sign E69.4.svg",
+      "image": "/static/signs/E69.4.svg"
+    },
+    {
+      "code": "E69.5",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "End of zone with no heavy goods vehicles",
+      "commons_file": "Denmark road sign E69.5.svg",
+      "image": "/static/signs/E69.5.svg"
+    },
+    {
+      "code": "E69.9",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "End of low-emission zone",
+      "commons_file": "E69 9.svg",
+      "image": "/static/signs/E69.9.svg"
+    },
+    {
+      "code": "E70",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Parking zone information",
+      "commons_file": "Denmark road sign E70.svg",
+      "image": "/static/signs/E70.svg"
+    },
+    {
+      "code": "E90",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Traffic enforcement camera",
+      "commons_file": "Denmark road sign E90.svg",
+      "image": "/static/signs/E90.svg"
+    },
+    {
+      "code": "E91",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Speed feedback sign",
+      "commons_file": "Denmark road sign E91.svg",
+      "image": "/static/signs/E91.svg"
+    },
+    {
+      "code": "E92",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Variable-message sign",
+      "commons_file": "Denmark road sign E92.svg",
+      "image": "/static/signs/E92.svg"
+    },
+    {
+      "code": "E93",
+      "group": "E",
+      "group_label": "Special regulation signs",
+      "section": "Special regulation signs",
+      "name_en": "Video surveillance",
+      "commons_file": "Denmark road sign E93.svg",
+      "image": "/static/signs/E93.svg"
+    },
+    {
+      "code": "F11",
+      "group": "F",
+      "group_label": "Direction signs",
+      "section": "Direction signs",
+      "name_en": "Flag-type direction sign",
+      "commons_file": "Denmark road sign F11 destination and distance.svg",
+      "image": "/static/signs/F11.svg"
+    },
+    {
+      "code": "F12",
+      "group": "F",
+      "group_label": "Direction signs",
+      "section": "Direction signs",
+      "name_en": "Flag-type direction sign",
+      "commons_file": "Denmark road sign F12.svg",
+      "image": "/static/signs/F12.svg"
+    },
+    {
+      "code": "F13",
+      "group": "F",
+      "group_label": "Direction signs",
+      "section": "Direction signs",
+      "name_en": "Flag-type direction sign",
+      "commons_file": "Denmark road sign F13.svg",
+      "image": "/static/signs/F13.svg"
+    },
+    {
+      "code": "F14",
+      "group": "F",
+      "group_label": "Direction signs",
+      "section": "Direction signs",
+      "name_en": "Temporary flag-type direction sign",
+      "commons_file": "Denmark road sign F14.svg",
+      "image": "/static/signs/F14.svg"
+    },
+    {
+      "code": "F16",
+      "group": "F",
+      "group_label": "Direction signs",
+      "section": "Direction signs",
+      "name_en": "Exit sign",
+      "commons_file": "Denmark road sign F16.svg",
+      "image": "/static/signs/F16.svg"
+    },
+    {
+      "code": "F18",
+      "group": "F",
+      "group_label": "Direction signs",
+      "section": "Direction signs",
+      "name_en": "Stack-type direction signs",
+      "commons_file": "Denmark road sign F18.svg",
+      "image": "/static/signs/F18.svg"
+    },
+    {
+      "code": "F21.1",
+      "group": "F",
+      "group_label": "Direction signs",
+      "section": "Direction signs",
+      "name_en": "Bicycle route",
+      "commons_file": "Denmark road sign EO F21 1.svg",
+      "image": "/static/signs/F21.1.svg"
+    },
+    {
+      "code": "F21.2",
+      "group": "F",
+      "group_label": "Direction signs",
+      "section": "Direction signs",
+      "name_en": "Flag-type direction sign",
+      "commons_file": "Denmark road sign F21.2 bike.svg",
+      "image": "/static/signs/F21.2.svg"
+    },
+    {
+      "code": "F21.3",
+      "group": "F",
+      "group_label": "Direction signs",
+      "section": "Direction signs",
+      "name_en": "Stack-type direction sign",
+      "commons_file": "Denmark road sign F21.3.svg",
+      "image": "/static/signs/F21.3.svg"
+    },
+    {
+      "code": "F21.4",
+      "group": "F",
+      "group_label": "Direction signs",
+      "section": "Direction signs",
+      "name_en": "Map-type advance direction sign",
+      "commons_file": "Denmark road sign F21.4.svg",
+      "image": "/static/signs/F21.4.svg"
+    },
+    {
+      "code": "F33.1",
+      "group": "F",
+      "group_label": "Direction signs",
+      "section": "Direction signs",
+      "name_en": "Flag-type direction sign",
+      "commons_file": "Denmark road sign F33 1.svg",
+      "image": "/static/signs/F33.1.svg"
+    },
+    {
+      "code": "F33.2",
+      "group": "F",
+      "group_label": "Direction signs",
+      "section": "Direction signs",
+      "name_en": "Stack-type direction sign",
+      "commons_file": "Denmark road sign F33 2.svg",
+      "image": "/static/signs/F33.2.svg"
+    },
+    {
+      "code": "F34.1",
+      "group": "F",
+      "group_label": "Direction signs",
+      "section": "Direction signs",
+      "name_en": "Traffic diversion route",
+      "commons_file": "Denmark road sign F34 1.svg",
+      "image": "/static/signs/F34.1.svg"
+    },
+    {
+      "code": "F34.2",
+      "group": "F",
+      "group_label": "Direction signs",
+      "section": "Direction signs",
+      "name_en": "Flag-type traffic diversion sign",
+      "commons_file": "Denmark road sign F34 2.svg",
+      "image": "/static/signs/F34.2.svg"
+    },
+    {
+      "code": "F34.3",
+      "group": "F",
+      "group_label": "Direction signs",
+      "section": "Direction signs",
+      "name_en": "Map-type traffic diversion sign",
+      "commons_file": "DK road sign F34.3.svg",
+      "image": "/static/signs/F34.3.svg"
+    },
+    {
+      "code": "G11",
+      "group": "G",
+      "group_label": "Direction signs",
+      "section": "Direction signs",
+      "name_en": "Portal sign",
+      "commons_file": "Danish Road Sign G11.svg",
+      "image": "/static/signs/G11.svg"
+    },
+    {
+      "code": "G14",
+      "group": "G",
+      "group_label": "Direction signs",
+      "section": "Direction signs",
+      "name_en": "Map-type advance direction sign",
+      "commons_file": "Denmark road sign G14.svg",
+      "image": "/static/signs/G14.svg"
+    },
+    {
+      "code": "G15",
+      "group": "G",
+      "group_label": "Direction signs",
+      "section": "Direction signs",
+      "name_en": "Lane diagram sign",
+      "commons_file": "Denmark road sign G15.svg",
+      "image": "/static/signs/G15.svg"
+    },
+    {
+      "code": "G18",
+      "group": "G",
+      "group_label": "Direction signs",
+      "section": "Direction signs",
+      "name_en": "Stack-type advance direction sign",
+      "commons_file": "Denmark road sign G18 2017 version.svg",
+      "image": "/static/signs/G18.svg"
+    },
+    {
+      "code": "H41",
+      "group": "H",
+      "group_label": "Distance and locality signs",
+      "section": "Distance and locality signs",
+      "name_en": "Distance sign",
+      "commons_file": "Denmark road sign H41.svg",
+      "image": "/static/signs/H41.svg"
+    },
+    {
+      "code": "H42",
+      "group": "H",
+      "group_label": "Distance and locality signs",
+      "section": "Distance and locality signs",
+      "name_en": "Split distance sign",
+      "commons_file": "DK road sign H42.svg",
+      "image": "/static/signs/H42.svg"
+    },
+    {
+      "code": "H45",
+      "group": "H",
+      "group_label": "Distance and locality signs",
+      "section": "Distance and locality signs",
+      "name_en": "Locality",
+      "commons_file": "DK road sign H45.svg",
+      "image": "/static/signs/H45.svg"
+    },
+    {
+      "code": "H46",
+      "group": "H",
+      "group_label": "Distance and locality signs",
+      "section": "Distance and locality signs",
+      "name_en": "Regional border",
+      "commons_file": "Denmark road sign H46 region hovedstaden.svg",
+      "image": "/static/signs/H46.svg"
+    },
+    {
+      "code": "H47",
+      "group": "H",
+      "group_label": "Distance and locality signs",
+      "section": "Distance and locality signs",
+      "name_en": "Municipal border",
+      "commons_file": "Denmark road sign H47.svg",
+      "image": "/static/signs/H47.svg"
+    },
+    {
+      "code": "H49",
+      "group": "H",
+      "group_label": "Distance and locality signs",
+      "section": "Distance and locality signs",
+      "name_en": "National park",
+      "commons_file": "Nationalparkthy.svg",
+      "image": "/static/signs/H49.svg"
+    },
+    {
+      "code": "H49.1",
+      "group": "H",
+      "group_label": "Distance and locality signs",
+      "section": "Distance and locality signs",
+      "name_en": "Nature park",
+      "commons_file": "Denmark road sign H49 1.svg",
+      "image": "/static/signs/H49.1.svg"
+    },
+    {
+      "code": "H50",
+      "group": "H",
+      "group_label": "Distance and locality signs",
+      "section": "Distance and locality signs",
+      "name_en": "Leaving national park",
+      "commons_file": "Nationalparkthy leaving.svg",
+      "image": "/static/signs/H50.svg"
+    },
+    {
+      "code": "H50.1",
+      "group": "H",
+      "group_label": "Distance and locality signs",
+      "section": "Distance and locality signs",
+      "name_en": "Leaving nature park",
+      "commons_file": "Denmark road sign H50 1.svg",
+      "image": "/static/signs/H50.1.svg"
+    },
+    {
+      "code": "H51",
+      "group": "H",
+      "group_label": "Distance and locality signs",
+      "section": "Distance and locality signs",
+      "name_en": "National Border",
+      "commons_file": "Denmark road sign H51.svg",
+      "image": "/static/signs/H51.svg"
+    },
+    {
+      "code": "I11",
+      "group": "I",
+      "group_label": "Motorway signs",
+      "section": "Signs used on motorways",
+      "name_en": "Exit from motorway",
+      "commons_file": "DK road sign I11.svg",
+      "image": "/static/signs/I11.svg"
+    },
+    {
+      "code": "I12",
+      "group": "I",
+      "group_label": "Motorway signs",
+      "section": "Signs used on motorways",
+      "name_en": "Exit from motorway in 500 m",
+      "commons_file": "DK road sign I12.svg",
+      "image": "/static/signs/I12.svg"
+    },
+    {
+      "code": "I13",
+      "group": "I",
+      "group_label": "Motorway signs",
+      "section": "Signs used on motorways",
+      "name_en": "Exit from motorway in 1500m ‒ the lower sign displays the following exit (with its number) and destination to be reached",
+      "commons_file": "Denmark road sign I13.svg",
+      "image": "/static/signs/I13.svg"
+    },
+    {
+      "code": "I16",
+      "group": "I",
+      "group_label": "Motorway signs",
+      "section": "Signs used on motorways",
+      "name_en": "Exit to another motorway",
+      "commons_file": "DK road sign I16.svg",
+      "image": "/static/signs/I16.svg"
+    },
+    {
+      "code": "I17",
+      "group": "I",
+      "group_label": "Motorway signs",
+      "section": "Signs used on motorways",
+      "name_en": "Exit to another motorway in 500m",
+      "commons_file": "DK road sign i17.svg",
+      "image": "/static/signs/I17.svg"
+    },
+    {
+      "code": "I18",
+      "group": "I",
+      "group_label": "Motorway signs",
+      "section": "Signs used on motorways",
+      "name_en": "Exit to another motorway in 1500m",
+      "commons_file": "DK road sign i18.svg",
+      "image": "/static/signs/I18.svg"
+    },
+    {
+      "code": "I20",
+      "group": "I",
+      "group_label": "Motorway signs",
+      "section": "Signs used on motorways",
+      "name_en": "Motorway junction (system interchange)",
+      "commons_file": "DK road sign I20.svg",
+      "image": "/static/signs/I20.svg"
+    },
+    {
+      "code": "J11",
+      "group": "J",
+      "group_label": "Motorway signs",
+      "section": "Signs used on motorways",
+      "name_en": "Assigned lane(s)",
+      "commons_file": "DK road sign J11.svg",
+      "image": "/static/signs/J11.svg"
+    },
+    {
+      "code": "J12",
+      "group": "J",
+      "group_label": "Motorway signs",
+      "section": "Signs used on motorways",
+      "name_en": "Lane diagram",
+      "commons_file": "Denmark road sign J12.svg",
+      "image": "/static/signs/J12.svg"
+    },
+    {
+      "code": "J13",
+      "group": "J",
+      "group_label": "Motorway signs",
+      "section": "Signs used on motorways",
+      "name_en": "Map-type advance direction sign",
+      "commons_file": "DK road sign J13.svg",
+      "image": "/static/signs/J13.svg"
+    },
+    {
+      "code": "K11",
+      "group": "K",
+      "group_label": "Motorway signs",
+      "section": "Signs used on motorways",
+      "name_en": "Route confirmation",
+      "commons_file": "DK road sign K11.svg",
+      "image": "/static/signs/K11.svg"
+    },
+    {
+      "code": "K12",
+      "group": "K",
+      "group_label": "Motorway signs",
+      "section": "Signs used on motorways",
+      "name_en": "Distance information",
+      "commons_file": "DK road sign K12.svg",
+      "image": "/static/signs/K12.svg"
+    },
+    {
+      "code": "K30",
+      "group": "K",
+      "group_label": "Motorway signs",
+      "section": "Signs used on motorways",
+      "name_en": "Tourist information",
+      "commons_file": "Denmark road sign K30.svg",
+      "image": "/static/signs/K30.svg"
+    },
+    {
+      "code": "M117",
+      "group": "M",
+      "group_label": "Service signs",
+      "section": "Service signs",
+      "name_en": "Trail shelter",
+      "commons_file": "Denmark road sign M117 2023.svg",
+      "image": "/static/signs/M117.svg"
+    },
+    {
+      "code": "M12",
+      "group": "M",
+      "group_label": "Service signs",
+      "section": "Service signs",
+      "name_en": "Airport",
+      "commons_file": "Denmark road sign M12.svg",
+      "image": "/static/signs/M12.svg"
+    },
+    {
+      "code": "M18",
+      "group": "M",
+      "group_label": "Service signs",
+      "section": "Service signs",
+      "name_en": "Hub (communal transport)",
+      "commons_file": "Denmark road sign M18.svg",
+      "image": "/static/signs/M18.svg"
+    },
+    {
+      "code": "M24.1",
+      "group": "M",
+      "group_label": "Service signs",
+      "section": "Service signs",
+      "name_en": "Charging station for EV",
+      "commons_file": "M24 1.svg",
+      "image": "/static/signs/M24.1.svg"
+    },
+    {
+      "code": "M53",
+      "group": "M",
+      "group_label": "Service signs",
+      "section": "Service signs",
+      "name_en": "Unesco world heritage site",
+      "commons_file": "Denmark road sign M54.svg",
+      "image": "/static/signs/M53.svg"
+    },
+    {
+      "code": "U1.1",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Additional subpanels",
+      "name_en": "Distance (here in 500 meters)",
+      "commons_file": "Denmark road sign U1 1.svg",
+      "image": "/static/signs/U1.1.svg"
+    },
+    {
+      "code": "U1.2",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Additional subpanels",
+      "name_en": "Distance (here in 500 meters)",
+      "commons_file": "Denmark road sign U1 2.svg",
+      "image": "/static/signs/U1.2.svg"
+    },
+    {
+      "code": "U2.1",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Additional subpanels",
+      "name_en": "Distance interval (here from 200 to 800 meters)",
+      "commons_file": "Denmark road sign U2 1.svg",
+      "image": "/static/signs/U2.1.svg"
+    },
+    {
+      "code": "U2.2",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Additional subpanels",
+      "name_en": "Distance interval (here from 200 to 800 meters)",
+      "commons_file": "Denmark road sign U2 2.svg",
+      "image": "/static/signs/U2.2.svg"
+    },
+    {
+      "code": "U3.1",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Additional subpanels",
+      "name_en": "Length of time (here 1 hour)",
+      "commons_file": "Denmark road sign U3 1.svg",
+      "image": "/static/signs/U3.1.svg"
+    },
+    {
+      "code": "U3.2",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Additional subpanels",
+      "name_en": "Day of week (here Wednesday)",
+      "commons_file": "Denmark road sign U3 2.svg",
+      "image": "/static/signs/U3.2.svg"
+    },
+    {
+      "code": "U3.3",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Additional subpanels",
+      "name_en": "Time of day on weekdays. If in parentheses, Saturdays, if in red, Sundays or holidays. (here from 8 AM to 5 PM weekdays, from 8 AM to 2 PM Saturdays and from 9 AM to 12 AM on Sundays or holidays",
+      "commons_file": "Denmark road sign U3 3.svg",
+      "image": "/static/signs/U3.3.svg"
+    },
+    {
+      "code": "U3.4",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Additional subpanels",
+      "name_en": ": Length of time (here 1 hour)",
+      "commons_file": "Denmark road sign U3 4.svg",
+      "image": "/static/signs/U3.4.svg"
+    },
+    {
+      "code": "U3.5",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Additional subpanels",
+      "name_en": "Day of week (here Wednesday)",
+      "commons_file": "Denmark road sign U3 5.svg",
+      "image": "/static/signs/U3.5.svg"
+    },
+    {
+      "code": "U3.6",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Additional subpanels",
+      "name_en": "Time of day on weekdays. If in parentheses, Saturdays, if in red, Sundays or holidays. (here from 8 AM to 5 PM weekdays, from 8 AM to 2 PM Saturdays and from 9 AM to 12 AM on Sundays or holidays",
+      "commons_file": "Denmark road sign U3 6.svg",
+      "image": "/static/signs/U3.6.svg"
+    },
+    {
+      "code": "U4.1",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Additional subpanels",
+      "name_en": "Type(s) of vehicle (here heavy goods vehicle)",
+      "commons_file": "Denmark road sign U4 1.svg",
+      "image": "/static/signs/U4.1.svg"
+    },
+    {
+      "code": "U4.2",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Additional subpanels",
+      "name_en": "Type(s) of vehicle (here heavy goods vehicle)",
+      "commons_file": "Denmark road sign U4 2.svg",
+      "image": "/static/signs/U4.2.svg"
+    },
+    {
+      "code": "U5.1",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Additional subpanels",
+      "name_en": "Bicycles and small mopeds exempt",
+      "commons_file": "Denmark road sign U5 1.svg",
+      "image": "/static/signs/U5.1.svg"
+    },
+    {
+      "code": "U5.2",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Additional subpanels",
+      "name_en": "Bicycles and small mopeds exempt",
+      "commons_file": "Denmark road sign U5 2.svg",
+      "image": "/static/signs/U5.2.svg"
+    },
+    {
+      "code": "U6.3",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Additional subpanels",
+      "name_en": "A sign combination this panel is a part of, takes effect after a right turn in the intersection ahead",
+      "commons_file": "Denmark road sign U6 3.svg",
+      "image": "/static/signs/U6.3.svg"
+    },
+    {
+      "code": "U6.4",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Additional subpanels",
+      "name_en": "A sign combination this panel is a part of, takes effect after a right turn in the intersection ahead",
+      "commons_file": "Denmark road sign U6 4.svg",
+      "image": "/static/signs/U6.4.svg"
+    },
+    {
+      "code": "U7",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Additional subpanels",
+      "name_en": "Bicycles and small mopeds may make right turn when traffic signal is red",
+      "commons_file": "Denmark road sign U7.svg",
+      "image": "/static/signs/U7.svg"
+    },
+    {
+      "code": "UA22",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Warning signs",
+      "name_en": "School",
+      "commons_file": "Denmark road sign UA22.1.svg",
+      "image": "/static/signs/UA22.svg"
+    },
+    {
+      "code": "UA31",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Warning signs",
+      "name_en": "Road can be icy",
+      "commons_file": "Denmark road sign UA31.svg",
+      "image": "/static/signs/UA31.svg"
+    },
+    {
+      "code": "UA41",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Warning signs",
+      "name_en": "Recommended speed in curves",
+      "commons_file": "Denmark road sign UA41.svg",
+      "image": "/static/signs/UA41.svg"
+    },
+    {
+      "code": "UA43",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Warning signs",
+      "name_en": "Width limit",
+      "commons_file": "Denmark road sign UA43.svg",
+      "image": "/static/signs/UA43.svg"
+    },
+    {
+      "code": "UA43.1",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Warning signs",
+      "name_en": "Narrow road",
+      "commons_file": "Denmark road sign UA43 1.svg",
+      "image": "/static/signs/UA43.1.svg"
+    },
+    {
+      "code": "UA72",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Warning signs",
+      "name_en": "Watch out for trains",
+      "commons_file": "Denmark road sign UA72.svg",
+      "image": "/static/signs/UA72.svg"
+    },
+    {
+      "code": "UA73",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Warning signs",
+      "name_en": "Overhead electricity lines at level crossing",
+      "commons_file": "Denmark road sign UA73.svg",
+      "image": "/static/signs/UA73.svg"
+    },
+    {
+      "code": "UA99",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Warning signs",
+      "name_en": "Accident-prone intersection",
+      "commons_file": "Denmark road sign UA99.svg",
+      "image": "/static/signs/UA99.svg"
+    },
+    {
+      "code": "UB11.1",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Priority signs",
+      "name_en": "Stop ahead",
+      "commons_file": "Denmark road sign UB11 1.svg",
+      "image": "/static/signs/UB11.1.svg"
+    },
+    {
+      "code": "UB11.2",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Priority signs",
+      "name_en": "Two-way cycle track or lane crossing",
+      "commons_file": "Denmark road sign UB11.2.svg",
+      "image": "/static/signs/UB11.2.svg"
+    },
+    {
+      "code": "UB11.3",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Priority signs",
+      "name_en": "Light rail crossing",
+      "commons_file": "Denmark road sign UB11.3.svg",
+      "image": "/static/signs/UB11.3.svg"
+    },
+    {
+      "code": "UC33",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Prohibitory signs",
+      "name_en": "Limited parking",
+      "commons_file": "Denmark road sign UC33.svg",
+      "image": "/static/signs/UC33.svg"
+    },
+    {
+      "code": "UC56",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Prohibitory signs",
+      "name_en": "Built up area subpanel",
+      "commons_file": "Denmark road sign UC56.svg",
+      "image": "/static/signs/UC56.svg"
+    },
+    {
+      "code": "UC57",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Prohibitory signs",
+      "name_en": "End of local speed limit subpanel",
+      "commons_file": "Denmark road sign UC57.svg",
+      "image": "/static/signs/UC57.svg"
+    },
+    {
+      "code": "UC60.1",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Prohibitory signs",
+      "name_en": "Restriction applies before and after sign",
+      "commons_file": "Denmark road sign UC60.1.svg",
+      "image": "/static/signs/UC60.1.svg"
+    },
+    {
+      "code": "UC60.2",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Prohibitory signs",
+      "name_en": "Restriction begins at sign",
+      "commons_file": "Denmark road sign UC60.2.svg",
+      "image": "/static/signs/UC60.2.svg"
+    },
+    {
+      "code": "UC60.3",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Prohibitory signs",
+      "name_en": "Restriction ends at sign",
+      "commons_file": "Denmark road sign UC60.3.svg",
+      "image": "/static/signs/UC60.3.svg"
+    },
+    {
+      "code": "UC60.5",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Prohibitory signs",
+      "name_en": "No stopping on shoulder",
+      "commons_file": "Denmark road sign UC60 5.svg",
+      "image": "/static/signs/UC60.5.svg"
+    },
+    {
+      "code": "UC60.6",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Prohibitory signs",
+      "name_en": "No parking on shoulder",
+      "commons_file": "Denmark road sign UC60 6.svg",
+      "image": "/static/signs/UC60.6.svg"
+    },
+    {
+      "code": "UC60.7",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Prohibitory signs",
+      "name_en": "Parking on shoulder allowed",
+      "commons_file": "Denmark road sign UC60 7.svg",
+      "image": "/static/signs/UC60.7.svg"
+    },
+    {
+      "code": "UC60.8",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Prohibitory signs",
+      "name_en": "Parking partly on sidewalk allowed",
+      "commons_file": "Denmark road sign UC60 8.svg",
+      "image": "/static/signs/UC60.8.svg"
+    },
+    {
+      "code": "UC61",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Prohibitory signs",
+      "name_en": "No stopping subpanel",
+      "commons_file": "Denmark road sign UC61.svg",
+      "image": "/static/signs/UC61.svg"
+    },
+    {
+      "code": "UC62",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Prohibitory signs",
+      "name_en": "No parking subpanel",
+      "commons_file": "Denmark road sign UC62.svg",
+      "image": "/static/signs/UC62.svg"
+    },
+    {
+      "code": "UD1",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Mandatory signs",
+      "name_en": "Subpanel which points to lane or path",
+      "commons_file": "Denmark road sign UD1.svg",
+      "image": "/static/signs/UD1.svg"
+    },
+    {
+      "code": "UD21.1",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Mandatory signs",
+      "name_en": "Two-way cycle traffic",
+      "commons_file": "Denmark road sign UD21 1.svg",
+      "image": "/static/signs/UD21.1.svg"
+    },
+    {
+      "code": "UD21.2",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Mandatory signs",
+      "name_en": "End of Two-way cycle traffic",
+      "commons_file": "Denmark road sign UD21 2.svg",
+      "image": "/static/signs/UD21.2.svg"
+    },
+    {
+      "code": "UE33.1",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Special regulation signs",
+      "name_en": "Before and after sign",
+      "commons_file": "Denmark road sign UE33 1.svg",
+      "image": "/static/signs/UE33.1.svg"
+    },
+    {
+      "code": "UE33.2",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Special regulation signs",
+      "name_en": "After sign",
+      "commons_file": "Denmark road sign UE33 2.svg",
+      "image": "/static/signs/UE33.2.svg"
+    },
+    {
+      "code": "UE33.3",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Special regulation signs",
+      "name_en": "Before sign",
+      "commons_file": "Denmark road sign UE33 3.svg",
+      "image": "/static/signs/UE33.3.svg"
+    },
+    {
+      "code": "UE33.4",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Special regulation signs",
+      "name_en": "Charging",
+      "commons_file": "Denmark road sign UE33 4.svg",
+      "image": "/static/signs/UE33.4.svg"
+    },
+    {
+      "code": "UE34",
+      "group": "U",
+      "group_label": "Subpanels",
+      "section": "Special regulation signs",
+      "name_en": "Fire extinguisher and emergency phone",
+      "commons_file": "Denmark road sign UE34.svg",
+      "image": "/static/signs/UE34.svg"
+    }
+  ]
+}

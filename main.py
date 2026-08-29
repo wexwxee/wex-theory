@@ -31,6 +31,7 @@ except Exception as _e:
     print(f"[METRICS] prometheus_fastapi_instrumentator unavailable: {_e}")
 
 import models
+import signs as signs_catalogue
 from auth import (
     hash_password, verify_password, create_token, decode_token,
     get_current_user, user_has_access, get_user_access_expiry, SECRET_KEY,
@@ -3543,6 +3544,35 @@ async def faq_page(request: Request, db: Session = Depends(get_db)):
 async def study_guide_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
     return templates.TemplateResponse(request, "study_guide.html", {"request": request, "user": user})
+
+
+@app.get("/signs", response_class=HTMLResponse)
+async def signs_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    return templates.TemplateResponse(request, "signs.html", {
+        "request": request,
+        "user": user,
+        "signs": signs_catalogue.all_signs(),
+        "groups": signs_catalogue.groups(),
+        "meta": signs_catalogue.catalogue_meta(),
+    })
+
+
+@app.get("/signs/{code}", response_class=HTMLResponse)
+async def sign_detail_page(code: str, request: Request, db: Session = Depends(get_db)):
+    sign = signs_catalogue.by_code(code)
+    if not sign:
+        return RedirectResponse("/signs", status_code=302)
+    if sign["code"] != code:
+        return RedirectResponse(f"/signs/{sign['code']}", status_code=301)
+    user = get_current_user(request, db)
+    return templates.TemplateResponse(request, "sign_detail.html", {
+        "request": request,
+        "user": user,
+        "sign": sign,
+        "group_note": signs_catalogue.group_note(sign["group"]),
+        "related": signs_catalogue.related_signs(sign),
+    })
 
 
 @app.get("/rules-2026", response_class=HTMLResponse)
