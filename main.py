@@ -2635,12 +2635,14 @@ async def startup_init():
         # safe to run on every deploy.
         print("[STARTUP] Exam wording import: starting...")
         try:
+            # Keep this helper aliased: startup_init already calls the module-level
+            # schema migrator with the same name before reaching this import.
             from import_exam_wording import (
                 import_exam_wording_for_test,
-                ensure_exam_wording_columns,
+                ensure_exam_wording_columns as ensure_import_exam_wording_columns,
                 EXAM_WORDING_DIR,
             )
-            ensure_exam_wording_columns()
+            ensure_import_exam_wording_columns()
             _imported = 0
             for _t_id in range(1, 14):
                 _f = EXAM_WORDING_DIR / f"test_{_t_id:02d}.json"

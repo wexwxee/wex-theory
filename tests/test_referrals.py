@@ -24,6 +24,9 @@ class ReferralTests(unittest.TestCase):
     def tearDown(self):
         self.db.close()
 
+    def test_startup_does_not_shadow_exam_wording_schema_migrator(self):
+        self.assertNotIn("ensure_exam_wording_columns", main.startup_init.__code__.co_varnames)
+
     def make_user(
         self,
         email,
