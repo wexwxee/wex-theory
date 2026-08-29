@@ -27,6 +27,11 @@ class User(Base):
     referral_code            = Column(String, unique=True, index=True, nullable=True)
     referred_by_user_id      = Column(Integer, ForeignKey("users.id"), nullable=True)
     referral_rewards_granted = Column(Integer, nullable=False, default=0)
+    # Anti-abuse identities. Email stays readable because the account email is
+    # already stored; network/device values are one-way HMACs.
+    email_canonical          = Column(String, nullable=True, index=True)
+    signup_ip_hash           = Column(String, nullable=True, index=True)
+    signup_device_hash       = Column(String, nullable=True, index=True)
 
     # Telegram Login fields
     telegram_id             = Column(String, unique=True, index=True, nullable=True)
@@ -324,12 +329,13 @@ class Referral(Base):
     id = Column(Integer, primary_key=True, index=True)
     referrer_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     referred_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    status = Column(String, nullable=False, default="rewarded")  # rewarded / blocked
+    status = Column(String, nullable=False, default="pending")  # pending / rewarded / referred_only / blocked
     source = Column(String, nullable=False, default="link")       # link / code
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    reward_days_referrer = Column(Integer, nullable=False, default=14)
+    qualified_at = Column(DateTime, nullable=True)
+    reward_days_referrer = Column(Integer, nullable=False, default=0)
     reward_days_referred = Column(Integer, nullable=False, default=7)
-    blocked_reason = Column(String, nullable=True)  # self_referral / cap_exceeded / admin_blocked / null
+    blocked_reason = Column(String, nullable=True)  # Internal anti-abuse/cap reason; never exposed verbatim.
 
     referrer = relationship("User", foreign_keys=[referrer_id])
     referred = relationship("User", foreign_keys=[referred_id])

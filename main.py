@@ -142,6 +142,9 @@ RATE_LIMIT_CONFIG = {
     "auth_forgot_password": (5, 3600),
     "auth_reset_password": (8, 1800),
     "google_login": (10, 600),
+    "referral_lookup": (60, 60),
+    "referral_apply": (8, 3600),
+    "referral_regenerate": (3, 86400),
     "contact_submit": (6, 1800),
     "support_reply": (30, 300),
 }
@@ -922,7 +925,8 @@ def apply_subscription_days(user: models.User, duration_days: int) -> datetime:
     user.expires_at = new_expiry
     if duration_days > 0:
         user.subscription_status = "active"
-    user.current_period_end = None
+    # Referral/promo time is additive manual access. Do not erase Stripe's
+    # current period metadata when a paying customer receives bonus days.
     return new_expiry
 
 
@@ -990,26 +994,110 @@ def issue_or_get_certificate(db: Session, user: models.User) -> models.Certifica
 
 REFERRAL_COOKIE_NAME = "wex_ref"
 REFERRAL_COOKIE_MAX_AGE = 86400 * 30
+REFERRAL_DEVICE_COOKIE_NAME = "wex_ref_device"
+REFERRAL_DEVICE_COOKIE_MAX_AGE = 86400 * 365
 REFERRAL_DAYS_REFERRER = 14
 REFERRAL_DAYS_REFERRED = 7
 REFERRAL_ANNUAL_CAP_DAYS = 180
 REFERRAL_NEW_ACCOUNT_WINDOW = timedelta(hours=24)
+REFERRAL_ESTABLISHED_ACCOUNT_AGE = timedelta(days=7)
+REFERRAL_MONTHLY_REWARD_LIMIT = 5
+REFERRAL_QUALIFY_MIN_ANSWERS = 20
+REFERRAL_QUALIFY_MIN_DURATION = timedelta(minutes=5)
+REFERRAL_CODE_REGEX = re.compile(r"^WEXR-[A-HJ-NP-Z2-9]{6}$")
 
 
 def _sign_referral_cookie(code: str) -> str:
-    sig = hmac.new(SECRET_KEY.encode("utf-8"), code.encode("utf-8"), hashlib.sha256).hexdigest()[:16]
-    return f"{code}.{sig}"
+    issued_at = int(datetime.utcnow().timestamp())
+    payload = f"{code}|{issued_at}"
+    sig = hmac.new(SECRET_KEY.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256).hexdigest()[:32]
+    return f"{code}.{issued_at}.{sig}"
+
+
+def _decode_signed_referral_value(raw: str) -> Optional[str]:
+    parts = raw.split(".")
+    if len(parts) != 3:
+        return None
+    code, issued_raw, sig = parts
+    try:
+        issued_at = int(issued_raw)
+    except (TypeError, ValueError):
+        return None
+    now_ts = int(datetime.utcnow().timestamp())
+    if issued_at > now_ts + 300 or now_ts - issued_at > REFERRAL_COOKIE_MAX_AGE:
+        return None
+    payload = f"{code}|{issued_at}"
+    expected = hmac.new(SECRET_KEY.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256).hexdigest()[:32]
+    if not hmac.compare_digest(sig, expected):
+        return None
+    return code if REFERRAL_CODE_REGEX.fullmatch(code) else None
 
 
 def _read_signed_referral_cookie(request: Request) -> Optional[str]:
-    raw = request.cookies.get(REFERRAL_COOKIE_NAME) or ""
-    if not raw or "." not in raw:
+    return _decode_signed_referral_value(request.cookies.get(REFERRAL_COOKIE_NAME) or "")
+
+
+def _sign_referral_device_id(device_id: str) -> str:
+    sig = hmac.new(SECRET_KEY.encode("utf-8"), device_id.encode("utf-8"), hashlib.sha256).hexdigest()[:32]
+    return f"{device_id}.{sig}"
+
+
+def _read_referral_device_cookie(request: Request) -> Optional[str]:
+    raw = request.cookies.get(REFERRAL_DEVICE_COOKIE_NAME) or ""
+    device_id, separator, sig = raw.partition(".")
+    if not separator or not re.fullmatch(r"[A-Za-z0-9_-]{24,64}", device_id):
         return None
-    code, _, sig = raw.partition(".")
-    expected = hmac.new(SECRET_KEY.encode("utf-8"), code.encode("utf-8"), hashlib.sha256).hexdigest()[:16]
-    if not hmac.compare_digest(sig, expected):
+    expected = hmac.new(SECRET_KEY.encode("utf-8"), device_id.encode("utf-8"), hashlib.sha256).hexdigest()[:32]
+    return device_id if hmac.compare_digest(sig, expected) else None
+
+
+def _get_referral_device_id(request: Request) -> Optional[str]:
+    state_value = getattr(request.state, "referral_device_id", None)
+    return state_value or _read_referral_device_cookie(request)
+
+
+def set_referral_device_cookie(response, device_id: str, request: Optional[Request] = None) -> None:
+    response.set_cookie(
+        key=REFERRAL_DEVICE_COOKIE_NAME,
+        value=_sign_referral_device_id(device_id),
+        httponly=True,
+        max_age=REFERRAL_DEVICE_COOKIE_MAX_AGE,
+        expires=REFERRAL_DEVICE_COOKIE_MAX_AGE,
+        samesite="lax",
+        secure=_cookie_secure(request),
+        path="/",
+    )
+
+
+def _canonicalize_referral_email(email: str) -> str:
+    """Collapse common mailbox aliases without changing the user's login email."""
+    value = str(email or "").strip().lower()
+    if "@" not in value:
+        return value
+    local, domain = value.rsplit("@", 1)
+    local = local.split("+", 1)[0]
+    if domain in {"gmail.com", "googlemail.com"}:
+        local = local.replace(".", "")
+        domain = "gmail.com"
+    return f"{local}@{domain}"
+
+
+def _referral_fingerprint(kind: str, value: str) -> Optional[str]:
+    normalized = str(value or "").strip().lower()
+    if not normalized or normalized == "unknown":
         return None
-    return code
+    key = (_clean_env_value("REFERRAL_FINGERPRINT_KEY") or SECRET_KEY).encode("utf-8")
+    return hmac.new(key, f"{kind}:{normalized}".encode("utf-8"), hashlib.sha256).hexdigest()
+
+
+def capture_referral_identity(user: models.User, request: Optional[Request]) -> None:
+    user.email_canonical = _canonicalize_referral_email(user.email)
+    if request is None:
+        return
+    if not user.signup_ip_hash:
+        user.signup_ip_hash = _referral_fingerprint("ip", get_client_ip(request))
+    if not user.signup_device_hash:
+        user.signup_device_hash = _referral_fingerprint("device", _get_referral_device_id(request) or "")
 
 
 def _referral_days_used_this_year(db: Session, user_id: int) -> int:
@@ -1036,11 +1124,14 @@ def get_referral_badge(rewarded_count: int) -> Optional[str]:
     return None
 
 
-def _find_referrer_by_code(db: Session, raw_code: str) -> Optional[models.User]:
+def _find_referrer_by_code(db: Session, raw_code: str, *, lock: bool = False) -> Optional[models.User]:
     code = (raw_code or "").strip().upper()
-    if not code or not code.startswith("WEXR-"):
+    if not REFERRAL_CODE_REGEX.fullmatch(code):
         return None
-    return db.query(models.User).filter(models.User.referral_code == code).first()
+    query = db.query(models.User).filter(models.User.referral_code == code)
+    if lock:
+        query = query.with_for_update()
+    return query.first()
 
 
 def _is_fresh_referral_account(user: models.User) -> bool:
@@ -1059,97 +1150,247 @@ def _commit_referral_binding(db: Session) -> Optional[str]:
         return "already_bound"
 
 
+def _referrer_is_established(referrer: models.User) -> bool:
+    if bool(referrer.is_admin) or bool(referrer.stripe_customer_id):
+        return True
+    created_at = getattr(referrer, "created_at", None)
+    return bool(created_at and created_at <= datetime.utcnow() - REFERRAL_ESTABLISHED_ACCOUNT_AGE)
+
+
+def _referral_monthly_reserved_count(db: Session, referrer_id: int) -> int:
+    since = datetime.utcnow() - timedelta(days=30)
+    return (
+        db.query(models.Referral.id)
+        .filter(
+            models.Referral.referrer_id == referrer_id,
+            models.Referral.status.in_(("pending", "rewarded")),
+            models.Referral.created_at >= since,
+        )
+        .count()
+    )
+
+
+def _referral_abuse_reason(db: Session, referrer: models.User, new_user: models.User) -> Optional[str]:
+    if referrer.id == new_user.id:
+        return "self_referral"
+    referrer_email = referrer.email_canonical or _canonicalize_referral_email(referrer.email)
+    referred_email = new_user.email_canonical or _canonicalize_referral_email(new_user.email)
+    if referrer_email and referrer_email == referred_email:
+        return "same_email_identity"
+    if (
+        referrer.telegram_phone_verified and new_user.telegram_phone_verified
+        and referrer.telegram_phone and referrer.telegram_phone == new_user.telegram_phone
+    ):
+        return "same_phone"
+    if (
+        referrer.signup_device_hash and new_user.signup_device_hash
+        and referrer.signup_device_hash == new_user.signup_device_hash
+    ):
+        return "same_device"
+    if referrer.signup_ip_hash and new_user.signup_ip_hash and referrer.signup_ip_hash == new_user.signup_ip_hash:
+        return "same_network"
+
+    prior_query = (
+        db.query(models.Referral.id)
+        .join(models.User, models.User.id == models.Referral.referred_id)
+        .filter(models.User.id != new_user.id)
+    )
+    if referred_email and prior_query.filter(models.User.email_canonical == referred_email).first():
+        return "welcome_already_claimed"
+    if new_user.signup_device_hash and prior_query.filter(
+        models.User.signup_device_hash == new_user.signup_device_hash
+    ).first():
+        return "device_already_used"
+    if new_user.signup_ip_hash and prior_query.filter(
+        models.Referral.referrer_id == referrer.id,
+        models.User.signup_ip_hash == new_user.signup_ip_hash,
+    ).first():
+        return "network_already_used"
+    return None
+
+
+def _add_blocked_referral(
+    db: Session,
+    referrer: models.User,
+    new_user: models.User,
+    source: str,
+    reason: str,
+) -> str:
+    db.add(models.Referral(
+        referrer_id=referrer.id,
+        referred_id=new_user.id,
+        status="blocked",
+        source=source,
+        reward_days_referrer=0,
+        reward_days_referred=0,
+        blocked_reason=reason,
+    ))
+    return _commit_referral_binding(db) or reason
+
+
 def bind_referral_for_new_user(
     db: Session,
     new_user: models.User,
     raw_code: str,
     source: str = "link",
+    request: Optional[Request] = None,
 ) -> tuple[bool, str]:
     """Attempt to bind a referral to a freshly-registered user. Returns (ok, message)."""
     if not raw_code:
         return False, "no_code"
+    source = source if source in {"link", "code"} else "link"
+    if not getattr(new_user, "id", None):
+        return False, "invalid_user"
+    referrer_candidate = _find_referrer_by_code(db, raw_code)
+    if not referrer_candidate:
+        return False, "invalid_code"
+    # Always lock the two account rows in id order. This serializes cap/count
+    # checks and avoids a deadlock if two fresh accounts try to refer each other.
+    locked_users = (
+        db.query(models.User)
+        .filter(models.User.id.in_({new_user.id, referrer_candidate.id}))
+        .order_by(models.User.id)
+        .with_for_update()
+        .all()
+    )
+    locked_by_id = {user.id: user for user in locked_users}
+    new_user = locked_by_id.get(new_user.id)
+    referrer = locked_by_id.get(referrer_candidate.id)
+    if not new_user or not referrer:
+        return False, "invalid_user"
+    if referrer.referral_code != str(raw_code or "").strip().upper():
+        return False, "invalid_code"
     if new_user.referred_by_user_id:
         return False, "already_bound"
     if db.query(models.Referral.id).filter(models.Referral.referred_id == new_user.id).first():
         return False, "already_bound"
-    if source == "code" and not _is_fresh_referral_account(new_user):
+    if not _is_fresh_referral_account(new_user):
         return False, "account_too_old"
 
-    referrer = _find_referrer_by_code(db, raw_code)
-    if not referrer:
-        return False, "invalid_code"
-    if referrer.id == new_user.id:
-        db.add(models.Referral(
-            referrer_id=referrer.id, referred_id=new_user.id,
-            status="blocked", source=source,
-            reward_days_referrer=0, reward_days_referred=0,
-            blocked_reason="self_referral",
-        ))
-        duplicate = _commit_referral_binding(db)
-        if duplicate:
-            return False, duplicate
-        return False, "self_referral"
-    if (referrer.email or "").lower() == (new_user.email or "").lower():
-        db.add(models.Referral(
-            referrer_id=referrer.id, referred_id=new_user.id,
-            status="blocked", source=source,
-            reward_days_referrer=0, reward_days_referred=0,
-            blocked_reason="self_referral",
-        ))
-        duplicate = _commit_referral_binding(db)
-        if duplicate:
-            return False, duplicate
-        return False, "self_referral"
-
-    used = _referral_days_used_this_year(db, referrer.id)
-    cap_exceeded = (used + REFERRAL_DAYS_REFERRER) > REFERRAL_ANNUAL_CAP_DAYS
+    capture_referral_identity(new_user, request)
+    if not referrer.email_canonical:
+        referrer.email_canonical = _canonicalize_referral_email(referrer.email)
+    abuse_reason = _referral_abuse_reason(db, referrer, new_user)
+    if abuse_reason:
+        outcome = _add_blocked_referral(db, referrer, new_user, source, abuse_reason)
+        return False, outcome
 
     new_user.referred_by_user_id = referrer.id
     apply_subscription_days(new_user, REFERRAL_DAYS_REFERRED)
+    status = "pending"
+    blocked_reason = None
+    outcome = "pending"
+    if not _referrer_is_established(referrer):
+        status = "referred_only"
+        blocked_reason = "referrer_not_established"
+        outcome = "rewarded_referred_only"
+    elif _referral_days_used_this_year(db, referrer.id) >= REFERRAL_ANNUAL_CAP_DAYS:
+        status = "referred_only"
+        blocked_reason = "cap_exceeded"
+        outcome = "rewarded_referred_only"
+    elif _referral_monthly_reserved_count(db, referrer.id) >= REFERRAL_MONTHLY_REWARD_LIMIT:
+        status = "referred_only"
+        blocked_reason = "monthly_limit"
+        outcome = "rewarded_referred_only"
 
-    if cap_exceeded:
-        db.add(models.Referral(
-            referrer_id=referrer.id, referred_id=new_user.id,
-            status="blocked", source=source,
-            reward_days_referrer=0, reward_days_referred=REFERRAL_DAYS_REFERRED,
-            blocked_reason="cap_exceeded",
-        ))
-        duplicate = _commit_referral_binding(db)
-        if duplicate:
-            return False, duplicate
-        return True, "rewarded_referred_only"
-
-    apply_subscription_days(referrer, REFERRAL_DAYS_REFERRER)
-    referrer.referral_rewards_granted = int(referrer.referral_rewards_granted or 0) + 1
     db.add(models.Referral(
         referrer_id=referrer.id, referred_id=new_user.id,
-        status="rewarded", source=source,
-        reward_days_referrer=REFERRAL_DAYS_REFERRER,
+        status=status, source=source,
+        reward_days_referrer=0,
         reward_days_referred=REFERRAL_DAYS_REFERRED,
+        blocked_reason=blocked_reason,
     ))
     duplicate = _commit_referral_binding(db)
     if duplicate:
         return False, duplicate
     try:
-        send_referral_emails(referrer, new_user)
+        send_referral_welcome_email(new_user)
     except Exception as e:
         print(f"[REFERRAL EMAIL ERROR] {e}")
-    return True, "rewarded"
+    return True, outcome
+
+
+def qualify_pending_referral(
+    db: Session,
+    referred_user: models.User,
+    attempt: models.UserTestAttempt,
+) -> str:
+    """Reward the inviter after the friend meaningfully completes a full test."""
+    if not attempt.finished_at:
+        return "not_finished"
+    if not attempt.started_at or attempt.finished_at - attempt.started_at < REFERRAL_QUALIFY_MIN_DURATION:
+        return "not_qualified"
+    allowed_question_ids = {question.id for question in get_questions_for_attempt(db, attempt)}
+    if not allowed_question_ids:
+        return "not_qualified"
+    answered = (
+        db.query(sql_func.count(sql_func.distinct(models.UserAnswer.question_id)))
+        .filter(
+            models.UserAnswer.attempt_id == attempt.id,
+            models.UserAnswer.question_id.in_(allowed_question_ids),
+        )
+        .scalar()
+        or 0
+    )
+    if answered < REFERRAL_QUALIFY_MIN_ANSWERS:
+        return "not_qualified"
+    referral = (
+        db.query(models.Referral)
+        .filter(
+            models.Referral.referred_id == referred_user.id,
+            models.Referral.status == "pending",
+        )
+        .with_for_update()
+        .first()
+    )
+    if not referral:
+        return "not_pending"
+    referrer = (
+        db.query(models.User)
+        .filter(models.User.id == referral.referrer_id)
+        .with_for_update()
+        .first()
+    )
+    if not referrer:
+        referral.status = "blocked"
+        referral.blocked_reason = "referrer_missing"
+        db.commit()
+        return "blocked"
+    days_used = _referral_days_used_this_year(db, referrer.id)
+    reward_days = min(REFERRAL_DAYS_REFERRER, max(0, REFERRAL_ANNUAL_CAP_DAYS - days_used))
+    if reward_days <= 0:
+        referral.status = "referred_only"
+        referral.blocked_reason = "cap_exceeded"
+        referral.qualified_at = datetime.utcnow()
+        db.commit()
+        return "rewarded_referred_only"
+
+    apply_subscription_days(referrer, reward_days)
+    referrer.referral_rewards_granted = int(referrer.referral_rewards_granted or 0) + 1
+    referral.status = "rewarded"
+    referral.reward_days_referrer = reward_days
+    referral.blocked_reason = None
+    referral.qualified_at = datetime.utcnow()
+    db.commit()
+    try:
+        send_referral_reward_email(referrer, referred_user, reward_days)
+    except Exception as e:
+        print(f"[REFERRAL EMAIL ERROR] {e}")
+    return "rewarded"
 
 
 def process_referral_after_registration(db: Session, new_user: models.User, request: Request) -> str:
-    """Checks query param ?ref= and wex_ref cookie, attempts to bind, returns outcome."""
-    q_ref = (request.query_params.get("ref") or "").strip().upper()
-    c_ref = _read_signed_referral_cookie(request) or ""
-    code = q_ref or c_ref
+    """Use the server-signed invite cookie captured by /r/{code} or /register."""
+    code = _read_signed_referral_cookie(request) or _decode_signed_referral_value(
+        request.query_params.get("ref_token") or ""
+    ) or ""
     if not code:
         return "no_code"
-    _, outcome = bind_referral_for_new_user(db, new_user, code, source="link")
+    _, outcome = bind_referral_for_new_user(db, new_user, code, source="link", request=request)
     return outcome
 
 
-def send_referral_emails(referrer: models.User, referred: models.User) -> None:
-    """Best-effort email both sides about a successful referral."""
+def _send_referral_email(to_email: str, subject: str, template_name: str, **context) -> None:
     if not is_email_service_configured():
         return
     resend_api_key = _clean_env_value("RESEND_API_KEY")
@@ -1157,41 +1398,39 @@ def send_referral_emails(referrer: models.User, referred: models.User) -> None:
     sender = VERIFICATION_EMAIL_SENDER
     if not resend_api_key:
         return
-    try:
-        html_referrer = templates.env.get_template("emails/referral_rewarded_referrer.html").render(
-            recipient_name=referrer.name or "Friend",
-            invitee_first_name=(referred.name or referred.email.split("@")[0]).split(" ")[0],
-            reward_days=REFERRAL_DAYS_REFERRER,
-        )
-        html_referred = templates.env.get_template("emails/referral_welcome_referred.html").render(
-            recipient_name=referred.name or "Friend",
-            reward_days=REFERRAL_DAYS_REFERRED,
-        )
-    except Exception as e:
-        print(f"[REFERRAL EMAIL TEMPLATE ERROR] {e}")
-        return
-
+    html = templates.env.get_template(template_name).render(**context)
     with httpx.Client(timeout=20.0) as client:
-        for to_email, subject, html in (
-            (referrer.email, f"+{REFERRAL_DAYS_REFERRER} days — a friend joined with your invite",  html_referrer),
-            (referred.email, f"Welcome — you got +{REFERRAL_DAYS_REFERRED} bonus days on WEXTheory",  html_referred),
-        ):
-            try:
-                client.post(
-                    resend_api_url,
-                    headers={
-                        "Authorization": f"Bearer {resend_api_key}",
-                        "Content-Type": "application/json",
-                    },
-                    json={
-                        "from": sender,
-                        "to": [to_email],
-                        "subject": subject,
-                        "html": html,
-                    },
-                )
-            except Exception as e:
-                print(f"[REFERRAL EMAIL SEND ERROR] {e}")
+        response = client.post(
+            resend_api_url,
+            headers={
+                "Authorization": f"Bearer {resend_api_key}",
+                "Content-Type": "application/json",
+            },
+            json={"from": sender, "to": [to_email], "subject": subject, "html": html},
+        )
+        if response.status_code >= 400:
+            raise RuntimeError(f"Resend API error {response.status_code}: {response.text[:200]}")
+
+
+def send_referral_welcome_email(referred: models.User) -> None:
+    _send_referral_email(
+        referred.email,
+        f"Welcome — you got +{REFERRAL_DAYS_REFERRED} bonus days on WEXTheory",
+        "emails/referral_welcome_referred.html",
+        recipient_name=referred.name or "Friend",
+        reward_days=REFERRAL_DAYS_REFERRED,
+    )
+
+
+def send_referral_reward_email(referrer: models.User, referred: models.User, reward_days: int) -> None:
+    _send_referral_email(
+        referrer.email,
+        f"+{reward_days} days — your referral qualified",
+        "emails/referral_rewarded_referrer.html",
+        recipient_name=referrer.name or "Friend",
+        invitee_first_name=(referred.name or referred.email.split("@")[0]).split(" ")[0],
+        reward_days=reward_days,
+    )
 
 
 def get_promo_status(promo: models.PromoCode) -> str:
@@ -1788,7 +2027,17 @@ def ensure_referrals_table(db: Session) -> None:
         if "referrals" not in inspector.get_table_names():
             models.Referral.__table__.create(bind=engine, checkfirst=True)
             print("[STARTUP] Created referrals table")
+        columns = {col["name"] for col in sql_inspect(engine).get_columns("referrals")}
+        if "qualified_at" not in columns:
+            db.execute(sql_text("ALTER TABLE referrals ADD COLUMN qualified_at TIMESTAMP"))
+            db.commit()
+            print("[STARTUP] Added referrals.qualified_at column")
         db.execute(sql_text("CREATE UNIQUE INDEX IF NOT EXISTS ux_referrals_referred_id ON referrals (referred_id)"))
+        db.execute(sql_text("CREATE INDEX IF NOT EXISTS ix_referrals_status_created ON referrals (status, created_at)"))
+        db.execute(sql_text(
+            "UPDATE referrals SET status = 'referred_only' "
+            "WHERE status = 'blocked' AND blocked_reason = 'cap_exceeded' AND reward_days_referred > 0"
+        ))
         db.commit()
     except Exception as e:
         db.rollback()
@@ -1811,7 +2060,22 @@ def ensure_user_referral_columns(db: Session) -> None:
             db.execute(sql_text("ALTER TABLE users ADD COLUMN referral_rewards_granted INTEGER DEFAULT 0"))
             db.commit()
             print("[STARTUP] Added users.referral_rewards_granted column")
+        if "email_canonical" not in columns:
+            db.execute(sql_text("ALTER TABLE users ADD COLUMN email_canonical VARCHAR"))
+            db.commit()
+            print("[STARTUP] Added users.email_canonical column")
+        if "signup_ip_hash" not in columns:
+            db.execute(sql_text("ALTER TABLE users ADD COLUMN signup_ip_hash VARCHAR"))
+            db.commit()
+            print("[STARTUP] Added users.signup_ip_hash column")
+        if "signup_device_hash" not in columns:
+            db.execute(sql_text("ALTER TABLE users ADD COLUMN signup_device_hash VARCHAR"))
+            db.commit()
+            print("[STARTUP] Added users.signup_device_hash column")
         db.execute(sql_text("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_referral_code ON users (referral_code)"))
+        db.execute(sql_text("CREATE INDEX IF NOT EXISTS ix_users_email_canonical ON users (email_canonical)"))
+        db.execute(sql_text("CREATE INDEX IF NOT EXISTS ix_users_signup_ip_hash ON users (signup_ip_hash)"))
+        db.execute(sql_text("CREATE INDEX IF NOT EXISTS ix_users_signup_device_hash ON users (signup_device_hash)"))
         db.commit()
     except Exception as e:
         db.rollback()
@@ -1891,12 +2155,22 @@ def ensure_all_user_referral_codes(db: Session) -> None:
     missing = db.query(models.User).filter(
         (models.User.referral_code.is_(None)) | (models.User.referral_code == "")
     ).all()
-    if not missing:
-        return
     for u in missing:
         u.referral_code = generate_unique_referral_code(db)
-    db.commit()
-    print(f"[STARTUP] Assigned referral codes to {len(missing)} users")
+    identity_updates = 0
+    for user in db.query(models.User).all():
+        canonical = _canonicalize_referral_email(user.email)
+        if user.email_canonical != canonical:
+            user.email_canonical = canonical
+            identity_updates += 1
+        if user.referral_rewards_granted is None:
+            user.referral_rewards_granted = 0
+    if missing or identity_updates:
+        db.commit()
+    if missing:
+        print(f"[STARTUP] Assigned referral codes to {len(missing)} users")
+    if identity_updates:
+        print(f"[STARTUP] Backfilled referral email identities for {identity_updates} users")
 
 
 def ensure_exam_mode_test(db: Session) -> None:
@@ -2209,6 +2483,8 @@ def should_refresh_auth_cookie(request: Request) -> bool:
 async def refresh_auth_session(request: Request, call_next):
     # Generate per-request CSP nonce for inline scripts
     request.state.csp_nonce = secrets.token_urlsafe(16)
+    existing_referral_device_id = _read_referral_device_cookie(request)
+    request.state.referral_device_id = existing_referral_device_id or secrets.token_urlsafe(32)
 
     csrf_exempt_paths = {
         "/stripe/webhook",
@@ -2247,6 +2523,8 @@ async def refresh_auth_session(request: Request, call_next):
             else:
                 clear_auth_cookie(response, request)
     set_csrf_cookie(response, get_or_create_csrf_token(request), request)
+    if not existing_referral_device_id:
+        set_referral_device_cookie(response, request.state.referral_device_id, request)
     response.headers.setdefault("Content-Security-Policy", build_content_security_policy(request))
     response.headers.setdefault("X-Frame-Options", "DENY")
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
@@ -2914,7 +3192,7 @@ async def _extract_oidc_userinfo(client, request: Request, token: dict) -> dict:
     raise RuntimeError("Telegram did not return verified OIDC user info")
 
 
-def _upsert_telegram_user(db: Session, info: dict) -> tuple[models.User, bool]:
+def _upsert_telegram_user(db: Session, info: dict, request: Optional[Request] = None) -> tuple[models.User, bool]:
     telegram_id = str(info.get("sub") or info.get("id") or "").strip()
     if not telegram_id:
         raise RuntimeError("Telegram did not return a user id")
@@ -2946,6 +3224,8 @@ def _upsert_telegram_user(db: Session, info: dict) -> tuple[models.User, bool]:
     user.telegram_connected_at = datetime.utcnow()
     if not user.referral_code:
         user.referral_code = generate_unique_referral_code(db)
+    if created_user:
+        capture_referral_identity(user, request)
 
     db.commit()
     db.refresh(user)
@@ -2986,6 +3266,9 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
         if not email:
             print("[GOOGLE CB] ERROR: no email in userinfo")
             return RedirectResponse("/login?error=no_email", status_code=302)
+        if info.get("email_verified") is not True:
+            print("[GOOGLE CB] ERROR: email is not verified")
+            return RedirectResponse("/login?error=unverified_google_email", status_code=302)
 
         user = db.query(models.User).filter(models.User.email == email).first()
         created_user = False
@@ -3000,6 +3283,7 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
                 is_admin=False,
                 referral_code=generate_unique_referral_code(db),
             )
+            capture_referral_identity(user, request)
             db.add(user)
             db.commit()
             db.refresh(user)
@@ -3064,7 +3348,7 @@ async def telegram_callback(request: Request, db: Session = Depends(get_db)):
         info = await _extract_oidc_userinfo(oauth.telegram, request, token)
         print(f"[TELEGRAM CB] userinfo keys: {list(info.keys())}")
 
-        user, created_user = _upsert_telegram_user(db, info)
+        user, created_user = _upsert_telegram_user(db, info, request)
 
         referral_outcome = "no_code"
         if created_user:
@@ -3117,6 +3401,16 @@ async def login_page(request: Request):
 async def register_page(request: Request, db: Session = Depends(get_db)):
     invite_code = ""
     ref = (request.query_params.get("ref") or "").strip().upper()
+    if ref:
+        limited = check_rate_limit(
+            request,
+            "referral_lookup",
+            message="too_many_invite_lookups",
+            redirect_to="/register",
+            redirect_param="ref_error",
+        )
+        if limited:
+            return limited
     if ref.startswith("WEXR-") and _find_referrer_by_code(db, ref):
         invite_code = ref
     response = templates.TemplateResponse(request, "register.html", {
@@ -3146,7 +3440,7 @@ async def reset_password_page(request: Request):
     return templates.TemplateResponse(request, "reset_password.html", {"request": request})
 
 
-def complete_email_verification(db: Session, email: str, code: str):
+def complete_email_verification(db: Session, email: str, code: str, request: Optional[Request] = None):
     pending = (
         db.query(models.EmailVerificationCode)
         .filter(
@@ -3182,6 +3476,7 @@ def complete_email_verification(db: Session, email: str, code: str):
         subscription_status="free",
         referral_code=generate_unique_referral_code(db),
     )
+    capture_referral_identity(user, request)
     db.add(user)
     db.flush()
     db.query(models.EmailVerificationCode).filter(
@@ -3317,10 +3612,14 @@ async def api_register(request: Request, db: Session = Depends(get_db)):
         )
         db.add(pending)
         db.commit()
-        confirm_url = get_public_base_url(request) + "/verify-email?" + urlencode({
+        confirm_params = {
             "email": email,
             "code": code,
-        })
+        }
+        referral_token = request.cookies.get(REFERRAL_COOKIE_NAME) or ""
+        if _decode_signed_referral_value(referral_token):
+            confirm_params["ref_token"] = referral_token
+        confirm_url = get_public_base_url(request) + "/verify-email?" + urlencode(confirm_params)
         try:
             send_verification_email(email, code, name, confirm_url)
         except Exception:
@@ -3362,7 +3661,7 @@ async def api_register_verify(request: Request, db: Session = Depends(get_db)):
 
         if not email or not code:
             return JSONResponse({"error": "Email and verification code are required"}, status_code=400)
-        user, error = complete_email_verification(db, email, code)
+        user, error = complete_email_verification(db, email, code, request)
         if error:
             status_code = 404 if "not found" in error.lower() else 400
             return JSONResponse({"error": error}, status_code=status_code)
@@ -3490,12 +3789,24 @@ async def verify_email_link(email: str, code: str, request: Request, db: Session
     if not email or not code:
         return RedirectResponse(f"/register?error={quote('Verification link is incomplete')}", status_code=302)
 
-    user, error = complete_email_verification(db, email, code)
+    user, error = complete_email_verification(db, email, code, request)
     if error:
-        return RedirectResponse(
+        error_response = RedirectResponse(
             f"/register?error={quote(error)}&email={quote(email)}&code={quote(code)}",
             status_code=302,
         )
+        referral_token = request.query_params.get("ref_token") or ""
+        if _decode_signed_referral_value(referral_token):
+            error_response.set_cookie(
+                REFERRAL_COOKIE_NAME,
+                referral_token,
+                max_age=REFERRAL_COOKIE_MAX_AGE,
+                httponly=True,
+                samesite="lax",
+                secure=_cookie_secure(request),
+                path="/",
+            )
+        return error_response
 
     try:
         referral_outcome = process_referral_after_registration(db, user, request)
@@ -4577,6 +4888,9 @@ async def api_save_answer(attempt_id: int, request: Request, db: Session = Depen
     if not attempt:
         return JSONResponse({"error": "Not found"}, status_code=404)
 
+    allowed_question_ids = {question.id for question in get_questions_for_attempt(db, attempt)}
+    if question_id not in allowed_question_ids:
+        return JSONResponse({"error": "Question does not belong to this attempt"}, status_code=400)
     question = db.query(models.Question).filter(models.Question.id == question_id).first()
     if not question:
         return JSONResponse({"error": "Not found"}, status_code=404)
@@ -4615,9 +4929,21 @@ async def api_save_answers_batch(attempt_id: int, request: Request, db: Session 
         return JSONResponse({"error": "Not found"}, status_code=404)
 
     body = await request.json()
-    incoming = body.get("answers", [])  # [{question_id, answer_ids}, ...]
-
-    question_ids = [a["question_id"] for a in incoming]
+    raw_incoming = body.get("answers", [])  # [{question_id, answer_ids}, ...]
+    if not isinstance(raw_incoming, list):
+        return JSONResponse({"error": "Answers must be a list"}, status_code=400)
+    allowed_question_ids = {question.id for question in get_questions_for_attempt(db, attempt)}
+    incoming_by_question = {}
+    for item in raw_incoming:
+        if not isinstance(item, dict):
+            continue
+        try:
+            question_id = int(item.get("question_id"))
+        except (TypeError, ValueError):
+            continue
+        if question_id in allowed_question_ids:
+            incoming_by_question[question_id] = item
+    question_ids = list(incoming_by_question)
     questions = db.query(models.Question).options(
         selectinload(models.Question.answers)
     ).filter(models.Question.id.in_(question_ids)).all()
@@ -4628,8 +4954,8 @@ async def api_save_answers_batch(attempt_id: int, request: Request, db: Session 
         models.UserAnswer.attempt_id == attempt_id
     ).delete(synchronize_session=False)
 
-    for ans in incoming:
-        q = q_map.get(ans["question_id"])
+    for question_id, ans in incoming_by_question.items():
+        q = q_map.get(question_id)
         if not q:
             continue
         answer_ids = normalize_selected_answer_ids(q, ans.get("answer_ids", []))
@@ -4637,7 +4963,7 @@ async def api_save_answers_batch(attempt_id: int, request: Request, db: Session 
         is_correct = set(answer_ids) == correct_ids
         db.add(models.UserAnswer(
             attempt_id=attempt_id,
-            question_id=ans["question_id"],
+            question_id=question_id,
             selected_answer_ids=json.dumps(answer_ids),
             is_correct=is_correct,
         ))
@@ -4660,7 +4986,13 @@ async def api_finish_attempt(attempt_id: int, request: Request, db: Session = De
         return JSONResponse({"error": "Not found"}, status_code=404)
 
     try:
-        score = sum(1 for ua in attempt.user_answers if ua.is_correct)
+        allowed_question_ids = {question.id for question in get_questions_for_attempt(db, attempt)}
+        answer_by_question = {
+            answer.question_id: answer
+            for answer in attempt.user_answers
+            if answer.question_id in allowed_question_ids
+        }
+        score = sum(1 for answer in answer_by_question.values() if answer.is_correct)
         total_questions = EXAM_MODE_QUESTION_COUNT if is_exam_mode_test(attempt.test_id) else 25
         errors = total_questions - score
         passed = errors <= 5 if is_exam_mode_test(attempt.test_id) else score >= EXAM_MODE_PASS_SCORE
@@ -4668,7 +5000,19 @@ async def api_finish_attempt(attempt_id: int, request: Request, db: Session = De
         attempt.score = score
         attempt.passed = passed
         db.commit()
-        return {"score": score, "passed": passed, "total": total_questions, "errors": errors}
+        referral_qualification = "not_pending"
+        try:
+            referral_qualification = qualify_pending_referral(db, user, attempt)
+        except Exception as referral_error:
+            db.rollback()
+            print(f"[REFERRAL QUALIFY ERROR] user_id={user.id} attempt_id={attempt.id}: {referral_error}")
+        return {
+            "score": score,
+            "passed": passed,
+            "total": total_questions,
+            "errors": errors,
+            "referral_qualification": referral_qualification,
+        }
     except Exception as e:
         traceback.print_exc()
         return JSONResponse({"error": str(e)}, status_code=500)
@@ -5817,14 +6161,19 @@ async def api_redeem_promo_code(request: Request, db: Session = Depends(get_db))
 
         # Referral code path (WEXR-XXXXXX)
         if code.startswith("WEXR-"):
+            limited = check_rate_limit(
+                request,
+                "referral_apply",
+                message="Too many invite-code attempts. Please try again later.",
+            )
+            if limited:
+                return limited
             if user.referred_by_user_id:
                 return JSONResponse({"error": "You've already used an invite code"}, status_code=400)
             referrer = _find_referrer_by_code(db, code)
             if not referrer:
                 return JSONResponse({"error": "Invite code not found"}, status_code=404)
-            if referrer.id == user.id:
-                return JSONResponse({"error": "You can't invite yourself"}, status_code=400)
-            ok, outcome = bind_referral_for_new_user(db, user, code, source="code")
+            ok, outcome = bind_referral_for_new_user(db, user, code, source="code", request=request)
             if not ok:
                 msg_map = {
                     "self_referral": "You can't invite yourself",
@@ -5832,11 +6181,14 @@ async def api_redeem_promo_code(request: Request, db: Session = Depends(get_db))
                     "invalid_code": "Invite code not found",
                     "account_too_old": "Invite codes are only for newly created accounts",
                 }
-                return JSONResponse({"error": msg_map.get(outcome, "Could not apply invite code")}, status_code=400)
+                return JSONResponse({
+                    "error": msg_map.get(outcome, "This invite is not eligible for a referral bonus")
+                }, status_code=400)
             reward_msg = (
+                f"Invite applied. {REFERRAL_DAYS_REFERRED} days added. "
+                "Your inviter's reward becomes available after you complete a full practice test."
+                if outcome == "pending" else
                 f"Invite applied. {REFERRAL_DAYS_REFERRED} days added."
-                if outcome in ("rewarded", "rewarded_referred_only") else
-                "Invite applied."
             )
             return JSONResponse({
                 "success": True,
@@ -5920,6 +6272,15 @@ async def verify_certificate(serial: str, request: Request, db: Session = Depend
 
 @app.get("/r/{code}")
 async def referral_landing(code: str, request: Request, db: Session = Depends(get_db)):
+    limited = check_rate_limit(
+        request,
+        "referral_lookup",
+        message="too_many_invite_lookups",
+        redirect_to="/register",
+        redirect_param="ref_error",
+    )
+    if limited:
+        return limited
     code_clean = (code or "").strip().upper()
     referrer = _find_referrer_by_code(db, code_clean) if code_clean.startswith("WEXR-") else None
     if not referrer:
@@ -5942,8 +6303,12 @@ async def referrals_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
     if not user:
         return RedirectResponse("/login?next=/referrals", status_code=302)
+    needs_identity_commit = not user.referral_code
     if not user.referral_code:
         user.referral_code = generate_unique_referral_code(db)
+    identity_before = (user.email_canonical, user.signup_ip_hash, user.signup_device_hash)
+    capture_referral_identity(user, request)
+    if needs_identity_commit or identity_before != (user.email_canonical, user.signup_ip_hash, user.signup_device_hash):
         db.commit()
     referred_rows = (
         db.query(models.Referral)
@@ -5964,6 +6329,8 @@ async def referrals_page(request: Request, db: Session = Depends(get_db)):
             "referred_first_name": (u.name.split(" ")[0] if u and u.name else "—"),
         })
     rewarded_count = sum(1 for r in referred_rows if r.status == "rewarded")
+    pending_count = sum(1 for r in referred_rows if r.status == "pending")
+    accepted_count = sum(1 for r in referred_rows if r.status != "blocked")
     days_used = _referral_days_used_this_year(db, user.id)
     days_remaining = max(0, REFERRAL_ANNUAL_CAP_DAYS - days_used)
     badge = get_referral_badge(rewarded_count)
@@ -5974,8 +6341,9 @@ async def referrals_page(request: Request, db: Session = Depends(get_db)):
         "referral_code": user.referral_code,
         "referral_link": link,
         "referred_list": enriched,
-        "total_invited": len(referred_rows),
+        "total_invited": accepted_count,
         "rewarded_count": rewarded_count,
+        "pending_count": pending_count,
         "days_earned_this_year": days_used,
         "days_remaining": days_remaining,
         "annual_cap": REFERRAL_ANNUAL_CAP_DAYS,
@@ -5990,7 +6358,17 @@ async def api_regenerate_referral_code(request: Request, db: Session = Depends(g
     user = get_current_user(request, db)
     if not user:
         return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    limited = check_rate_limit(
+        request,
+        "referral_regenerate",
+        message="You can regenerate your invite code only a few times per day.",
+    )
+    if limited:
+        return limited
     try:
+        user = db.query(models.User).filter(models.User.id == user.id).with_for_update().first()
+        if not user:
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
         new_code = generate_unique_referral_code(db)
         user.referral_code = new_code
         db.commit()

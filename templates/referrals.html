@@ -373,6 +373,8 @@
     text-transform: uppercase;
   }
   .ref-pill.is-rewarded { background: rgba(34,197,94,0.12); color: #22c55e; }
+  .ref-pill.is-pending { background: rgba(245,158,11,0.14); color: #f59e0b; }
+  .ref-pill.is-referred { background: rgba(59,130,246,0.14); color: #60a5fa; }
   .ref-pill.is-blocked { background: rgba(239,68,68,0.12); color: #f87171; }
   .ref-empty {
     padding: 34px 22px;
@@ -915,7 +917,7 @@
         <div class="ref-kicker"><span class="ref-kicker-dot"></span> WEXTheory Invite</div>
         <h1 class="ref-title">Give +{{ reward_days_referred }} days. Get +{{ reward_days_referrer }} days.</h1>
         <p class="ref-subtitle">
-          Send your invite link to a friend. When they create a new WEXTheory account through it, they get <b>+{{ reward_days_referred }} bonus days</b> and you get <b>+{{ reward_days_referrer }} days</b> added to your access.
+          Your friend gets <b>+{{ reward_days_referred }} bonus days</b> after verified registration. Your <b>+{{ reward_days_referrer }} days</b> unlock after they complete their first full practice test.
         </p>
         <div class="ref-cta-row">
           <button class="ref-primary" id="refHeroShareBtn" type="button">Invite friends</button>
@@ -960,13 +962,13 @@
       </div>
       <div class="ref-step">
         <div class="ref-step-icon">3</div>
-        <h3>3. Bonus applies</h3>
-        <p>Your friend receives +{{ reward_days_referred }} days automatically after registration.</p>
+        <h3>3. Friend gets access</h3>
+        <p>After verified registration, they receive +{{ reward_days_referred }} days automatically.</p>
       </div>
       <div class="ref-step">
         <div class="ref-step-icon">4</div>
-        <h3>4. You earn days</h3>
-        <p>You receive +{{ reward_days_referrer }} days for each successful invite.</p>
+        <h3>4. Reward is verified</h3>
+        <p>You receive +{{ reward_days_referrer }} days after they answer at least 20 questions in a practice session lasting at least 5 minutes.</p>
       </div>
     </div>
   </section>
@@ -986,6 +988,7 @@
       <div class="ref-stat">
         <div class="ref-stat-label">Rewarded</div>
         <div class="ref-stat-value">{{ rewarded_count }}</div>
+        {% if pending_count %}<div class="ref-muted" style="font-size:0.78rem;margin-top:4px;">{{ pending_count }} pending</div>{% endif %}
       </div>
       <div class="ref-stat">
         <div class="ref-stat-label">Days earned this year</div>
@@ -1010,14 +1013,14 @@
     </div>
     <div class="ref-rule-card">
       <h3>Important</h3>
-      <p class="ref-muted">Invite codes are for new accounts. You cannot invite yourself, and one account can only use one invite.</p>
+      <p class="ref-muted">Invite codes are for new people and verified accounts only. The inviter must have a paid account or an account at least 7 days old. One person, device, or household can claim one welcome bonus. Up to 5 inviter rewards can enter or complete verification in 30 days.</p>
     </div>
   </section>
 
   <section class="ref-section">
     <div class="ref-section-head">
       <h2>Recent invites</h2>
-      <p class="ref-muted">{{ total_invited }} total</p>
+      <p class="ref-muted">{{ total_invited }} eligible</p>
     </div>
     {% if referred_list %}
       <div class="ref-table">
@@ -1033,8 +1036,12 @@
           <div>
             {% if r.status == "rewarded" %}
               <span class="ref-pill is-rewarded">+{{ r.reward_days_referrer }}d</span>
+            {% elif r.status == "pending" %}
+              <span class="ref-pill is-pending">Pending test</span>
+            {% elif r.status == "referred_only" %}
+              <span class="ref-pill is-referred">Friend +{{ reward_days_referred }}d</span>
             {% else %}
-              <span class="ref-pill is-blocked">{{ r.blocked_reason or "blocked" }}</span>
+              <span class="ref-pill is-blocked">Not eligible</span>
             {% endif %}
           </div>
           <div style="font-size:0.86rem;color:var(--text-muted);">{{ r.source }}</div>
@@ -1075,6 +1082,12 @@
     const msg = document.getElementById('refCopyMsg');
     const regenBtn = document.getElementById('refRegenBtn');
 
+    function getCookieValue(name) {
+      const value = '; ' + document.cookie;
+      const parts = value.split('; ' + name + '=');
+      return parts.length === 2 ? parts.pop().split(';').shift() : '';
+    }
+
     function flash(text, color) {
       if (!msg) return;
       msg.textContent = text;
@@ -1114,7 +1127,14 @@
       regenBtn.addEventListener('click', async function () {
         if (!confirm('Generate a new referral code? Your old link will stop working.')) return;
         try {
-          const r = await fetch('/api/referrals/regenerate', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+          const r = await fetch('/api/referrals/regenerate', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': getCookieValue('csrf_token'),
+            },
+          });
           const data = await r.json();
           if (data && data.success) {
             location.reload();
