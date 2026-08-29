@@ -229,7 +229,7 @@ def _session_cookie_secure_default() -> bool:
 def build_content_security_policy(request: Request) -> str:
     nonce = getattr(request.state, "csp_nonce", "")
     nonce_src = f"'nonce-{nonce}'" if nonce else ""
-    script_src = ["'self'", "https://cdn.jsdelivr.net"]
+    script_src = ["'self'"]
     if nonce_src:
         script_src.append(nonce_src)
     # style-src keeps 'unsafe-inline' because 600+ inline style="..." attributes
@@ -241,8 +241,8 @@ def build_content_security_policy(request: Request) -> str:
         "frame-ancestors": ["'self'"],
         "form-action": ["'self'"],
         "script-src": script_src,
-        "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
-        "font-src": ["'self'", "data:", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+        "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        "font-src": ["'self'", "data:", "https://fonts.gstatic.com"],
         "img-src": ["'self'", "data:", "blob:", "https:"],
         "connect-src": ["'self'"],
     }

@@ -1302,7 +1302,7 @@
 
 {% block scripts %}
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/admin.js?v={{ asset_version }}"></script>
-<script nonce="{{ request.state.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/vendor/js/chart.umd.min.js?v={{ asset_version }}"></script>
 <script nonce="{{ request.state.csp_nonce }}">
 (function() {
   if (typeof Chart === 'undefined') {
