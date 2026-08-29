@@ -3545,6 +3545,24 @@ async def study_guide_page(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse(request, "study_guide.html", {"request": request, "user": user})
 
 
+@app.get("/rules-2026", response_class=HTMLResponse)
+async def rules_2026_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    return templates.TemplateResponse(request, "rules_2026.html", {"request": request, "user": user})
+
+
+@app.get("/exam-language", response_class=HTMLResponse)
+async def exam_language_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    return templates.TemplateResponse(request, "exam_language.html", {"request": request, "user": user})
+
+
+@app.get("/exam-day", response_class=HTMLResponse)
+async def exam_day_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    return templates.TemplateResponse(request, "exam_day.html", {"request": request, "user": user})
+
+
 @app.get("/contact", response_class=HTMLResponse)
 async def contact_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)

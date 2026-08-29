@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Which language can you take the theory test in? - WEX Theory{% endblock %}
+
+{% block head %}
+<style>
+  .info-hero--language::after { content: "EN"; }
+  .facts-source {
+    margin-top: 18px;
+    padding: 14px 18px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--bg-card);
+    color: var(--text-muted);
+    font-size: 0.86rem;
+    line-height: 1.6;
+  }
+  .facts-source a { color: inherit; text-decoration: underline; }
+  .facts-source strong { color: var(--text); }
+</style>
+{% endblock %}
+
+{% block body %}
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" id="factsBurgerBtn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
+      <a href="/" class="logo">WEXTheory</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
+      {% if user %}
+      <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
+      {% else %}
+      <a href="/login" class="btn-ghost btn-sm">Sign In</a>
+      <a href="/register" class="btn-primary btn-sm">Create Account</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="info-page">
+  <section class="info-hero info-hero--language">
+    <div class="info-eyebrow">Before you book</div>
+    <h1 class="info-title">Which language can you take the theory test in?</h1>
+    <p class="info-lede">
+      Five languages, and no interpreter. If Danish is not an option for you, the test will be in English &mdash; which is exactly the language this platform trains you in.
+    </p>
+    <div class="info-actions">
+      <a href="/test/0" class="btn-primary">Start free test</a>
+      <a href="/exam-words-demo" class="btn-ghost">Preview Exam Words</a>
+      <a href="/exam-day" class="btn-ghost">Test day: cost and formats</a>
+    </div>
+  </section>
+
+  <section class="info-card-grid" aria-label="Language rules">
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-solid fa-language"></i></div>
+      <div class="info-card-title">Five languages</div>
+      <p class="info-card-copy">Danish, English, Faroese, Greenlandic and German. No other language is offered for the test.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-solid fa-user-slash"></i></div>
+      <div class="info-card-title">No interpreter</div>
+      <p class="info-card-copy">Since 1 January 2025 an interpreter cannot be used &mdash; not in the theory test and not in the practical test.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-solid fa-headphones"></i></div>
+      <div class="info-card-title">Digital test: three</div>
+      <p class="info-card-copy">The digital theory test runs in Danish, English and German, and it can read the questions aloud to you.</p>
+    </div>
+  </section>
+
+  <section class="info-section-stack">
+    <div class="info-section">
+      <h2 class="info-section-title">What the rule says</h2>
+      <p>
+        The language rules changed on 1 January 2025 and apply to everyone, including learners who started their education earlier. Passing the theory test with an interpreter before that date does not give you the right to use one now.
+      </p>
+      <ul class="info-list">
+        <li>Theory and practical tests are held in Danish, English, Faroese, Greenlandic or German.</li>
+        <li>Interpreters are not allowed in either test.</li>
+        <li>The digital theory test is available in Danish, English and German, with audio.</li>
+      </ul>
+    </div>
+
+    <div class="info-section">
+      <h2 class="info-section-title">If your first language is Russian, Ukrainian, Arabic, Polish&hellip;</h2>
+      <p>
+        In practice you will sit the test in English. That is a smaller problem than it sounds, but only if you prepare for it deliberately: the traffic rules are learnable in any language, while the exam wording is not. Most people who fail on language do not fail on rules &mdash; they lose time decoding the sentence.
+      </p>
+      <ul class="info-list">
+        <li>Practise the questions in English from the start, not translated in your head.</li>
+        <li>Learn the recurring exam terms as vocabulary, separately from the rules.</li>
+        <li>Use audio, because the digital test can read the question to you.</li>
+      </ul>
+    </div>
+
+    <div class="info-section">
+      <h2 class="info-section-title">How WEXTheory is built for this</h2>
+      <p>
+        The library is English-first, in the wording style you meet at the test, with a Russian helper translation you can open when a sentence blocks you rather than as the default. Exam Words keeps the vocabulary in Danish, English and Russian side by side, with cards, quiz and audio.
+      </p>
+      <div class="info-meta-row">
+        <span class="info-pill">English-first questions</span>
+        <span class="info-pill">Russian helper</span>
+        <span class="info-pill">Danish reference</span>
+        <span class="info-pill">Audio</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="info-callout">
+    <div>
+      <h2 class="info-section-title">Try it in English first</h2>
+      <p class="info-callout-copy">
+        The starter test is free and needs no account. If the English feels heavy, open Exam Words next &mdash; that is usually the faster fix.
+      </p>
+    </div>
+    <a href="/test/0" class="btn-primary">Start free test</a>
+  </div>
+
+  <p class="facts-source">
+    <strong>Sources:</strong>
+    <a href="https://www.fstyr.dk/nyheder/2024/nov/-nye-regler-for-sprog-ved-koereproever-fra-den-1-januar-2025" target="_blank" rel="noopener">Færdselsstyrelsen on the language rules from 1 January 2025</a>
+    and <a href="https://www.fstyr.dk/erhverv/koereskoler-og-koerelaerere/digitale-teoriproever" target="_blank" rel="noopener">Færdselsstyrelsen on digital theory tests</a>.
+    Checked 29 August 2026. WEXTheory is a private practice platform, not an authority &mdash; confirm your own case with your driving school.
+  </p>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/rules-2026">2026 rules</a>
+      <a href="/exam-language">Test language</a>
+      <a href="/exam-day">Test day</a>
+      <a href="/faq">FAQ</a>
+      <a href="/contact">Contact</a>
+      <a href="/privacy">Privacy</a>
+    </div>
+    <div>&copy; 2026 WEXTheory</div>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/facts.js?v={{ asset_version }}"></script>
+{% endblock %}

@@ -21,6 +21,21 @@
       a: 'Test 14 is an extra mixed practice mode. Each attempt gives you 25 random questions from across the full practice library, so the questions change every time and appear in a mixed order.'
     },
     {
+      group: 'Exam rules',
+      q: 'Did the theory test change with the 2026 reform?',
+      a: 'No. The test is still 25 questions in 25 minutes with a maximum of five mistakes. What changed on 1 July 2026 is the driving education around it: five modules, theory before the matching practice, and new subjects such as electric cars and driver assistance systems. See <a href="/rules-2026">what changed in 2026</a>.'
+    },
+    {
+      group: 'Exam rules',
+      q: 'Which language can I take the theory test in?',
+      a: 'Danish, English, Faroese, Greenlandic or German. Interpreters have not been allowed since 1 January 2025, and the digital theory test runs in Danish, English and German with audio. More on <a href="/exam-language">the test language page</a>.'
+    },
+    {
+      group: 'Exam rules',
+      q: 'What is the difference between the paper and the digital theory test?',
+      a: 'The paper test uses real photographs and yes/no answers, and you go straight through it. The digital test uses computer-generated scenes, you pick the correct answer or answers, you can move back and forth and flag questions, and the result appears on screen at once. Both are 25 questions in 25 minutes. See <a href="/exam-day">test day</a>.'
+    },
+    {
       group: 'Account',
       q: 'Do I need an account?',
       a: 'You do not need an account for Starter Test 0. You need an account for the main library, saved progress, support chat, certificates, and full Exam Words access.'

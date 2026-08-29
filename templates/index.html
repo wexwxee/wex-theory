@@ -87,6 +87,20 @@
     border-radius: 12px;
     padding-inline: 22px;
   }
+  .landing-actions:has(+ .landing-update) {
+    margin-bottom: 16px;
+  }
+  .landing-update {
+    margin: 0 0 30px;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+  .landing-update a {
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
   .hero-proof {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -712,6 +726,13 @@
         <a href="/test/0" class="btn-primary">Start free starter test</a>
         <a href="/pricing" class="btn-ghost">View full library</a>
       </div>
+      <p class="landing-update">
+        <i class="fa-solid fa-circle-info"></i>
+        Denmark changed the driving education on 1 July 2026. The theory test kept its format &mdash;
+        <a href="/rules-2026">what changed</a>,
+        <a href="/exam-language">which language you sit it in</a>,
+        <a href="/exam-day">what test day costs</a>.
+      </p>
       <div class="hero-proof">
         <div class="hero-proof-item">
           <div class="hero-proof-num">13</div>

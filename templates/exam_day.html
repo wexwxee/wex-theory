@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Test day: cost, booking and the two formats - WEX Theory{% endblock %}
+
+{% block head %}
+<style>
+  .info-hero--day::after { content: "25"; }
+  .facts-source {
+    margin-top: 18px;
+    padding: 14px 18px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--bg-card);
+    color: var(--text-muted);
+    font-size: 0.86rem;
+    line-height: 1.6;
+  }
+  .facts-source a { color: inherit; text-decoration: underline; }
+  .facts-source strong { color: var(--text); }
+  .compare-wrap { overflow-x: auto; }
+  .compare {
+    width: 100%;
+    min-width: 520px;
+    border-collapse: collapse;
+    font-size: 0.94rem;
+  }
+  .compare th, .compare td {
+    text-align: left;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .compare thead th {
+    font-size: 0.76rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .compare tbody th {
+    font-weight: 700;
+    width: 30%;
+    color: var(--text);
+  }
+  .locations {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" id="factsBurgerBtn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
+      <a href="/" class="logo">WEXTheory</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
+      {% if user %}
+      <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
+      {% else %}
+      <a href="/login" class="btn-ghost btn-sm">Sign In</a>
+      <a href="/register" class="btn-primary btn-sm">Create Account</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="info-page">
+  <section class="info-hero info-hero--day">
+    <div class="info-eyebrow">Test day</div>
+    <h1 class="info-title">Cost, booking, and the two test formats</h1>
+    <p class="info-lede">
+      Same rules either way: 25 questions, 25 minutes, five mistakes allowed. What differs is whether you sit in front of paper or a touchscreen &mdash; and that changes how the questions feel.
+    </p>
+    <div class="info-actions">
+      <a href="/test/0" class="btn-primary">Start free test</a>
+      <a href="/exam-language" class="btn-ghost">Which language you sit it in</a>
+      <a href="/rules-2026" class="btn-ghost">What changed in 2026</a>
+    </div>
+  </section>
+
+  <section class="info-card-grid" aria-label="Test day basics">
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-solid fa-coins"></i></div>
+      <div class="info-card-title">1,600 kr state fee</div>
+      <p class="info-card-copy">Færdselsstyrelsen lists 1,600 kr for the category B driving test. Driving-school fees come on top &mdash; ask your school what its price includes.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-regular fa-calendar-check"></i></div>
+      <div class="info-card-title">Booked by your school</div>
+      <p class="info-card-copy">Tests are booked through the official booking system, normally by your driving school, not by you directly.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-regular fa-clock"></i></div>
+      <div class="info-card-title">25 min, max 5 mistakes</div>
+      <p class="info-card-copy">Both formats: 25 questions in 25 minutes, and you need at least 20 correct to pass.</p>
+    </div>
+  </section>
+
+  <section class="info-section-stack">
+    <div class="info-section">
+      <h2 class="info-section-title">The two formats side by side</h2>
+      <div class="compare-wrap">
+        <table class="compare">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col">Paper test</th>
+              <th scope="col">Digital test</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Images</th>
+              <td>Real photographs from traffic</td>
+              <td>Computer-generated scenes</td>
+            </tr>
+            <tr>
+              <th scope="row">Answering</th>
+              <td>Yes or no to each statement</td>
+              <td>Pick the correct answer or answers</td>
+            </tr>
+            <tr>
+              <th scope="row">Navigation</th>
+              <td>Straight through, no going back</td>
+              <td>Move back and forth, flag questions to revisit</td>
+            </tr>
+            <tr>
+              <th scope="row">Result</th>
+              <td>Given after the test</td>
+              <td>On screen immediately</td>
+            </tr>
+            <tr>
+              <th scope="row">Languages</th>
+              <td>Danish, English, Faroese, Greenlandic, German</td>
+              <td>Danish, English, German, with audio</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Our practice library uses photographs with answer options, so it sits close to both: the scenes look like the paper test, the answering works like the digital one.
+      </p>
+    </div>
+
+    <div class="info-section">
+      <h2 class="info-section-title">Where the digital test runs</h2>
+      <p>
+        Sixteen locations across the country. Your school books the one that fits you; if you want the digital format specifically, say so before the booking is made.
+      </p>
+      <div class="locations">
+        <span class="info-pill">Amager</span>
+        <span class="info-pill">Hillerød</span>
+        <span class="info-pill">Roskilde</span>
+        <span class="info-pill">Slagelse</span>
+        <span class="info-pill">Nykøbing Falster</span>
+        <span class="info-pill">Rønne</span>
+        <span class="info-pill">Odense</span>
+        <span class="info-pill">Aabenraa</span>
+        <span class="info-pill">Kolding</span>
+        <span class="info-pill">Esbjerg</span>
+        <span class="info-pill">Horsens</span>
+        <span class="info-pill">Aarhus</span>
+        <span class="info-pill">Viborg</span>
+        <span class="info-pill">Holstebro</span>
+        <span class="info-pill">Aalborg</span>
+        <span class="info-pill">Frederikshavn</span>
+      </div>
+    </div>
+
+    <div class="info-section">
+      <h2 class="info-section-title">Before you go</h2>
+      <ul class="info-list">
+        <li>Bring valid photo identification. The ID requirements were tightened with the 2026 reform, so check the current list with your driving school before test day.</li>
+        <li>Færdselsstyrelsen has a free online demo of the digital test &mdash; ten questions, desktop browser only. Worth ten minutes so the screen is not new to you: <a href="https://dtp.fstyr.dk/" target="_blank" rel="noopener">dtp.fstyr.dk</a>.</li>
+        <li>Arrive early. A missed test still costs the fee.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="info-callout">
+    <div>
+      <h2 class="info-section-title">Practise the rhythm, not just the rules</h2>
+      <p class="info-callout-copy">
+        Twenty-five questions in twenty-five minutes is roughly a minute each. The mixed Exam Mode in the full library runs at that pace.
+      </p>
+    </div>
+    <a href="/pricing" class="btn-primary">See access options</a>
+  </div>
+
+  <p class="facts-source">
+    <strong>Sources:</strong>
+    <a href="https://www.fstyr.dk/privat/koerekort/priser-paa-koerekort" target="_blank" rel="noopener">Færdselsstyrelsen price list</a>,
+    <a href="https://www.fstyr.dk/erhverv/koereskoler-og-koerelaerere/digitale-teoriproever" target="_blank" rel="noopener">Færdselsstyrelsen on digital theory tests</a>.
+    Checked 29 August 2026. Fees and locations change &mdash; the official pages are the authority, this page is a summary.
+  </p>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/rules-2026">2026 rules</a>
+      <a href="/exam-language">Test language</a>
+      <a href="/exam-day">Test day</a>
+      <a href="/faq">FAQ</a>
+      <a href="/contact">Contact</a>
+      <a href="/privacy">Privacy</a>
+    </div>
+    <div>&copy; 2026 WEXTheory</div>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/facts.js?v={{ asset_version }}"></script>
+{% endblock %}

@@ -308,6 +308,17 @@
       {% endif %}
       {% endif %}
 
+      <div class="sb-sep">Danish rules</div>
+      <a href="/rules-2026" class="sb-item{% if current_path.startswith('/rules-2026') %} is-current{% endif %}">
+        <span class="sb-ic sb-ic--about"><i class="fa-solid fa-layer-group"></i></span><span>2026 changes</span>
+      </a>
+      <a href="/exam-language" class="sb-item{% if current_path.startswith('/exam-language') %} is-current{% endif %}">
+        <span class="sb-ic sb-ic--faq"><i class="fa-solid fa-language"></i></span><span>Test language</span>
+      </a>
+      <a href="/exam-day" class="sb-item{% if current_path.startswith('/exam-day') %} is-current{% endif %}">
+        <span class="sb-ic sb-ic--verify"><i class="fa-regular fa-clock"></i></span><span>Test day</span>
+      </a>
+
       <div class="sb-sep">Info</div>
       <a href="/about" class="sb-item{% if current_path.startswith('/about') %} is-current{% endif %}">
         <span class="sb-ic sb-ic--about"><i class="fa-solid fa-book-open"></i></span><span>About</span>

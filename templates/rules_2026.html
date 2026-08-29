@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}What changed on 1 July 2026 - WEX Theory{% endblock %}
+
+{% block head %}
+<style>
+  .info-hero--rules::after { content: "2026"; }
+  .facts-source {
+    margin-top: 18px;
+    padding: 14px 18px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--bg-card);
+    color: var(--text-muted);
+    font-size: 0.86rem;
+    line-height: 1.6;
+  }
+  .facts-source a { color: inherit; text-decoration: underline; }
+  .facts-source strong { color: var(--text); }
+</style>
+{% endblock %}
+
+{% block body %}
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" id="factsBurgerBtn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
+      <a href="/" class="logo">WEXTheory</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
+      {% if user %}
+      <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
+      {% else %}
+      <a href="/login" class="btn-ghost btn-sm">Sign In</a>
+      <a href="/register" class="btn-primary btn-sm">Create Account</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="info-page">
+  <section class="info-hero info-hero--rules">
+    <div class="info-eyebrow">Rule update</div>
+    <h1 class="info-title">What changed for learner drivers on 1 July 2026</h1>
+    <p class="info-lede">
+      Denmark modernised the driving education. Lessons became modules, theory now comes before the matching practice, and new subjects were added to the curriculum. The theory test itself kept its format, so your practice here still counts.
+    </p>
+    <div class="info-actions">
+      <a href="/exam-language" class="btn-ghost">Which language you sit the test in</a>
+      <a href="/exam-day" class="btn-ghost">Test day: cost and formats</a>
+      <a href="/test/0" class="btn-primary">Start free test</a>
+    </div>
+  </section>
+
+  <section class="info-card-grid" aria-label="Main changes">
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-solid fa-layer-group"></i></div>
+      <div class="info-card-title">Five modules</div>
+      <p class="info-card-copy">Loose lessons were replaced by five modules. You move to the next module once the goals of the current one are met.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-solid fa-arrow-right-long"></i></div>
+      <div class="info-card-title">Theory before practice</div>
+      <p class="info-card-copy">You must cover the theory of a topic before you practise that topic on the road. You may run ahead in theory, but not behind it.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon"><i class="fa-solid fa-house-laptop"></i></div>
+      <div class="info-card-title">Some theory at home</div>
+      <p class="info-card-copy">Part of the theory may now be given as self-study. Classroom theory is still a required part of the education.</p>
+    </div>
+  </section>
+
+  <section class="info-section-stack">
+    <div class="info-section">
+      <h2 class="info-section-title">New subjects in the curriculum</h2>
+      <p>
+        The teaching plan for category B was reissued as version 1.1 (May 2026) and applies from 1 July 2026. Alongside the familiar traffic rules it now covers:
+      </p>
+      <ul class="info-list">
+        <li>Electric and hybrid cars, and how they differ to drive.</li>
+        <li>Driver assistance systems, including sign recognition and what such systems can and cannot do.</li>
+        <li>Energy-efficient and environmentally aware driving.</li>
+        <li>Self-evaluation, own attitudes and risk blindness &mdash; a new theme about judging your own driving.</li>
+      </ul>
+      <p>
+        On the practical side, lessons on the closed practice area went from four to three, and some parking exercises moved out onto public roads.
+      </p>
+    </div>
+
+    <div class="info-section">
+      <h2 class="info-section-title">Did the theory test change?</h2>
+      <p>
+        No. The test is still 25 questions in 25 minutes, and you pass with a maximum of five mistakes. What changed is the education that leads up to it &mdash; the order it is taught in, and the subjects it must cover.
+      </p>
+      <div class="info-meta-row">
+        <span class="info-pill">25 questions</span>
+        <span class="info-pill">25 minutes</span>
+        <span class="info-pill">Pass at 20/25</span>
+      </div>
+    </div>
+
+    <div class="info-section">
+      <h2 class="info-section-title">If you started before 1 July 2026</h2>
+      <p>
+        There is a transition period until 31 December 2026: learners who began under the old rules may finish under them. After that, everyone follows the modular education. Your driving school knows which set applies to you &mdash; ask them if you are mid-course.
+      </p>
+    </div>
+  </section>
+
+  <div class="info-callout">
+    <div>
+      <h2 class="info-section-title">Practice does not need to wait</h2>
+      <p class="info-callout-copy">
+        The question format did not move. Start with the free starter test, then work through the full library and the exam vocabulary.
+      </p>
+    </div>
+    <a href="/test/0" class="btn-primary">Start free test</a>
+  </div>
+
+  <p class="facts-source">
+    <strong>Sources:</strong>
+    <a href="https://www.fstyr.dk/privat/koerekort/moderniseret-koereuddannelse" target="_blank" rel="noopener">Færdselsstyrelsen on the modernised driving education</a>
+    and the official teaching plan for category B, version 1.1 (May 2026).
+    Checked 29 August 2026. WEXTheory is a private practice platform, not an authority &mdash; always confirm your own situation with your driving school.
+  </p>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/rules-2026">2026 rules</a>
+      <a href="/exam-language">Test language</a>
+      <a href="/exam-day">Test day</a>
+      <a href="/faq">FAQ</a>
+      <a href="/contact">Contact</a>
+      <a href="/privacy">Privacy</a>
+    </div>
+    <div>&copy; 2026 WEXTheory</div>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/facts.js?v={{ asset_version }}"></script>
+{% endblock %}
