@@ -4,34 +4,68 @@
 
 {% block head %}
 <style>
-  .review-shell { max-width: 760px; margin: 0 auto; padding: 0 4px 70px; }
-  .review-head {
-    display: flex;
+  .review-shell { max-width: 780px; margin: 0 auto; padding: 0 4px 70px; }
+  .review-back {
+    display: inline-flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 6px;
+    gap: 8px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.86rem;
+    font-weight: 700;
+    margin-bottom: 14px;
   }
-  .review-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; }
-  .review-sub { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 18px; max-width: 60ch; }
+  .review-back:hover { color: var(--text); }
+  .review-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .review-sub { color: var(--text-muted); font-size: 0.9rem; max-width: 62ch; line-height: 1.6; }
+  .review-source { color: var(--text-muted); font-size: 0.86rem; margin-top: 8px; }
   .review-session {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin: 0 0 14px;
+    margin: 18px 0 10px;
     font-size: 0.8rem;
     color: var(--text-muted);
     font-variant-numeric: tabular-nums;
   }
   .review-bar { flex: 1; height: 4px; border-radius: 999px; background: var(--border); overflow: hidden; }
   .review-bar span { display: block; height: 100%; width: 0; background: var(--text); transition: width 0.25s ease; }
+  .review-dots { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .review-dots[hidden] { display: none; }
+  .review-dot {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .review-dot:hover { border-color: var(--text-muted); color: var(--text); }
+  .review-dot.is-current { border-color: var(--text); color: var(--text); box-shadow: inset 0 0 0 1px var(--text); }
+  .review-dot.is-right { border-color: #16a34a; color: #16a34a; background: rgba(22, 163, 74, 0.10); }
+  .review-dot.is-wrong { border-color: #dc2626; color: #dc2626; background: rgba(220, 38, 38, 0.10); }
   .review-stage {
     border: 1px solid var(--border);
     border-radius: 22px;
     background: var(--bg-card);
     padding: clamp(18px, 4vw, 28px);
   }
+  .question-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-bottom: 14px;
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .question-misses { color: #d97706; }
   .review-image {
     width: 100%;
     max-height: 320px;
@@ -46,14 +80,20 @@
     font-size: 0.92rem;
     color: var(--text-muted);
     font-style: italic;
-    margin-bottom: 14px;
+    margin-bottom: 6px;
     display: none;
   }
   .review-shell.show-ru .review-question-ru { display: block; }
-  .review-options { display: grid; gap: 9px; margin-top: 14px; }
+  .review-hint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    margin: 10px 0 12px;
+  }
+  .review-options { display: grid; gap: 9px; }
   .review-option {
     display: grid;
-    grid-template-columns: 22px minmax(0, 1fr);
+    grid-template-columns: 26px minmax(0, 1fr);
     gap: 12px;
     align-items: start;
     padding: 13px 15px;
@@ -69,26 +109,46 @@
   }
   .review-option:hover:not(:disabled) { border-color: var(--text-muted); }
   .review-option:disabled { cursor: default; }
-  .review-option.is-picked { border-color: var(--text); }
-  .review-option.is-correct { border-color: #16a34a; background: rgba(22, 163, 74, 0.10); }
-  .review-option.is-wrong { border-color: #dc2626; background: rgba(220, 38, 38, 0.10); }
+  .option-body { min-width: 0; }
   .option-box {
-    width: 22px;
-    height: 22px;
-    border-radius: 7px;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
     border: 1px solid var(--border);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.72rem;
+    font-size: 0.74rem;
     font-weight: 800;
     color: var(--text-muted);
-    margin-top: 1px;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
   }
+  /* Picked is unmistakable: filled box, tinted row, solid border. */
+  .review-option.is-picked {
+    border-color: var(--text);
+    background: color-mix(in srgb, var(--text) 8%, var(--bg));
+  }
+  .review-option.is-picked .option-box {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+  .review-option.is-correct { border-color: #16a34a; background: rgba(22, 163, 74, 0.10); }
+  .review-option.is-correct .option-box { background: #16a34a; border-color: #16a34a; color: #fff; }
+  .review-option.is-wrong { border-color: #dc2626; background: rgba(220, 38, 38, 0.10); }
+  .review-option.is-wrong .option-box { background: #dc2626; border-color: #dc2626; color: #fff; }
   .option-ru { display: none; color: var(--text-muted); font-size: 0.86rem; font-style: italic; margin-top: 4px; }
   .review-shell.show-ru .option-ru { display: block; }
-  .review-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
-  .review-actions .btn-primary, .review-actions .btn-ghost { min-width: 150px; justify-content: center; }
+  .review-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .review-actions--center { justify-content: center; }
+  .review-actions .btn-primary, .review-actions .btn-ghost { min-width: 140px; justify-content: center; }
+  .picked-count { font-size: 0.82rem; color: var(--text-muted); }
   .review-verdict { margin-top: 16px; font-size: 0.95rem; font-weight: 700; }
   .review-verdict.ok { color: #16a34a; }
   .review-verdict.no { color: #dc2626; }
@@ -103,8 +163,37 @@
   }
   .review-explain-ru { display: none; color: var(--text-muted); margin-top: 8px; font-style: italic; }
   .review-shell.show-ru .review-explain-ru { display: block; }
-  .review-empty { text-align: center; padding: 30px 0; }
-  .review-empty-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; }
+  .review-empty { text-align: center; padding: 24px 0; }
+  .review-empty-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 8px; }
+  .review-empty-copy { color: var(--text-muted); max-width: 52ch; margin: 0 auto; line-height: 1.6; }
+  .summary-list { display: grid; gap: 8px; margin: 6px 0 4px; text-align: left; }
+  .summary-row {
+    display: grid;
+    gap: 4px;
+    padding: 11px 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg);
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+  }
+  .summary-row:hover { border-color: var(--text-muted); }
+  .summary-row-code {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .summary-row-text {
+    font-size: 0.9rem;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
   .review-note { margin-top: 16px; font-size: 0.82rem; color: var(--text-muted); text-align: center; }
   .ru-toggle {
     display: inline-flex;
@@ -132,7 +221,9 @@
   <div class="nav-inner">
     <div class="nav-left">
       <button class="burger-btn" id="reviewBurgerBtn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
-      <a href="/dashboard" class="logo">WEXTheory</a>
+      <a href="/dashboard" class="back-btn" title="Back to dashboard">
+        <span class="back-arrow">&#8592;</span><span class="back-label"> Dashboard</span>
+      </a>
     </div>
     <div class="nav-right">
       <div class="ru-toggle" role="group" aria-label="Translation">
@@ -140,20 +231,20 @@
         <button type="button" data-ru="on">RU</button>
       </div>
       <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
-      <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
     </div>
   </div>
 </nav>
 
 <div class="page" style="padding-top:18px;">
   <div class="review-shell" id="reviewShell" data-pending="{{ pending }}">
-    <div class="review-head">
-      <div class="review-title">Review your mistakes</div>
-    </div>
+    <a href="/dashboard" class="review-back">&#8592; Back to my tests</a>
+
+    <div class="review-title">Review your mistakes</div>
     <p class="review-sub">
-      The questions you answered wrong last time, hardest first. Answering here does not change your test
-      history &mdash; a question leaves this list when you get it right in a real test.
+      The questions you answered wrong last time, the ones you missed most often first. Answering here does
+      not change your test history &mdash; a question leaves the list when you get it right in a real test.
     </p>
+    <p class="review-source" id="reviewSource"></p>
 
     <div class="review-session">
       <span id="reviewCounter"></span>
@@ -161,11 +252,13 @@
       <span id="reviewScore"></span>
     </div>
 
+    <div class="review-dots" id="reviewDots" hidden></div>
+
     <div class="review-stage" id="reviewStage" aria-live="polite">
-      <p style="color:var(--text-muted);">Loading your questions&hellip;</p>
+      <p class="review-empty-copy">Loading your questions&hellip;</p>
     </div>
 
-    <p class="review-note">Ten questions per round. Come back tomorrow and the list will have moved.</p>
+    <p class="review-note">Ten questions per round. Jump between them with the numbers above.</p>
   </div>
 </div>
 {% endblock %}

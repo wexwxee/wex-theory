@@ -32,6 +32,23 @@ def _history(db: Session, user_id: int) -> list[models.UserAnswer]:
     )
 
 
+def miss_counts(db: Session, user_id: int) -> dict[int, int]:
+    """How many times each still-pending question has been answered wrong."""
+    latest: dict[int, bool] = {}
+    misses: dict[int, int] = defaultdict(int)
+
+    for answer in _history(db, user_id):
+        latest[answer.question_id] = bool(answer.is_correct)
+        if not answer.is_correct:
+            misses[answer.question_id] += 1
+
+    return {
+        question_id: misses[question_id]
+        for question_id, was_right in latest.items()
+        if not was_right
+    }
+
+
 def missed_question_ids(db: Session, user_id: int) -> list[int]:
     """Question ids whose latest answer was wrong, weakest first."""
     latest: dict[int, bool] = {}
@@ -47,6 +64,15 @@ def missed_question_ids(db: Session, user_id: int) -> list[int]:
     pending = [question_id for question_id, was_right in latest.items() if not was_right]
     pending.sort(key=lambda question_id: (-misses[question_id], last_seen[question_id]))
     return pending
+
+
+def attempts_taken(db: Session, user_id: int) -> int:
+    """How many test attempts the pending list was built from."""
+    return (
+        db.query(models.UserTestAttempt)
+        .filter(models.UserTestAttempt.user_id == user_id)
+        .count()
+    )
 
 
 def review_count(db: Session, user_id: int) -> int:
@@ -69,7 +95,7 @@ def review_questions(db: Session, user_id: int, limit: int = DEFAULT_LIMIT) -> l
     return questions
 
 
-def as_payload(question: models.Question, wording_mode: str = "original") -> dict:
+def as_payload(question: models.Question, wording_mode: str = "original", misses: int = 0) -> dict:
     """One question in the shape the review page needs."""
     use_exam = wording_mode == "exam"
 
@@ -83,6 +109,7 @@ def as_payload(question: models.Question, wording_mode: str = "original") -> dic
         "id": question.id,
         "test_id": question.test_id,
         "question_index": question.question_index,
+        "misses": misses,
         "question_text": text_of(question, "question_text"),
         "question_text_ru": question.question_text_ru or "",
         "explanation": question.explanation or "",

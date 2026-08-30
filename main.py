@@ -3573,10 +3573,12 @@ async def api_review_questions(request: Request, limit: int = review_drill.DEFAU
     user = get_current_user(request, db)
     if not user:
         raise HTTPException(status_code=401, detail="Sign in to review your mistakes")
+    misses = review_drill.miss_counts(db, user.id)
     return {
-        "pending": review_drill.review_count(db, user.id),
+        "pending": len(misses),
+        "attempts": review_drill.attempts_taken(db, user.id),
         "questions": [
-            review_drill.as_payload(question)
+            review_drill.as_payload(question, misses=misses.get(question.id, 1))
             for question in review_drill.review_questions(db, user.id, limit)
         ],
     }

@@ -105,10 +105,25 @@ class ReviewTests(unittest.TestCase):
         self.assertEqual(len(review.review_questions(self.db, self.user.id, limit=2)), 2)
         self.assertEqual(review.review_count(self.db, self.user.id), 3)
 
+    def test_miss_counts_only_covers_pending_questions(self):
+        self.answer(self.user, self.questions[0], correct=False)
+        self.answer(self.user, self.questions[0], correct=False)
+        self.answer(self.user, self.questions[1], correct=False)
+        self.answer(self.user, self.questions[1], correct=True)
+        counts = review.miss_counts(self.db, self.user.id)
+        self.assertEqual(counts, {self.questions[0].id: 2})
+
+    def test_attempts_are_counted_for_the_page_header(self):
+        self.answer(self.user, self.questions[0], correct=False)
+        self.answer(self.user, self.questions[1], correct=False)
+        self.assertEqual(review.attempts_taken(self.db, self.user.id), 2)
+        self.assertEqual(review.attempts_taken(self.db, self.other.id), 0)
+
     def test_payload_carries_answers_and_russian(self):
         self.answer(self.user, self.questions[0], correct=False)
         question = review.review_questions(self.db, self.user.id)[0]
-        payload = review.as_payload(question)
+        payload = review.as_payload(question, misses=3)
+        self.assertEqual(payload["misses"], 3)
         self.assertEqual(payload["question_text_ru"], "Вопрос 1")
         self.assertEqual(payload["explanation_ru"], "Потому что.")
         self.assertEqual(len(payload["answers"]), 2)
