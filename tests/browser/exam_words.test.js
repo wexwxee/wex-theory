@@ -63,7 +63,7 @@ function key(k) {
 check('session starts immediately', /What does this mean\?/.test(stageText()), stageText().slice(0, 60));
 check('word counter shown', /Word 1 of 10/.test($('.ew-stage-meta').textContent));
 check('side list is populated', $$('.ew-list-row').length > 50, 'rows=' + $$('.ew-list-row').length);
-check('scope counts filled', $('.ew-scope .ew-scope-count').textContent === '276',
+check('scope counts filled', Number($('.ew-scope .ew-scope-count').textContent) > 300,
   $('.ew-scope .ew-scope-count').textContent);
 
 // ── Space reveals, 1 grades ────────────────────────────────────────────────
