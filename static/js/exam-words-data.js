@@ -2,9 +2,10 @@
    it. Categories render in the order they appear here. Each item carries a
    scope (see itemScope) so the page can open on the words the car theory test
    actually asks about. */
-// Exam Words 2026 data v2 — с подтемами для General
-// Структура: каждый термин имеет тему (subtopic) внутри своей категории
-// Все 330 терминов — те же что в PDF, только с новым тегом subtopic
+// Sources: the official concept list for the theory test (the categories
+// General, Motorcycle, Trailer, Heavy Vehicle), the 2026 teaching plan
+// (New curriculum 2026), and the wording of this library's own questions
+// (Exam wording). Every term carries a subtopic; ids come from the Danish.
 
 const SUBTOPICS = {
   brakes: { en: "Brakes & transmission", ru: "Тормоза и трансмиссия" },
