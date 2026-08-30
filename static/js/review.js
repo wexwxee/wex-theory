@@ -127,11 +127,18 @@
     stage.appendChild(meta);
 
     if (question.image_path) {
+      const wrap = el('div', 'review-image-wrap');
       const img = document.createElement('img');
       img.className = 'review-image';
       img.src = `/test-images/${question.image_path}`;
       img.alt = 'Traffic situation';
-      stage.appendChild(img);
+      wrap.append(img, el('span', 'review-image-hint', 'Click to enlarge'));
+      wrap.addEventListener('click', () => {
+        if (typeof window.openImageLightbox === 'function') {
+          window.openImageLightbox(img.src, img.alt);
+        }
+      });
+      stage.appendChild(wrap);
     }
 
     stage.appendChild(el('div', 'review-question', question.question_text));

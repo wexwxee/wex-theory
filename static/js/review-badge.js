@@ -1,22 +1,19 @@
 (function () {
-  // The dashboard shows the review card only when there is something to review,
-  // so an empty list never nags anyone.
-  const card = document.getElementById('reviewCard');
-  const copy = document.getElementById('reviewCardCopy');
-  if (!card) return;
+  // The review tile joins the stats row only when there is something to review,
+  // so a clean slate never carries a nagging zero.
+  const tile = document.getElementById('reviewTile');
+  const value = document.getElementById('reviewTileValue');
+  if (!tile || !value) return;
 
   fetch('/api/review/count')
     .then((response) => (response.ok ? response.json() : null))
     .then((data) => {
       const pending = data?.pending || 0;
       if (!pending) return;
-      card.hidden = false;
-      copy.textContent =
-        pending === 1
-          ? '1 question you got wrong is waiting'
-          : `${pending} questions you got wrong are waiting`;
+      value.textContent = pending;
+      tile.hidden = false;
     })
     .catch(() => {
-      // No badge is better than a broken one.
+      // No tile is better than a broken one.
     });
 })();

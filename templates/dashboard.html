@@ -4,37 +4,19 @@
 
 {% block body %}
 <style>
-  .review-card {
-    display: grid;
-    grid-template-columns: 40px minmax(0, 1fr) 20px;
-    align-items: center;
-    gap: 14px;
-    margin: 0 0 16px;
-    padding: 14px 16px;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    background: var(--bg-card);
+  .dashboard-stat-card--review {
     text-decoration: none;
     color: inherit;
-    max-width: 520px;
     transition: border-color 0.15s, transform 0.15s;
   }
-  .review-card:hover { border-color: var(--text-muted); transform: translateY(-1px); }
-  .review-card[hidden] { display: none; }
-  .review-card-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg);
-    border: 1px solid var(--border);
+  .dashboard-stat-card--review:hover { border-color: var(--text-muted); transform: translateY(-1px); }
+  .dashboard-stat-card--review[hidden] { display: none; }
+  .dashboard-stat-note {
+    font-size: 0.74rem;
     color: var(--text-muted);
+    margin-top: 4px;
+    line-height: 1.3;
   }
-  .review-card-title { display: block; font-weight: 800; font-size: 0.98rem; }
-  .review-card-copy { display: block; color: var(--text-muted); font-size: 0.86rem; margin-top: 2px; }
-  .review-card-go { color: var(--text-muted); }
   .dashboard-page {
     position: relative;
     max-width: 1180px;
@@ -699,14 +681,6 @@
       <p class="dashboard-subcopy">
         Train through the official WEXTheory set, keep your saved questions close, and return to any finished attempt for a full answer review.
       </p>
-      <a href="/review" class="review-card" id="reviewCard" hidden>
-        <span class="review-card-icon"><i class="fa-solid fa-rotate-left"></i></span>
-        <span>
-          <span class="review-card-title">Review your mistakes</span>
-          <span class="review-card-copy" id="reviewCardCopy"></span>
-        </span>
-        <span class="review-card-go"><i class="fa-solid fa-arrow-right"></i></span>
-      </a>
       <div class="access-pill-row">
       {% if user.is_admin %}
         <span class="access-pill access-pill--admin"><i class="fa-solid fa-shield-halved"></i> Admin access</span>
@@ -744,17 +718,7 @@
             </div>
           </div>
         </div>
-      {% else %}
-        <div class="sub-status-card">
-          <div class="sub-status-content">
-            <span class="sub-status-icon" style="color:var(--text-muted);border-color:var(--border);background:color-mix(in srgb, var(--bg-card) 88%, #fff 12%);"><i class="fa-regular fa-circle"></i></span>
-            <div>
-              <div class="sub-status-title">Starter access</div>
-              <div class="sub-status-meta">Use the free sample now. Open access options for the full test library and study tools.</div>
-            </div>
-          </div>
-        </div>
-        {% endif %}
+      {% endif %}
       {% endif %}
     </div>
       <div class="dashboard-actions">
@@ -782,6 +746,11 @@
       <div class="dashboard-stat-value">{{ latest_scores.values() | list | sum if latest_scores else 0 }}</div>
       <div class="dashboard-stat-label">Total Score</div>
     </div>
+    <a href="/review" class="card dashboard-stat-card dashboard-stat-card--review" id="reviewTile" hidden>
+      <div class="dashboard-stat-value" id="reviewTileValue">0</div>
+      <div class="dashboard-stat-label">To review</div>
+      <div class="dashboard-stat-note">questions you got wrong</div>
+    </a>
     <div class="card dashboard-stat-card plan-status-card{% if has_access %} has-access{% endif %}">
       <div class="dashboard-stat-label">Plan</div>
       {% if has_access %}
