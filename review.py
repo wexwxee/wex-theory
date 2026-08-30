@@ -17,6 +17,7 @@ from typing import Optional
 from sqlalchemy.orm import Session, selectinload
 
 import models
+import signs as signs_catalogue
 
 DEFAULT_LIMIT = 10
 MAX_LIMIT = 25
@@ -115,6 +116,15 @@ def as_payload(question: models.Question, wording_mode: str = "original", misses
         "explanation": question.explanation or "",
         "explanation_ru": question.explanation_ru or "",
         "image_path": question.image_path or "",
+        "signs": [
+            {
+                "code": sign["code"],
+                "name": sign["name_en"],
+                "name_ru": sign.get("name_ru", ""),
+                "image": sign["image"],
+            }
+            for sign in signs_catalogue.signs_for_question(question.id)
+        ],
         "answers": [
             {
                 "id": answer.id,

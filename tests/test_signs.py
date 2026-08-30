@@ -125,3 +125,31 @@ def test_groups_are_counted_and_ordered(all_signs):
     assert sum(group["count"] for group in groups) == len(all_signs)
     assert [group["group"] for group in groups][:3] == ["A", "B", "C"]
     assert all(group["label"] for group in groups)
+
+
+def test_questions_link_only_to_signs_that_exist(all_signs):
+    """The question-to-sign map is built by a script; a stale code there would
+    render a broken chip under a question."""
+    import json
+
+    path = ROOT / "data" / "signs" / "question_signs.json"
+    if not path.exists():
+        pytest.skip("question links not built - run scripts/tag_question_signs.py")
+    links = json.loads(path.read_text(encoding="utf-8"))["questions"]
+    known = {sign["code"] for sign in all_signs}
+    unknown = sorted({code for codes in links.values() for code in codes} - known)
+    assert unknown == []
+    assert all(len(codes) <= 4 for codes in links.values()), "four chips is already a wall"
+
+
+def test_signs_for_question_returns_full_sign_records():
+    import json
+
+    path = ROOT / "data" / "signs" / "question_signs.json"
+    if not path.exists():
+        pytest.skip("question links not built")
+    links = json.loads(path.read_text(encoding="utf-8"))["questions"]
+    question_id = int(next(iter(links)))
+    found = catalogue.signs_for_question(question_id)
+    assert found and all(sign["name_en"] and sign["image"] for sign in found)
+    assert catalogue.signs_for_question(-1) == []

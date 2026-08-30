@@ -19,6 +19,7 @@ DATA_FILE = DATA_DIR / "signs.json"
 MEANINGS_FILE = DATA_DIR / "meanings.json"
 RU_FILE = DATA_DIR / "ru.json"
 DA_FILE = DATA_DIR / "da.json"
+QUESTION_LINKS_FILE = DATA_DIR / "question_signs.json"
 
 # Order the groups the way a learner meets them, not alphabetically.
 GROUP_ORDER = ["A", "B", "C", "D", "E", "U", "F", "H", "I", "J", "K", "G", "M"]
@@ -205,3 +206,19 @@ def related_signs(sign: dict, limit: int = 8) -> list[dict]:
     start = max(0, min(position - limit // 2, len(family) - limit - 1))
     window = [s for s in family[start : start + limit + 1] if s["code"] != sign["code"]]
     return window[:limit]
+
+
+def signs_for_question(question_id: int, limit: int = 4) -> list[dict]:
+    """The signs a question is about, for the "look this up" chips.
+
+    Built by scripts/tag_question_signs.py from the wording of the question and
+    its explanation - not from the photograph, which we cannot read.
+    """
+    links = _read_side_file(QUESTION_LINKS_FILE, "questions")
+    codes = links.get(str(question_id), [])[:limit]
+    found = []
+    for code in codes:
+        sign = by_code(code)
+        if sign:
+            found.append(sign)
+    return found

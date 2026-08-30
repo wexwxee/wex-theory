@@ -232,6 +232,26 @@
       stage.appendChild(explain);
     }
 
+    if (question.signs && question.signs.length) {
+      const box = el('div', 'sign-links');
+      box.appendChild(el('div', 'sign-links-label', 'Look up the signs in this question'));
+      const row = el('div', 'sign-links-row');
+      question.signs.forEach((sign) => {
+        const link = document.createElement('a');
+        link.className = 'sign-chip';
+        link.href = `/signs/${sign.code}`;
+        const img = document.createElement('img');
+        img.src = sign.image;
+        img.alt = sign.name;
+        const text = el('span', 'sign-chip-text');
+        text.append(el('span', 'sign-chip-code', sign.code), el('span', null, sign.name));
+        link.append(img, text);
+        row.appendChild(link);
+      });
+      box.appendChild(row);
+      stage.appendChild(box);
+    }
+
     check.remove();
     stage.querySelector('.picked-count')?.remove();
     const next = el('button', 'btn-primary',
