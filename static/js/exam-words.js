@@ -12,7 +12,11 @@ const SUBTOPICS = {
   situations: { en: "Driving situations", ru: "Дорожные ситуации" },
   docs: { en: "Documents & legal", ru: "Документы и право" },
   safety: { en: "Safety & emergency", ru: "Безопасность и ЧП" },
-  misc: { en: "Other terms", ru: "Прочее" }
+  misc: { en: "Other terms", ru: "Прочее" },
+  ev: { en: "Electric & hybrid", ru: "Электро и гибриды" },
+  assist: { en: "Driver assistance", ru: "Ассистенты водителя" },
+  eco: { en: "Energy-efficient driving", ru: "Эко-вождение" },
+  risk: { en: "Risk & self-evaluation", ru: "Риск и самооценка" }
 };
 
 const DICTIONARY = {
@@ -396,6 +400,71 @@ const DICTIONARY = {
       { dk: "underkøringsafskærmning", en: "Underride guard", ru: "противоподкатная защита", topic: null },
       { dk: "veksellad", en: "Swap body", ru: "сменный кузов", topic: null },
       { dk: "vidvinkelsspejl", en: "Wide angle mirror", ru: "широкоугольное зеркало", topic: null }
+    ]
+  }
+  ,
+  "reform2026": {
+    "title": "Ny undervisningsplan 2026",
+    "title_en": "New curriculum 2026",
+    "title_ru": "Новая программа 2026",
+    "icon": "🔌",
+    "items": [
+      { dk: "elbil", en: "Electric car", ru: "электромобиль", topic: "ev" },
+      { dk: "hybridbil", en: "Hybrid car", ru: "гибридный автомобиль", topic: "ev" },
+      { dk: "elmotor", en: "Electric motor", ru: "электродвигатель", topic: "ev" },
+      { dk: "forbrændingsmotor", en: "Combustion engine", ru: "двигатель внутреннего сгорания", topic: "ev" },
+      { dk: "drivkraft", en: "Propulsion", ru: "привод, тяга", topic: "ev" },
+      { dk: "batteri", en: "Battery", ru: "аккумулятор", topic: "ev" },
+      { dk: "batterikapacitet", en: "Battery capacity", ru: "ёмкость аккумулятора", topic: "ev" },
+      { dk: "rækkevidde", en: "Range", ru: "запас хода", topic: "ev" },
+      { dk: "opladning", en: "Charging", ru: "зарядка", topic: "ev" },
+      { dk: "ladestander", en: "Charging point", ru: "зарядная станция", topic: "ev" },
+      { dk: "regenerativ bremsning", en: "Regenerative braking", ru: "рекуперативное торможение", topic: "ev" },
+      { dk: "one pedal drive", en: "One-pedal driving", ru: "вождение одной педалью", topic: "ev" },
+      { dk: "koblingspedal", en: "Clutch pedal", ru: "педаль сцепления", topic: "ev" },
+      { dk: "automatgear", en: "Automatic transmission", ru: "автоматическая коробка передач", topic: "ev" },
+
+      { dk: "førerassistentsystemer", en: "Driver assistance systems", ru: "системы помощи водителю", topic: "assist" },
+      { dk: "adaptiv fartpilot", en: "Adaptive cruise control", ru: "адаптивный круиз-контроль", topic: "assist" },
+      { dk: "blindvinkelassistent", en: "Blind spot assist", ru: "ассистент слепых зон", topic: "assist" },
+      { dk: "vognbaneassistent", en: "Lane keeping assist", ru: "ассистент удержания полосы", topic: "assist" },
+      { dk: "parkeringssensorer", en: "Parking sensors", ru: "парковочные датчики", topic: "assist" },
+      { dk: "parkeringsassistent", en: "Parking assistant", ru: "ассистент парковки", topic: "assist" },
+      { dk: "frontalkollisionsassistent", en: "Forward collision warning", ru: "предупреждение о лобовом столкновении", topic: "assist" },
+      { dk: "nødbremseassistent", en: "Emergency brake assist", ru: "ассистент экстренного торможения", topic: "assist" },
+      { dk: "træthedsregistrering", en: "Drowsiness detection", ru: "контроль усталости водителя", topic: "assist" },
+      { dk: "færdselstavleassistent", en: "Traffic sign recognition", ru: "распознавание дорожных знаков", topic: "assist" },
+      { dk: "lysassistent", en: "Light assist", ru: "ассистент света (авто-переключение)", topic: "assist" },
+      { dk: "sensor", en: "Sensor", ru: "датчик", topic: "assist" },
+      { dk: "radar", en: "Radar", ru: "радар", topic: "assist" },
+      { dk: "advarselslampe", en: "Warning light", ru: "предупреждающая лампа", topic: "assist" },
+
+      { dk: "energi- og miljørigtig kørsel", en: "Energy-efficient and environmentally sound driving", ru: "энергоэффективное и экологичное вождение", topic: "eco" },
+      { dk: "energiforbrug", en: "Energy consumption", ru: "расход энергии", topic: "eco" },
+      { dk: "energirigtig køreteknik", en: "Energy-efficient driving technique", ru: "экономичная техника вождения", topic: "eco" },
+      { dk: "tomgang", en: "Idling", ru: "работа на холостом ходу", topic: "eco" },
+      { dk: "gearvalg", en: "Choice of gear", ru: "выбор передачи", topic: "eco" },
+      { dk: "dæktryk", en: "Tyre pressure", ru: "давление в шинах", topic: "eco" },
+      { dk: "tagboks", en: "Roof box", ru: "багажник на крыше (бокс)", topic: "eco" },
+      { dk: "unødig vægt", en: "Unnecessary weight", ru: "лишний вес в машине", topic: "eco" },
+      { dk: "luftforurening", en: "Air pollution", ru: "загрязнение воздуха", topic: "eco" },
+      { dk: "støjforurening", en: "Noise pollution", ru: "шумовое загрязнение", topic: "eco" },
+      { dk: "klimaanlæg", en: "Air conditioning", ru: "климат-контроль, кондиционер", topic: "eco" },
+      { dk: "brændstofbesparelse", en: "Fuel saving", ru: "экономия топлива", topic: "eco" },
+      { dk: "miljøzone", en: "Low-emission zone", ru: "экологическая зона", topic: "eco" },
+
+      { dk: "risikoblindhed", en: "Risk blindness", ru: "слепота к риску", topic: "risk" },
+      { dk: "egne kørselskompetencer", en: "Your own driving skills", ru: "собственные навыки вождения", topic: "risk" },
+      { dk: "selvevaluering", en: "Self-evaluation", ru: "самооценка", topic: "risk" },
+      { dk: "holdninger", en: "Attitudes", ru: "установки, отношение", topic: "risk" },
+      { dk: "uopmærksomhed", en: "Inattention", ru: "невнимательность", topic: "risk" },
+      { dk: "distraktion", en: "Distraction", ru: "отвлечение внимания", topic: "risk" },
+      { dk: "teknologibaseret distraktion", en: "Technology-based distraction", ru: "отвлечение из-за техники", topic: "risk" },
+      { dk: "opfattelses- og reaktionsevne", en: "Perception and reaction ability", ru: "восприятие и реакция", topic: "risk" },
+      { dk: "reaktionstid", en: "Reaction time", ru: "время реакции", topic: "risk" },
+      { dk: "risikoforhold", en: "Risk factors", ru: "факторы риска", topic: "risk" },
+      { dk: "modulopbygget uddannelse", en: "Modular driver training", ru: "модульное обучение", topic: "risk" },
+      { dk: "selvstudium", en: "Self-study", ru: "самостоятельное изучение", topic: "risk" }
     ]
   }
 };
