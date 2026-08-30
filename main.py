@@ -122,6 +122,66 @@ QUESTION_TEXT_FIXES = {
     "You are required to turn right at the signal-controlled junction. There is no traffic directly behind you. How should":
         "You are required to turn right at the signal-controlled junction. There is no traffic directly behind you. How should you proceed?"
 }
+ANSWER_TEXT_FIXES = {
+    "I look to seen what is happening on both sides before I drive into the intersection.":
+        "I look to see what is happening on both sides before I drive into the intersection.",
+}
+QUESTION_TRANSLATION_FIXES = {
+    "You are driving at 40 km/h and are going straight ahead at the intersection. How will you continue?":
+        "Вы едете со скоростью 40 км/ч и собираетесь проехать перекрёсток прямо. Как вы продолжите движение?",
+}
+ANSWER_TRANSLATION_FIXES = {
+    "I am counting on the cyclist holding back.":
+        "Я рассчитываю, что велосипедист уступит мне дорогу.",
+    "I am counting on the cyclist from the right side holding back for me.":
+        "Я рассчитываю, что велосипедист справа уступит мне дорогу.",
+    "I hold back for the cyclist.":
+        "Я уступаю дорогу велосипедисту.",
+    "I hold back for the cyclists.":
+        "Я уступаю дорогу велосипедистам.",
+    "I hold back for the cyclist from the right.":
+        "Я уступаю дорогу велосипедисту справа.",
+    "I hold back for the cyclist and check my blind spot before turning.":
+        "Я пропускаю велосипедиста и проверяю слепую зону перед поворотом.",
+    "I am ready to hold back for vehicles approaching from the right-hand side of the intersection.":
+        "Я готов уступить дорогу транспортным средствам, приближающимся к перекрёстку справа.",
+}
+CONTEXTUAL_TRANSLATION_TERMS = {
+    "blind spot": ("слепая зона", "phrase"),
+    "braking distance": ("тормозной путь", "phrase"),
+    "built-up area": ("населённый пункт", "phrase"),
+    "cycle path": ("велосипедная дорожка", "phrase"),
+    "give way": ("уступить дорогу", "phrase"),
+    "give way line": ("линия «Уступите дорогу»", "phrase"),
+    "hard shoulder": ("аварийная полоса / обочина", "phrase"),
+    "hold back": ("уступить дорогу / пропустить", "phrase"),
+    "holding back": ("уступает дорогу / пропускает", "phrase"),
+    "holding back for me": ("уступит мне дорогу", "phrase"),
+    "keep back": ("держаться позади / соблюдать дистанцию", "phrase"),
+    "keeping back": ("держится позади / соблюдает дистанцию", "phrase"),
+    "level crossing": ("железнодорожный переезд", "phrase"),
+    "oncoming traffic": ("встречный транспорт", "phrase"),
+    "on both sides": ("с обеих сторон", "phrase"),
+    "both sides": ("обе стороны / с обеих сторон", "phrase"),
+    "pedestrian crossing": ("пешеходный переход", "phrase"),
+    "count on": ("рассчитывать на", "phrase"),
+    "counting on": ("рассчитываю на", "phrase"),
+    "from the right side": ("справа", "phrase"),
+    "right side": ("правая сторона / справа", "phrase"),
+    "right of way": ("преимущество в движении", "phrase"),
+    "road users": ("участники дорожного движения", "phrase"),
+    "speed limit": ("ограничение скорости", "phrase"),
+    "stopping distance": ("остановочный путь", "phrase"),
+    "straight ahead": ("прямо", "phrase"),
+    "at the same speed": ("с той же скоростью", "phrase"),
+    "same speed": ("та же скорость", "phrase"),
+    "continue over the intersection": ("проехать перекрёсток", "phrase"),
+    "drive into the intersection": ("въехать на перекрёсток", "phrase"),
+    "go straight ahead": ("ехать прямо", "phrase"),
+    "going straight ahead": ("едете прямо", "phrase"),
+    "look to see": ("посмотреть / убедиться", "phrase"),
+    "traffic lane": ("полоса движения", "phrase"),
+}
 SYSTEM_SUPPORT_SENDERS = ["WEX Assistant", "Mia", "Nora", "Alex", "Support Bot"]
 SYSTEM_SUPPORT_MESSAGES = [
     "Your request has been received. Please wait up to 32 hours for a reply from support.",
@@ -147,6 +207,8 @@ RATE_LIMIT_CONFIG = {
     "referral_lookup": (60, 60),
     "referral_apply": (8, 3600),
     "referral_regenerate": (3, 86400),
+    "translation_lookup": (60, 60),
+    "translation_batch": (12, 60),
     "contact_submit": (6, 1800),
     "support_reply": (30, 300),
 }
@@ -2424,9 +2486,54 @@ def ensure_question_text_fixes(db: Session) -> None:
             {models.Question.question_text: fixed_text},
             synchronize_session=False,
         )
+    for broken_text, fixed_text in ANSWER_TEXT_FIXES.items():
+        updated += db.query(models.Answer).filter(models.Answer.text == broken_text).update(
+            {models.Answer.text: fixed_text},
+            synchronize_session=False,
+        )
+    for source_text, fixed_translation in QUESTION_TRANSLATION_FIXES.items():
+        updated += db.query(models.Question).filter(models.Question.question_text == source_text).update(
+            {models.Question.question_text_ru: fixed_translation},
+            synchronize_session=False,
+        )
+    for source_text, fixed_translation in ANSWER_TRANSLATION_FIXES.items():
+        updated += db.query(models.Answer).filter(models.Answer.text == source_text).update(
+            {models.Answer.text_ru: fixed_translation},
+            synchronize_session=False,
+        )
     if updated:
         db.commit()
-        print(f"[STARTUP] Fixed {updated} broken question text entries")
+        print(f"[STARTUP] Fixed {updated} question/answer text or translation entries")
+
+
+def ensure_contextual_translation_terms(db: Session) -> None:
+    """Upsert a small curated phrase layer used by in-test word help."""
+    updated = 0
+    try:
+        for term, (translation, pos) in CONTEXTUAL_TRANSLATION_TERMS.items():
+            row = db.query(models.WordTranslation).filter(
+                models.WordTranslation.word_en == term
+            ).first()
+            if not row:
+                db.add(models.WordTranslation(
+                    word_en=term,
+                    translation_ru=translation,
+                    pos=pos,
+                    is_curated=True,
+                ))
+                updated += 1
+                continue
+            if row.translation_ru != translation or row.pos != pos or not row.is_curated:
+                row.translation_ru = translation
+                row.pos = pos
+                row.is_curated = True
+                updated += 1
+        if updated:
+            db.commit()
+            print(f"[STARTUP] Upserted {updated} contextual translation terms")
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] contextual translation terms skipped/error: {e}")
 
 
 app.add_middleware(
@@ -2612,6 +2719,10 @@ async def startup_init():
             print(f"[STARTUP] Tests already in DB: {test_count}")
 
         seed_missing_translations(db)
+        ensure_contextual_translation_terms(db)
+        # Run content corrections after imports/seeding as well, so a brand-new
+        # database receives the same fixes as an existing production database.
+        ensure_question_text_fixes(db)
 
         # 2. Fix image paths: rename .png → .jpg (images were converted to JPEG)
         png_count = db.query(models.Question).filter(
@@ -2789,7 +2900,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260519-contact-analytics-thumb"
+templates.env.globals["asset_version"] = "20260830-context-word-help"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 templates.env.globals["test_image_url"] = test_image_url
@@ -5204,8 +5315,8 @@ _TEXT_TRANSLATION_CACHE: dict[str, Optional[str]] = {}
 
 async def _google_translate_word(word: str) -> Optional[str]:
     """Single-shot Google Translate call. Returns ru translation or None.
-    Used by the /api/dictionary smart fallback. Short timeout, no retries —
-    if it fails the user just gets null and we don't poison the cache.
+    Used only by the existing live full-sentence translation flow. Short
+    timeout, no retries; contextual word help stays local and read-only.
     """
     if not word or not word.strip():
         return None
@@ -5243,6 +5354,13 @@ async def _google_translate_text(text: str) -> Optional[str]:
 
 @app.post("/api/translate/batch")
 async def api_translate_batch(request: Request):
+    limited = check_rate_limit(
+        request,
+        "translation_batch",
+        message="Too many translation requests. Please wait a moment.",
+    )
+    if limited:
+        return limited
     try:
         data = await request.json()
     except Exception:
@@ -5252,7 +5370,10 @@ async def api_translate_batch(request: Request):
         return JSONResponse({"error": "texts must be a list"}, status_code=400)
 
     normalized: list[str] = []
-    for item in texts[:40]:
+    # One rendered question contains at most the question plus its answers.
+    # Keep the cap tight so this endpoint cannot fan out dozens of external
+    # requests from a single call.
+    for item in texts[:8]:
         text = re.sub(r"\s+", " ", str(item or "").strip())[:900]
         if text and text not in normalized:
             normalized.append(text)
@@ -5263,78 +5384,214 @@ async def api_translate_batch(request: Request):
     return {"translations": translations}
 
 
-@app.get("/api/dictionary/{word}")
-async def api_dictionary(word: str, db: Session = Depends(get_db)):
-    """Look up a word in the WordTranslation table with smart fallback.
+_DICTIONARY_TOKEN_RE = re.compile(r"[A-Za-z]+(?:['-][A-Za-z]+)*")
 
-    Flow:
-      1. Look up the word in the DB. If found, return immediately.
-      2. If missing, call Google Translate, save the result with
-         is_curated=False, and return it.
-      3. If Google fails, return {translation: null} so the frontend just
-         shows "—" and we don't pollute the DB with garbage.
 
-    Admins can later curate any auto-added row from /admin/translations.
+def _normalize_dictionary_term(raw_value: str) -> Optional[str]:
+    value = str(raw_value or "").replace("’", "'").strip().lower()
+    value = re.sub(r"^[^a-z]+|[^a-z]+$", "", value)
+    value = re.sub(r"\s+", " ", value)
+    if len(value) < 2 or len(value) > 96:
+        return None
+    tokens = value.split(" ")
+    if len(tokens) > 5:
+        return None
+    if not all(re.fullmatch(r"[a-z]+(?:['-][a-z]+)*", token) for token in tokens):
+        return None
+    return value
+
+
+def _contextual_term_candidates(
+    selected_term: str,
+    source_text: str,
+    selection_start: Optional[int] = None,
+    selection_end: Optional[int] = None,
+) -> list[str]:
+    """Return phrase spans around a selection, longest first.
+
+    This lets a user select only ``back`` while the curated phrase ``hold back``
+    still wins. We only consider spans that contain the selected token(s), so an
+    unrelated phrase elsewhere in the answer cannot affect the lookup.
     """
-    cleaned = (word or "").strip().lower()
-    if not cleaned or len(cleaned) > 64:
-        return {"word": cleaned, "translation": None, "pos": None}
+    selected = _normalize_dictionary_term(selected_term)
+    # Keep leading whitespace intact because browser selection offsets are
+    # measured against the exact rendered source string.
+    source = str(source_text or "")[:600].replace("’", "'")
+    if not selected or not source:
+        return [selected] if selected else []
 
-    # Only translate plausible English words — skip anything with digits or
-    # weird characters so we don't waste translate calls on garbage.
-    if not re.fullmatch(r"[a-z][a-z'-]{1,63}", cleaned):
-        return {"word": cleaned, "translation": None, "pos": None}
-
-    row = (
-        db.query(models.WordTranslation)
-        .filter(models.WordTranslation.word_en == cleaned)
-        .first()
+    has_offsets = (
+        isinstance(selection_start, int)
+        and not isinstance(selection_start, bool)
+        and isinstance(selection_end, int)
+        and not isinstance(selection_end, bool)
     )
+    start = selection_start if has_offsets else None
+    end = selection_end if has_offsets else None
+    if has_offsets:
+        offsets_are_valid = (
+            start is not None
+            and end is not None
+            and start >= 0
+            and end > start
+            and end <= len(source)
+            and _normalize_dictionary_term(source[start:end]) == selected
+        )
+        # Fail closed when a client claims that one word was selected but sends
+        # offsets over another. Otherwise it could borrow an unrelated phrase.
+        if not offsets_are_valid:
+            return [selected]
+    else:
+        matches = list(re.finditer(
+            rf"(?<![A-Za-z]){re.escape(selected)}(?![A-Za-z])",
+            source,
+            re.IGNORECASE,
+        ))
+        # Without offsets, expand only an unambiguous occurrence.
+        if len(matches) == 1:
+            start, end = matches[0].span()
+    if start is None or end is None:
+        return [selected]
+
+    tokens = list(_DICTIONARY_TOKEN_RE.finditer(source))
+    selected_indexes = [
+        index for index, token in enumerate(tokens)
+        if token.start() < end and token.end() > start
+    ]
+    if not selected_indexes:
+        return [selected]
+
+    first_selected = min(selected_indexes)
+    last_selected = max(selected_indexes)
+    selected_width = last_selected - first_selected + 1
+    candidates: list[str] = []
+    for width in range(5, selected_width - 1, -1):
+        min_start = max(0, last_selected - width + 1)
+        max_start = min(first_selected, len(tokens) - width)
+        for span_start in range(min_start, max_start + 1):
+            span_end = span_start + width
+            candidate = _normalize_dictionary_term(" ".join(
+                token.group(0) for token in tokens[span_start:span_end]
+            ))
+            if candidate and candidate not in candidates:
+                candidates.append(candidate)
+    if selected not in candidates:
+        candidates.append(selected)
+    return candidates
+
+
+def _dictionary_payload(
+    requested_term: str,
+    row: Optional[models.WordTranslation] = None,
+    *,
+    translation: Optional[str] = None,
+    matched_term: Optional[str] = None,
+) -> dict:
     if row:
         return {
-            "word": row.word_en,
+            "word": requested_term,
+            "matched_term": matched_term or row.word_en,
             "translation": row.translation_ru,
             "pos": row.pos,
+            "source": "curated" if row.is_curated else "automatic",
         }
+    return {
+        "word": requested_term,
+        "matched_term": matched_term or requested_term,
+        "translation": translation,
+        "pos": None,
+        "source": "automatic" if translation else "unavailable",
+    }
 
-    # ── Smart fallback: ask Google, then persist ───────────────────────────
-    translation = await _google_translate_word(cleaned)
-    if not translation:
-        return {"word": cleaned, "translation": None, "pos": None}
 
-    # Avoid storing identical-to-source "translations" (Google sometimes
-    # echoes the input for proper nouns / unknown tokens).
-    if translation.strip().lower() == cleaned:
-        return {"word": cleaned, "translation": None, "pos": None}
+def _find_contextual_dictionary_row(
+    db: Session,
+    selected_term: str,
+    source_text: str,
+    selection_start: Optional[int] = None,
+    selection_end: Optional[int] = None,
+) -> tuple[Optional[models.WordTranslation], Optional[str]]:
+    candidates = _contextual_term_candidates(
+        selected_term,
+        source_text,
+        selection_start,
+        selection_end,
+    )
+    if not candidates:
+        return None, None
+    rows = db.query(models.WordTranslation).filter(
+        models.WordTranslation.word_en.in_(candidates)
+    ).all()
+    by_term = {row.word_en: row for row in rows}
+    # Longest curated phrase is safer than a generic single-word definition.
+    for candidate in candidates:
+        row = by_term.get(candidate)
+        if row and row.is_curated:
+            return row, candidate
+    exact = _normalize_dictionary_term(selected_term)
+    return (by_term.get(exact), exact) if exact else (None, None)
 
+
+def _lookup_dictionary_term(cleaned: str, db: Session) -> dict:
+    """Read a cached dictionary value without network calls or DB writes."""
+    row = db.query(models.WordTranslation).filter(
+        models.WordTranslation.word_en == cleaned
+    ).first()
+    return _dictionary_payload(cleaned, row) if row else _dictionary_payload(cleaned)
+
+
+@app.get("/api/dictionary/{word}")
+async def api_dictionary(word: str, request: Request, db: Session = Depends(get_db)):
+    """Read one locally cached English word or short phrase."""
+    limited = check_rate_limit(
+        request,
+        "translation_lookup",
+        message="Too many translation lookups. Please wait a moment.",
+    )
+    if limited:
+        return limited
+    cleaned = _normalize_dictionary_term(word)
+    if not cleaned:
+        return _dictionary_payload("")
+    return _lookup_dictionary_term(cleaned, db)
+
+
+@app.post("/api/translate/context")
+async def api_translate_context(request: Request, db: Session = Depends(get_db)):
+    """Resolve a selected term, preferring a curated phrase around it."""
+    limited = check_rate_limit(
+        request,
+        "translation_lookup",
+        message="Too many translation lookups. Please wait a moment.",
+    )
+    if limited:
+        return limited
     try:
-        new_row = models.WordTranslation(
-            word_en=cleaned,
-            translation_ru=translation,
-            pos=None,
-            is_curated=False,
-            updated_at=datetime.utcnow(),
-        )
-        db.add(new_row)
-        db.commit()
-    except Exception as e:
-        # Race condition: another request inserted the same word a moment
-        # earlier. Roll back and re-read it.
-        db.rollback()
-        print(f"[dictionary] insert race for {cleaned!r}: {e}")
-        existing = (
-            db.query(models.WordTranslation)
-            .filter(models.WordTranslation.word_en == cleaned)
-            .first()
-        )
-        if existing:
-            return {
-                "word": existing.word_en,
-                "translation": existing.translation_ru,
-                "pos": existing.pos,
-            }
+        data = await request.json()
+    except Exception:
+        data = {}
+    selected = _normalize_dictionary_term(data.get("selection") or "")
+    if not selected:
+        return JSONResponse({"error": "Select one to five English words."}, status_code=400)
 
-    return {"word": cleaned, "translation": translation, "pos": None}
+    source_text = str(data.get("source_text") or "")[:600]
+    start_raw = data.get("selection_start")
+    end_raw = data.get("selection_end")
+    selection_start = start_raw if isinstance(start_raw, int) and not isinstance(start_raw, bool) else None
+    selection_end = end_raw if isinstance(end_raw, int) and not isinstance(end_raw, bool) else None
+    row, matched_term = _find_contextual_dictionary_row(
+        db,
+        selected,
+        source_text,
+        selection_start,
+        selection_end,
+    )
+    if row:
+        payload = _dictionary_payload(selected, row, matched_term=matched_term)
+        if row.is_curated and matched_term and (matched_term != selected or " " in matched_term):
+            payload["source"] = "curated_context"
+        return payload
+    return _dictionary_payload(selected)
 
 
 # ─── Admin: translations editor ────────────────────────────────────────────────

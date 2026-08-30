@@ -136,6 +136,137 @@
     font-style: normal;
     line-height: 1.45;
   }
+  #answersContainer .answer-option {
+    user-select: auto;
+    -webkit-user-select: auto;
+  }
+  .word-help-source {
+    user-select: text;
+    -webkit-user-select: text;
+    -webkit-touch-callout: default;
+  }
+  .answer-option-label .word-help-source {
+    cursor: text;
+  }
+  .word-help-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    max-width: 100%;
+    margin: -2px 0 12px;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    line-height: 1.35;
+  }
+  .word-help-hint[hidden] { display: none; }
+  .word-help-hint-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 27px;
+    height: 22px;
+    padding: 0 6px;
+    border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+    border-radius: 7px;
+    color: var(--text);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .word-help-hint-close {
+    width: 26px;
+    height: 26px;
+    border: 0;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 7px;
+    font-size: 1rem;
+    line-height: 1;
+  }
+  .word-help-hint-close:hover {
+    color: var(--text);
+    background: color-mix(in srgb, var(--bg-soft) 84%, transparent);
+  }
+  .word-help-popup {
+    position: fixed;
+    z-index: 10040;
+    width: min(360px, calc(100vw - 24px));
+    padding: 17px 18px 16px;
+    border: 1px solid color-mix(in srgb, var(--border) 82%, #a855f7 18%);
+    border-radius: 17px;
+    background: color-mix(in srgb, var(--bg-card) 96%, #111827 4%);
+    color: var(--text);
+    box-shadow: 0 20px 55px rgba(0,0,0,0.34);
+  }
+  .word-help-popup[hidden] { display: none; }
+  .word-help-popup-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+  }
+  .word-help-selected {
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    font-weight: 750;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+  }
+  .word-help-close {
+    width: 32px;
+    height: 32px;
+    margin: -7px -8px 0 0;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1.2rem;
+  }
+  .word-help-close:hover {
+    color: var(--text);
+    background: color-mix(in srgb, var(--bg-soft) 86%, transparent);
+  }
+  .word-help-translation {
+    margin-top: 7px;
+    font-size: 1.12rem;
+    font-weight: 800;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+  .word-help-source-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 23px;
+    margin-top: 10px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: rgba(168,85,247,0.12);
+    color: #c084fc;
+    font-size: 0.66rem;
+    font-weight: 800;
+  }
+  .word-help-context {
+    margin-top: 13px;
+    padding-top: 12px;
+    border-top: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+  }
+  .word-help-context-label {
+    margin-bottom: 5px;
+    color: var(--text-muted);
+    font-size: 0.69rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .word-help-context-text {
+    color: color-mix(in srgb, var(--text) 82%, var(--text-muted));
+    font-size: 0.84rem;
+    line-height: 1.5;
+  }
   .test-toast {
     position: fixed;
     top: 74px;
@@ -323,6 +454,15 @@
     .nav-buttons .btn-ghost,
     .nav-buttons .btn-primary {
       min-width: 118px;
+    }
+    .word-help-popup {
+      left: 10px !important;
+      right: 10px;
+      top: auto !important;
+      bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+      width: auto;
+      border-radius: 18px;
+      box-shadow: 0 22px 70px rgba(0,0,0,0.48);
     }
   }
   @media (max-width: 480px) {
@@ -615,6 +755,11 @@
           <span id="questionSpeakWrap"></span>
         </div>
         <div id="questionTextRu" style="display:none;font-size:0.9rem;color:#6b7280;font-style:italic;margin-bottom:20px;animation:fadeIn 0.25s ease both;"></div>
+        <div class="word-help-hint" id="wordHelpHint" lang="ru">
+          <span class="word-help-hint-badge" aria-hidden="true">Aa</span>
+          <span>Выделите слово или короткую фразу — покажем значение в контексте.</span>
+          <button class="word-help-hint-close" id="wordHelpHintClose" type="button" aria-label="Скрыть подсказку">&times;</button>
+        </div>
         <div id="answersContainer"></div>
       </div>
     </div>
@@ -648,6 +793,19 @@
 </div>
 
 <div class="test-toast" id="testToast" aria-live="polite"></div>
+
+<aside class="word-help-popup" id="wordHelpPopup" role="dialog" aria-live="polite" aria-label="Перевод выделенного текста" hidden lang="ru">
+  <div class="word-help-popup-head">
+    <div class="word-help-selected" id="wordHelpSelected"></div>
+    <button class="word-help-close" id="wordHelpClose" type="button" aria-label="Закрыть перевод">&times;</button>
+  </div>
+  <div class="word-help-translation" id="wordHelpTranslation">Переводим…</div>
+  <div class="word-help-source-badge" id="wordHelpSourceBadge" hidden></div>
+  <div class="word-help-context" id="wordHelpContext" hidden>
+    <div class="word-help-context-label">В этом предложении</div>
+    <div class="word-help-context-text" id="wordHelpContextText"></div>
+  </div>
+</aside>
 
 <div class="modal-overlay" id="finishModal">
   <div class="modal">
