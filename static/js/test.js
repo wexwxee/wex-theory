@@ -23,6 +23,10 @@ let speechState = { button: null, text: '', paused: false };
 let voiceUsage = {};
 const liveTranslationCache = new Map();
 let liveTranslationRequestKey = '';
+const wordHelpContexts = new WeakMap();
+const wordHelpCache = new Map();
+let wordHelpRequestId = 0;
+let wordHelpSelectionTimer = null;
 
 function getExamAttemptIdFromUrl() {
   const raw = new URLSearchParams(window.location.search).get('attempt_id');
@@ -52,6 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('timeWarningCloseBtn')?.addEventListener('click', closeTimeWarningModal);
   document.getElementById('timeWarningOkBtn')?.addEventListener('click', closeTimeWarningModal);
   initSpeechControls();
+  initWordHelp();
   initQuestionPanZoom();
   if (TEST_ID !== FREE_SAMPLE_TEST_ID && !IS_AUTHENTICATED) {
     window.location.href = '/login';
@@ -181,6 +186,17 @@ function getTranslatedText(sourceText, storedRu, translationSourceText) {
   return liveTranslationCache.has(key) ? (liveTranslationCache.get(key) || '') : '';
 }
 
+function getWordHelpContextTranslation(sourceText, storedRu, translationSourceText) {
+  const translated = getTranslatedText(sourceText, storedRu, translationSourceText);
+  if (translated) return translated;
+  // Exam-style wording may differ from the sentence that the stored Russian
+  // text was translated from. Showing no context is safer than showing the
+  // wrong sentence as if it matched the selected wording.
+  return needsLiveTranslation(sourceText, storedRu, translationSourceText)
+    ? ''
+    : (storedRu || '');
+}
+
 function isLiveTranslationPending(sourceText, storedRu, translationSourceText) {
   const key = normalizeTranslationText(sourceText);
   return needsLiveTranslation(sourceText, storedRu, translationSourceText) && key && !liveTranslationCache.has(key);
@@ -221,6 +237,286 @@ function queueLiveTranslationsForQuestion(q) {
     .finally(() => {
       if (liveTranslationRequestKey === requestKey) liveTranslationRequestKey = '';
     });
+}
+
+function normalizeWordHelpSelection(value) {
+  return String(value || '')
+    .replace(/’/g, "'")
+    .trim()
+    .replace(/^[^A-Za-z]+|[^A-Za-z]+$/g, '')
+    .replace(/\s+/g, ' ');
+}
+
+function isValidWordHelpSelection(value) {
+  const normalized = normalizeWordHelpSelection(value);
+  if (!normalized || normalized.length > 96) return false;
+  const words = normalized.split(' ');
+  return words.length <= 5 && words.every((word) => /^[A-Za-z]+(?:['-][A-Za-z]+)*$/.test(word));
+}
+
+function hasSelectionInsideElement(element) {
+  const selection = window.getSelection?.();
+  if (!selection || selection.isCollapsed || !selection.rangeCount) return false;
+  const range = selection.getRangeAt(0);
+  const startNode = range.startContainer.nodeType === Node.ELEMENT_NODE
+    ? range.startContainer
+    : range.startContainer.parentElement;
+  const endNode = range.endContainer.nodeType === Node.ELEMENT_NODE
+    ? range.endContainer
+    : range.endContainer.parentElement;
+  if (!startNode || !endNode || !element.contains(startNode) || !element.contains(endNode)) return false;
+  return range.toString().length > 0;
+}
+
+function closeWordHelp(clearSelection = false) {
+  const popup = document.getElementById('wordHelpPopup');
+  if (popup) popup.hidden = true;
+  wordHelpRequestId += 1;
+  if (clearSelection) window.getSelection?.()?.removeAllRanges();
+}
+
+function dismissWordHelpHint() {
+  document.getElementById('wordHelpHint')?.setAttribute('hidden', '');
+  try { localStorage.setItem('wex-word-help-hint-seen', '1'); } catch (e) {}
+}
+
+function positionWordHelpPopup(rect) {
+  const popup = document.getElementById('wordHelpPopup');
+  if (!popup || !rect) return;
+  popup.style.visibility = 'hidden';
+  popup.hidden = false;
+  const gap = 12;
+  const width = popup.offsetWidth;
+  const height = popup.offsetHeight;
+  let left = rect.left + (rect.width / 2) - (width / 2);
+  left = Math.max(12, Math.min(left, window.innerWidth - width - 12));
+  let top = rect.top - height - gap;
+  if (top < 12) top = Math.min(window.innerHeight - height - 12, rect.bottom + gap);
+  popup.style.left = `${Math.max(12, left)}px`;
+  popup.style.top = `${Math.max(12, top)}px`;
+  popup.style.visibility = '';
+}
+
+function wordHelpSourceLabel(result) {
+  if (result?.source === 'curated_context') return 'Дорожная фраза';
+  if (result?.source === 'curated') return 'Словарное значение';
+  if (result?.source === 'automatic') return 'Общее значение';
+  return '';
+}
+
+function renderWordHelpResult(selection, contextRu, result, rect) {
+  const selectedEl = document.getElementById('wordHelpSelected');
+  const translationEl = document.getElementById('wordHelpTranslation');
+  const badgeEl = document.getElementById('wordHelpSourceBadge');
+  const contextEl = document.getElementById('wordHelpContext');
+  const contextTextEl = document.getElementById('wordHelpContextText');
+  const matched = normalizeWordHelpSelection(result?.matched_term || '');
+  if (selectedEl) {
+    selectedEl.textContent = matched && matched.toLowerCase() !== selection.toLowerCase()
+      ? `${selection} → ${matched}`
+      : selection;
+  }
+  if (translationEl) {
+    translationEl.textContent = result?.translation || 'Отдельного перевода пока нет';
+  }
+  const sourceLabel = wordHelpSourceLabel(result);
+  if (badgeEl) {
+    badgeEl.textContent = sourceLabel;
+    badgeEl.hidden = !sourceLabel;
+  }
+  if (contextEl && contextTextEl) {
+    contextTextEl.textContent = contextRu || '';
+    contextEl.hidden = !contextRu;
+  }
+  positionWordHelpPopup(rect);
+}
+
+async function openWordHelp(selectionData) {
+  const popup = document.getElementById('wordHelpPopup');
+  if (!popup || !selectionData) return;
+  const { selection, sourceText, contextRu, start, end, rect } = selectionData;
+  const cacheKey = `${sourceText}\n${start}:${end}\n${selection.toLowerCase()}`;
+  dismissWordHelpHint();
+  renderWordHelpResult(selection, contextRu, { translation: 'Переводим…' }, rect);
+  const requestId = ++wordHelpRequestId;
+  let result = wordHelpCache.get(cacheKey);
+  if (!result) {
+    try {
+      const response = await fetch('/api/translate/context', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          selection,
+          source_text: sourceText,
+          selection_start: start,
+          selection_end: end,
+        }),
+      });
+      result = response.ok ? await response.json() : { translation: null, source: 'unavailable' };
+    } catch (e) {
+      result = { translation: null, source: 'unavailable' };
+    }
+    wordHelpCache.set(cacheKey, result);
+  }
+  if (requestId !== wordHelpRequestId || popup.hidden) return;
+  renderWordHelpResult(selection, contextRu, result, rect);
+}
+
+function inspectWordHelpSelection() {
+  const selection = window.getSelection?.();
+  if (!selection || selection.isCollapsed || !selection.rangeCount) return;
+  const range = selection.getRangeAt(0);
+  const startElement = range.startContainer.nodeType === Node.ELEMENT_NODE
+    ? range.startContainer
+    : range.startContainer.parentElement;
+  const endElement = range.endContainer.nodeType === Node.ELEMENT_NODE
+    ? range.endContainer
+    : range.endContainer.parentElement;
+  const sourceElement = startElement?.closest?.('.word-help-source');
+  if (!sourceElement || sourceElement !== endElement?.closest?.('.word-help-source')) return;
+
+  const selectedText = normalizeWordHelpSelection(range.toString());
+  if (!isValidWordHelpSelection(selectedText)) return;
+  const context = wordHelpContexts.get(sourceElement);
+  if (!context) return;
+
+  const prefixRange = document.createRange();
+  prefixRange.selectNodeContents(sourceElement);
+  prefixRange.setEnd(range.startContainer, range.startOffset);
+  const selectedRange = document.createRange();
+  selectedRange.selectNodeContents(sourceElement);
+  selectedRange.setEnd(range.endContainer, range.endOffset);
+  const start = prefixRange.toString().length;
+  const end = selectedRange.toString().length;
+  const rect = range.getBoundingClientRect();
+  if (!rect || (!rect.width && !rect.height)) return;
+  openWordHelp({
+    selection: selectedText,
+    sourceText: context.sourceText,
+    contextRu: context.contextRu,
+    start,
+    end,
+    rect,
+  });
+}
+
+function scheduleWordHelpInspection(delay = 0) {
+  window.clearTimeout(wordHelpSelectionTimer);
+  wordHelpSelectionTimer = window.setTimeout(inspectWordHelpSelection, delay);
+}
+
+function initWordHelp() {
+  const hint = document.getElementById('wordHelpHint');
+  try {
+    if (localStorage.getItem('wex-word-help-hint-seen') === '1') hint?.setAttribute('hidden', '');
+  } catch (e) {}
+  document.getElementById('wordHelpHintClose')?.addEventListener('click', dismissWordHelpHint);
+  document.getElementById('wordHelpClose')?.addEventListener('click', () => closeWordHelp(true));
+  document.addEventListener('pointerup', () => scheduleWordHelpInspection(0));
+  document.addEventListener('keyup', (event) => {
+    if (event.key === 'Escape') {
+      closeWordHelp(true);
+      return;
+    }
+    scheduleWordHelpInspection(0);
+  });
+  document.addEventListener('selectionchange', () => scheduleWordHelpInspection(420));
+  document.addEventListener('pointerdown', (event) => {
+    const popup = document.getElementById('wordHelpPopup');
+    if (!popup || popup.hidden || popup.contains(event.target)) return;
+    // Keep the native selection alive while the user adjusts mobile handles.
+    // A normal click elsewhere will collapse it on its own.
+    closeWordHelp(false);
+  }, true);
+}
+
+function attachAnswerOptionInteraction(option, sourceElement, questionId, answerId) {
+  const gesture = {
+    startedAt: 0,
+    x: 0,
+    y: 0,
+    moved: false,
+    cancelled: false,
+    pointerType: '',
+  };
+  let pendingTextClick = 0;
+  const cancelPendingTextClick = () => {
+    window.clearTimeout(pendingTextClick);
+    pendingTextClick = 0;
+  };
+
+  option.addEventListener('pointerdown', (event) => {
+    if (event.isPrimary === false || event.button > 0) return;
+    if (
+      pendingTextClick
+      && (event.pointerType || 'mouse') === 'mouse'
+      && sourceElement.contains(event.target)
+    ) {
+      // The second pointerdown arrives before the second click/dblclick, so it
+      // can cancel the pending single-click toggle without blocking selection.
+      cancelPendingTextClick();
+    }
+    gesture.startedAt = performance.now();
+    gesture.x = event.clientX;
+    gesture.y = event.clientY;
+    gesture.moved = false;
+    gesture.cancelled = false;
+    gesture.pointerType = event.pointerType || '';
+  });
+  option.addEventListener('pointermove', (event) => {
+    if (!gesture.startedAt) return;
+    if (Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) > 7) {
+      gesture.moved = true;
+    }
+  });
+  option.addEventListener('pointercancel', () => {
+    gesture.cancelled = true;
+    gesture.startedAt = 0;
+    cancelPendingTextClick();
+  });
+  option.addEventListener('click', (event) => {
+    const onSourceText = sourceElement.contains(event.target);
+    const pointerType = gesture.pointerType || 'mouse';
+    const held = gesture.startedAt && performance.now() - gesture.startedAt > 450;
+    const hasSelection = hasSelectionInsideElement(sourceElement);
+    const isMouseMultiClick = onSourceText
+      && pointerType === 'mouse'
+      && event.detail >= 2;
+    gesture.startedAt = 0;
+    if (gesture.cancelled || gesture.moved || held || hasSelection || isMouseMultiClick) {
+      cancelPendingTextClick();
+      scheduleWordHelpInspection(0);
+      return;
+    }
+
+    if (onSourceText && pointerType === 'mouse') {
+      // Delay only mouse clicks directly on text so a second click can turn
+      // them into native word selection. Checkbox/padding and touch stay fast.
+      cancelPendingTextClick();
+      pendingTextClick = window.setTimeout(() => {
+        pendingTextClick = 0;
+        if (!option.isConnected || questions[currentIndex]?.id !== questionId) return;
+        if (hasSelectionInsideElement(sourceElement)) {
+          scheduleWordHelpInspection(0);
+          return;
+        }
+        toggleAnswer(questionId, answerId, option);
+      }, 420);
+      return;
+    }
+
+    toggleAnswer(questionId, answerId, option);
+  });
+  sourceElement.addEventListener('dblclick', () => {
+    cancelPendingTextClick();
+    window.requestAnimationFrame(inspectWordHelpSelection);
+  });
+  option.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    cancelPendingTextClick();
+    event.preventDefault();
+    toggleAnswer(questionId, answerId, option);
+  });
 }
 
 function loadVoiceUsage() {
@@ -485,6 +781,7 @@ function createSpeakButton(textGetter, title = 'Listen') {
 
 function renderQuestion() {
   if (!questions.length) return;
+  closeWordHelp(true);
   const q = questions[currentIndex];
 
   document.getElementById('questionCounter').textContent = `Question ${currentIndex + 1} of ${questions.length}`;
@@ -492,8 +789,17 @@ function renderQuestion() {
   // Question text
   const qTextEl = document.getElementById('questionText');
   qTextEl.textContent = q.question_text;
+  qTextEl.classList.add('word-help-source');
   qTextEl.dataset.sourceText = q.question_text;
   delete qTextEl.dataset.wrapped;
+  wordHelpContexts.set(qTextEl, {
+    sourceText: q.question_text,
+    contextRu: getWordHelpContextTranslation(
+      q.question_text,
+      q.question_text_ru,
+      q.translation_source_text,
+    ),
+  });
 
   // Russian translation below (from pre-translated DB field)
   const qRuEl = document.getElementById('questionTextRu');
@@ -535,12 +841,27 @@ function renderQuestion() {
   q.answers.forEach((a, idx) => {
     const div = document.createElement('div');
     div.className = 'answer-option' + (selected.includes(a.id) ? ' selected' : '');
+    div.tabIndex = 0;
+    div.setAttribute('role', 'checkbox');
+    div.setAttribute('aria-checked', selected.includes(a.id) ? 'true' : 'false');
     const checkbox = document.createElement('div');
     checkbox.className = 'answer-checkbox';
+    checkbox.setAttribute('aria-hidden', 'true');
     const label = document.createElement('span');
     label.className = 'answer-option-label';
-    label.textContent = a.text;
-    label.dataset.sourceText = a.text;
+    const sourceNode = document.createElement('span');
+    sourceNode.className = 'word-help-source';
+    sourceNode.textContent = a.text;
+    sourceNode.dataset.sourceText = a.text;
+    label.appendChild(sourceNode);
+    wordHelpContexts.set(sourceNode, {
+      sourceText: a.text,
+      contextRu: getWordHelpContextTranslation(
+        a.text,
+        a.text_ru,
+        a.translation_source_text,
+      ),
+    });
     const ruText = translateMode ? getTranslatedText(a.text, a.text_ru, a.translation_source_text) : null;
     if (ruText) {
       const ruNode = document.createElement('span');
@@ -556,7 +877,7 @@ function renderQuestion() {
     div.appendChild(checkbox);
     div.appendChild(label);
     div.appendChild(createSpeakButton(() => getAnswerSpeechText(a), 'Listen to answer'));
-    div.addEventListener('click', () => toggleAnswer(q.id, a.id, div));
+    attachAnswerOptionInteraction(div, sourceNode, q.id, a.id);
     container.appendChild(div);
   });
 
@@ -598,6 +919,7 @@ function toggleAnswer(questionId, answerId, clickedDiv) {
   }
   selectedAnswers[questionId] = current;
   clickedDiv.classList.toggle('selected', current.includes(answerId));
+  clickedDiv.setAttribute('aria-checked', current.includes(answerId) ? 'true' : 'false');
   updateDots();
 }
 
