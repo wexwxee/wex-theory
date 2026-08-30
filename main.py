@@ -167,11 +167,14 @@ CONTEXTUAL_TRANSLATION_TERMS = {
     "count on": ("рассчитывать на", "phrase"),
     "counting on": ("рассчитываю на", "phrase"),
     "from the right side": ("справа", "phrase"),
+    "from the right": ("справа", "phrase"),
     "right side": ("правая сторона / справа", "phrase"),
     "right of way": ("преимущество в движении", "phrase"),
     "road users": ("участники дорожного движения", "phrase"),
+    "road sign": ("дорожный знак", "phrase"),
     "speed limit": ("ограничение скорости", "phrase"),
     "stopping distance": ("остановочный путь", "phrase"),
+    "stay behind": ("оставаться позади", "phrase"),
     "straight ahead": ("прямо", "phrase"),
     "at the same speed": ("с той же скоростью", "phrase"),
     "same speed": ("та же скорость", "phrase"),
@@ -180,6 +183,7 @@ CONTEXTUAL_TRANSLATION_TERMS = {
     "go straight ahead": ("ехать прямо", "phrase"),
     "going straight ahead": ("едете прямо", "phrase"),
     "look to see": ("посмотреть / убедиться", "phrase"),
+    "overtake": ("обгонять / обогнать", "v"),
     "traffic lane": ("полоса движения", "phrase"),
 }
 SYSTEM_SUPPORT_SENDERS = ["WEX Assistant", "Mia", "Nora", "Alex", "Support Bot"]
@@ -700,6 +704,8 @@ def record_privacy_friendly_visit(
 ) -> bool:
     if not consent_granted:
         return False
+    if current_user and current_user.is_admin:
+        return False
     normalized_path = normalize_activity_path(page_path)
     if not normalized_path or not include_in_admin_visit_analytics(normalized_path):
         return False
@@ -780,7 +786,7 @@ def build_analytics_overview(db: Session) -> dict:
         .join(models.User, models.UserVisitStat.user_id == models.User.id)
         .filter(
             models.UserVisitStat.day >= start_day,
-            sql_or_(models.User.is_admin.is_(False), models.User.is_admin.is_(None)),
+            sql_or(models.User.is_admin.is_(False), models.User.is_admin.is_(None)),
         )
         .all()
     )
@@ -863,7 +869,7 @@ def build_journey_insights(db: Session) -> dict:
         db.query(models.JourneyEvent)
         .outerjoin(models.User, models.JourneyEvent.user_id == models.User.id)
         .filter(models.JourneyEvent.created_at >= start_at)
-        .filter(sql_or_(models.JourneyEvent.user_id.is_(None), models.User.is_admin.is_(False), models.User.is_admin.is_(None)))
+        .filter(sql_or(models.JourneyEvent.user_id.is_(None), models.User.is_admin.is_(False), models.User.is_admin.is_(None)))
         .order_by(models.JourneyEvent.created_at.desc())
         .limit(500)
         .all()
@@ -896,7 +902,7 @@ def build_journey_insights(db: Session) -> dict:
         db.query(models.JourneyEvent, models.User)
         .outerjoin(models.User, models.JourneyEvent.user_id == models.User.id)
         .filter(models.JourneyEvent.created_at >= start_at)
-        .filter(sql_or_(models.JourneyEvent.user_id.is_(None), models.User.is_admin.is_(False), models.User.is_admin.is_(None)))
+        .filter(sql_or(models.JourneyEvent.user_id.is_(None), models.User.is_admin.is_(False), models.User.is_admin.is_(None)))
         .order_by(models.JourneyEvent.created_at.desc())
         .limit(12)
         .all()
@@ -2900,7 +2906,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260830-context-word-help"
+templates.env.globals["asset_version"] = "20260830-context-word-help-fix2"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 templates.env.globals["test_image_url"] = test_image_url
@@ -5386,12 +5392,79 @@ async def api_translate_batch(request: Request):
 
 _DICTIONARY_TOKEN_RE = re.compile(r"[A-Za-z]+(?:['-][A-Za-z]+)*")
 
+# Short grammar words are intentionally kept in a closed, local map. They are
+# useful when a learner selects a small chunk such as ``I overtake`` but they
+# should never trigger a network translation or be presented as a fluent phrase.
+_SELECTION_GRAMMAR_GLOSSES = {
+    "i": ("я", "pron"),
+    "you": ("вы / ты", "pron"),
+    "he": ("он", "pron"),
+    "she": ("она", "pron"),
+    "it": ("оно / это", "pron"),
+    "we": ("мы", "pron"),
+    "they": ("они", "pron"),
+    "me": ("меня / мне", "pron"),
+    "him": ("его / ему", "pron"),
+    "her": ("её / ей", "pron"),
+    "us": ("нас / нам", "pron"),
+    "them": ("их / им", "pron"),
+    "my": ("мой / моя", "det"),
+    "your": ("ваш / твой", "det"),
+    "his": ("его", "det"),
+    "its": ("его / её", "det"),
+    "our": ("наш", "det"),
+    "their": ("их", "det"),
+    "a": ("неопределённый артикль", "article"),
+    "an": ("неопределённый артикль", "article"),
+    "the": ("артикль, обычно не переводится", "article"),
+    "am": ("форма глагола «быть»", "aux"),
+    "is": ("форма глагола «быть»", "aux"),
+    "are": ("форма глагола «быть»", "aux"),
+    "was": ("был / была", "aux"),
+    "were": ("были", "aux"),
+    "will": ("показатель будущего времени", "aux"),
+    "would": ("бы / условная форма", "aux"),
+    "can": ("мочь", "aux"),
+    "could": ("мог / мог бы", "aux"),
+    "should": ("следует", "aux"),
+    "must": ("должен / необходимо", "aux"),
+    "may": ("может / разрешено", "aux"),
+    "might": ("может быть", "aux"),
+    "do": ("вспомогательный глагол", "aux"),
+    "does": ("вспомогательный глагол", "aux"),
+    "did": ("вспомогательный глагол прошедшего времени", "aux"),
+    "have": ("иметь / вспомогательный глагол", "aux"),
+    "has": ("имеет / вспомогательный глагол", "aux"),
+    "had": ("имел / вспомогательный глагол", "aux"),
+    "to": ("частица инфинитива / к", "particle"),
+    "from": ("из / от / с", "prep"),
+    "of": ("из / о / родительный оборот", "prep"),
+    "for": ("для / за / ради", "prep"),
+    "in": ("в", "prep"),
+    "on": ("на", "prep"),
+    "at": ("у / в / на", "prep"),
+    "by": ("у / рядом / посредством", "prep"),
+    "with": ("с", "prep"),
+    "as": ("как / в качестве", "prep"),
+    "into": ("в / внутрь", "prep"),
+    "before": ("перед / до", "prep"),
+    "after": ("после", "prep"),
+    "without": ("без", "prep"),
+    "between": ("между", "prep"),
+    "through": ("через", "prep"),
+    "toward": ("к / по направлению к", "prep"),
+    "towards": ("к / по направлению к", "prep"),
+    "not": ("не", "particle"),
+    "and": ("и", "conj"),
+    "or": ("или", "conj"),
+}
+
 
 def _normalize_dictionary_term(raw_value: str) -> Optional[str]:
     value = str(raw_value or "").replace("’", "'").strip().lower()
     value = re.sub(r"^[^a-z]+|[^a-z]+$", "", value)
     value = re.sub(r"\s+", " ", value)
-    if len(value) < 2 or len(value) > 96:
+    if (len(value) < 2 and value not in {"a", "i"}) or len(value) > 96:
         return None
     tokens = value.split(" ")
     if len(tokens) > 5:
@@ -5532,6 +5605,91 @@ def _find_contextual_dictionary_row(
     return (by_term.get(exact), exact) if exact else (None, None)
 
 
+def _compose_dictionary_glosses(
+    db: Session,
+    selected_term: str,
+) -> list[dict]:
+    """Cover a short selection with curated terms and safe grammar glosses.
+
+    The result is deliberately structured instead of joined into a sentence:
+    word-by-word hints can explain a selection, but are not a fluent translation.
+    Every selected token must be covered or no partial result is returned.
+    """
+    selected = _normalize_dictionary_term(selected_term)
+    if not selected:
+        return []
+    tokens = selected.split(" ")
+    if not tokens or len(tokens) > 5:
+        return []
+
+    spans: list[tuple[int, int, str]] = []
+    terms: list[str] = []
+    for start in range(len(tokens)):
+        for end in range(start + 1, len(tokens) + 1):
+            term = " ".join(tokens[start:end])
+            spans.append((start, end, term))
+            terms.append(term)
+
+    rows = db.query(models.WordTranslation).filter(
+        models.WordTranslation.word_en.in_(terms),
+        models.WordTranslation.is_curated.is_(True),
+    ).all()
+    by_term = {
+        row.word_en: row
+        for row in rows
+        if str(row.translation_ru or "").strip()
+    }
+
+    candidates: dict[int, list[tuple[int, dict]]] = {
+        index: [] for index in range(len(tokens))
+    }
+    for start, end, term in spans:
+        row = by_term.get(term)
+        if not row:
+            continue
+        candidates[start].append((end, {
+            "term": "I" if term == "i" else term,
+            "translation": row.translation_ru,
+            "pos": row.pos,
+        }))
+
+    for index, token in enumerate(tokens):
+        # Prefer an existing curated dictionary row for the same token. The
+        # closed grammar map fills only the gaps (articles, pronouns, helpers).
+        if token in by_term:
+            continue
+        grammar = _SELECTION_GRAMMAR_GLOSSES.get(token)
+        if grammar:
+            translation, pos = grammar
+            candidates[index].append((index + 1, {
+                "term": "I" if token == "i" else token,
+                "translation": translation,
+                "pos": pos,
+            }))
+
+    # Dynamic programming favours longer curated phrases (width squared) and,
+    # on ties, fewer fragments. All returned paths cover the full selection.
+    best: dict[int, tuple[int, list[dict]]] = {len(tokens): (0, [])}
+    for start in range(len(tokens) - 1, -1, -1):
+        best_choice: Optional[tuple[int, list[dict]]] = None
+        for end, gloss in candidates[start]:
+            suffix = best.get(end)
+            if suffix is None:
+                continue
+            width = end - start
+            choice = (width * width + suffix[0], [gloss, *suffix[1]])
+            if (
+                best_choice is None
+                or choice[0] > best_choice[0]
+                or (choice[0] == best_choice[0] and len(choice[1]) < len(best_choice[1]))
+            ):
+                best_choice = choice
+        if best_choice is not None:
+            best[start] = best_choice
+
+    return best.get(0, (0, []))[1]
+
+
 def _lookup_dictionary_term(cleaned: str, db: Session) -> dict:
     """Read a cached dictionary value without network calls or DB writes."""
     row = db.query(models.WordTranslation).filter(
@@ -5588,9 +5746,23 @@ async def api_translate_context(request: Request, db: Session = Depends(get_db))
     )
     if row:
         payload = _dictionary_payload(selected, row, matched_term=matched_term)
-        if row.is_curated and matched_term and (matched_term != selected or " " in matched_term):
-            payload["source"] = "curated_context"
+        if row.is_curated and matched_term:
+            if matched_term != selected:
+                payload["source"] = "curated_context"
+            elif " " in matched_term:
+                payload["source"] = "curated_phrase"
         return payload
+    glosses = _compose_dictionary_glosses(db, selected)
+    if glosses:
+        return {
+            "word": selected,
+            "matched_term": selected,
+            "translation": None,
+            "pos": None,
+            "source": "composed_gloss",
+            "is_fluent": False,
+            "glosses": glosses,
+        }
     return _dictionary_payload(selected)
 
 

@@ -37,6 +37,9 @@ class ContextualTranslationTests(unittest.TestCase):
     def test_normalizes_short_words_and_phrases_only(self):
         self.assertEqual(main._normalize_dictionary_term("  Hold   back! "), "hold back")
         self.assertEqual(main._normalize_dictionary_term("right-hand side"), "right-hand side")
+        self.assertEqual(main._normalize_dictionary_term("I"), "i")
+        self.assertEqual(main._normalize_dictionary_term("a"), "a")
+        self.assertIsNone(main._normalize_dictionary_term("x"))
         self.assertIsNone(main._normalize_dictionary_term("one two three four five six"))
         self.assertIsNone(main._normalize_dictionary_term("<script>alert</script>"))
         self.assertIsNone(main._normalize_dictionary_term("40 km/h"))
@@ -133,11 +136,117 @@ class ContextualTranslationTests(unittest.TestCase):
         values = {
             row.word_en: row.translation_ru
             for row in self.db.query(models.WordTranslation).filter(
-                models.WordTranslation.word_en.in_(["counting on", "from the right side"])
+                models.WordTranslation.word_en.in_([
+                    "counting on",
+                    "from the right",
+                    "from the right side",
+                    "overtake",
+                    "stay behind",
+                ])
             )
         }
         self.assertEqual(values["counting on"], "рассчитываю на")
+        self.assertEqual(values["from the right"], "справа")
         self.assertEqual(values["from the right side"], "справа")
+        self.assertEqual(values["overtake"], "обгонять / обогнать")
+        self.assertEqual(values["stay behind"], "оставаться позади")
+
+    def test_composes_i_overtake_as_word_glosses(self):
+        main.ensure_contextual_translation_terms(self.db)
+
+        glosses = main._compose_dictionary_glosses(self.db, "I overtake")
+
+        self.assertEqual(
+            [(item["term"], item["translation"]) for item in glosses],
+            [("I", "я"), ("overtake", "обгонять / обогнать")],
+        )
+
+    def test_composes_article_and_noun_without_dropping_article(self):
+        self.add_term("moped", "мопед")
+
+        glosses = main._compose_dictionary_glosses(self.db, "the moped")
+
+        self.assertEqual(
+            [(item["term"], item["translation"]) for item in glosses],
+            [("the", "артикль, обычно не переводится"), ("moped", "мопед")],
+        )
+
+    def test_composed_gloss_prefers_a_long_curated_phrase(self):
+        self.add_term("stay", "оставаться")
+        self.add_term("behind", "позади")
+        main.ensure_contextual_translation_terms(self.db)
+
+        glosses = main._compose_dictionary_glosses(self.db, "will stay behind")
+
+        self.assertEqual(
+            [(item["term"], item["translation"]) for item in glosses],
+            [
+                ("will", "показатель будущего времени"),
+                ("stay behind", "оставаться позади"),
+            ],
+        )
+
+    def test_composed_gloss_requires_full_selection_coverage(self):
+        main.ensure_contextual_translation_terms(self.db)
+
+        glosses = main._compose_dictionary_glosses(
+            self.db,
+            "I overtake frobnicate",
+        )
+
+        self.assertEqual(glosses, [])
+
+    def test_composed_gloss_finds_a_complete_path_before_longest_dead_end(self):
+        self.add_term("alpha beta gamma", "длинный тупик")
+        self.add_term("alpha beta", "первая половина")
+        self.add_term("gamma delta", "вторая половина")
+
+        glosses = main._compose_dictionary_glosses(
+            self.db,
+            "alpha beta gamma delta",
+        )
+
+        self.assertEqual(
+            [item["term"] for item in glosses],
+            ["alpha beta", "gamma delta"],
+        )
+
+    def test_composed_gloss_handles_common_preposition_without_fluent_claim(self):
+        self.add_term("cyclist", "велосипедист")
+
+        glosses = main._compose_dictionary_glosses(self.db, "for the cyclist")
+
+        self.assertEqual(
+            [item["term"] for item in glosses],
+            ["for", "the", "cyclist"],
+        )
+
+    def test_exact_from_the_right_works_at_a_hyphen_boundary(self):
+        main.ensure_contextual_translation_terms(self.db)
+        source = "I wait for traffic from the right-hand side."
+        selected = "from the right"
+        start = source.index(selected)
+
+        row, matched = main._find_contextual_dictionary_row(
+            self.db,
+            selected,
+            source,
+            start,
+            start + len(selected),
+        )
+
+        self.assertIsNotNone(row)
+        self.assertEqual(matched, "from the right")
+        self.assertEqual(row.translation_ru, "справа")
+
+    def test_composed_gloss_lookup_is_read_only(self):
+        self.add_term("moped", "мопед")
+        before = self.db.query(models.WordTranslation).count()
+
+        glosses = main._compose_dictionary_glosses(self.db, "the moped")
+
+        self.assertTrue(glosses)
+        self.assertEqual(self.db.query(models.WordTranslation).count(), before)
 
     def test_example_answer_typo_and_translation_are_corrected(self):
         question = models.Question(
