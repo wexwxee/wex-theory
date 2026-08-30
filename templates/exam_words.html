@@ -55,47 +55,16 @@
     <div class="eyebrow">EN · RU · DK</div>
     <h1 class="title">{{ 'Try Exam Words 2026' if demo else 'Exam words 2026 for driving theory' }}</h1>
     <p class="subtitle">{{ 'Preview the dictionary, cards, quiz, and audio.' if demo else 'Exam terms with Russian translation, Danish reference, cards, quiz, and audio.' }}</p>
-    <div class="stats">
-      <div class="stat">
-        <div class="stat-value" id="meta-total">—</div>
-        <div class="stat-label">Total terms</div>
-      </div>
-      <div class="stat">
-        <div class="stat-value known" id="meta-known">0</div>
-        <div class="stat-label">Learned</div>
-      </div>
-      <div class="stat">
-        <div class="stat-value hard" id="meta-hard">0</div>
-        <div class="stat-label">Hard to remember</div>
-      </div>
-      <div class="stat">
-        <div class="stat-value" id="meta-cats">—</div>
-        <div class="stat-label">Categories</div>
-      </div>
-    </div>
     <div class="progress-wrap">
       <div class="progress-bar">
         <div class="seg-known" id="bar-known" style="width: 0%;"></div>
         <div class="seg-hard" id="bar-hard" style="width: 0%;"></div>
       </div>
       <div class="progress-label">
-        <span class="legend"><span class="dot known"></span><span id="bar-known-pct">0%</span> learned</span>
-        <span class="legend"><span class="dot hard"></span><span id="bar-hard-pct">0%</span> hard</span>
-        <span class="legend" style="color: var(--text-4);"><span id="bar-untouched">0</span> do not know yet</span>
-      </div>
-    </div>
-    <div class="source-file-card">
-      <div>
-        <strong>Source PDF</strong>
-        <span>Danish and English are from the official source list. The Russian translation here was added with AI.</span>
-      </div>
-      <div class="source-file-actions">
-        {% if demo %}
-        <a href="/pricing?from=exam-words">Unlock PDF</a>
-        {% else %}
-        <a href="/exam-words/source-pdf" target="_blank" rel="noopener">Open PDF</a>
-        <a href="/exam-words/source-pdf/download">Download</a>
-        {% endif %}
+        <span class="legend"><b id="meta-total">—</b>&nbsp;words in this set</span>
+        <span class="legend"><span class="dot known"></span><b id="meta-known">0</b>&nbsp;learned</span>
+        <span class="legend"><span class="dot hard"></span><b id="meta-hard">0</b>&nbsp;to repeat</span>
+        <span class="legend" style="color: var(--text-4);"><span id="bar-untouched">0</span>&nbsp;not started</span>
       </div>
     </div>
   </div>
@@ -245,6 +214,20 @@
       </div>
     </div>
   </div>
+  <div class="source-file-card source-file-card--footnote">
+      <div>
+        <strong>Source PDF</strong>
+        <span>Danish and English are from the official source list. The Russian translation here was added with AI.</span>
+      </div>
+      <div class="source-file-actions">
+        {% if demo %}
+        <a href="/pricing?from=exam-words">Unlock PDF</a>
+        {% else %}
+        <a href="/exam-words/source-pdf" target="_blank" rel="noopener">Open PDF</a>
+        <a href="/exam-words/source-pdf/download">Download</a>
+        {% endif %}
+      </div>
+    </div>
 </main>
 
 <footer>

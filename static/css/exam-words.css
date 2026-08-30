@@ -1720,3 +1720,26 @@
     .stat { padding-right: 12px; }
     .stat-value { font-size: 22px; }
   }
+
+  /* Compact hero: the words matter more than the statistics about them */
+  .hero .title {
+    font-size: clamp(1.7rem, 3.4vw, 2.4rem);
+    letter-spacing: -0.03em;
+  }
+  .hero .subtitle {
+    margin-bottom: 18px;
+  }
+  .progress-label {
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .progress-label b {
+    color: var(--text);
+    font-weight: 700;
+  }
+  .source-file-card--footnote {
+    max-width: 920px;
+    margin: 34px auto 0;
+    opacity: 0.75;
+  }
+  .source-file-card--footnote:hover { opacity: 1; }

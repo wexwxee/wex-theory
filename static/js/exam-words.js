@@ -665,18 +665,18 @@ const $ = (sel) => document.querySelector(sel);
   /* ============== STATS ============== */
   function updateStats() {
     const c = countByStatus();
-    $('#meta-total').textContent = c.total;
-    $('#meta-known').textContent = c.known;
-    $('#meta-hard').textContent = c.hard;
-    $('#meta-cats').textContent = Object.keys(DICTIONARY).length;
+    const setText = (sel, value) => { const node = $(sel); if (node) node.textContent = value; };
+    setText('#meta-total', c.total);
+    setText('#meta-known', c.known);
+    setText('#meta-hard', c.hard);
 
-    const knownPct = (c.known / c.total) * 100;
-    const hardPct = (c.hard / c.total) * 100;
+    const knownPct = c.total ? (c.known / c.total) * 100 : 0;
+    const hardPct = c.total ? (c.hard / c.total) * 100 : 0;
     $('#bar-known').style.width = knownPct + '%';
     $('#bar-hard').style.width = hardPct + '%';
-    $('#bar-known-pct').textContent = Math.round(knownPct) + '%';
-    $('#bar-hard-pct').textContent = Math.round(hardPct) + '%';
-    $('#bar-untouched').textContent = c.untouched;
+    setText('#bar-known-pct', Math.round(knownPct) + '%');
+    setText('#bar-hard-pct', Math.round(hardPct) + '%');
+    setText('#bar-untouched', c.untouched);
 
     const scopeCounts = {
       exam: ALL_TERMS.filter(item => item.scope === 'exam').length,
@@ -687,9 +687,6 @@ const $ = (sel) => document.querySelector(sel);
       const node = $('#scope-count-' + key);
       if (node) node.textContent = value;
     });
-    $('#meta-cats').textContent = Object.values(DICTIONARY)
-      .filter(cat => cat.items.some(inScope)).length;
-
     $('#count-all').textContent = c.total;
     $('#count-known').textContent = c.known;
     $('#count-hard').textContent = c.hard;
