@@ -469,17 +469,36 @@ const DICTIONARY = {
   }
 };
 
+// Not every term in the official list matters for a car theory test.
+// "exam"  — rules, signs, situations, documents: what the test asks about.
+// "parts" — brakes, lights, steering, body: needed for the vehicle check at the
+//           practical test, not for the theory questions.
+// "other" — motorcycle, trailer and lorry terms, i.e. other licence categories.
+const PARTS_TOPICS = new Set(['brakes', 'lights', 'vehicle', 'steering']);
+const OTHER_CATEGORIES = new Set(['motorcycle', 'trailer', 'heavy']);
+
+function itemScope(item, categoryKey) {
+  if (OTHER_CATEGORIES.has(categoryKey)) return 'other';
+  if (PARTS_TOPICS.has(item.topic)) return 'parts';
+  return 'exam';
+}
+
 const DEMO_MODE = document.querySelector('[data-exam-words-demo="1"]') !== null;
 
 if (DEMO_MODE) {
+  // The demo used to open on brake linings, because it just took the first N
+  // terms of each category. Show what the test actually asks about instead.
   const demoLimits = {
-    general: 14,
-    motorcycle: 5,
-    trailer: 5,
-    heavy: 5
+    general: 16,
+    reform2026: 8,
+    motorcycle: 3,
+    trailer: 3,
+    heavy: 3
   };
   Object.entries(DICTIONARY).forEach(([key, cat]) => {
-    cat.items = cat.items.slice(0, demoLimits[key] || 4);
+    const limit = demoLimits[key] || 4;
+    const examFirst = cat.items.filter(item => itemScope(item, key) === 'exam');
+    cat.items = (examFirst.length >= limit ? examFirst : cat.items).slice(0, limit);
   });
 }
 
@@ -488,10 +507,11 @@ function termId(item) {
   return item.dk.replace(/[^a-zA-Z0-9æøåÆØÅ]/g, '').toLowerCase();
 }
 
-// Add stable IDs
-Object.values(DICTIONARY).forEach(cat => {
+// Add stable IDs and scope
+Object.entries(DICTIONARY).forEach(([key, cat]) => {
   cat.items.forEach(item => {
     item.id = termId(item);
+    item.scope = itemScope(item, key);
   });
 });
 
@@ -527,11 +547,13 @@ const $ = (sel) => document.querySelector(sel);
     try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings)); } catch(e) {}
   }
 
+  const savedView = loadSettings();
   const state = {
-    activeCat: 'all',
-    activeStatus: 'all',
+    scope: savedView.scope || 'exam',
+    activeCat: savedView.activeCat || 'all',
+    activeStatus: savedView.activeStatus || 'all',
     query: '',
-    mode: 'list',
+    mode: savedView.mode || 'list',
     flashIdx: 0,
     flashList: [],
     flashFlipped: false,
@@ -631,13 +653,13 @@ const $ = (sel) => document.querySelector(sel);
 
   function countByStatus() {
     let known = 0, hard = 0, untouched = 0;
-    ALL_TERMS.forEach(item => {
+    ALL_TERMS.filter(inScope).forEach(item => {
       const s = getStatus(item);
       if (s === 'known') known++;
       else if (s === 'hard') hard++;
       else untouched++;
     });
-    return { known, hard, untouched, total: ALL_TERMS.length };
+    return { known, hard, untouched, total: known + hard + untouched };
   }
 
   /* ============== STATS ============== */
@@ -655,6 +677,18 @@ const $ = (sel) => document.querySelector(sel);
     $('#bar-known-pct').textContent = Math.round(knownPct) + '%';
     $('#bar-hard-pct').textContent = Math.round(hardPct) + '%';
     $('#bar-untouched').textContent = c.untouched;
+
+    const scopeCounts = {
+      exam: ALL_TERMS.filter(item => item.scope === 'exam').length,
+      car: ALL_TERMS.filter(item => item.scope !== 'other').length,
+      all: ALL_TERMS.length,
+    };
+    Object.entries(scopeCounts).forEach(([key, value]) => {
+      const node = $('#scope-count-' + key);
+      if (node) node.textContent = value;
+    });
+    $('#meta-cats').textContent = Object.values(DICTIONARY)
+      .filter(cat => cat.items.some(inScope)).length;
 
     $('#count-all').textContent = c.total;
     $('#count-known').textContent = c.known;
@@ -1124,7 +1158,14 @@ const $ = (sel) => document.querySelector(sel);
   }
 
   /* ============== RENDER LIST ============== */
+  function inScope(item) {
+    if (state.scope === 'all') return true;
+    if (state.scope === 'car') return item.scope !== 'other';
+    return item.scope === 'exam';
+  }
+
   function filterItem(item) {
+    if (!inScope(item)) return false;
     if (state.activeStatus !== 'all') {
       const s = getStatus(item);
       if (state.activeStatus === 'untouched' && s !== 'untouched') return false;
@@ -1136,10 +1177,13 @@ const $ = (sel) => document.querySelector(sel);
 
   function renderQuickNav() {
     const nav = $('#quick-nav');
-    nav.innerHTML = Object.entries(DICTIONARY).map(([key, cat]) => `
+    nav.innerHTML = Object.entries(DICTIONARY)
+      .map(([key, cat]) => [key, cat, cat.items.filter(inScope).length])
+      .filter(([, , count]) => count > 0)
+      .map(([key, cat, count]) => `
       <a href="#cat-${key}" class="nav-pill" data-jump="${key}">
         <span>${cat.title_en}</span>
-        <span class="count">${cat.items.length}</span>
+        <span class="count">${count}</span>
       </a>
     `).join('');
   }
@@ -1377,15 +1421,52 @@ const $ = (sel) => document.querySelector(sel);
     $('#search').focus();
   });
 
-  $$('#filter-group .filter-btn').forEach(btn => {
+  // Category buttons follow the data and the chosen word set: a category with
+  // nothing in scope has no button, so you never click into an empty list.
+  function renderCategoryFilter() {
+    const group = $('#filter-group');
+    if (!group) return;
+    const visible = Object.entries(DICTIONARY)
+      .map(([key, cat]) => [key, cat, cat.items.filter(inScope).length])
+      .filter(([, , count]) => count > 0);
+    const total = visible.reduce((sum, [, , count]) => sum + count, 0);
+    if (!visible.some(([key]) => key === state.activeCat)) state.activeCat = 'all';
+
+    group.innerHTML =
+      `<button class="filter-btn${state.activeCat === 'all' ? ' active' : ''}" data-cat="all">All <span class="count">${total}</span></button>` +
+      visible.map(([key, cat, count]) =>
+        `<button class="filter-btn${state.activeCat === key ? ' active' : ''}" data-cat="${key}">${escHtml(cat.title_en)} <span class="count">${count}</span></button>`
+      ).join('');
+
+    group.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.activeCat = btn.dataset.cat;
+        state.settings.activeCat = state.activeCat;
+        saveSettings();
+        renderCategoryFilter();
+        refreshViews();
+      });
+    });
+  }
+
+  function refreshViews() {
+    updateStats();
+    renderQuickNav();
+    renderCategories();
+    buildFlashList();
+    if (state.mode === 'flash') showCard();
+    if (state.mode === 'quiz') startQuiz();
+  }
+
+  $$('#scope-row .scope-chip').forEach(btn => {
     btn.addEventListener('click', () => {
-      $$('#filter-group .filter-btn').forEach(b => b.classList.remove('active'));
+      $$('#scope-row .scope-chip').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      state.activeCat = btn.dataset.cat;
-      renderCategories();
-      buildFlashList();
-      if (state.mode === 'flash') showCard();
-      if (state.mode === 'quiz') startQuiz();
+      state.scope = btn.dataset.scope;
+      state.settings.scope = state.scope;
+      saveSettings();
+      renderCategoryFilter();
+      refreshViews();
     });
   });
 
@@ -1394,6 +1475,8 @@ const $ = (sel) => document.querySelector(sel);
       $$('#status-row .chip').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       state.activeStatus = btn.dataset.status;
+      state.settings.activeStatus = state.activeStatus;
+      saveSettings();
       renderCategories();
       buildFlashList();
       if (state.mode === 'flash') showCard();
@@ -1407,6 +1490,8 @@ const $ = (sel) => document.querySelector(sel);
       $$('.mode-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       state.mode = btn.dataset.mode;
+      state.settings.mode = state.mode;
+      saveSettings();
       document.body.classList.remove('mode-list', 'mode-flash', 'mode-quiz');
       document.body.classList.add('mode-' + state.mode);
       if (state.mode === 'flash') {
@@ -1836,6 +1921,13 @@ const $ = (sel) => document.querySelector(sel);
         e.currentTarget.href = fallback;
       }
     });
+    // Restore the view the learner left the page in.
+    $$('#scope-row .scope-chip').forEach(b => b.classList.toggle('active', b.dataset.scope === state.scope));
+    $$('#status-row .chip').forEach(b => b.classList.toggle('active', b.dataset.status === state.activeStatus));
+    $$('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === state.mode));
+    document.body.classList.remove('mode-list', 'mode-flash', 'mode-quiz');
+    document.body.classList.add('mode-' + state.mode);
+    renderCategoryFilter();
     updateStats();
     renderQuickNav();
     renderCategories();
