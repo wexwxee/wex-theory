@@ -28,6 +28,20 @@ window.sbOpen = () => {};
 window.toggleTheme = () => {};
 window.confirm = () => true;
 
+// jsdom has no speech synthesis. Give it English voices but no Danish one:
+// that is the case the fix is about - the page must not read Danish aloud
+// with an English voice, and must say so instead.
+const spoken = [];
+window.SpeechSynthesisUtterance = function (text) { this.text = text; };
+window.speechSynthesis = {
+  getVoices: () => ([
+    { name: 'English UK', lang: 'en-GB', localService: true, default: true },
+    { name: 'English US', lang: 'en-US', localService: true },
+  ]),
+  cancel() {},
+  speak(utterance) { spoken.push(utterance); },
+};
+
 const results = [];
 function check(name, condition, detail) {
   results.push({ name, ok: Boolean(condition), detail: detail || '' });
@@ -128,7 +142,8 @@ check('speaker is an svg icon', Boolean($('.ew-speak svg')), $('.ew-speak')?.tex
 
 // ── Study modes ────────────────────────────────────────────────────────────
 const modeButtons = $$('.ew-mode').filter((b) => !b.hidden);
-check('modes offered', modeButtons.length >= 5, 'modes=' + modeButtons.map((b) => b.dataset.mode).join(','));
+check('modes offered', modeButtons.length >= 3, 'modes=' + modeButtons.map((b) => b.dataset.mode).join(','));
+check('typing mode is gone', !$$('.ew-mode').some((b) => b.dataset.mode === 'typing'));
 
 function pickMode(name) {
   $$('.ew-mode').find((b) => b.dataset.mode === name).click();
@@ -148,13 +163,16 @@ const reverseOptions = $$('.ew-option').map((o) => o.textContent);
 check('reverse options are english', /[a-z]/.test(reverseOptions[0]) && !/[а-я]/i.test(reverseOptions.join('')),
   reverseOptions[0]);
 
-pickMode('typing');
-check('typing mode has an input', Boolean($('.ew-type-input')));
-const typed = $('.ew-type-input');
-typed.value = 'definitely wrong answer';
-$('.ew-type').dispatchEvent(new window.Event('submit', { cancelable: true }));
-check('typing checks the answer', Boolean($('.ew-verdict')), $('.ew-verdict')?.textContent.slice(0, 30));
-check('wrong typing is marked', typed.classList.contains('is-wrong'));
+// Danish audio: a button only where a Danish voice exists, otherwise a note.
+pickMode('cards');
+key(' ');
+const danishRow = $('#ew-body .ew-danish');
+check('no danish voice, no danish button', !danishRow?.querySelector('.ew-speak'));
+check('missing danish voice is explained', Boolean(danishRow?.querySelector('.ew-no-voice')),
+  danishRow?.querySelector('.ew-no-voice')?.textContent);
+check('english audio still offered', Boolean($('#ew-body .ew-term .ew-speak')));
+$('#ew-body .ew-term .ew-speak').click();
+check('english is actually spoken', spoken.length > 0, 'utterances=' + spoken.length);
 
 pickMode('mixed');
 check('back to mixed', /What does this mean\?/.test(stageText()));

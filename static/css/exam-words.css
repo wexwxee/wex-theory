@@ -513,7 +513,7 @@
 
 .ew-source a { color: var(--text); }
 
-/* ── Listening, typing, reverse ────────────────────────────────────────────── */
+/* ── Listening and reverse ────────────────────────────────────────────── */
 .ew-term-ru {
   font-size: clamp(1.25rem, 2.4vw, 1.7rem);
   font-weight: 700;
@@ -539,30 +539,6 @@
 .ew-play:hover { border-color: var(--text-muted); }
 .ew-play svg { width: 20px; height: 20px; }
 
-.ew-type {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 24px;
-}
-
-.ew-type-input {
-  flex: 1;
-  min-width: 220px;
-  min-height: 46px;
-  padding: 0 16px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--bg-card);
-  color: var(--text);
-  font-size: 1rem;
-  outline: none;
-}
-
-.ew-type-input:focus { border-color: var(--text-muted); }
-.ew-type-input.is-right { border-color: #16a34a; }
-.ew-type-input.is-wrong { border-color: #dc2626; }
-
 /* ── A scrollbar that belongs to the page ─────────────────────────────────── */
 .ew-side-list {
   scrollbar-width: thin;
@@ -583,4 +559,10 @@
 .ew-side-list::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
   background-clip: content-box;
+}
+
+.ew-no-voice {
+  font-size: 0.74rem;
+  font-style: italic;
+  opacity: 0.7;
 }

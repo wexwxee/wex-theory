@@ -172,19 +172,40 @@
     speech.voices = window.speechSynthesis.getVoices() || [];
   }
 
+  // Reading Danish with an English voice is worse than silence: it teaches the
+  // wrong sound. So we look for a real voice of that language and, if there is
+  // none, we do not offer the button at all.
   function voiceFor(lang) {
-    const wanted = lang === 'da' ? 'da' : 'en';
-    return speech.voices.find((voice) => voice.lang && voice.lang.toLowerCase().startsWith(wanted)) || null;
+    const exact = lang === 'da' ? 'da-dk' : 'en-gb';
+    const prefix = lang === 'da' ? 'da' : 'en';
+    const candidates = speech.voices.filter(
+      (voice) => voice.lang && voice.lang.toLowerCase().replace('_', '-').startsWith(prefix),
+    );
+    if (!candidates.length) return null;
+    const score = (voice) => {
+      const code = voice.lang.toLowerCase().replace('_', '-');
+      let value = 0;
+      if (code === exact) value += 4;
+      if (voice.localService) value += 2; // installed voices beat network ones
+      if (voice.default) value += 1;
+      return value;
+    };
+    return candidates.slice().sort((a, b) => score(b) - score(a))[0];
+  }
+
+  function canSpeak(lang) {
+    return speech.supported && Boolean(voiceFor(lang));
   }
 
   function say(text, lang) {
     if (!speech.supported || !text) return;
+    const voice = voiceFor(lang);
+    if (!voice) return; // no voice for this language: stay quiet rather than fake it
     try {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      const voice = voiceFor(lang);
-      if (voice) utterance.voice = voice;
-      utterance.lang = voice ? voice.lang : (lang === 'da' ? 'da-DK' : 'en-GB');
+      utterance.voice = voice;
+      utterance.lang = voice.lang;
       utterance.rate = 0.92;
       window.speechSynthesis.speak(utterance);
     } catch (e) {
@@ -208,6 +229,7 @@
     + '<path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
 
   function speakButton(text, lang) {
+    if (!canSpeak(lang)) return document.createComment(`no ${lang} voice installed`);
     const button = el('button', 'ew-speak');
     button.innerHTML = SPEAKER_SVG;
     button.type = 'button';
@@ -262,9 +284,7 @@
     if (state.mode === 'quiz') return 'quiz';
     if (state.mode === 'reverse') return 'reverse';
     if (state.mode === 'listening') return 'listening';
-    if (state.mode === 'typing') return 'typing';
     if (index % 3 === 2) return 'quiz';
-    if (index % 5 === 4) return 'typing';
     return 'recall';
   }
 
@@ -411,48 +431,6 @@
       return;
     }
 
-    if (kind === 'typing') {
-      card.appendChild(el('div', 'ew-ask', 'Type it in English'));
-      const meaning = el('div', 'ew-term ew-term-ru');
-      meaning.appendChild(el('span', null, item.ru));
-      card.appendChild(meaning);
-
-      const form = el('form', 'ew-type');
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.className = 'ew-type-input';
-      input.placeholder = 'the English phrase';
-      input.autocomplete = 'off';
-      input.spellcheck = false;
-      const submit = el('button', 'ew-btn ew-btn-primary', 'Check  ⏎');
-      submit.type = 'submit';
-      form.append(input, submit);
-
-      const normalise = (value) => value.toLowerCase()
-        .replace(/^(to|the|a|an)\s+/g, '')
-        .replace(/[^a-z0-9æøå ]/g, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-      form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        if (session.answered) return;
-        session.answered = 'typed';
-        const answer = normalise(input.value);
-        const right = Boolean(answer) && item.en.toLowerCase().split('/')
-          .some((variant) => normalise(variant) === answer);
-        input.disabled = true;
-        input.classList.add(right ? 'is-right' : 'is-wrong');
-        submit.remove();
-        finishWith(right, `${item.en} — ${item.ru}`);
-      });
-
-      card.appendChild(form);
-      root.appendChild(card);
-      window.setTimeout(() => input.focus(), 0);
-      return;
-    }
-
     // recall
     const phrase = el('div', 'ew-term');
     phrase.append(el('span', null, item.en), speakButton(item.en, 'en'));
@@ -481,6 +459,9 @@
     card.appendChild(el('div', 'ew-meaning', item.ru));
     const danish = el('div', 'ew-danish');
     danish.append(el('span', 'ew-danish-label', 'Dansk'), el('span', null, item.dk), speakButton(item.dk, 'da'));
+    if (speech.supported && !canSpeak('da')) {
+      danish.appendChild(el('span', 'ew-no-voice', 'no Danish voice on this device'));
+    }
     card.appendChild(danish);
 
     const actions = el('div', 'ew-actions');
@@ -655,7 +636,7 @@
   });
 
   document.querySelectorAll('.ew-mode').forEach((button) => {
-    if (button.dataset.mode === 'listening' && !speech.supported) {
+    if (button.dataset.mode === 'listening' && !canSpeak('en')) {
       button.hidden = true;
       return;
     }
@@ -689,7 +670,10 @@
   if (speech.supported) {
     loadVoices();
     if ('onvoiceschanged' in window.speechSynthesis) {
-      window.speechSynthesis.onvoiceschanged = loadVoices;
+      window.speechSynthesis.onvoiceschanged = () => {
+        loadVoices();
+        render();
+      };
     }
   }
 
