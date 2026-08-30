@@ -31,6 +31,7 @@ except Exception as _e:
     print(f"[METRICS] prometheus_fastapi_instrumentator unavailable: {_e}")
 
 import models
+import review as review_drill
 import signs as signs_catalogue
 from auth import (
     hash_password, verify_password, create_token, decode_token,
@@ -3544,6 +3545,41 @@ async def faq_page(request: Request, db: Session = Depends(get_db)):
 async def study_guide_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
     return templates.TemplateResponse(request, "study_guide.html", {"request": request, "user": user})
+
+
+@app.get("/review", response_class=HTMLResponse)
+async def review_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        return RedirectResponse("/login", status_code=302)
+    return templates.TemplateResponse(request, "review.html", {
+        "request": request,
+        "user": user,
+        "pending": review_drill.review_count(db, user.id),
+    })
+
+
+@app.get("/api/review/count")
+async def api_review_count(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        return {"pending": 0}
+    return {"pending": review_drill.review_count(db, user.id)}
+
+
+@app.get("/api/review/questions")
+async def api_review_questions(request: Request, limit: int = review_drill.DEFAULT_LIMIT,
+                               db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Sign in to review your mistakes")
+    return {
+        "pending": review_drill.review_count(db, user.id),
+        "questions": [
+            review_drill.as_payload(question)
+            for question in review_drill.review_questions(db, user.id, limit)
+        ],
+    }
 
 
 @app.get("/signs", response_class=HTMLResponse)

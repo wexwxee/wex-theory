@@ -4,6 +4,37 @@
 
 {% block body %}
 <style>
+  .review-card {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) 20px;
+    align-items: center;
+    gap: 14px;
+    margin: 0 0 16px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--bg-card);
+    text-decoration: none;
+    color: inherit;
+    max-width: 520px;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .review-card:hover { border-color: var(--text-muted); transform: translateY(-1px); }
+  .review-card[hidden] { display: none; }
+  .review-card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .review-card-title { display: block; font-weight: 800; font-size: 0.98rem; }
+  .review-card-copy { display: block; color: var(--text-muted); font-size: 0.86rem; margin-top: 2px; }
+  .review-card-go { color: var(--text-muted); }
   .dashboard-page {
     position: relative;
     max-width: 1180px;
@@ -668,6 +699,14 @@
       <p class="dashboard-subcopy">
         Train through the official WEXTheory set, keep your saved questions close, and return to any finished attempt for a full answer review.
       </p>
+      <a href="/review" class="review-card" id="reviewCard" hidden>
+        <span class="review-card-icon"><i class="fa-solid fa-rotate-left"></i></span>
+        <span>
+          <span class="review-card-title">Review your mistakes</span>
+          <span class="review-card-copy" id="reviewCardCopy"></span>
+        </span>
+        <span class="review-card-go"><i class="fa-solid fa-arrow-right"></i></span>
+      </a>
       <div class="access-pill-row">
       {% if user.is_admin %}
         <span class="access-pill access-pill--admin"><i class="fa-solid fa-shield-halved"></i> Admin access</span>
@@ -963,5 +1002,6 @@
 {% endblock %}
 
 {% block scripts %}
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/review-badge.js?v={{ asset_version }}"></script>
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/dashboard.js"></script>
 {% endblock %}
