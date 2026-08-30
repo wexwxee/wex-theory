@@ -1652,6 +1652,7 @@ footer {
   nav { height: 56px; }
   .nav-inner { padding: 0 12px; }
   .burger-btn { padding: 6px 9px; }
+  .nav-right .btn-ghost { display: none; }
   .nav-right .btn-sm { padding: 6px 10px; max-width: 38vw; }
   .tests-grid { grid-template-columns: 1fr 1fr; }
   .results-score { font-size: 3rem; }

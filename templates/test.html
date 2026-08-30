@@ -192,15 +192,19 @@
   .word-help-popup {
     position: fixed;
     z-index: 10040;
-    width: min(360px, calc(100vw - 24px));
-    padding: 17px 18px 16px;
+    width: min(340px, calc(100vw - 24px));
+    max-height: min(360px, calc(100dvh - 24px));
+    padding: 14px 15px 13px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     border: 1px solid color-mix(in srgb, var(--border) 82%, #a855f7 18%);
-    border-radius: 17px;
+    border-radius: 15px;
     background: color-mix(in srgb, var(--bg-card) 96%, #111827 4%);
     color: var(--text);
     box-shadow: 0 20px 55px rgba(0,0,0,0.34);
   }
-  .word-help-popup[hidden] { display: none; }
+  .word-help-popup[hidden],
+  .word-help-popup [hidden] { display: none !important; }
   .word-help-popup-head {
     display: flex;
     align-items: flex-start;
@@ -216,9 +220,9 @@
     overflow-wrap: anywhere;
   }
   .word-help-close {
-    width: 32px;
-    height: 32px;
-    margin: -7px -8px 0 0;
+    width: 30px;
+    height: 30px;
+    margin: -6px -7px 0 0;
     border: 0;
     border-radius: 9px;
     background: transparent;
@@ -231,17 +235,30 @@
     background: color-mix(in srgb, var(--bg-soft) 86%, transparent);
   }
   .word-help-translation {
-    margin-top: 7px;
-    font-size: 1.12rem;
-    font-weight: 800;
-    line-height: 1.35;
+    margin-top: 6px;
+    font-size: 1rem;
+    font-weight: 780;
+    line-height: 1.4;
     overflow-wrap: anywhere;
+    white-space: pre-line;
+  }
+  .word-help-translation.is-glosses {
+    font-size: 0.92rem;
+    font-weight: 700;
+    line-height: 1.55;
+  }
+  .word-help-popup[data-state="loading"] .word-help-translation,
+  .word-help-popup[data-state="unavailable"] .word-help-translation,
+  .word-help-popup[data-state="error"] .word-help-translation {
+    color: var(--text-muted);
+    font-size: 0.87rem;
+    font-weight: 650;
   }
   .word-help-source-badge {
     display: inline-flex;
     align-items: center;
     min-height: 23px;
-    margin-top: 10px;
+    margin-top: 8px;
     padding: 0 8px;
     border-radius: 999px;
     background: rgba(168,85,247,0.12);
@@ -250,8 +267,8 @@
     font-weight: 800;
   }
   .word-help-context {
-    margin-top: 13px;
-    padding-top: 12px;
+    margin-top: 10px;
+    padding-top: 10px;
     border-top: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
   }
   .word-help-context-label {
@@ -455,17 +472,20 @@
     .nav-buttons .btn-primary {
       min-width: 118px;
     }
-    .word-help-popup {
-      left: 10px !important;
-      right: 10px;
-      top: auto !important;
-      bottom: calc(74px + env(safe-area-inset-bottom, 0px));
-      width: auto;
-      border-radius: 18px;
-      box-shadow: 0 22px 70px rgba(0,0,0,0.48);
-    }
   }
   @media (max-width: 480px) {
+    .word-help-popup {
+      left: 50% !important;
+      right: auto;
+      top: auto !important;
+      bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+      width: min(330px, calc(100vw - 20px));
+      max-height: min(300px, calc(100dvh - 104px - env(safe-area-inset-bottom, 0px)));
+      padding: 13px 14px 12px;
+      transform: translateX(-50%);
+      border-radius: 16px;
+      box-shadow: 0 22px 70px rgba(0,0,0,0.48);
+    }
     .test-nav {
       min-height: 88px;
     }
@@ -633,12 +653,12 @@
 
 <div class="test-toast" id="testToast" aria-live="polite"></div>
 
-<aside class="word-help-popup" id="wordHelpPopup" role="dialog" aria-live="polite" aria-label="Перевод выделенного текста" hidden lang="ru">
+<aside class="word-help-popup" id="wordHelpPopup" role="dialog" aria-live="polite" aria-busy="false" aria-label="Перевод выделенного текста" hidden lang="ru">
   <div class="word-help-popup-head">
     <div class="word-help-selected" id="wordHelpSelected"></div>
     <button class="word-help-close" id="wordHelpClose" type="button" aria-label="Закрыть перевод">&times;</button>
   </div>
-  <div class="word-help-translation" id="wordHelpTranslation">Переводим…</div>
+  <div class="word-help-translation" id="wordHelpTranslation">Ищем в словаре…</div>
   <div class="word-help-source-badge" id="wordHelpSourceBadge" hidden></div>
   <div class="word-help-context" id="wordHelpContext" hidden>
     <div class="word-help-context-label">В этом предложении</div>

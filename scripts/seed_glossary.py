@@ -192,7 +192,7 @@ GLOSSARY: list[tuple[str, str, str | None]] = [
     ("backward", "назад", "adv"),
     ("reverse", "движение задним ходом", "n"),
     ("reversing", "движение задним ходом", "n"),
-    ("overtake", "обгон", "n"),
+    ("overtake", "обгонять / обогнать", "v"),
     ("overtaking", "обгон", "n"),
     ("overtaken", "обогнан", "v"),
     ("pass", "проехать / обгонять", "v"),

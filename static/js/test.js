@@ -298,35 +298,64 @@ function positionWordHelpPopup(rect) {
 }
 
 function wordHelpSourceLabel(result) {
-  if (result?.source === 'curated_context') return 'Дорожная фраза';
+  if (result?.source === 'curated_context') return 'Фраза из контекста';
+  if (result?.source === 'curated_phrase') return 'Дорожная фраза';
   if (result?.source === 'curated') return 'Словарное значение';
   if (result?.source === 'automatic') return 'Общее значение';
+  if (result?.source === 'composed_gloss') return 'По словам · не готовый перевод';
   return '';
 }
 
 function renderWordHelpResult(selection, contextRu, result, rect) {
+  const popup = document.getElementById('wordHelpPopup');
   const selectedEl = document.getElementById('wordHelpSelected');
   const translationEl = document.getElementById('wordHelpTranslation');
   const badgeEl = document.getElementById('wordHelpSourceBadge');
   const contextEl = document.getElementById('wordHelpContext');
   const contextTextEl = document.getElementById('wordHelpContextText');
+  const glosses = Array.isArray(result?.glosses)
+    ? result.glosses.filter((item) => item?.term && item?.translation)
+    : [];
+  const isLoading = result?.source === 'loading';
+  const isError = result?.source === 'error';
+  const hasTranslation = typeof result?.translation === 'string' && result.translation.trim();
+  const state = isLoading
+    ? 'loading'
+    : (hasTranslation || glosses.length ? 'ready' : (isError ? 'error' : 'unavailable'));
   const matched = normalizeWordHelpSelection(result?.matched_term || '');
+  if (popup) {
+    popup.dataset.state = state;
+    popup.setAttribute('aria-busy', isLoading ? 'true' : 'false');
+  }
   if (selectedEl) {
     selectedEl.textContent = matched && matched.toLowerCase() !== selection.toLowerCase()
       ? `${selection} → ${matched}`
       : selection;
   }
   if (translationEl) {
-    translationEl.textContent = result?.translation || 'Отдельного перевода пока нет';
+    if (isLoading) {
+      translationEl.textContent = 'Ищем в словаре…';
+    } else if (glosses.length) {
+      translationEl.textContent = glosses
+        .map((item) => `${item.term} — ${item.translation}`)
+        .join('\n');
+    } else if (hasTranslation) {
+      translationEl.textContent = result.translation.trim();
+    } else if (isError) {
+      translationEl.textContent = 'Не удалось загрузить. Попробуйте ещё раз.';
+    } else {
+      translationEl.textContent = 'Отдельного значения пока нет';
+    }
+    translationEl.classList.toggle('is-glosses', glosses.length > 0);
   }
-  const sourceLabel = wordHelpSourceLabel(result);
+  const sourceLabel = state === 'ready' ? wordHelpSourceLabel(result) : '';
   if (badgeEl) {
     badgeEl.textContent = sourceLabel;
     badgeEl.hidden = !sourceLabel;
   }
   if (contextEl && contextTextEl) {
     contextTextEl.textContent = contextRu || '';
-    contextEl.hidden = !contextRu;
+    contextEl.hidden = isLoading || !contextRu;
   }
   positionWordHelpPopup(rect);
 }
@@ -337,10 +366,11 @@ async function openWordHelp(selectionData) {
   const { selection, sourceText, contextRu, start, end, rect } = selectionData;
   const cacheKey = `${sourceText}\n${start}:${end}\n${selection.toLowerCase()}`;
   dismissWordHelpHint();
-  renderWordHelpResult(selection, contextRu, { translation: 'Переводим…' }, rect);
+  renderWordHelpResult(selection, contextRu, { source: 'loading' }, rect);
   const requestId = ++wordHelpRequestId;
   let result = wordHelpCache.get(cacheKey);
   if (!result) {
+    let cacheable = false;
     try {
       const response = await fetch('/api/translate/context', {
         method: 'POST',
@@ -352,11 +382,18 @@ async function openWordHelp(selectionData) {
           selection_end: end,
         }),
       });
-      result = response.ok ? await response.json() : { translation: null, source: 'unavailable' };
+      if (response.ok) {
+        result = await response.json();
+        cacheable = true;
+      } else {
+        result = { translation: null, source: 'error' };
+      }
     } catch (e) {
-      result = { translation: null, source: 'unavailable' };
+      result = { translation: null, source: 'error' };
     }
-    wordHelpCache.set(cacheKey, result);
+    if (cacheable) {
+      wordHelpCache.set(cacheKey, result);
+    }
   }
   if (requestId !== wordHelpRequestId || popup.hidden) return;
   renderWordHelpResult(selection, contextRu, result, rect);
@@ -421,6 +458,7 @@ function initWordHelp() {
     scheduleWordHelpInspection(0);
   });
   document.addEventListener('selectionchange', () => scheduleWordHelpInspection(420));
+  window.addEventListener('resize', () => closeWordHelp(false), { passive: true });
   document.addEventListener('pointerdown', (event) => {
     const popup = document.getElementById('wordHelpPopup');
     if (!popup || popup.hidden || popup.contains(event.target)) return;
