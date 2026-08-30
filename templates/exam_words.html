@@ -16,34 +16,28 @@
       <a href="{{ '/pricing' if demo else '/dashboard' }}" class="back-btn">
         <span class="back-arrow">&#8592;</span><span class="back-label"> {{ 'Access' if demo else 'Dashboard' }}</span>
       </a>
+      <span class="ew-brand">Exam words</span>
     </div>
     <div class="nav-right">
+      <span class="ew-nav-progress" id="ew-legend"></span>
       <button class="btn-ghost btn-sm" id="ew-reset" title="Reset what you have learned">Reset</button>
       <button class="theme-btn" id="ew-theme">&#9728;&#65039;</button>
       {% if demo %}
       <a href="/pricing" class="btn-primary btn-sm">Get access</a>
-      {% else %}
-      <a href="/dashboard" class="btn-ghost btn-sm">Tests</a>
       {% endif %}
     </div>
   </div>
 </nav>
 
-<div class="page ew-page">
-  <header class="ew-head">
-    {% if demo %}
-    <div class="ew-demo">
-      <span><b>Demo</b> &mdash; a slice of the word list. The full set comes with access.</span>
-      <a href="/pricing">See access</a>
-    </div>
-    {% endif %}
+<div class="ew-app">
+  {% if demo %}
+  <div class="ew-demo">
+    <span><b>Demo</b> &mdash; a slice of the word list. The full set comes with access.</span>
+    <a href="/pricing">See access</a>
+  </div>
+  {% endif %}
 
-    <h1 class="ew-title">Exam words</h1>
-    <p class="ew-lede">
-      The English the theory test actually uses, with the Danish phrase behind it and the meaning in
-      Russian. Most people who fail do not fail on the rules &mdash; they fail on the wording.
-    </p>
-
+  <div class="ew-strip">
     <div class="ew-scopes" role="group" aria-label="Which words">
       <button type="button" class="ew-scope is-active" data-scope="exam">
         Test wording <span class="ew-scope-count">0</span>
@@ -55,30 +49,32 @@
         Everything <span class="ew-scope-count">0</span>
       </button>
     </div>
+    <div class="ew-bar" title="Learned and to repeat">
+      <span class="ew-bar-known" id="ew-bar-known"></span>
+      <span class="ew-bar-hard" id="ew-bar-hard"></span>
+    </div>
+    <div class="ew-keys">
+      <kbd>Space</kbd> reveal &middot; <kbd>1</kbd> knew it &middot; <kbd>2</kbd> repeat
+    </div>
+  </div>
 
-    <div class="ew-progress">
-      <div class="ew-bar">
-        <span class="ew-bar-known" id="ew-bar-known"></span>
-        <span class="ew-bar-hard" id="ew-bar-hard"></span>
+  <div class="ew-grid">
+    <main class="ew-stage" id="ew-body"></main>
+
+    <aside class="ew-side">
+      <div class="ew-side-head">
+        <div class="ew-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" id="ew-search" placeholder="Search all three languages" autocomplete="off">
+        </div>
+        <div class="ew-side-filters" id="ew-side-filters"></div>
       </div>
-      <div class="ew-legend" id="ew-legend"></div>
-    </div>
-
-    <div class="ew-tabs" role="tablist">
-      <button type="button" class="ew-tab is-active" data-tab="study">Study</button>
-      <button type="button" class="ew-tab" data-tab="dictionary">Dictionary</button>
-    </div>
-
-    <div class="ew-search" id="ew-search-wrap" hidden>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input type="search" id="ew-search" placeholder="Search in English, Danish or Russian" autocomplete="off">
-    </div>
-  </header>
-
-  <div class="ew-body is-study" id="ew-body"></div>
+      <div class="ew-side-list" id="ew-side-list"></div>
+    </aside>
+  </div>
 
   <p class="ew-source">
-    Danish and English come from the official concept list for the theory test; the exam wording set is
+    Danish and English come from the official concept list for the theory test; the test wording set is
     built from the questions in this library. Russian is our own translation.
     {% if demo %}<a href="/pricing?from=exam-words">Unlock the source PDF</a>{% else %}<a href="/exam-words/source-pdf" target="_blank" rel="noopener">Open the source PDF</a>{% endif %}
   </p>
