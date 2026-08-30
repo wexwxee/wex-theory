@@ -251,6 +251,33 @@
     return copy;
   }
 
+  // A phrase means nothing alone; it means something in a sentence from a real
+  // question. exam-words-examples.js pairs them with the Russian that ships
+  // with that question, so the example is honest rather than invented.
+  function exampleFor(item) {
+    if (typeof EXAM_WORD_EXAMPLES === 'undefined') return null;
+    return EXAM_WORD_EXAMPLES[item.id] || null;
+  }
+
+  function exampleBlock(item) {
+    const example = exampleFor(item);
+    if (!example) return null;
+    const box = el('div', 'ew-example');
+    const label = el('div', 'ew-example-label', 'From a question in this library');
+    const english = el('div', 'ew-example-en');
+    // Highlight the phrase itself so the eye finds it in the sentence.
+    const escaped = example.match.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(`(${escaped})`, 'i');
+    const parts = example.en.split(pattern);
+    parts.forEach((part, index) => {
+      if (index % 2 === 1) english.appendChild(el('mark', null, part));
+      else english.appendChild(document.createTextNode(part));
+    });
+    box.append(label, english);
+    if (example.ru) box.appendChild(el('div', 'ew-example-ru', example.ru));
+    return box;
+  }
+
   // ── Session ────────────────────────────────────────────────────────────────
   // Weakest first: missed words, then unseen, then the rest. Every third word is
   // asked as multiple choice so you have to recall it, not just recognise it.
@@ -361,6 +388,8 @@
       const verdict = el('div', `ew-verdict ${right ? 'is-right' : 'is-wrong'}`);
       verdict.append(el('b', null, right ? 'Correct' : 'Not this one'), el('span', null, extra));
       card.appendChild(verdict);
+      const example = exampleBlock(item);
+      if (example) card.appendChild(example);
       const next = el('button', 'ew-btn ew-btn-primary', 'Next word  ⏎');
       next.type = 'button';
       next.dataset.role = 'next';
@@ -463,6 +492,9 @@
       danish.appendChild(el('span', 'ew-no-voice', 'no Danish voice on this device'));
     }
     card.appendChild(danish);
+
+    const example = exampleBlock(item);
+    if (example) card.appendChild(example);
 
     const actions = el('div', 'ew-actions');
     const knew = el('button', 'ew-btn ew-btn-primary', 'I knew it  1');

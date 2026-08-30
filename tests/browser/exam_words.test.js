@@ -1,12 +1,4 @@
-/* Headless check of the Exam Words workspace.
-
-   Run it with jsdom installed anywhere you like:
-       npm install jsdom
-       node tests/browser/exam_words.test.js
-   It expects the rendered page saved next to it as ew_page.html - produce it
-   with the app's test client so the test runs against what the server sends.
-
-   Original note: load the real rendered page, run
+/* Headless check of the Exam Words workspace: load the real rendered page, run
    the real scripts, and drive the loop the way a learner would - including the
    keyboard, which is the point of the redesign. */
 const fs = require('fs');
@@ -18,6 +10,7 @@ const APP = path.resolve(__dirname, '..', '..');
 
 const html = fs.readFileSync(path.join(HERE, 'ew_page.html'), 'utf8');
 const appJs = fs.readFileSync(path.join(APP, 'static/js/exam-words.js'), 'utf8');
+const examplesJs = fs.readFileSync(path.join(APP, 'static/js/exam-words-examples.js'), 'utf8');
 const dataJs = fs.readFileSync(path.join(APP, 'static/js/exam-words-data.js'), 'utf8');
 
 const dom = new JSDOM(html, { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://local.test/exam-words' });
@@ -48,7 +41,7 @@ function check(name, condition, detail) {
 }
 
 // Two <script> tags share one global lexical scope in a browser; two eval calls do not.
-window.eval([dataJs, appJs].join('\n'));
+window.eval([dataJs, examplesJs, appJs].join('\n'));
 
 const doc = window.document;
 const $ = (sel) => doc.querySelector(sel);
@@ -176,6 +169,26 @@ check('english is actually spoken', spoken.length > 0, 'utterances=' + spoken.le
 
 pickMode('mixed');
 check('back to mixed', /What does this mean\?/.test(stageText()));
+
+// ── Real sentences under the word ──────────────────────────────────────────
+$$('.ew-scope').find((b) => b.dataset.scope === 'exam').click();
+pickMode('cards');
+let example = null;
+const seenWords = [];
+for (let i = 0; i < 10 && !example; i += 1) {
+  seenWords.push($('#ew-body .ew-term')?.textContent.trim());
+  $('#ew-body [data-role="reveal"]')?.click();
+  example = $('#ew-body .ew-example');
+  if (!example) $('#ew-body [data-role="knew"]')?.click();
+}
+check('a word in the round carries an example', Boolean(example), 'seen: ' + seenWords.join(' | '));
+if (example) {
+  check('example says where it comes from', /From a question in this library/.test(example.textContent));
+  check('example highlights the phrase', Boolean(example.querySelector('mark')),
+    example.querySelector('mark')?.textContent);
+  check('example carries the russian', Boolean(example.querySelector('.ew-example-ru')),
+    example.querySelector('.ew-example-ru')?.textContent.slice(0, 40));
+}
 
 // ── Report ─────────────────────────────────────────────────────────────────
 let failed = 0;

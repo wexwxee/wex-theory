@@ -94,5 +94,6 @@
 
 {% block scripts %}
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/exam-words-data.js?v={{ asset_version }}"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/exam-words-examples.js?v={{ asset_version }}"></script>
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/exam-words.js?v={{ asset_version }}"></script>
 {% endblock %}
