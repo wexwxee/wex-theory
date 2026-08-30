@@ -60,7 +60,7 @@ check('1 grades and moves on', /Word 2 of 10/.test($('.ew-stage-meta').textConte
   $('.ew-stage-meta').textContent.trim());
 
 // clicking the card also reveals
-$('.ew-card').click();
+$('.ew-stage-card').click();
 check('clicking the card reveals', /Dansk/.test(stageText()));
 key('2');
 check('2 sends the word back', /Word 3 of 10/.test($('.ew-stage-meta').textContent));
@@ -79,6 +79,12 @@ check('enter moves to the next word', /Word 4 of 10/.test($('.ew-stage-meta').te
 let guard = 0;
 while (!/^\d+\/10/.test(stageText()) && guard < 60) {
   guard += 1;
+  const typing = $('#ew-body .ew-type');
+  if (typing && !$('#ew-body [data-role="next"]')) {
+    $('#ew-body .ew-type-input').value = 'x';
+    typing.dispatchEvent(new window.Event('submit', { cancelable: true }));
+    continue;
+  }
   const next = $('#ew-body [data-role="next"]') || $('#ew-body [data-role="reveal"]')
     || $('#ew-body [data-role="knew"]') || $('#ew-body .ew-option:not([disabled])');
   if (!next) break;
@@ -116,6 +122,42 @@ $$('.ew-scope').find((b) => b.dataset.scope === 'all').click();
 check('scope switch widens the set', $$('.ew-list-row').length > before,
   `${before} -> ${$$('.ew-list-row').length}`);
 check('session restarts on scope change', /Word 1 of 10/.test($('.ew-stage-meta').textContent));
+
+// ── Speaker icon is a real icon, not an emoji ──────────────────────────────
+check('speaker is an svg icon', Boolean($('.ew-speak svg')), $('.ew-speak')?.textContent === '' ? 'no text' : 'has text');
+
+// ── Study modes ────────────────────────────────────────────────────────────
+const modeButtons = $$('.ew-mode').filter((b) => !b.hidden);
+check('modes offered', modeButtons.length >= 5, 'modes=' + modeButtons.map((b) => b.dataset.mode).join(','));
+
+function pickMode(name) {
+  $$('.ew-mode').find((b) => b.dataset.mode === name).click();
+}
+
+pickMode('cards');
+check('cards mode asks for recall', /What does this mean\?/.test(stageText()));
+
+pickMode('quiz');
+check('quiz mode asks every word', /Which meaning is right\?/.test(stageText()));
+check('quiz mode shows options', $$('.ew-option').length === 4);
+
+pickMode('reverse');
+check('reverse mode asks for the English', /Which English does the test use\?/.test(stageText()),
+  stageText().slice(0, 60));
+const reverseOptions = $$('.ew-option').map((o) => o.textContent);
+check('reverse options are english', /[a-z]/.test(reverseOptions[0]) && !/[а-я]/i.test(reverseOptions.join('')),
+  reverseOptions[0]);
+
+pickMode('typing');
+check('typing mode has an input', Boolean($('.ew-type-input')));
+const typed = $('.ew-type-input');
+typed.value = 'definitely wrong answer';
+$('.ew-type').dispatchEvent(new window.Event('submit', { cancelable: true }));
+check('typing checks the answer', Boolean($('.ew-verdict')), $('.ew-verdict')?.textContent.slice(0, 30));
+check('wrong typing is marked', typed.classList.contains('is-wrong'));
+
+pickMode('mixed');
+check('back to mixed', /What does this mean\?/.test(stageText()));
 
 // ── Report ─────────────────────────────────────────────────────────────────
 let failed = 0;

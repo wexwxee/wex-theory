@@ -74,6 +74,7 @@
   };
 
   state.scope = state.settings.scope || 'exam';
+  state.mode = state.settings.mode || 'mixed';
   state.filter = state.settings.filter || 'all';
 
   let syncTimer = null;
@@ -88,6 +89,7 @@
 
   function saveSettings() {
     state.settings.scope = state.scope;
+    state.settings.mode = state.mode;
     state.settings.filter = state.filter;
     writeJson(SETTINGS_KEY, state.settings);
   }
@@ -200,8 +202,14 @@
     return node;
   }
 
+  const SPEAKER_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" '
+    + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+    + '<path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/>'
+    + '<path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+
   function speakButton(text, lang) {
-    const button = el('button', 'ew-speak', '🔊');
+    const button = el('button', 'ew-speak');
+    button.innerHTML = SPEAKER_SVG;
     button.type = 'button';
     button.title = lang === 'da' ? 'Listen in Danish' : 'Listen in English';
     button.setAttribute('aria-label', button.title);
@@ -247,8 +255,17 @@
     return session.queue[session.index];
   }
 
-  function isQuizStep(index) {
-    return index % 3 === 2;
+  // What the current word asks of you. "mixed" alternates so a round has both
+  // recognition and recall; the other modes do one thing all the way through.
+  function stepKind(index) {
+    if (state.mode === 'cards') return 'recall';
+    if (state.mode === 'quiz') return 'quiz';
+    if (state.mode === 'reverse') return 'reverse';
+    if (state.mode === 'listening') return 'listening';
+    if (state.mode === 'typing') return 'typing';
+    if (index % 3 === 2) return 'quiz';
+    if (index % 5 === 4) return 'typing';
+    return 'recall';
   }
 
   function advance(right, item) {
@@ -300,6 +317,7 @@
     }
 
     const item = sessionItem();
+    const kind = stepKind(session.index);
 
     const meta = el('div', 'ew-stage-meta');
     meta.append(
@@ -317,20 +335,31 @@
     });
     root.appendChild(track);
 
-    const card = el('div', 'ew-card');
+    const card = el('div', 'ew-stage-card');
 
-    if (isQuizStep(session.index)) {
-      card.appendChild(el('div', 'ew-ask', 'Which meaning is right?'));
-      const phrase = el('div', 'ew-term');
-      phrase.append(el('span', null, item.en), speakButton(item.en, 'en'));
-      card.appendChild(phrase);
+    function finishWith(right, extra) {
+      const verdict = el('div', `ew-verdict ${right ? 'is-right' : 'is-wrong'}`);
+      verdict.append(el('b', null, right ? 'Correct' : 'Not this one'), el('span', null, extra));
+      card.appendChild(verdict);
+      const next = el('button', 'ew-btn ew-btn-primary', 'Next word  ⏎');
+      next.type = 'button';
+      next.dataset.role = 'next';
+      next.addEventListener('click', () => advance(right, item));
+      const actions = el('div', 'ew-actions');
+      actions.appendChild(next);
+      card.appendChild(actions);
+      next.focus();
+    }
 
+    function askOptions(promptText, promptNode, optionText, answerHint) {
+      card.appendChild(el('div', 'ew-ask', promptText));
+      card.appendChild(promptNode);
       const options = el('div', 'ew-options');
       const buttons = [];
       quizOptions(item).forEach((option, index) => {
         const button = el('button', 'ew-option');
         button.type = 'button';
-        button.append(el('span', 'ew-option-key', String(index + 1)), el('span', null, option.ru));
+        button.append(el('span', 'ew-option-key', String(index + 1)), el('span', null, optionText(option)));
         button.addEventListener('click', () => {
           if (session.answered) return;
           session.answered = option.id;
@@ -340,31 +369,93 @@
             if (entry.option.id === item.id) entry.button.classList.add('is-right');
             else if (entry.option.id === option.id) entry.button.classList.add('is-wrong');
           });
-          const verdict = el('div', `ew-verdict ${right ? 'is-right' : 'is-wrong'}`);
-          verdict.append(
-            el('b', null, right ? 'Correct' : 'Not this one'),
-            el('span', null, right ? item.dk : `${item.en} — ${item.ru}`),
-          );
-          card.appendChild(verdict);
-          const next = el('button', 'ew-btn ew-btn-primary', 'Next word  ⏎');
-          next.type = 'button';
-          next.dataset.role = 'next';
-          next.addEventListener('click', () => advance(right, item));
-          card.appendChild(el('div', 'ew-actions')).appendChild(next);
-          next.focus();
+          finishWith(right, answerHint());
         });
         buttons.push({ button, option });
         options.appendChild(button);
       });
       card.appendChild(options);
+    }
+
+    if (kind === 'quiz') {
+      const phrase = el('div', 'ew-term');
+      phrase.append(el('span', null, item.en), speakButton(item.en, 'en'));
+      askOptions('Which meaning is right?', phrase, (option) => option.ru,
+        () => `${item.en} — ${item.ru}`);
       root.appendChild(card);
       return;
     }
 
-    card.appendChild(el('div', 'ew-ask', 'What does this mean?'));
+    if (kind === 'reverse') {
+      const phrase = el('div', 'ew-term ew-term-ru');
+      phrase.appendChild(el('span', null, item.ru));
+      askOptions('Which English does the test use?', phrase, (option) => option.en,
+        () => `${item.en} · ${item.dk}`);
+      root.appendChild(card);
+      return;
+    }
+
+    if (kind === 'listening') {
+      card.appendChild(el('div', 'ew-ask', 'Listen and choose the meaning'));
+      const play = el('button', 'ew-play');
+      play.type = 'button';
+      play.innerHTML = SPEAKER_SVG;
+      play.append(el('span', null, 'Play again'));
+      play.addEventListener('click', () => say(item.en, 'en'));
+      const holder = el('div', 'ew-listen');
+      holder.appendChild(play);
+      say(item.en, 'en');
+      askOptions('', holder, (option) => option.ru, () => `${item.en} — ${item.ru}`);
+      card.querySelector('.ew-ask:nth-of-type(2)')?.remove();
+      root.appendChild(card);
+      return;
+    }
+
+    if (kind === 'typing') {
+      card.appendChild(el('div', 'ew-ask', 'Type it in English'));
+      const meaning = el('div', 'ew-term ew-term-ru');
+      meaning.appendChild(el('span', null, item.ru));
+      card.appendChild(meaning);
+
+      const form = el('form', 'ew-type');
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'ew-type-input';
+      input.placeholder = 'the English phrase';
+      input.autocomplete = 'off';
+      input.spellcheck = false;
+      const submit = el('button', 'ew-btn ew-btn-primary', 'Check  ⏎');
+      submit.type = 'submit';
+      form.append(input, submit);
+
+      const normalise = (value) => value.toLowerCase()
+        .replace(/^(to|the|a|an)\s+/g, '')
+        .replace(/[^a-z0-9æøå ]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (session.answered) return;
+        session.answered = 'typed';
+        const answer = normalise(input.value);
+        const right = Boolean(answer) && item.en.toLowerCase().split('/')
+          .some((variant) => normalise(variant) === answer);
+        input.disabled = true;
+        input.classList.add(right ? 'is-right' : 'is-wrong');
+        submit.remove();
+        finishWith(right, `${item.en} — ${item.ru}`);
+      });
+
+      card.appendChild(form);
+      root.appendChild(card);
+      window.setTimeout(() => input.focus(), 0);
+      return;
+    }
+
+    // recall
     const phrase = el('div', 'ew-term');
     phrase.append(el('span', null, item.en), speakButton(item.en, 'en'));
-    card.appendChild(phrase);
 
     if (!session.revealed) {
       card.classList.add('is-clickable');
@@ -373,14 +464,20 @@
         session.revealed = true;
         render();
       });
+      card.appendChild(el('div', 'ew-ask', 'What does this mean?'));
+      card.appendChild(phrase);
       const hint = el('button', 'ew-btn ew-btn-primary', 'Show the meaning  ␣');
       hint.type = 'button';
       hint.dataset.role = 'reveal';
-      card.appendChild(el('div', 'ew-actions')).appendChild(hint);
+      const actions = el('div', 'ew-actions');
+      actions.appendChild(hint);
+      card.appendChild(actions);
       root.appendChild(card);
       return;
     }
 
+    card.appendChild(el('div', 'ew-ask', 'What does this mean?'));
+    card.appendChild(phrase);
     card.appendChild(el('div', 'ew-meaning', item.ru));
     const danish = el('div', 'ew-danish');
     danish.append(el('span', 'ew-danish-label', 'Dansk'), el('span', null, item.dk), speakButton(item.dk, 'da'));
@@ -475,6 +572,10 @@
       all: ALL_TERMS.length,
     };
 
+    document.querySelectorAll('.ew-mode').forEach((button) => {
+      button.classList.toggle('is-active', button.dataset.mode === state.mode);
+    });
+
     document.querySelectorAll('.ew-scope').forEach((button) => {
       button.classList.toggle('is-active', button.dataset.scope === state.scope);
       const count = button.querySelector('.ew-scope-count');
@@ -548,6 +649,18 @@
   document.querySelectorAll('.ew-scope').forEach((button) => {
     button.addEventListener('click', () => {
       state.scope = button.dataset.scope;
+      saveSettings();
+      startSession();
+    });
+  });
+
+  document.querySelectorAll('.ew-mode').forEach((button) => {
+    if (button.dataset.mode === 'listening' && !speech.supported) {
+      button.hidden = true;
+      return;
+    }
+    button.addEventListener('click', () => {
+      state.mode = button.dataset.mode;
       saveSettings();
       startSession();
     });

@@ -48,13 +48,40 @@
 /* ── Strip above the workspace ────────────────────────────────────────────── */
 .ew-strip {
   display: grid;
-  grid-template-columns: auto minmax(120px, 1fr) auto;
-  align-items: center;
-  gap: 18px;
-  padding-bottom: 16px;
-  margin-bottom: 16px;
+  gap: 12px;
+  padding-bottom: 14px;
+  margin-bottom: 20px;
   border-bottom: 1px solid var(--border);
 }
+
+.ew-strip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.ew-strip-row--thin { gap: 14px; }
+.ew-strip-row--thin .ew-bar { flex: 1; min-width: 160px; }
+
+.ew-modes { display: flex; flex-wrap: wrap; gap: 4px; }
+
+.ew-mode {
+  padding: 7px 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ew-mode:hover { color: var(--text); background: var(--bg-card); }
+.ew-mode.is-active { color: var(--text); border-color: var(--border); background: var(--bg-card); }
+.ew-mode[hidden] { display: none; }
 
 .ew-scopes { display: flex; flex-wrap: wrap; gap: 6px; }
 
@@ -116,12 +143,12 @@
 /* ── Workspace ────────────────────────────────────────────────────────────── */
 .ew-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
-  gap: 22px;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+  gap: 26px;
   align-items: start;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 1120px) {
   .ew-grid { grid-template-columns: 1fr; }
 }
 
@@ -152,19 +179,16 @@
 .ew-track-dot.is-done { background: var(--text-muted); }
 .ew-track-dot.is-current { background: var(--text); }
 
-.ew-card {
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  background: var(--bg-card);
-  padding: clamp(24px, 3.5vw, 40px);
-  min-height: 340px;
+/* The word sits on the page: no box, no card, nothing to look past. */
+.ew-stage-card {
+  min-height: 320px;
+  padding: 6px 0 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-.ew-card.is-clickable { cursor: pointer; }
-.ew-card.is-clickable:hover { border-color: var(--text-muted); }
+.ew-stage-card.is-clickable { cursor: pointer; }
 
 .ew-ask {
   font-size: 0.74rem;
@@ -215,17 +239,24 @@
 }
 
 .ew-speak {
-  border: none;
-  background: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-card);
+  color: var(--text-muted);
   cursor: pointer;
-  font-size: 0.9rem;
-  line-height: 1;
-  padding: 4px;
-  border-radius: 7px;
-  opacity: 0.55;
+  transition: color 0.15s, border-color 0.15s;
 }
 
-.ew-speak:hover { opacity: 1; }
+.ew-speak svg { width: 17px; height: 17px; }
+.ew-speak:hover { color: var(--text); border-color: var(--text-muted); }
+
+.ew-list-row .ew-speak { display: none; }
 
 .ew-actions {
   display: flex;
@@ -361,8 +392,8 @@
   flex-direction: column;
 }
 
-@media (max-width: 1000px) {
-  .ew-side { position: static; max-height: none; }
+@media (max-width: 1120px) {
+  .ew-side { position: static; max-height: 60vh; }
 }
 
 .ew-side-head {
@@ -481,3 +512,75 @@
 }
 
 .ew-source a { color: var(--text); }
+
+/* ── Listening, typing, reverse ────────────────────────────────────────────── */
+.ew-term-ru {
+  font-size: clamp(1.25rem, 2.4vw, 1.7rem);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ew-listen { margin-bottom: 4px; }
+
+.ew-play {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 22px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ew-play:hover { border-color: var(--text-muted); }
+.ew-play svg { width: 20px; height: 20px; }
+
+.ew-type {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.ew-type-input {
+  flex: 1;
+  min-width: 220px;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 1rem;
+  outline: none;
+}
+
+.ew-type-input:focus { border-color: var(--text-muted); }
+.ew-type-input.is-right { border-color: #16a34a; }
+.ew-type-input.is-wrong { border-color: #dc2626; }
+
+/* ── A scrollbar that belongs to the page ─────────────────────────────────── */
+.ew-side-list {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  overscroll-behavior: contain;
+}
+
+.ew-side-list::-webkit-scrollbar { width: 10px; }
+.ew-side-list::-webkit-scrollbar-track { background: transparent; }
+
+.ew-side-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+.ew-side-list::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+  background-clip: content-box;
+}

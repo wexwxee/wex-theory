@@ -38,23 +38,35 @@
   {% endif %}
 
   <div class="ew-strip">
-    <div class="ew-scopes" role="group" aria-label="Which words">
-      <button type="button" class="ew-scope is-active" data-scope="exam">
-        Test wording <span class="ew-scope-count">0</span>
-      </button>
-      <button type="button" class="ew-scope" data-scope="car">
-        + Car parts <span class="ew-scope-count">0</span>
-      </button>
-      <button type="button" class="ew-scope" data-scope="all">
-        Everything <span class="ew-scope-count">0</span>
-      </button>
+    <div class="ew-strip-row">
+      <div class="ew-scopes" role="group" aria-label="Which words">
+        <button type="button" class="ew-scope is-active" data-scope="exam">
+          Test wording <span class="ew-scope-count">0</span>
+        </button>
+        <button type="button" class="ew-scope" data-scope="car">
+          + Car parts <span class="ew-scope-count">0</span>
+        </button>
+        <button type="button" class="ew-scope" data-scope="all">
+          Everything <span class="ew-scope-count">0</span>
+        </button>
+      </div>
+      <div class="ew-modes" role="group" aria-label="How to study">
+        <button type="button" class="ew-mode is-active" data-mode="mixed" title="Cards, quiz and typing in one round">Mixed</button>
+        <button type="button" class="ew-mode" data-mode="cards" title="See the phrase, recall it, grade yourself">Cards</button>
+        <button type="button" class="ew-mode" data-mode="quiz" title="English phrase, pick the meaning">Quiz</button>
+        <button type="button" class="ew-mode" data-mode="reverse" title="Russian meaning, pick the English the test uses">RU &rarr; EN</button>
+        <button type="button" class="ew-mode" data-mode="listening" title="Hear the phrase, pick the meaning">Listening</button>
+        <button type="button" class="ew-mode" data-mode="typing" title="Type the English yourself">Typing</button>
+      </div>
     </div>
-    <div class="ew-bar" title="Learned and to repeat">
-      <span class="ew-bar-known" id="ew-bar-known"></span>
-      <span class="ew-bar-hard" id="ew-bar-hard"></span>
-    </div>
-    <div class="ew-keys">
-      <kbd>Space</kbd> reveal &middot; <kbd>1</kbd> knew it &middot; <kbd>2</kbd> repeat
+    <div class="ew-strip-row ew-strip-row--thin">
+      <div class="ew-bar" title="Learned and to repeat">
+        <span class="ew-bar-known" id="ew-bar-known"></span>
+        <span class="ew-bar-hard" id="ew-bar-hard"></span>
+      </div>
+      <div class="ew-keys">
+        <kbd>Space</kbd> reveal &middot; <kbd>1</kbd> knew it &middot; <kbd>2</kbd> repeat &middot; <kbd>1</kbd>&ndash;<kbd>4</kbd> answer
+      </div>
     </div>
   </div>
 
