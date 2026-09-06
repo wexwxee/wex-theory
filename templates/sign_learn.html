@@ -4,6 +4,7 @@
 
 {% block head %}
 <style>
+  #learnSyncRetry[hidden] { display: none; }
   .learn-shell {
     max-width: 780px;
     margin: 0 auto;
@@ -314,7 +315,9 @@
 </nav>
 
 <div class="page" style="padding-top:18px;">
-  <div class="learn-shell" id="learnShell" data-group="{{ group }}">
+  <div class="learn-shell" id="learnShell" data-group="{{ group }}" data-user-id="{{ user.id if user else '' }}">
+    <p id="learnSyncStatus" role="status" style="color:var(--text-muted);font-size:.85rem;"></p>
+    <button id="learnSyncRetry" class="btn-ghost btn-sm" type="button" hidden>Retry sync / Повторить</button>
     <div class="learn-head">
       <div class="learn-title" id="learnTitle">Practise road signs</div>
       <div class="lang-switch" role="group" aria-label="Language">

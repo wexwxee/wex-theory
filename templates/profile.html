@@ -432,6 +432,8 @@
     letter-spacing: -0.03em;
     font-weight: 850;
   }
+  .profile-main > * { min-width: 0; }
+  .profile-avatar [hidden] { display: none; }
   .history-wrap { overflow-x: auto; }
   .history-table tr {
     transition: background 0.15s ease, transform 0.15s ease;
@@ -578,8 +580,8 @@
       grid-template-columns: 1fr;
     }
     .history-wrap {
-      margin: 0 -18px;
-      padding: 0 18px 4px;
+      margin: 0;
+      padding: 0 0 4px;
     }
     .history-table {
       min-width: 560px;
@@ -1026,6 +1028,24 @@
     </div>
 
     <aside class="side-stack">
+      <div class="profile-info-card">
+        <div class="profile-info-title"><span>Your practice</span></div>
+        <div class="profile-info-row"><span>Questions due today</span><b>{{ review_due }}</b></div>
+        <a href="/review" class="btn-ghost btn-sm" style="margin:10px 0;">Review mistakes</a>
+        <div class="profile-info-row"><span>Signs learned</span><b>{{ learned_signs }}</b></div>
+        {% if weak_signs %}
+        <p style="margin-top:12px;color:var(--text-muted);">Signs to practise</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;">
+          {% for sign in weak_signs %}
+          <a href="/signs/{{ sign.code }}" title="{{ sign.name_en }}" style="display:flex;align-items:center;gap:5px;">
+            <img src="{{ sign.image }}" alt="{{ sign.name_en }}" width="36" height="36" style="object-fit:contain;">
+            <span>{{ sign.code }}</span>
+          </a>
+          {% endfor %}
+        </div>
+        {% endif %}
+        <a href="/signs/learn" class="btn-ghost btn-sm">Practise signs</a>
+      </div>
       <div class="profile-info-card">
         <div class="profile-info-title">
           <span>Account details</span>

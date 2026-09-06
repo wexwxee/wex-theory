@@ -131,6 +131,31 @@ class UserAnswer(Base):
     question = relationship("Question", back_populates="user_answers")
 
 
+class ReviewProgress(Base):
+    __tablename__ = "review_progress"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    question_id = Column(Integer, ForeignKey("questions.id", ondelete="CASCADE"), nullable=False)
+    source_answer_id = Column(Integer, nullable=False)
+    streak = Column(Integer, nullable=False, default=0)
+    due_at = Column(DateTime, nullable=True)
+    last_request_id = Column(String(80), nullable=True)
+    last_correct = Column(Boolean, nullable=False, default=False)
+    __table_args__ = (UniqueConstraint("user_id", "question_id", name="uq_review_user_question"),)
+
+
+class SignProgress(Base):
+    __tablename__ = "sign_progress"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    code = Column(String(40), nullable=False)
+    box = Column(Integer, nullable=False, default=0)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    __table_args__ = (UniqueConstraint("user_id", "code", name="uq_sign_progress_user_code"),)
+
+
 class ContactMessage(Base):
     __tablename__ = "contact_messages"
 
@@ -188,6 +213,8 @@ class EmailVerificationCode(Base):
     password_hash = Column(String, nullable=False)
     code = Column(String, nullable=False)
     purpose = Column(String, nullable=False, default="register")
+    failed_attempts = Column(Integer, nullable=False, default=0)
+    locked_until = Column(DateTime, nullable=True)
     expires_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -203,6 +230,20 @@ class PromoCode(Base):
     expires_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     is_active = Column(Boolean, default=True)
+
+
+class PromoCodeRedemption(Base):
+    __tablename__ = "promo_code_redemptions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    promo_code_id = Column(Integer, ForeignKey("promo_codes.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    duration_days = Column(Integer, nullable=False)
+    redeemed_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("promo_code_id", "user_id", name="uq_promo_redemption_code_user"),
+    )
 
 
 class Bookmark(Base):

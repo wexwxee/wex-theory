@@ -50,8 +50,9 @@
 
   function renderSummary(page, data, testMeta) {
     const passed = data.passed;
-    const score = data.score;
-    const total = data.total || testMeta?.total || 15;
+    const score = Number(data.score || 0);
+    const total = Number(data.total || testMeta?.total || 15);
+    const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
     const title = testMeta?.title || data.test_title || 'Test 0';
     const passNeed = total === 15 ? 12 : Math.max(1, Math.ceil(total * 0.8));
     page.innerHTML = `
@@ -60,25 +61,25 @@
         <div style="font-size:clamp(1.4rem,4vw,2.2rem);font-weight:800;color:${passed ? '#22c55e' : '#ef4444'};line-height:1.2;margin-bottom:8px;">
           ${passed ? '&#10003; Congratulations! You passed!' : '&#10005; Unfortunately! You did not pass.'}
         </div>
-        <div style="font-size:1.1rem;color:${passed ? '#22c55e' : '#ef4444'};font-weight:600;"><span id="scoreDisplay">0</span>/${total} correct</div>
+        <div style="font-size:1.1rem;color:${passed ? '#22c55e' : '#ef4444'};font-weight:600;"><span id="scoreDisplay">${score}</span>/${total} correct</div>
         <div style="max-width:320px;margin:12px auto 4px;">
           <div style="height:6px;background:var(--border);border-radius:999px;overflow:hidden;">
-            <div id="scoreBar" style="height:100%;width:0%;border-radius:999px;transition:width 1s ease;background:${passed ? '#22c55e' : '#ef4444'};"></div>
+            <div id="scoreBar" style="height:100%;width:${percentage}%;border-radius:999px;transition:width 1s ease;background:${passed ? '#22c55e' : '#ef4444'};"></div>
           </div>
         </div>
         <p style="color:var(--text-muted);font-size:0.88rem;margin-top:10px;">You need at least ${passNeed} correct answers to pass.</p>
 
         <div style="display:inline-grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:24px;text-align:center;">
           <div>
-            <div id="statCorrect" style="font-size:2rem;font-weight:800;color:#22c55e;">0</div>
+            <div id="statCorrect" style="font-size:2rem;font-weight:800;color:#22c55e;">${score}</div>
             <div style="font-size:0.78rem;color:var(--text-muted);">Correct</div>
           </div>
           <div>
-            <div id="statWrong" style="font-size:2rem;font-weight:800;color:#ef4444;">0</div>
+            <div id="statWrong" style="font-size:2rem;font-weight:800;color:#ef4444;">${Math.max(total - score, 0)}</div>
             <div style="font-size:0.78rem;color:var(--text-muted);">Wrong</div>
           </div>
           <div>
-            <div id="statPct" style="font-size:2rem;font-weight:800;">0%</div>
+            <div id="statPct" style="font-size:2rem;font-weight:800;">${percentage}%</div>
             <div style="font-size:0.78rem;color:var(--text-muted);">Score</div>
           </div>
         </div>

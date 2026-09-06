@@ -688,28 +688,18 @@ function voiceDisplayName(voice) {
       if (e.key === 'Escape') closeModal();
     });
 
-    (function animateScore() {
-      const duration = 900;
-      const start = performance.now();
-      function tick(now) {
-        const t = Math.min((now - start) / duration, 1);
-        const eased = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-        const val = Math.round(eased * SCORE);
-        const el = document.getElementById('scoreDisplay');
-        const correct = document.getElementById('statCorrect');
-        const wrong = document.getElementById('statWrong');
-        const pct = document.getElementById('statPct');
-        if (el) el.textContent = val;
-        if (correct) correct.textContent = val;
-        if (wrong) wrong.textContent = TOTAL - val;
-        if (pct) pct.textContent = Math.round((val / TOTAL) * 100) + '%';
-        if (t < 1) requestAnimationFrame(tick);
-      }
-      requestAnimationFrame(tick);
-      setTimeout(() => {
-        const bar = document.getElementById('scoreBar');
-        if (bar) bar.style.width = ((SCORE / TOTAL) * 100) + '%';
-      }, 50);
+    (function renderScore() {
+      const percentage = TOTAL > 0 ? Math.round((SCORE / TOTAL) * 100) : 0;
+      const el = document.getElementById('scoreDisplay');
+      const correct = document.getElementById('statCorrect');
+      const wrong = document.getElementById('statWrong');
+      const pct = document.getElementById('statPct');
+      const bar = document.getElementById('scoreBar');
+      if (el) el.textContent = SCORE;
+      if (correct) correct.textContent = SCORE;
+      if (wrong) wrong.textContent = Math.max(TOTAL - SCORE, 0);
+      if (pct) pct.textContent = percentage + '%';
+      if (bar) bar.style.width = percentage + '%';
     })();
 
     openReviewFromUrl();

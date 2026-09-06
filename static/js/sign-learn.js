@@ -6,7 +6,11 @@
   const stage = document.getElementById('learnStage');
   if (!shell || !stage) return;
 
-  const PROGRESS_KEY = 'wexSignsProgress';
+  const ACCOUNT_ID = shell.dataset.userId || '';
+  const PROGRESS_KEY = ACCOUNT_ID ? `wexSignsProgress-user-${ACCOUNT_ID}` : 'wexSignsProgress';
+  const QUEUE_KEY = `${PROGRESS_KEY}-queue`;
+  let queue = readQueue();
+  let syncing = false;
   const LANG_KEY = 'wexSignsLang';
   const LEGACY_KNOWN = 'wexSignsKnown';
   const LEGACY_HARD = 'wexSignsHard';
@@ -40,7 +44,7 @@
       browse: 'Browse the catalogue',
       empty: 'Nothing to practise in this set yet.',
       hint:
-        'Progress stays in this browser. Signs you miss come back sooner, and a sign counts as learned after three correct answers in a row.',
+        `${ACCOUNT_ID ? 'Progress syncs with your account.' : 'Progress stays in this browser. Sign in to save new practice to your account.'} Signs you miss come back sooner, and a sign counts as learned after three correct answers in a row.`,
       keys: 'Keyboard: 1-4 to answer, Enter to continue.',
       failed: 'Could not load the signs. Reload the page to try again.',
       danish: 'In Danish',
@@ -76,7 +80,7 @@
       browse: 'Открыть каталог',
       empty: 'В этом наборе пока нечего тренировать.',
       hint:
-        'Прогресс хранится в этом браузере. Знаки, где вы ошиблись, возвращаются раньше, а выученным знак считается после трёх верных ответов подряд.',
+        `${ACCOUNT_ID ? 'Прогресс синхронизируется с аккаунтом.' : 'Прогресс хранится в этом браузере. Войдите, чтобы сохранять новые тренировки в аккаунте.'} Знаки, где вы ошиблись, возвращаются раньше, а выученным знак считается после трёх верных ответов подряд.`,
       keys: 'С клавиатуры: 1-4 — ответ, Enter — дальше.',
       failed: 'Не удалось загрузить знаки. Обновите страницу.',
       danish: 'По-датски',
@@ -120,6 +124,7 @@
     try {
       const stored = JSON.parse(localStorage.getItem(PROGRESS_KEY) || 'null');
       if (stored && typeof stored === 'object') return stored;
+      if (ACCOUNT_ID) return {};
       // First run after the old two-list version: keep what the learner had.
       const known = JSON.parse(localStorage.getItem(LEGACY_KNOWN) || '[]');
       const hard = JSON.parse(localStorage.getItem(LEGACY_HARD) || '[]');
@@ -145,11 +150,79 @@
     return state.progress[code]?.box || 0;
   }
 
+  function readQueue() {
+    try {
+      const value = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
+      return Array.isArray(value) ? value : [];
+    } catch (error) { return []; }
+  }
+
+  function storeQueue() {
+    try { localStorage.setItem(QUEUE_KEY, JSON.stringify(queue)); } catch (error) { /* private mode */ }
+  }
+
+  function syncStatus(failed = false) {
+    const status = document.getElementById('learnSyncStatus');
+    const retry = document.getElementById('learnSyncRetry');
+    const ru = state.lang === 'ru';
+    if (status) status.textContent = !ACCOUNT_ID ? '' : failed
+      ? (ru ? 'Сохранено в браузере. Синхронизация ожидает подключения.' : 'Saved in this browser. Account sync is pending.')
+      : queue.length ? (ru ? 'Сохранение…' : 'Saving…') : (ru ? 'Сохранено в аккаунте' : 'Saved to your account');
+    if (retry) {
+      retry.hidden = !failed;
+      retry.textContent = ru ? 'Повторить синхронизацию' : 'Retry sync';
+    }
+  }
+
+  async function flushQueue() {
+    if (!ACCOUNT_ID || syncing) return;
+    syncing = true;
+    syncStatus();
+    try {
+      while (queue.length) {
+        const response = await fetch('/api/signs/progress', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(queue[0]),
+        });
+        if (!response.ok) throw new Error('sync failed');
+        queue.shift();
+        storeQueue();
+      }
+      syncStatus();
+    } catch (error) { syncStatus(true); }
+    finally { syncing = false; }
+  }
+
+  function enqueue(progress, reset = false) {
+    if (!ACCOUNT_ID) return;
+    queue.push({ progress, reset });
+    storeQueue();
+    flushQueue();
+  }
+
+  async function loadAccountProgress() {
+    if (!ACCOUNT_ID) return;
+    const response = await fetch('/api/signs/progress');
+    if (!response.ok) throw new Error('sync failed');
+    const data = await response.json();
+    state.progress = data.progress || {};
+    queue.forEach((operation) => {
+      if (operation.reset) state.progress = {};
+      Object.assign(state.progress, operation.progress);
+    });
+    save();
+    await flushQueue();
+  }
+
+  window.addEventListener('online', flushQueue);
+  document.getElementById('learnSyncRetry')?.addEventListener('click', flushQueue);
+
   function grade(code, right) {
     const entry = state.progress[code] || { box: 0 };
     entry.box = right ? Math.min(entry.box + 1, 5) : 0;
     state.progress[code] = entry;
     save();
+    enqueue({ [code]: { box: entry.box } });
   }
 
   function label(sign) {
@@ -524,6 +597,7 @@
     }
     save();
     startSession();
+    enqueue({}, true);
   });
 
   document.addEventListener('keydown', (event) => {
@@ -548,8 +622,9 @@
 
   fetch('/api/signs')
     .then((response) => response.json())
-    .then((data) => {
+    .then(async (data) => {
       state.signs = data.signs || [];
+      try { await loadAccountProgress(); } catch (error) { syncStatus(true); }
       const startChip = document.querySelector(`.learn-chip[data-group="${state.group}"]`);
       if (startChip) {
         document.querySelectorAll('.learn-chip').forEach((item) => {

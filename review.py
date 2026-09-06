@@ -1,17 +1,13 @@
-"""The questions a learner still gets wrong.
+"""Daily review derived from test mistakes, with separately saved practice.
 
-Everything here is derived from answers already stored: no new tables, no
-migration. A question needs review when the learner's most recent answer to it
-was wrong, and it leaves the list by itself once they answer it correctly in a
-real test - which is exactly the behaviour a learner expects.
-
-Ordering puts the questions missed most often first, then the ones missed
-longest ago, so a short daily set hits the weakest material.
+New test mistakes restart the schedule. Successful practice returns after
+1/3/7/21 days; a fifth success completes it. Test history is never rewritten.
 """
 
 from __future__ import annotations
 
 from collections import defaultdict
+from datetime import datetime, timedelta
 from typing import Optional
 
 from sqlalchemy.orm import Session, selectinload
@@ -50,7 +46,7 @@ def miss_counts(db: Session, user_id: int) -> dict[int, int]:
     }
 
 
-def missed_question_ids(db: Session, user_id: int) -> list[int]:
+def missed_question_ids(db: Session, user_id: int, now=None) -> list[int]:
     """Question ids whose latest answer was wrong, weakest first."""
     latest: dict[int, bool] = {}
     misses: dict[int, int] = defaultdict(int)
@@ -62,9 +58,63 @@ def missed_question_ids(db: Session, user_id: int) -> list[int]:
         if not answer.is_correct:
             misses[answer.question_id] += 1
 
-    pending = [question_id for question_id, was_right in latest.items() if not was_right]
+    now = now or datetime.utcnow()
+    progress = {row.question_id: row for row in db.query(models.ReviewProgress).filter_by(user_id=user_id).all()}
+    pending = []
+    for question_id, was_right in latest.items():
+        if was_right:
+            continue
+        row = progress.get(question_id)
+        if row and row.source_answer_id == last_seen[question_id]:
+            if row.due_at is None or row.due_at > now:
+                continue
+        pending.append(question_id)
     pending.sort(key=lambda question_id: (-misses[question_id], last_seen[question_id]))
     return pending
+
+
+def next_review_at(db: Session, user_id: int):
+    latest = {answer.question_id: answer for answer in _history(db, user_id)}
+    dates = [row.due_at for row in db.query(models.ReviewProgress).filter_by(user_id=user_id).all()
+             if row.due_at and row.question_id in latest
+             and not latest[row.question_id].is_correct
+             and latest[row.question_id].id == row.source_answer_id]
+    return min(dates).isoformat() + "Z" if dates else None
+
+
+def record_answer(db: Session, user_id: int, question_id: int, selected_ids: list[int], request_id: str, now=None):
+    """Grade on the server and schedule practice, without modifying test history."""
+    now = now or datetime.utcnow()
+    # Serialize changes for one learner, including concurrent first submissions.
+    db.query(models.User).filter_by(id=user_id).with_for_update().one()
+    source = (db.query(models.UserAnswer).join(models.UserTestAttempt)
+              .filter(models.UserTestAttempt.user_id == user_id, models.UserAnswer.question_id == question_id)
+              .order_by(models.UserAnswer.id.desc()).first())
+    if not source or source.is_correct:
+        raise ValueError("This question is not in your review list")
+    row = db.query(models.ReviewProgress).filter_by(user_id=user_id, question_id=question_id).first()
+    if row and row.source_answer_id == source.id and row.last_request_id == request_id:
+        return {"correct": row.last_correct, "due_at": row.due_at.isoformat() + "Z" if row.due_at else None}
+    if row and row.source_answer_id == source.id and (row.due_at is None or row.due_at > now):
+        raise ValueError("This question has already been reviewed. Reload to continue.")
+    answers = db.query(models.Answer).filter_by(question_id=question_id).all()
+    if not selected_ids or not set(selected_ids).issubset({answer.id for answer in answers}):
+        raise ValueError("Choose answers from this question")
+    correct = set(selected_ids) == {answer.id for answer in answers if answer.is_correct}
+    if row is None:
+        row = models.ReviewProgress(user_id=user_id, question_id=question_id, source_answer_id=source.id, streak=0)
+        db.add(row)
+    if row.source_answer_id != source.id:
+        row.streak = 0
+    row.source_answer_id = source.id
+    row.streak = row.streak + 1 if correct else 0
+    intervals = (1, 3, 7, 21)
+    row.due_at = (None if row.streak > len(intervals) else
+                  now + timedelta(days=intervals[max(0, row.streak - 1)]))
+    row.last_request_id = request_id
+    row.last_correct = correct
+    db.commit()
+    return {"correct": correct, "due_at": row.due_at.isoformat() + "Z" if row.due_at else None}
 
 
 def attempts_taken(db: Session, user_id: int) -> int:

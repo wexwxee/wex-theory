@@ -736,6 +736,9 @@
   </div>
 
   <div id="questionArea" style="display:none;">
+    {% if test.id == 14 %}
+    <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:12px;">This practice uses photographs. The real digital theory test uses computer-generated scenes.</p>
+    {% endif %}
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:12px;">
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <span style="font-size:0.85rem;color:var(--text-muted);" id="questionCounter">Question 1 of 25</span>

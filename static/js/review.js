@@ -88,7 +88,7 @@
       return;
     }
     const attempts = state.attempts === 1 ? '1 attempt' : `${state.attempts} attempts`;
-    source.textContent = `${state.pending} questions still wrong, collected from your ${attempts}.`;
+    source.textContent = `${state.pending} questions due today, collected from your ${attempts}.`;
   }
 
   function renderEmpty(title, message) {
@@ -153,6 +153,7 @@
     question.answers.forEach((answer, index) => {
       const button = el('button', 'review-option');
       button.type = 'button';
+      button.disabled = Boolean(item.requestId);
       button.setAttribute('aria-pressed', item.picked.has(answer.id) ? 'true' : 'false');
       const box = el('span', 'option-box', String(index + 1));
       const body = el('span', 'option-body');
@@ -161,7 +162,7 @@
       button.append(box, body);
       if (item.picked.has(answer.id)) button.classList.add('is-picked');
       button.addEventListener('click', () => {
-        if (item.checked) return;
+        if (item.checked || item.saving || item.requestId) return;
         if (item.picked.has(answer.id)) item.picked.delete(answer.id);
         else item.picked.add(answer.id);
         button.classList.toggle('is-picked', item.picked.has(answer.id));
@@ -202,15 +203,39 @@
     return item.picked.size ? `${item.picked.size} selected` : 'Nothing selected yet';
   }
 
-  function grade(item, buttons, check, actions, replay) {
+  async function grade(item, buttons, check, actions, replay) {
     const question = item.question;
     const correctIds = question.answers.filter((answer) => answer.is_correct).map((a) => a.id);
     const right =
       correctIds.length === item.picked.size && correctIds.every((id) => item.picked.has(id));
 
     if (!replay) {
+      if (item.saving) return;
+      item.saving = true;
+      check.disabled = true;
+      check.textContent = 'Saving…';
+      item.requestId ||= crypto.randomUUID();
+      buttons.forEach(({ button }) => { button.disabled = true; });
+      try {
+        const response = await fetch('/api/review/answer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question_id: question.id, selected_ids: [...item.picked], request_id: item.requestId }),
+        });
+        if (!response.ok) throw new Error('save failed');
+        const result = await response.json();
+        item.right = result.correct;
+        item.dueAt = result.due_at;
+      } catch (error) {
+        item.saving = false;
+        check.disabled = false;
+        check.textContent = 'Could not save — retry';
+        return;
+      }
+      item.saving = false;
       item.checked = true;
-      item.right = right;
+      // The learner may have navigated while the request was in flight.
+      if (current() !== item || !check.isConnected) return;
     }
 
     buttons.forEach(({ button, answer }) => {
@@ -273,7 +298,7 @@
     const wrap = el('div', 'review-empty');
     wrap.appendChild(el('div', 'review-empty-title', `${right}/${state.round.length} correct`));
     wrap.appendChild(el('p', 'review-empty-copy',
-      'Answer these in a real test to clear them from the list for good.'));
+      'Your answers are saved. Correct answers return after 1, 3, 7 and 21 days; mistakes return tomorrow. Test scores stay unchanged.'));
 
     const missed = state.round.filter((item) => item.checked && !item.right);
     if (missed.length) {
@@ -313,6 +338,7 @@
     fetch('/api/review/questions?limit=10')
       .then((response) => {
         if (response.status === 401) throw new Error('signed out');
+        if (!response.ok) throw new Error('load failed');
         return response.json();
       })
       .then((data) => {
@@ -328,8 +354,10 @@
         renderMeta();
         if (!state.round.length) {
           renderEmpty(
-            'Nothing to review',
-            'You have no unanswered mistakes right now. Take a test and come back — anything you miss lands here.',
+            'All done for today',
+            data.next_review_at
+              ? `Your next review is ${new Date(data.next_review_at).toLocaleString()}. You can keep practising in the tests.`
+              : 'No questions are due. Take a test — anything you miss will appear here.',
           );
           return;
         }

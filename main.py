@@ -1,5 +1,6 @@
 import hmac
 import hashlib
+import ipaddress
 import json
 import os
 import random
@@ -192,7 +193,7 @@ SYSTEM_SUPPORT_MESSAGES = [
     "We received your message. Support usually replies within 32 hours.",
     "Thanks, your request is now in queue. We normally answer within 32 hours.",
 ]
-PRIMARY_SUPER_ADMIN_EMAIL = "wexwxee@gmail.com"
+PRIMARY_SUPER_ADMIN_EMAIL = (os.environ.get("PRIMARY_SUPER_ADMIN_EMAIL") or "").strip().lower()
 TEMP_EMAIL_DOMAINS = {
     "mailinator.com", "guerrillamail.com", "yopmail.com", "tempmail.com",
     "10minutemail.com", "sharklasers.com", "trashmail.com", "getnada.com",
@@ -200,6 +201,10 @@ TEMP_EMAIL_DOMAINS = {
 }
 EMAIL_REGEX = re.compile(r"^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}$", re.IGNORECASE)
 VERIFICATION_EMAIL_SENDER = "WEXTheory <no-reply@mail.wextheory.cv>"
+GENERIC_SERVER_ERROR = "An unexpected server error occurred. Please try again."
+VERIFICATION_MAX_ATTEMPTS = 5
+VERIFICATION_RESEND_COOLDOWN_SECONDS = 60
+VERIFICATION_LOCKOUT_MINUTES = 15
 RATE_LIMIT_BUCKETS: dict[str, deque] = defaultdict(deque)
 RATE_LIMIT_CONFIG = {
     "auth_login": (8, 300),
@@ -371,11 +376,25 @@ def get_or_create_activity_session_id(request: Request) -> str:
 
 
 def get_client_ip(request: Request) -> str:
-    forwarded_for = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip()
-    if forwarded_for:
-        return forwarded_for
-    client = request.client.host if request.client else ""
-    return client or "unknown"
+    """Return a stable rate-limit identity without trusting client-supplied XFF.
+
+    Proxy headers are ignored unless TRUST_PROXY_HEADERS is explicitly enabled.
+    When enabled, the closest (right-most) X-Forwarded-For address is used; this
+    is the hop appended by the trusted edge proxy and cannot be rotated by
+    prepending attacker-controlled values.
+    """
+    direct_client = request.client.host if request.client else ""
+    if not _env_flag("TRUST_PROXY_HEADERS"):
+        return direct_client or "unknown"
+
+    forwarded_for = request.headers.get("x-forwarded-for") or ""
+    candidate = forwarded_for.rsplit(",", 1)[-1].strip()
+    if candidate:
+        try:
+            return ipaddress.ip_address(candidate).compressed
+        except ValueError:
+            pass
+    return direct_client or "unknown"
 
 
 def check_rate_limit(
@@ -967,6 +986,64 @@ def generate_email_verification_code() -> str:
     return "".join(secrets.choice("0123456789") for _ in range(6))
 
 
+def hash_email_verification_code(email: str, purpose: str, code: str) -> str:
+    payload = f"{purpose}:{email.strip().lower()}:{code.strip()}".encode("utf-8")
+    digest = hmac.new(SECRET_KEY.encode("utf-8"), payload, hashlib.sha256).hexdigest()
+    return f"hmac-sha256:{digest}"
+
+
+def email_verification_code_matches(pending: models.EmailVerificationCode, submitted_code: str) -> bool:
+    stored = str(pending.code or "")
+    if stored.startswith("hmac-sha256:"):
+        candidate = hash_email_verification_code(pending.email, pending.purpose, submitted_code)
+    else:
+        # Backward compatibility for one deployment window: existing pending
+        # codes were stored as plaintext and expire after ten minutes.
+        candidate = submitted_code
+    return hmac.compare_digest(stored, candidate)
+
+
+def verification_resend_wait_seconds(
+    db: Session,
+    email: str,
+    purpose: str,
+    *,
+    now: Optional[datetime] = None,
+) -> int:
+    current_time = now or datetime.utcnow()
+    pending = (
+        db.query(models.EmailVerificationCode)
+        .filter(
+            models.EmailVerificationCode.email == email,
+            models.EmailVerificationCode.purpose == purpose,
+        )
+        .order_by(models.EmailVerificationCode.created_at.desc())
+        .first()
+    )
+    if not pending:
+        return 0
+    wait_until = (pending.created_at or current_time) + timedelta(seconds=VERIFICATION_RESEND_COOLDOWN_SECONDS)
+    if pending.locked_until and pending.locked_until > wait_until:
+        wait_until = pending.locked_until
+    remaining = (wait_until - current_time).total_seconds()
+    return max(0, int(remaining + 0.999))
+
+
+def register_failed_verification_attempt(
+    db: Session,
+    pending: models.EmailVerificationCode,
+    *,
+    invalid_message: str = "Invalid verification code",
+) -> str:
+    pending.failed_attempts = int(pending.failed_attempts or 0) + 1
+    if pending.failed_attempts >= VERIFICATION_MAX_ATTEMPTS:
+        pending.locked_until = datetime.utcnow() + timedelta(minutes=VERIFICATION_LOCKOUT_MINUTES)
+        db.commit()
+        return "Too many incorrect attempts. Request a new code later."
+    db.commit()
+    return invalid_message
+
+
 def compute_admin_expiry(duration_value: int, duration_unit: str) -> datetime:
     unit = (duration_unit or "days").strip().lower()
     value = max(int(duration_value), 0)
@@ -1479,7 +1556,7 @@ def _send_referral_email(to_email: str, subject: str, template_name: str, **cont
             json={"from": sender, "to": [to_email], "subject": subject, "html": html},
         )
         if response.status_code >= 400:
-            raise RuntimeError(f"Resend API error {response.status_code}: {response.text[:200]}")
+            raise RuntimeError(f"Resend API returned status {response.status_code}")
 
 
 def send_referral_welcome_email(referred: models.User) -> None:
@@ -1581,7 +1658,7 @@ def send_verification_email(recipient_email: str, code: str, recipient_name: str
         ),
     }
 
-    print("[EMAIL API] provider='resend' url=%r from=%r to=%r" % (resend_api_url, sender, recipient_email))
+    print("[EMAIL API] provider='resend' kind='verification'")
 
     with httpx.Client(timeout=20.0) as client:
         response = client.post(
@@ -1593,12 +1670,12 @@ def send_verification_email(recipient_email: str, code: str, recipient_name: str
             json=payload,
         )
         if response.status_code >= 400:
-            raise RuntimeError(f"Resend API error {response.status_code}: {response.text[:300]}")
+            raise RuntimeError(f"Resend API returned status {response.status_code}")
 
 
 def send_account_removed_email(recipient_email: str, recipient_name: str) -> None:
     if not is_email_service_configured():
-        print(f"[EMAIL API] account_removed skipped: email service not configured for {recipient_email!r}")
+        print("[EMAIL API] account_removed skipped: email service not configured")
         return
 
     resend_api_key = _clean_env_value("RESEND_API_KEY")
@@ -1627,7 +1704,7 @@ def send_account_removed_email(recipient_email: str, recipient_name: str) -> Non
         ),
     }
 
-    print("[EMAIL API] provider='resend' kind='account_removed' url=%r from=%r to=%r" % (resend_api_url, sender, recipient_email))
+    print("[EMAIL API] provider='resend' kind='account_removed'")
 
     with httpx.Client(timeout=20.0) as client:
         response = client.post(
@@ -1639,7 +1716,7 @@ def send_account_removed_email(recipient_email: str, recipient_name: str) -> Non
             json=payload,
         )
         if response.status_code >= 400:
-            raise RuntimeError(f"Resend API error {response.status_code}: {response.text[:300]}")
+            raise RuntimeError(f"Resend API returned status {response.status_code}")
 
 
 def send_password_reset_email(recipient_email: str, code: str, recipient_name: str, reset_url: str) -> None:
@@ -1671,7 +1748,7 @@ def send_password_reset_email(recipient_email: str, code: str, recipient_name: s
         ),
     }
 
-    print("[EMAIL API] provider='resend' kind='password_reset' url=%r from=%r to=%r" % (resend_api_url, sender, recipient_email))
+    print("[EMAIL API] provider='resend' kind='password_reset'")
 
     with httpx.Client(timeout=20.0) as client:
         response = client.post(
@@ -1683,7 +1760,7 @@ def send_password_reset_email(recipient_email: str, code: str, recipient_name: s
             json=payload,
         )
         if response.status_code >= 400:
-            raise RuntimeError(f"Resend API error {response.status_code}: {response.text[:300]}")
+            raise RuntimeError(f"Resend API returned status {response.status_code}")
 
 
 def generate_unique_public_user_id(db: Session) -> str:
@@ -1723,6 +1800,8 @@ def ensure_super_admin_column(db: Session) -> None:
 
 
 def ensure_primary_super_admin(db: Session) -> None:
+    if not PRIMARY_SUPER_ADMIN_EMAIL:
+        return
     try:
         db.query(models.User).filter(
             models.User.email != PRIMARY_SUPER_ADMIN_EMAIL,
@@ -1785,15 +1864,47 @@ def ensure_support_message_columns(db: Session) -> None:
         print(f"[STARTUP] support_messages column setup skipped/error: {e}")
 
 
+def ensure_email_verification_security_columns(db: Session) -> None:
+    try:
+        inspector = sql_inspect(engine)
+        if "email_verification_codes" not in inspector.get_table_names():
+            models.EmailVerificationCode.__table__.create(bind=engine, checkfirst=True)
+            print("[STARTUP] Created email_verification_codes table")
+            return
+        columns = {col["name"] for col in inspector.get_columns("email_verification_codes")}
+        changed = False
+        if "failed_attempts" not in columns:
+            db.execute(sql_text(
+                "ALTER TABLE email_verification_codes "
+                "ADD COLUMN failed_attempts INTEGER NOT NULL DEFAULT 0"
+            ))
+            changed = True
+        if "locked_until" not in columns:
+            db.execute(sql_text(
+                "ALTER TABLE email_verification_codes ADD COLUMN locked_until TIMESTAMP"
+            ))
+            changed = True
+        if changed:
+            db.commit()
+            print("[STARTUP] Added email verification security columns")
+    except Exception as e:
+        db.rollback()
+        print(f"[STARTUP] email verification schema setup skipped/error: {type(e).__name__}")
+
+
 def ensure_promo_codes_table(db: Session) -> None:
     try:
         inspector = sql_inspect(engine)
-        if "promo_codes" not in inspector.get_table_names():
+        table_names = set(inspector.get_table_names())
+        if "promo_codes" not in table_names:
             models.PromoCode.__table__.create(bind=engine, checkfirst=True)
             print("[STARTUP] Created promo_codes table")
+        if "promo_code_redemptions" not in table_names:
+            models.PromoCodeRedemption.__table__.create(bind=engine, checkfirst=True)
+            print("[STARTUP] Created promo_code_redemptions table")
     except Exception as e:
         db.rollback()
-        print(f"[STARTUP] promo_codes table setup skipped/error: {e}")
+        print(f"[STARTUP] promo code tables setup skipped/error: {e}")
 
 
 def ensure_attempt_question_order_column(db: Session) -> None:
@@ -2606,6 +2717,7 @@ async def refresh_auth_session(request: Request, call_next):
         "/api/stripe/webhook",
         "/api/activity/ping",
         "/api/activity/event",
+        "/setup-admin-xk92",
     }
     if request.method.upper() not in {"GET", "HEAD", "OPTIONS"} and request.url.path not in csrf_exempt_paths:
         cookie_token = (request.cookies.get(CSRF_COOKIE_NAME) or "").strip()
@@ -2696,6 +2808,7 @@ async def startup_init():
         ensure_all_user_public_ids(db)
         ensure_contact_attachment_columns(db)
         ensure_support_message_columns(db)
+        ensure_email_verification_security_columns(db)
         ensure_promo_codes_table(db)
         ensure_attempt_question_order_column(db)
         ensure_exam_wording_columns(db)
@@ -2775,47 +2888,39 @@ async def startup_init():
             print(f"[STARTUP] Exam wording import error: {ie}")
             traceback.print_exc()
 
-        # 3. Create default admin if not exists; migrate old admin@wex.com if present
+        # 3. Optionally enforce one configured super-admin identity. Existing
+        # database roles remain untouched when the environment variable is absent.
         _admin_email = PRIMARY_SUPER_ADMIN_EMAIL
-        existing = db.query(models.User).filter(models.User.email == _admin_email).first()
-        if not existing:
-            # Also check for old email and update it
-            old_admin = db.query(models.User).filter(models.User.email == "admin@wex.com").first()
-            if old_admin:
-                old_admin.email = _admin_email
-                old_admin.expires_at = datetime.utcnow() + timedelta(days=3650)
-                old_admin.is_admin = True
-                old_admin.is_super_admin = True
-                old_admin.subscription_status = "active"
-                db.commit()
-                print(f"[STARTUP] Admin migrated: admin@wex.com → {_admin_email}")
-            elif BOOTSTRAP_ADMIN_PASSWORD:
-                u = models.User(
-                    name="Admin",
-                    public_id=generate_unique_public_user_id(db),
-                    email=_admin_email,
-                    password_hash=hash_password(BOOTSTRAP_ADMIN_PASSWORD),
-                    created_at=datetime.utcnow(),
-                    expires_at=datetime.utcnow() + timedelta(days=3650),
-                    is_admin=True,
-                    is_super_admin=True,
-                    subscription_status="active",
-                )
-                db.add(u)
-                db.commit()
-                print(f"[STARTUP] Admin created from BOOTSTRAP_ADMIN_PASSWORD: {_admin_email}")
+        if _admin_email:
+            existing = db.query(models.User).filter(models.User.email == _admin_email).first()
+            if not existing:
+                if BOOTSTRAP_ADMIN_PASSWORD:
+                    u = models.User(
+                        name="Admin",
+                        public_id=generate_unique_public_user_id(db),
+                        email=_admin_email,
+                        password_hash=hash_password(BOOTSTRAP_ADMIN_PASSWORD),
+                        created_at=datetime.utcnow(),
+                        expires_at=datetime.utcnow() + timedelta(days=3650),
+                        is_admin=True,
+                        is_super_admin=True,
+                        subscription_status="active",
+                    )
+                    db.add(u)
+                    db.commit()
+                    print("[STARTUP] Admin created from protected environment configuration")
+                else:
+                    print("[STARTUP] Configured super admin not found; bootstrap password is not set")
             else:
-                print(f"[STARTUP] Super admin {_admin_email} not found and BOOTSTRAP_ADMIN_PASSWORD is not set")
+                existing.subscription_status = "active"
+                existing.expires_at = max(existing.expires_at, datetime.utcnow() + timedelta(days=3650))
+                existing.is_admin = True
+                existing.is_super_admin = True
+                db.commit()
+                print(f"[STARTUP] Admin exists and refreshed: id={existing.id}")
+            ensure_primary_super_admin(db)
         else:
-            # Ensure existing admin keeps elevated access without forcing a password reset
-            existing.subscription_status = "active"
-            existing.expires_at = max(existing.expires_at, datetime.utcnow() + timedelta(days=3650))
-            existing.is_admin = True
-            existing.is_super_admin = True
-            db.commit()
-            print(f"[STARTUP] Admin exists and refreshed: id={existing.id}")
-
-        ensure_primary_super_admin(db)
+            print("[STARTUP] PRIMARY_SUPER_ADMIN_EMAIL not set; preserving database roles")
         ensure_exam_mode_test(db)
 
     except Exception as e:
@@ -3267,10 +3372,14 @@ def get_questions_for_attempt(db: Session, attempt: models.UserTestAttempt) -> l
 
 # ─── One-time setup endpoint ───────────────────────────────────────────────────
 
-@app.get("/setup-admin-xk92")
+@app.post("/setup-admin-xk92")
 async def setup_admin(request: Request, db: Session = Depends(get_db)):
-    token = str(request.query_params.get("token", "")).strip()
-    if not ADMIN_SETUP_TOKEN or token != ADMIN_SETUP_TOKEN:
+    token = str(request.headers.get("x-admin-setup-token", "")).strip()
+    if (
+        not ADMIN_SETUP_TOKEN
+        or not PRIMARY_SUPER_ADMIN_EMAIL
+        or not hmac.compare_digest(token, ADMIN_SETUP_TOKEN)
+    ):
         raise HTTPException(status_code=404, detail="Not found")
     _admin_email = PRIMARY_SUPER_ADMIN_EMAIL
     existing = db.query(models.User).filter(models.User.email == _admin_email).first()
@@ -3376,12 +3485,9 @@ async def google_login(request: Request):
 
 @app.get("/auth/google/callback")
 async def google_callback(request: Request, db: Session = Depends(get_db)):
-    print(f"[GOOGLE CB] query params: {dict(request.query_params)}")
     try:
         token = await oauth.google.authorize_access_token(request)
-        print(f"[GOOGLE CB] token keys: {list(token.keys())}")
         info = token.get("userinfo") or {}
-        print(f"[GOOGLE CB] userinfo: {info}")
         email = info.get("email", "").lower().strip()
         name = info.get("name", email.split("@")[0] if email else "User")
         if not email:
@@ -3409,12 +3515,12 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
             db.commit()
             db.refresh(user)
             created_user = True
-            print(f"[GOOGLE CB] New user created: id={user.id} email={email}")
+            print(f"[GOOGLE CB] New user created: id={user.id}")
         else:
             if not user.referral_code:
                 user.referral_code = generate_unique_referral_code(db)
                 db.commit()
-            print(f"[GOOGLE CB] Existing user: id={user.id} email={email}")
+            print(f"[GOOGLE CB] Existing user: id={user.id}")
 
         referral_outcome = "no_code"
         if created_user:
@@ -3434,11 +3540,8 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
         resp.delete_cookie(REFERRAL_COOKIE_NAME, path="/")
         return resp
     except Exception as e:
-        err_str = str(e)
-        print(f"[GOOGLE CB ERROR] {err_str}")
-        traceback.print_exc()
-        from urllib.parse import quote
-        return RedirectResponse(f"/login?google_error={quote(err_str[:120])}", status_code=302)
+        print(f"[GOOGLE CB ERROR] {type(e).__name__}")
+        return RedirectResponse("/login?google_error=oauth_failed", status_code=302)
 
 
 @app.get("/auth/telegram")
@@ -3462,12 +3565,9 @@ async def telegram_login(request: Request):
 
 @app.get("/auth/telegram/callback")
 async def telegram_callback(request: Request, db: Session = Depends(get_db)):
-    print(f"[TELEGRAM CB] query params: {dict(request.query_params)}")
     try:
         token = await oauth.telegram.authorize_access_token(request)
-        print(f"[TELEGRAM CB] token keys: {list(token.keys())}")
         info = await _extract_oidc_userinfo(oauth.telegram, request, token)
-        print(f"[TELEGRAM CB] userinfo keys: {list(info.keys())}")
 
         user, created_user = _upsert_telegram_user(db, info, request)
 
@@ -3488,10 +3588,8 @@ async def telegram_callback(request: Request, db: Session = Depends(get_db)):
         return resp
     except Exception as e:
         db.rollback()
-        err_str = str(e)
-        print(f"[TELEGRAM CB ERROR] {err_str}")
-        traceback.print_exc()
-        return RedirectResponse(f"/login?telegram_error={quote(err_str[:120])}", status_code=302)
+        print(f"[TELEGRAM CB ERROR] {type(e).__name__}")
+        return RedirectResponse("/login?telegram_error=oauth_failed", status_code=302)
 
 
 # ─── Public pages ──────────────────────────────────────────────────────────────
@@ -3568,17 +3666,21 @@ def complete_email_verification(db: Session, email: str, code: str, request: Opt
             models.EmailVerificationCode.email == email,
             models.EmailVerificationCode.purpose == "register"
         )
+        .with_for_update()
         .order_by(models.EmailVerificationCode.created_at.desc())
         .first()
     )
     if not pending:
         return None, "Verification code not found. Request a new one."
-    if pending.expires_at < datetime.utcnow():
+    now = datetime.utcnow()
+    if pending.locked_until and pending.locked_until > now:
+        return None, "Too many incorrect attempts. Request a new code later."
+    if pending.expires_at < now:
         db.delete(pending)
         db.commit()
         return None, "Verification code expired. Request a new one."
-    if pending.code != code:
-        return None, "Invalid verification code"
+    if not email_verification_code_matches(pending, code):
+        return None, register_failed_verification_attempt(db, pending)
 
     existing = db.query(models.User).filter(models.User.email == email).first()
     if existing:
@@ -3615,17 +3717,25 @@ def complete_password_reset(db: Session, email: str, code: str, new_password: st
             models.EmailVerificationCode.email == email,
             models.EmailVerificationCode.purpose == "reset_password"
         )
+        .with_for_update()
         .order_by(models.EmailVerificationCode.created_at.desc())
         .first()
     )
     if not pending:
         return "Reset code not found. Request a new one."
-    if pending.expires_at < datetime.utcnow():
+    now = datetime.utcnow()
+    if pending.locked_until and pending.locked_until > now:
+        return "Too many incorrect attempts. Request a new code later."
+    if pending.expires_at < now:
         db.delete(pending)
         db.commit()
         return "Reset code expired. Request a new one."
-    if pending.code != code:
-        return "Invalid reset code"
+    if not email_verification_code_matches(pending, code):
+        return register_failed_verification_attempt(
+            db,
+            pending,
+            invalid_message="Invalid reset code",
+        )
 
     user = db.query(models.User).filter(models.User.email == email).first()
     if not user:
@@ -3692,13 +3802,78 @@ async def api_review_questions(request: Request, limit: int = review_drill.DEFAU
         raise HTTPException(status_code=401, detail="Sign in to review your mistakes")
     misses = review_drill.miss_counts(db, user.id)
     return {
-        "pending": len(misses),
+        "pending": review_drill.review_count(db, user.id),
+        "next_review_at": review_drill.next_review_at(db, user.id),
         "attempts": review_drill.attempts_taken(db, user.id),
         "questions": [
             review_drill.as_payload(question, misses=misses.get(question.id, 1))
             for question in review_drill.review_questions(db, user.id, limit)
         ],
     }
+
+
+@app.post("/api/review/answer")
+async def api_review_answer(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Sign in to save your review")
+    try:
+        data = await request.json()
+        if not isinstance(data, dict):
+            raise ValueError("Invalid answer")
+        question_id = data.get("question_id")
+        selected = data.get("selected_ids")
+        request_id = data.get("request_id")
+        if (type(question_id) is not int or not isinstance(selected, list) or len(selected) > 20
+                or any(type(value) is not int for value in selected)
+                or not isinstance(request_id, str) or not re.fullmatch(r"[a-zA-Z0-9-]{16,80}", request_id)):
+            raise ValueError("Invalid answer")
+        return review_drill.record_answer(db, user.id, question_id, selected, request_id)
+    except ValueError as exc:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/api/signs/progress")
+async def api_sign_progress(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Sign in to sync progress")
+    return {"progress": {row.code: {"box": row.box} for row in
+                         db.query(models.SignProgress).filter_by(user_id=user.id).all()}}
+
+
+@app.post("/api/signs/progress")
+async def api_save_sign_progress(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Sign in to sync progress")
+    try:
+        data = await request.json()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid progress")
+    if not isinstance(data, dict) or not isinstance(data.get("progress"), dict):
+        raise HTTPException(status_code=400, detail="Invalid progress")
+    changes = data["progress"]
+    codes = {sign["code"] for sign in signs_catalogue.all_signs()}
+    if (len(changes) > len(codes) or type(data.get("reset", False)) is not bool
+            or any(code not in codes or not isinstance(entry, dict)
+                   or type(entry.get("box")) is not int or not 0 <= entry["box"] <= 5
+                   for code, entry in changes.items())):
+        raise HTTPException(status_code=400, detail="Invalid sign progress")
+    db.query(models.User).filter_by(id=user.id).with_for_update().one()
+    if data.get("reset"):
+        db.query(models.SignProgress).filter_by(user_id=user.id).delete()
+    rows = {row.code: row for row in db.query(models.SignProgress).filter_by(user_id=user.id).all()}
+    for code, entry in changes.items():
+        row = rows.get(code)
+        if row is None:
+            row = models.SignProgress(user_id=user.id, code=code)
+            db.add(row)
+        row.box = entry["box"]
+        row.updated_at = datetime.utcnow()
+    db.commit()
+    return {"success": True}
 
 
 @app.get("/signs", response_class=HTMLResponse)
@@ -3812,7 +3987,7 @@ async def api_register(request: Request, db: Session = Depends(get_db)):
         return limited
     try:
         data = await request.json()
-        print(f"[REGISTER] received: name={data.get('name')} email={data.get('email')}")
+        print("[REGISTER] request received")
 
         name     = str(data.get("name", "")).strip()
         email    = str(data.get("email", "")).strip().lower()
@@ -3831,8 +4006,16 @@ async def api_register(request: Request, db: Session = Depends(get_db)):
 
         existing = db.query(models.User).filter(models.User.email == email).first()
         if existing:
-            print(f"[REGISTER] email taken: {email}")
+            print("[REGISTER] rejected: email already registered")
             return JSONResponse({"error": "This email is already registered"}, status_code=400)
+
+        retry_after = verification_resend_wait_seconds(db, email, "register")
+        if retry_after:
+            return JSONResponse(
+                {"error": "Please wait before requesting another verification code"},
+                status_code=429,
+                headers={"Retry-After": str(retry_after)},
+            )
 
         db.query(models.EmailVerificationCode).filter(
             models.EmailVerificationCode.email == email,
@@ -3844,8 +4027,9 @@ async def api_register(request: Request, db: Session = Depends(get_db)):
             email=email,
             name=name,
             password_hash=hash_password(password),
-            code=code,
+            code=hash_email_verification_code(email, "register", code),
             purpose="register",
+            failed_attempts=0,
             expires_at=datetime.utcnow() + timedelta(minutes=10),
             created_at=datetime.utcnow(),
         )
@@ -3869,7 +4053,7 @@ async def api_register(request: Request, db: Session = Depends(get_db)):
             db.commit()
             raise
 
-        print(f"[REGISTER] verification sent: email={email}")
+        print("[REGISTER] verification sent")
         return JSONResponse({
             "success": True,
             "requires_verification": True,
@@ -3879,9 +4063,8 @@ async def api_register(request: Request, db: Session = Depends(get_db)):
 
     except Exception as e:
         db.rollback()
-        print(f"[REGISTER ERROR] {e}")
-        traceback.print_exc()
-        return JSONResponse({"error": f"Server error: {str(e)}"}, status_code=500)
+        print(f"[REGISTER ERROR] {type(e).__name__}")
+        return JSONResponse({"error": GENERIC_SERVER_ERROR}, status_code=500)
 
 
 @app.post("/api/auth/register/verify")
@@ -3918,13 +4101,12 @@ async def api_register_verify(request: Request, db: Session = Depends(get_db)):
         })
         set_auth_cookie(resp, token, request)
         resp.delete_cookie(REFERRAL_COOKIE_NAME, path="/")
-        print(f"[REGISTER VERIFY] success: id={user.id} email={email} ref={referral_outcome}")
+        print(f"[REGISTER VERIFY] success: id={user.id} ref={referral_outcome}")
         return resp
     except Exception as e:
         db.rollback()
-        print(f"[REGISTER VERIFY ERROR] {e}")
-        traceback.print_exc()
-        return JSONResponse({"error": f"Server error: {str(e)}"}, status_code=500)
+        print(f"[REGISTER VERIFY ERROR] {type(e).__name__}")
+        return JSONResponse({"error": GENERIC_SERVER_ERROR}, status_code=500)
 
 
 @app.post("/api/auth/forgot-password")
@@ -3951,6 +4133,13 @@ async def api_forgot_password(request: Request, db: Session = Depends(get_db)):
         if not user:
             return JSONResponse({"success": True, "message": "If this email exists, we sent reset instructions."})
 
+        retry_after = verification_resend_wait_seconds(db, email, "reset_password")
+        if retry_after:
+            return JSONResponse({
+                "success": True,
+                "message": "If this email exists, we sent reset instructions.",
+            })
+
         db.query(models.EmailVerificationCode).filter(
             models.EmailVerificationCode.email == email,
             models.EmailVerificationCode.purpose == "reset_password"
@@ -3961,8 +4150,9 @@ async def api_forgot_password(request: Request, db: Session = Depends(get_db)):
             email=email,
             name=user.name,
             password_hash=user.password_hash,
-            code=code,
+            code=hash_email_verification_code(email, "reset_password", code),
             purpose="reset_password",
+            failed_attempts=0,
             expires_at=datetime.utcnow() + timedelta(minutes=10),
             created_at=datetime.utcnow(),
         )
@@ -3986,9 +4176,8 @@ async def api_forgot_password(request: Request, db: Session = Depends(get_db)):
         return JSONResponse({"success": True, "message": "If this email exists, we sent reset instructions.", "email": email})
     except Exception as e:
         db.rollback()
-        print(f"[FORGOT PASSWORD ERROR] {e}")
-        traceback.print_exc()
-        return JSONResponse({"error": f"Server error: {str(e)}"}, status_code=500)
+        print(f"[FORGOT PASSWORD ERROR] {type(e).__name__}")
+        return JSONResponse({"error": GENERIC_SERVER_ERROR}, status_code=500)
 
 
 @app.post("/api/auth/reset-password")
@@ -4016,9 +4205,8 @@ async def api_reset_password(request: Request, db: Session = Depends(get_db)):
         return JSONResponse({"success": True, "redirect": "/login?reset=1"})
     except Exception as e:
         db.rollback()
-        print(f"[RESET PASSWORD ERROR] {e}")
-        traceback.print_exc()
-        return JSONResponse({"error": f"Server error: {str(e)}"}, status_code=500)
+        print(f"[RESET PASSWORD ERROR] {type(e).__name__}")
+        return JSONResponse({"error": GENERIC_SERVER_ERROR}, status_code=500)
 
 
 @app.get("/verify-email")
@@ -4030,10 +4218,7 @@ async def verify_email_link(email: str, code: str, request: Request, db: Session
 
     user, error = complete_email_verification(db, email, code, request)
     if error:
-        error_response = RedirectResponse(
-            f"/register?error={quote(error)}&email={quote(email)}&code={quote(code)}",
-            status_code=302,
-        )
+        error_response = RedirectResponse(f"/register?error={quote(error)}", status_code=302)
         referral_token = request.query_params.get("ref_token") or ""
         if _decode_signed_referral_value(referral_token):
             error_response.set_cookie(
@@ -4056,7 +4241,7 @@ async def verify_email_link(email: str, code: str, request: Request, db: Session
     resp = RedirectResponse("/dashboard?verified=1", status_code=302)
     set_auth_cookie(resp, token, request)
     resp.delete_cookie(REFERRAL_COOKIE_NAME, path="/")
-    print(f"[VERIFY LINK] success: id={user.id} email={email} ref={referral_outcome}")
+    print(f"[VERIFY LINK] success: id={user.id} ref={referral_outcome}")
     return resp
 
 
@@ -4073,14 +4258,14 @@ async def api_login(request: Request, db: Session = Depends(get_db)):
         data = await request.json()
         email    = str(data.get("email", "")).strip().lower()
         password = str(data.get("password", ""))
-        print(f"[LOGIN] email={email}")
+        print("[LOGIN] request received")
 
         user = db.query(models.User).filter(models.User.email == email).first()
         if not user:
-            print(f"[LOGIN] not found: {email}")
+            print("[LOGIN] rejected")
             return JSONResponse({"error": "Invalid email or password"}, status_code=401)
         if not verify_password(password, user.password_hash):
-            print(f"[LOGIN] wrong password: {email}")
+            print("[LOGIN] rejected")
             return JSONResponse({"error": "Invalid email or password"}, status_code=401)
 
         token = create_token(user.id)
@@ -4091,9 +4276,8 @@ async def api_login(request: Request, db: Session = Depends(get_db)):
         return resp
 
     except Exception as e:
-        print(f"[LOGIN ERROR] {e}")
-        traceback.print_exc()
-        return JSONResponse({"error": f"Server error: {str(e)}"}, status_code=500)
+        print(f"[LOGIN ERROR] {type(e).__name__}")
+        return JSONResponse({"error": GENERIC_SERVER_ERROR}, status_code=500)
 
 
 @app.post("/api/auth/logout")
@@ -4128,7 +4312,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
     token_cookie = request.cookies.get("token")
     print(f"[DASHBOARD] token cookie present: {bool(token_cookie)}")
     user = get_current_user(request, db)
-    print(f"[DASHBOARD] user resolved: {user.email if user else None}")
+    print(f"[DASHBOARD] authenticated={bool(user)} user_id={user.id if user else None}")
     if not user:
         return RedirectResponse("/login", status_code=302)
 
@@ -4422,6 +4606,13 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse(request, "profile.html", {
         "request": request, "user": user, "attempts": attempts,
         "now": now, "profile_stats": profile_stats,
+        "weak_signs": [sign for row in db.query(models.SignProgress).filter(
+            models.SignProgress.user_id == user.id, models.SignProgress.box < 3
+        ).order_by(models.SignProgress.box, models.SignProgress.updated_at).limit(8).all()
+                       for sign in signs_catalogue.all_signs() if sign["code"] == row.code],
+        "learned_signs": db.query(models.SignProgress).filter(
+            models.SignProgress.user_id == user.id, models.SignProgress.box >= 3).count(),
+        "review_due": review_drill.review_count(db, user.id),
     })
 
 
@@ -4925,6 +5116,9 @@ async def results_page(test_id: int, attempt_id: int, request: Request, db: Sess
     ]
     for qr in question_results:
         qr["review_json"]["is_bookmarked"] = qr["question"].id in bookmarked_question_ids
+    result_score = max(int(attempt.score or 0), 0)
+    result_total = len(question_results)
+    result_percentage = round((result_score / result_total) * 100) if result_total else 0
     is_triumph = False
     triumph_data = None
     if (
@@ -4969,7 +5163,10 @@ async def results_page(test_id: int, attempt_id: int, request: Request, db: Sess
         "bookmarked_question_ids": bookmarked_question_ids,
         "saved_question_results": saved_question_results,
         "is_exam_mode": is_exam_mode_test(attempt.test_id),
-        "error_count": len(question_results) - (attempt.score or 0),
+        "error_count": result_total - result_score,
+        "result_score": result_score,
+        "result_total": result_total,
+        "result_percentage": result_percentage,
         "wording_mode": wording_mode,
         "is_triumph": is_triumph,
         "triumph_data": triumph_data,
@@ -4990,23 +5187,8 @@ async def review_page(test_id: int, attempt_id: int, request: Request, db: Sessi
     if not attempt:
         raise HTTPException(status_code=404)
 
-    wording_mode = normalize_wording_mode(getattr(attempt, "wording_mode", None), test_id=attempt.test_id)
-    questions = get_questions_for_attempt(db, attempt)
-    ua_map = {ua.question_id: ua for ua in attempt.user_answers}
-    review_data = []
-    for q in questions:
-        apply_wording_to_question(q, wording_mode)
-        ua = ua_map.get(q.id)
-        answers = ordered_answers(q)
-        review_data.append({
-            "question": q, "answers": answers,
-            "selected_ids": json.loads(ua.selected_answer_ids) if ua else [],
-            "is_correct": ua.is_correct if ua else False,
-        })
-    return templates.TemplateResponse(request, "review.html", {
-        "request": request, "user": user, "test": attempt.test,
-        "attempt": attempt, "review_data": review_data, "wording_mode": wording_mode,
-    })
+    return RedirectResponse(f"/test/{test_id}/results/{attempt_id}?review=1", status_code=302)
+
 
 
 # ─── Test API ──────────────────────────────────────────────────────────────────
@@ -5081,9 +5263,8 @@ async def api_start_test(test_id: int, request: Request, db: Session = Depends(g
             return {"attempt_id": attempt.id}
         except Exception as e:
             db.rollback()
-            print(f"[START EXAM ERROR] user_id={user.id}: {e}")
-            traceback.print_exc()
-            return JSONResponse({"error": str(e)}, status_code=500)
+            print(f"[START EXAM ERROR] user_id={user.id} type={type(e).__name__}")
+            return JSONResponse({"error": GENERIC_SERVER_ERROR}, status_code=500)
 
     test = db.query(models.Test).filter(models.Test.id == test_id).first()
     if not test:
@@ -5105,9 +5286,8 @@ async def api_start_test(test_id: int, request: Request, db: Session = Depends(g
         return {"attempt_id": attempt.id}
     except Exception as e:
         db.rollback()
-        print(f"[START ERROR] user_id={user.id} test_id={test_id}: {e}")
-        traceback.print_exc()
-        return JSONResponse({"error": str(e)}, status_code=500)
+        print(f"[START ERROR] user_id={user.id} test_id={test_id} type={type(e).__name__}")
+        return JSONResponse({"error": GENERIC_SERVER_ERROR}, status_code=500)
 
 
 @app.post("/api/attempts/{attempt_id}/answer")
@@ -5253,8 +5433,8 @@ async def api_finish_attempt(attempt_id: int, request: Request, db: Session = De
             "referral_qualification": referral_qualification,
         }
     except Exception as e:
-        traceback.print_exc()
-        return JSONResponse({"error": str(e)}, status_code=500)
+        print(f"[FINISH ATTEMPT ERROR] type={type(e).__name__}")
+        return JSONResponse({"error": GENERIC_SERVER_ERROR}, status_code=500)
 
 
 @app.get("/api/attempts/{attempt_id}/review")
@@ -5286,21 +5466,6 @@ async def api_review(attempt_id: int, request: Request, db: Session = Depends(ge
             is_correct=ua.is_correct if ua else False,
         ))
     return review_items
-
-
-# ─── Debug ─────────────────────────────────────────────────────────────────────
-
-@app.get("/api/debug-env")
-async def debug_env():
-    key = os.environ.get("ANTHROPIC_API_KEY", "")
-    key = key.strip()
-    db_url = os.environ.get("DATABASE_URL", "")
-    return {
-        "anthropic_key_set": bool(key),
-        "anthropic_key_preview": (key[:12] + "...") if key else "NOT SET",
-        "anthropic_key_length": len(key),
-        "database_url_set": bool(db_url),
-    }
 
 
 # ─── Dictionary (curated word translations) ───────────────────────────────────
@@ -6115,13 +6280,13 @@ async def api_contact(request: Request, db: Session = Depends(get_db)):
         )
         db.add(msg)
         db.commit()
-        print(f"[CONTACT] from={form.get('email')} subject={form.get('subject')} attachment={attachment_name}")
+        print(f"[CONTACT] submitted attachment={bool(attachment_name)}")
         return JSONResponse({"success": True})
     except ValueError as e:
         return JSONResponse({"error": str(e)}, status_code=400)
     except Exception as e:
-        print(f"[CONTACT ERROR] {e}")
-        return JSONResponse({"error": str(e)}, status_code=500)
+        print(f"[CONTACT ERROR] {type(e).__name__}")
+        return JSONResponse({"error": GENERIC_SERVER_ERROR}, status_code=500)
 
 
 @app.post("/api/support/threads/{thread_id}/reply")
@@ -6271,7 +6436,8 @@ async def prometheus_metrics(request: Request, db: Session = Depends(get_db)):
         from starlette.responses import Response as _Resp
         return _Resp(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
     except Exception as e:
-        return JSONResponse({"error": str(e)}, status_code=500)
+        print(f"[METRICS ERROR] {type(e).__name__}")
+        return JSONResponse({"error": GENERIC_SERVER_ERROR}, status_code=500)
 
 
 @app.get("/admin/api/stats")
@@ -6510,7 +6676,8 @@ async def api_admin_create_user(request: Request, db: Session = Depends(get_db))
         db.commit()
         return JSONResponse({"success": True, "id": u.id, "public_id": u.public_id})
     except Exception as e:
-        return JSONResponse({"error": str(e)}, status_code=500)
+        print(f"[ADMIN CREATE USER ERROR] {type(e).__name__}")
+        return JSONResponse({"error": GENERIC_SERVER_ERROR}, status_code=500)
 
 
 @app.put("/api/admin/users/{user_id}")
@@ -6614,7 +6781,7 @@ async def api_admin_delete_user(user_id: int, request: Request, db: Session = De
     try:
         send_account_removed_email(deleted_email, deleted_name)
     except Exception as e:
-        print(f"[ADMIN DELETE] account removed email failed for {deleted_email!r}: {e}")
+        print(f"[ADMIN DELETE] account removed email failed: {type(e).__name__}")
 
     db.query(models.UserAnswer).filter(
         models.UserAnswer.attempt_id.in_(
@@ -6622,6 +6789,8 @@ async def api_admin_delete_user(user_id: int, request: Request, db: Session = De
         )
     ).delete(synchronize_session=False)
     db.query(models.UserTestAttempt).filter(models.UserTestAttempt.user_id == user_id).delete()
+    db.query(models.ReviewProgress).filter_by(user_id=user_id).delete()
+    db.query(models.SignProgress).filter_by(user_id=user_id).delete()
     db.delete(u)
     db.commit()
     return JSONResponse({"success": True})
@@ -6696,7 +6865,8 @@ async def api_admin_create_promo_code(request: Request, db: Session = Depends(ge
         return JSONResponse({"success": True, "code": promo.code})
     except Exception as e:
         db.rollback()
-        return JSONResponse({"error": str(e)}, status_code=500)
+        print(f"[PROMO CREATE ERROR] {type(e).__name__}")
+        return JSONResponse({"error": GENERIC_SERVER_ERROR}, status_code=500)
 
 
 @app.post("/api/promo-codes/redeem")
@@ -6704,6 +6874,7 @@ async def api_redeem_promo_code(request: Request, db: Session = Depends(get_db))
     user = get_current_user(request, db)
     if not user:
         return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    promo_id = None
     try:
         data = await request.json()
         code = str(data.get("code", "")).strip().upper()
@@ -6748,9 +6919,32 @@ async def api_redeem_promo_code(request: Request, db: Session = Depends(get_db))
                 "expires_at": (user.expires_at.isoformat() if user.expires_at else None),
             })
 
-        promo = db.query(models.PromoCode).filter(models.PromoCode.code == code).first()
+        # Serialize redemption for both the account and the promo. This prevents
+        # parallel requests from granting duplicate days or exceeding max_uses.
+        user = (
+            db.query(models.User)
+            .filter(models.User.id == user.id)
+            .with_for_update()
+            .populate_existing()
+            .first()
+        )
+        if not user:
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        promo = (
+            db.query(models.PromoCode)
+            .filter(models.PromoCode.code == code)
+            .with_for_update()
+            .first()
+        )
         if not promo:
             return JSONResponse({"error": "Promo code not found"}, status_code=404)
+        promo_id = promo.id
+        already_redeemed = db.query(models.PromoCodeRedemption.id).filter(
+            models.PromoCodeRedemption.promo_code_id == promo.id,
+            models.PromoCodeRedemption.user_id == user.id,
+        ).first()
+        if already_redeemed:
+            return JSONResponse({"error": "You've already used this promo code"}, status_code=400)
         if not promo.is_active:
             return JSONResponse({"error": "This promo code is inactive"}, status_code=400)
         if promo.expires_at and promo.expires_at < datetime.utcnow():
@@ -6758,6 +6952,12 @@ async def api_redeem_promo_code(request: Request, db: Session = Depends(get_db))
         if promo.max_uses is not None and promo.current_uses >= promo.max_uses:
             return JSONResponse({"error": "This promo code has reached its usage limit"}, status_code=400)
 
+        db.add(models.PromoCodeRedemption(
+            promo_code_id=promo.id,
+            user_id=user.id,
+            duration_days=promo.duration_days,
+            redeemed_at=datetime.utcnow(),
+        ))
         promo.current_uses += 1
         if promo.max_uses is not None and promo.current_uses >= promo.max_uses:
             promo.is_active = False
@@ -6770,9 +6970,20 @@ async def api_redeem_promo_code(request: Request, db: Session = Depends(get_db))
             "duration_days": promo.duration_days,
             "expires_at": new_expiry.isoformat(),
         })
+    except IntegrityError:
+        db.rollback()
+        if promo_id is not None:
+            duplicate = db.query(models.PromoCodeRedemption.id).filter(
+                models.PromoCodeRedemption.promo_code_id == promo_id,
+                models.PromoCodeRedemption.user_id == user.id,
+            ).first()
+            if duplicate:
+                return JSONResponse({"error": "You've already used this promo code"}, status_code=400)
+        return JSONResponse({"error": "Unable to apply promo code"}, status_code=500)
     except Exception as e:
         db.rollback()
-        return JSONResponse({"error": str(e)}, status_code=500)
+        print(f"[PROMO REDEEM ERROR] {type(e).__name__}")
+        return JSONResponse({"error": GENERIC_SERVER_ERROR}, status_code=500)
 
 
 # ─── Certificate Verification + Referrals ────────────────────────────────────
@@ -6931,7 +7142,8 @@ async def api_regenerate_referral_code(request: Request, db: Session = Depends(g
         })
     except Exception as e:
         db.rollback()
-        return JSONResponse({"error": str(e)}, status_code=500)
+        print(f"[REFERRAL REGENERATE ERROR] {type(e).__name__}")
+        return JSONResponse({"error": GENERIC_SERVER_ERROR}, status_code=500)
 
 
 # ─── Pricing / Subscription pages ─────────────────────────────────────────────
@@ -6979,8 +7191,8 @@ async def api_create_checkout(request: Request, db: Session = Depends(get_db)):
         url = create_checkout_session(customer_id, user.id)
         return JSONResponse({"url": url})
     except Exception as e:
-        traceback.print_exc()
-        return JSONResponse({"error": str(e)}, status_code=500)
+        print(f"[CHECKOUT ERROR] {type(e).__name__}")
+        return JSONResponse({"error": GENERIC_SERVER_ERROR}, status_code=500)
 
 
 @app.post("/api/billing-portal")
@@ -6997,8 +7209,8 @@ async def api_billing_portal(request: Request, db: Session = Depends(get_db)):
         url = create_portal_session(user.stripe_customer_id)
         return JSONResponse({"url": url})
     except Exception as e:
-        traceback.print_exc()
-        return JSONResponse({"error": str(e)}, status_code=500)
+        print(f"[BILLING PORTAL ERROR] {type(e).__name__}")
+        return JSONResponse({"error": GENERIC_SERVER_ERROR}, status_code=500)
 
 
 async def _handle_stripe_webhook(request: Request, db: Session, stripe_signature: str):
