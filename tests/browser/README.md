@@ -25,5 +25,10 @@ rounds. Use the same fixture server. The suite checks horizontal overflow and
 JavaScript exceptions. Listening quality and the factual accuracy of the question
 content require separate checks.
 
+`npm run test:access` checks the homepage and manual access flow for guests,
+expired and active accounts, including the account ID in the Telegram draft,
+renewal links, both themes and mobile layout. Telegram navigation is intercepted
+locally; the suite sends no messages and makes no payments.
+
 The older `exam_words.test.js` is a separate JSDOM harness; it requires its own
 rendered `ew_page.html` fixture and is not part of this suite.

@@ -146,71 +146,24 @@
   }
   window.doLogout = doLogout;
 
-  function buildTelegramPurchaseMessage(options = {}) {
-    const plan = options.plan || 'Practice Library';
-    const amount = options.amount || 'Access request';
-    const duration = options.duration || '30 days';
-    const orderId = 'REQ-' + Date.now().toString().slice(-10) + '-' + Math.floor(100 + Math.random() * 900);
+  function buildTelegramPurchaseUrl() {
     const user = window.wexPurchaseUser;
-    return {
-      orderId,
-      text: [
-        'Hello! I would like to request access for WEXTheory.',
-        '',
-        `User ID: ${user.public_id}`,
-        `Order ID: ${orderId}`,
-        `Plan: ${plan}`,
-        `Amount: ${amount}`,
-        `Duration: ${duration}`,
-        `Email: ${user.email}`,
-        `Name: ${user.name}`
-      ].join('\n')
-    };
+    const lines = ["Hello! I would like full access to WEXTheory."];
+    if (user && user.public_id) lines.push(`Account ID: ${user.public_id}`);
+    lines.push('', 'Please confirm the price, access period and payment details.');
+    return `https://t.me/wexwxeee?text=${encodeURIComponent(lines.join('\n'))}`;
   }
+  window.buildTelegramPurchaseUrl = buildTelegramPurchaseUrl;
 
-  async function openTelegramPurchase(options = {}) {
+  // Compatibility for existing buttons; open one web link without extra dialogs.
+  window.openTelegramPurchase = function () {
     if (!window.wexPurchaseUser || !window.wexPurchaseUser.public_id) {
-      const goRegister = confirm('To create a payment request, first sign in or create your account so we can attach access to your user ID. Open registration now?');
-      if (goRegister) window.location.href = '/register';
+      window.location.href = '/register';
       return false;
     }
-
-    const payload = buildTelegramPurchaseMessage(options);
-    const confirmed = confirm(
-      'Open Telegram and copy a ready access message?\n\n' +
-      `User ID: ${window.wexPurchaseUser.public_id}\n` +
-      `Order ID: ${payload.orderId}\n` +
-      `Plan: ${options.plan || 'Practice Library'}\n` +
-      `Amount: ${options.amount || 'Access request'}`
-    );
-    if (!confirmed) return false;
-
-    let copied = false;
-    try {
-      await navigator.clipboard.writeText(payload.text);
-      copied = true;
-    } catch (e) {}
-
-    const encoded = encodeURIComponent(payload.text);
-    const tgAppUrl = `tg://resolve?domain=wexwxeee&text=${encoded}`;
-    const tgWebUrl = `https://t.me/wexwxeee?text=${encoded}`;
-
-    const win = window.open(tgAppUrl, '_blank', 'noopener');
-    setTimeout(() => {
-      if (!win || win.closed === false) {
-        window.open(tgWebUrl, '_blank', 'noopener');
-      }
-    }, 350);
-
-    showToast(
-      copied
-        ? 'Telegram opened. If the text is not inserted automatically, just paste it into the chat.'
-        : 'Telegram opened. If the text is not inserted automatically, copy the payment details manually.',
-      'success'
-    );
-    return false;
-  }
-  window.openTelegramPurchase = openTelegramPurchase;
+    window.open(buildTelegramPurchaseUrl(), '_blank', 'noopener,noreferrer');
+    return true;
+  };
 
   async function refreshSupportUnreadUI() {
     const badge = document.getElementById('supportUnreadBadge');

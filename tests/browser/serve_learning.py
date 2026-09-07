@@ -24,11 +24,11 @@ if __name__ == "__main__":
 
         import_data()
         with SessionLocal() as db:
-            for index in (1, 2):
+            for index in (1, 2, 3):
                 user = models.User(name=f"Browser Learner {index}", email=f"browser{index}@example.com",
                                    public_id=f"WEX-BROWSER-{index}",
                                    password_hash=main.hash_password("BrowserTest123"),
-                                   expires_at=datetime.utcnow() + timedelta(days=30))
+                                   expires_at=datetime.utcnow() + timedelta(days=30 if index != 3 else -1))
                 db.add(user)
                 db.flush()
                 attempt = models.UserTestAttempt(user_id=user.id, test_id=1, score=0, passed=False,

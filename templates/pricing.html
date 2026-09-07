@@ -1,69 +1,44 @@
-﻿{% extends "base.html" %}
-
-{% block title %}Access Overview - WEX Theory{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}Get Access - WEXTheory{% endblock %}
 {% block head %}
 <style>
-  .pricing-word-card {
-    margin: -24px auto 30px;
-    max-width: 760px;
-    border: 1px solid color-mix(in srgb, var(--text) 20%, var(--border));
-    border-radius: 18px;
-    background:
-      radial-gradient(circle at top right, rgba(59,130,246,0.10), transparent 42%),
-      var(--bg-card);
-    padding: 20px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 16px;
-    align-items: center;
-    box-shadow: 0 18px 50px rgba(0,0,0,0.06);
-  }
-  .pricing-word-kicker {
-    color: var(--text-muted);
-    font-size: 0.74rem;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 7px;
-  }
-  .pricing-word-title {
-    font-size: 1.25rem;
-    font-weight: 850;
-    letter-spacing: -0.025em;
-    margin-bottom: 6px;
-  }
-  .pricing-word-copy {
-    color: var(--text-muted);
-    font-size: 0.94rem;
-    line-height: 1.6;
-  }
-  .pricing-word-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: flex-end;
-  }
-  .pricing-word-actions .btn-primary,
-  .pricing-word-actions .btn-ghost {
-    min-height: 40px;
-    justify-content: center;
-  }
-  @media (max-width: 720px) {
-    .pricing-word-card {
-      grid-template-columns: 1fr;
-      margin-top: -10px;
-    }
-    .pricing-word-actions {
-      justify-content: stretch;
-    }
-    .pricing-word-actions a {
-      width: 100%;
-    }
-  }
+  .access-page { max-width:1020px; margin:0 auto; padding:48px 24px 64px; }
+  .access-heading { max-width:700px; margin-bottom:36px; }
+  .access-kicker { color:var(--text-muted); font-size:.76rem; letter-spacing:.12em; text-transform:uppercase; margin-bottom:12px; }
+  .access-heading h1 { font-size:clamp(2rem,5vw,3rem); line-height:1.12; letter-spacing:-.045em; margin-bottom:16px; }
+  .access-heading p { color:var(--text-muted); font-size:1rem; line-height:1.65; }
+  .access-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); gap:20px; align-items:stretch; }
+  .access-card { padding:28px; border:1px solid var(--border); border-radius:16px; background:var(--bg-card); display:flex; flex-direction:column; min-width:0; }
+  .access-card--full { border-color:var(--text-muted); }
+  .access-card h2 { font-size:1.5rem; margin:8px 0; letter-spacing:-.025em; }
+  .access-card p { color:var(--text-muted); line-height:1.55; font-size:.9rem; }
+  .access-tag { font-size:.74rem; text-transform:uppercase; letter-spacing:.09em; color:var(--text-muted); }
+  .access-features { list-style:none; padding:0; margin:24px 0; display:grid; gap:13px; font-size:.9rem; line-height:1.45; }
+  .access-features li { display:flex; gap:10px; }
+  .access-features li::before { content:'✓'; color:var(--text-muted); }
+  .access-actions { margin-top:auto; display:grid; gap:10px; }
+  .access-actions a { text-align:center; justify-content:center; min-height:44px; }
+  .access-note { font-size:.8rem!important; margin-top:10px; }
+  .access-account { padding:12px 14px; margin:18px 0; border:1px solid var(--border); border-radius:9px; font-size:.82rem; display:flex; flex-wrap:wrap; gap:6px 12px; align-items:center; }
+  .access-account span { color:var(--text-muted); }
+  .access-account strong { overflow-wrap:anywhere; }
+  .access-active { margin:16px 0; color:var(--correct); font-size:.88rem; }
+  .access-steps { margin-top:40px; padding-top:28px; border-top:1px solid var(--border); }
+  .access-steps h2,.access-faq h2 { font-size:1.2rem; margin-bottom:20px; }
+  .access-steps ol { list-style:none; counter-reset:steps; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; padding:0; }
+  .access-steps li { counter-increment:steps; }
+  .access-steps li::before { content:'0' counter(steps); display:block; font-size:.78rem; color:var(--text-muted); margin-bottom:10px; }
+  .access-steps h3 { font-size:.98rem; margin-bottom:8px; }
+  .access-steps p,.access-faq p { color:var(--text-muted); font-size:.88rem; line-height:1.6; }
+  .access-faq { margin-top:40px; }
+  .access-faq details { border-bottom:1px solid var(--border); padding:16px 0; }
+  .access-faq summary { cursor:pointer; font-weight:600; font-size:.93rem; }
+  .access-faq p { margin:12px 0 0; max-width:700px; }
+  .access-demo { display:flex; flex-wrap:wrap; align-items:center; gap:12px 20px; padding:16px 20px; margin-bottom:24px; border:1px solid var(--border); border-radius:12px; }
+  .access-demo p { flex:1; min-width:180px; color:var(--text-muted); font-size:.9rem; }
+  @media(max-width:700px) { .access-page { padding:30px 18px 48px; } .access-grid,.access-steps ol { grid-template-columns:1fr; } .access-card { padding:24px; } .access-steps ol { gap:20px; } }
 </style>
 {% endblock %}
-
 {% block body %}
 <nav>
   <div class="nav-inner">
@@ -82,107 +57,76 @@
     </div>
   </div>
 </nav>
-
-<div class="page" style="max-width:920px;margin:0 auto;">
-  <div style="text-align:center;padding:60px 0 48px;">
-    <div style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px;">Access Overview</div>
-    <h1 style="font-size:clamp(1.9rem,5vw,3rem);font-weight:800;letter-spacing:-0.03em;margin-bottom:14px;">Choose the study mode that fits your practice</h1>
-    <p style="color:var(--text-muted);font-size:1rem;max-width:620px;margin:0 auto;">WEXTheory is built as a practice platform for Danish driving theory study. Start with the free starter sample and the Exam Words preview, then move into the full library whenever you need the complete training flow.</p>
-  </div>
-
+<main class="access-page">
+  <header class="access-heading">
+    <div class="access-kicker">Free practice · Full access</div>
+    <h1>Try it first.<br>Get full access through Telegram.</h1>
+    <p>Start with a free sample. When you are ready for the full library, message the admin to agree on the price and access period. The admin activates your account after confirming payment.</p>
+  </header>
   {% if from_exam_words and not has_access %}
-  <section class="pricing-word-card" aria-label="Exam Words demo">
-    <div>
-      <div class="pricing-word-kicker">You opened Exam Words 2026</div>
-      <div class="pricing-word-title">You can preview the dictionary before access</div>
-      <p class="pricing-word-copy">
-        The full dictionary is included with access, but the demo lets you see the search, cards, quiz, and audio first.
-      </p>
-    </div>
-    <div class="pricing-word-actions">
-      <a href="/exam-words-demo" class="btn-primary">Open demo</a>
-      <a href="#pricingPurchaseBtn" class="btn-ghost">Access options</a>
-    </div>
-  </section>
+  <div class="access-demo"><p>Want to try Exam Words before getting access?</p><a href="/exam-words-demo" class="btn-ghost btn-sm">Open the free demo</a></div>
   {% endif %}
-
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:28px;">
-    <div class="card" style="padding:32px;">
-      <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:16px;">Starter</div>
-      <div style="font-size:2.1rem;font-weight:800;margin-bottom:4px;">Free Practice</div>
-      <div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:28px;">A simple way to try the platform and the study format</div>
-      <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">&#10003;</span> Starter Test 0 without registration</li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">&#10003;</span> Exam Words 2026 preview</li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;color:var(--text-muted);"><span>-</span> One fixed 15-question sample set</li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;color:var(--text-muted);"><span>-</span> Instant sample result</li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;color:var(--text-muted);"><span>-</span> No saved progress</li>
+  <div class="access-grid">
+    <section class="access-card" aria-label="Free practice">
+      <span class="access-tag">No payment needed</span>
+      <h2>Start for free</h2>
+      <p>Explore the format before deciding.</p>
+      <ul class="access-features">
+        <li>Test 0: 15 questions, no account required</li>
+        <li>Instant result and answer explanations</li>
+        <li>Exam Words demo</li>
+        <li>Road sign catalogue and sign trainer</li>
       </ul>
-      <div style="display:grid;grid-template-columns:1fr;gap:8px;">
-        <a href="/test/0" class="btn-ghost" style="width:100%;text-align:center;">Start Starter Test</a>
-        <a href="/exam-words-demo" class="btn-ghost" style="width:100%;text-align:center;">Preview Exam Words</a>
+      <div class="access-actions">
+        <a href="/test/0" class="btn-ghost">Try the free test</a>
+        <a href="/signs/learn" class="btn-ghost">Practise road signs</a>
       </div>
-    </div>
-
-    <div class="card" style="padding:32px;border:2px solid var(--text);position:relative;">
-      <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);font-size:0.72rem;font-weight:700;padding:4px 14px;border-radius:999px;text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap;">Practice Library</div>
-      <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:16px;">Extended Study Mode</div>
-      <div style="font-size:2.1rem;font-weight:800;margin-bottom:4px;">Full Library Access</div>
-      <div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:28px;">For learners who want the full set of tests, review tools and saved progress</div>
-      <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">&#10003;</span> All 13 structured practice tests</li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">&#10003;</span> 325 questions with road photos</li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">&#10003;</span> Answer explanations and review</li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">&#10003;</span> Saved questions and progress tracking</li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">&#10003;</span> Test 14 Exam Mode with 25 mixed random questions</li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">&#10003;</span> Exam Words 2026 dictionary, cards, quiz, audio, and synced progress</li>
-        <li style="display:flex;align-items:center;gap:10px;font-size:0.9rem;"><span style="color:var(--correct);">&#10003;</span> Works on phone, tablet, and desktop</li>
+      <p class="access-note">The sample result is available in your current browser session.</p>
+    </section>
+    <section class="access-card access-card--full" id="full-access" aria-label="Full library access">
+      <span class="access-tag">Activated by the admin</span>
+      <h2>Full practice library</h2>
+      <p>Price and duration confirmed in Telegram before you pay.</p>
+      <ul class="access-features">
+        <li>13 practice tests with 325 photo questions</li>
+        <li>Test 14: a new set of 25 random questions</li>
+        <li>Explanations, saved questions and test history</li>
+        <li>Scheduled practice from your mistakes</li>
+        <li>Full Exam Words library with account progress</li>
       </ul>
-      {% if user and has_access %}
-      <div style="text-align:center;padding:8px 0;color:var(--correct);font-size:0.9rem;font-weight:600;">&#10003; Active{% if access_expires_at %} &middot; valid until {{ access_expires_at.strftime('%d %b %Y') }}{% endif %}</div>
-      {% else %}
-      <a href="#" id="pricingPurchaseBtn" data-plan="Practice Library" data-amount="Access request" data-duration="Extended access" class="btn-primary" style="width:100%;text-align:center;display:block;">{% if user and user.subscription_status != 'free' %}Review Access Options{% else %}Open Access Options{% endif %}</a>
-      <div style="text-align:center;margin-top:10px;font-size:0.82rem;color:var(--text-muted);">The next step opens the existing account-linked access request flow.</div>
+      {% if user %}
+      <div class="access-account"><span>Your account ID</span><strong>{{ user.public_id }}</strong></div>
+      {% if has_access %}
+      <div class="access-active">✓ Your access is active{% if access_expires_at %} until {{ access_expires_at.strftime('%d %b %Y') }}{% endif %}.</div>
       {% endif %}
-    </div>
+      <div class="access-actions">
+        {% if has_access %}<a href="/dashboard" class="btn-primary">Continue practising</a>{% endif %}
+        <a href="https://t.me/wexwxeee" target="_blank" rel="noopener noreferrer" id="pricingPurchaseBtn" class="{{ 'btn-ghost' if has_access else 'btn-primary' }}">{{ 'Ask about extending access' if has_access else 'Message admin on Telegram' }}</a>
+      </div>
+      <p class="access-note">Opens @wexwxeee with a message containing your account ID. You review and send it yourself.</p>
+      {% else %}
+      <div class="access-actions"><a href="/register" class="btn-primary">Create an account to get access</a><a href="/login" class="btn-ghost">Already registered? Sign in</a></div>
+      <p class="access-note">Your account ID helps the admin activate the right account. Questions first? <a href="https://t.me/wexwxeee" target="_blank" rel="noopener noreferrer">Ask @wexwxeee</a>.</p>
+      {% endif %}
+    </section>
   </div>
-
-  <div class="card" style="padding:24px 28px;margin-bottom:56px;">
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
-      <div>
-        <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Included</div>
-        <div style="font-weight:700;">13 tests &middot; Test 14 mixed mode &middot; 325 questions &middot; Exam Words 2026</div>
-      </div>
-      <div>
-        <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Exam format</div>
-        <div style="font-weight:700;">25 questions per test &middot; pass at 20/25</div>
-      </div>
-      <div>
-        <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Activation</div>
-        <div style="font-weight:700;">Account-linked access handled through the current request flow</div>
-      </div>
-    </div>
-  </div>
-
-  <div style="margin-bottom:60px;">
-    <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:20px;text-align:center;">Common Questions</h2>
-    <div style="display:flex;flex-direction:column;gap:12px;">
-      <div class="card" style="padding:20px 24px;">
-        <div style="font-weight:600;margin-bottom:6px;">What is included in the full practice library?</div>
-        <div style="color:var(--text-muted);font-size:0.9rem;">It includes all 13 tests, Test 14 Exam Mode with 25 mixed random questions each attempt, 325 questions, review explanations, saved questions, test history, and Exam Words 2026 for vocabulary practice.</div>
-      </div>
-      <div class="card" style="padding:20px 24px;">
-        <div style="font-weight:600;margin-bottom:6px;">Can I try the platform first?</div>
-        <div style="color:var(--text-muted);font-size:0.9rem;">Yes. Starter Test 0 is available for free without registration, and the Exam Words demo lets you preview the dictionary, cards, quiz, and audio flow.</div>
-      </div>
-      <div class="card" style="padding:20px 24px;">
-        <div style="font-weight:600;margin-bottom:6px;">How does access setup work?</div>
-        <div style="color:var(--text-muted);font-size:0.9rem;">Use the access button and follow the account-linked setup flow. Your account is then updated for the selected access period.</div>
-      </div>
-    </div>
-  </div>
-</div>
-
+  <section class="access-steps">
+    <h2>How to get access</h2>
+    <ol>
+      <li><h3>Create your account</h3><p>Register and confirm your email. You will receive an account ID.</p></li>
+      <li><h3>Message the admin</h3><p>Open Telegram from this page. Confirm the price, access period and payment details in the chat.</p></li>
+      <li><h3>Pay, then start practising</h3><p>After the admin confirms payment, they activate your access. Sign in to the same account and open your dashboard.</p></li>
+    </ol>
+  </section>
+  <section class="access-faq">
+    <h2>A few useful details</h2>
+    <details><summary>How much does full access cost?</summary><p>The admin confirms the current price and available access periods in Telegram before payment.</p></details>
+    <details><summary>When will my access open?</summary><p>Activation is manual. The admin confirms it in the chat after checking your payment. Opening Telegram alone does not activate access.</p></details>
+    <details><summary>Will access renew automatically?</summary><p>No. For this manual payment option, contact the admin again when you want to extend access. There is no automatic charge.</p></details>
+    <details><summary>I paid, but the tests are still locked. What should I do?</summary><p>Check that you are signed in to the account whose ID you sent. If the admin has confirmed activation and the tests are still locked, message them with that ID.</p></details>
+    <details><summary>Can I use my phone and computer?</summary><p>Yes. Sign in to the same account to use your access and saved progress on both.</p></details>
+  </section>
+</main>
 <footer>
   <div class="footer-inner">
     <div class="footer-links">
@@ -195,7 +139,6 @@
   </div>
 </footer>
 {% endblock %}
-
 {% block scripts %}
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/pricing.js"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/pricing.js?v={{ asset_version }}"></script>
 {% endblock %}

@@ -2,7 +2,8 @@
   "private": true,
   "scripts": {
     "test": "node learning.test.js",
-    "test:student": "node student-journey.test.js"
+    "test:student": "node student-journey.test.js",
+    "test:access": "node manual-access.test.js"
   },
   "devDependencies": { "playwright": "1.62.1" }
 }
