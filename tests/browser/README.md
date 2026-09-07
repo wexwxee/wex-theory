@@ -17,5 +17,13 @@ lost-response retry, offline sign progress surviving reload, second-device sync,
 profile weak signs, hidden empty avatar, and the legacy review redirect.
 Screenshots are generated locally and ignored by Git.
 
+`npm run test:student` exercises the learner journey in a 390 px touch viewport:
+the 15-question guest sample, a full 25-question test, the random 25-question
+exam, navigation and flags, bookmarks, score consistency after reload, answer
+breakdown, mistake practice, four ten-word study rounds and all three twelve-sign
+rounds. Use the same fixture server. The suite checks horizontal overflow and
+JavaScript exceptions. Listening quality and the factual accuracy of the question
+content require separate checks.
+
 The older `exam_words.test.js` is a separate JSDOM harness; it requires its own
 rendered `ew_page.html` fixture and is not part of this suite.
