@@ -7,3 +7,4 @@ venv/
 .bak_*/
 tests/browser/node_modules/
 tests/browser/*.png
+.local/

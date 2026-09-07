@@ -164,6 +164,22 @@
     }
   }
 
+  function setDurationUnit(target, unit) {
+    document.getElementById(target).value = unit;
+    document.querySelectorAll(`[data-unit-target="${target}"] button`).forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.unit === unit));
+    });
+  }
+  document.querySelectorAll('[data-unit-target] button').forEach(button => {
+    button.addEventListener('click', () => setDurationUnit(button.parentElement.dataset.unitTarget, button.dataset.unit));
+  });
+  document.querySelectorAll('[data-access-days]').forEach(button => {
+    button.addEventListener('click', () => {
+      document.getElementById('editDays').value = button.dataset.accessDays;
+      setDurationUnit('editDurationUnit', 'days');
+    });
+  });
+
   function openEditModal(id, name, email, isAdmin, isSuperAdmin) {
     document.getElementById('editUserId').value = id;
     document.getElementById('editName').value = name;
@@ -172,7 +188,7 @@
     document.getElementById('editIsAdmin').disabled = !canManageAdminRoles || !!isSuperAdmin;
     document.getElementById('editPassword').value = '';
     document.getElementById('editDays').value = '';
-    document.getElementById('editDurationUnit').value = 'days';
+    setDurationUnit('editDurationUnit', 'days');
     document.getElementById('editMsg').style.display = 'none';
     document.getElementById('editModal').classList.add('open');
   }
@@ -224,7 +240,7 @@
     document.getElementById('createEmail').value = '';
     document.getElementById('createPassword').value = '';
     document.getElementById('createDays').value = '30';
-    document.getElementById('createDurationUnit').value = 'days';
+    setDurationUnit('createDurationUnit', 'days');
     document.getElementById('createIsAdmin').checked = false;
     document.getElementById('createIsAdmin').disabled = !canManageAdminRoles;
     document.getElementById('createMsg').style.display = 'none';
@@ -236,7 +252,7 @@
     const name = document.getElementById('createName').value.trim();
     const email = document.getElementById('createEmail').value.trim();
     const password = document.getElementById('createPassword').value;
-    const durationValue = parseInt(document.getElementById('createDays').value, 10) || 30;
+    const durationValue = Number(document.getElementById('createDays').value);
     const durationUnit = document.getElementById('createDurationUnit').value;
     const isAdmin = document.getElementById('createIsAdmin').checked;
     const btn = document.getElementById('createBtn');

@@ -121,3 +121,36 @@ class LearningProgressTests(unittest.TestCase):
             with self.assertRaises(main.HTTPException) as error:
                 self.call(handler, None, {})
             self.assertEqual(error.exception.status_code, 401)
+
+    def test_manual_extension_preserves_remaining_access(self):
+        self.other.is_admin = True
+        self.other.is_super_admin = True
+        original_expiry = self.user.expires_at
+        with patch("main.get_current_user", return_value=self.other):
+            response = asyncio.run(main.api_admin_update_user(
+                self.user.id, request({"duration_value": 30, "duration_unit": "days"}), self.db))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.user.expires_at, original_expiry + timedelta(days=30))
+        with patch("main.get_current_user", return_value=self.other):
+            response = asyncio.run(main.api_admin_update_user(
+                self.user.id, request({"duration_value": 2, "duration_unit": "hours"}), self.db))
+        self.assertEqual(self.user.expires_at, original_expiry + timedelta(days=30, hours=2))
+
+    def test_activity_requires_consent_and_excludes_admin_from_live_and_visits(self):
+        payload = {"path": "/signs", "tab_id": "test-tab", "reason": "load", "analytics_consent": False}
+        response = self.call(main.api_activity_ping, self.user, payload)
+        self.assertFalse(json.loads(response.body)["tracked"])
+        self.other.is_admin = True
+        payload["analytics_consent"] = True
+        response = self.call(main.api_activity_ping, self.other, payload)
+        self.assertFalse(json.loads(response.body)["tracked"])
+        self.assertEqual(self.db.query(models.LiveActivitySession).count(), 0)
+        response = self.call(main.api_activity_ping, self.user, payload)
+        self.assertTrue(json.loads(response.body)["analytics_recorded"])
+        overview = main.build_analytics_overview(self.db)
+        self.assertEqual(overview["logged_in_week"], 1)
+        self.assertEqual(main.build_live_activity_overview(self.db)["online_now"], 1)
+        payload["tab_id"] = "guest-tab"
+        response = self.call(main.api_activity_ping, None, payload)
+        self.assertTrue(json.loads(response.body)["analytics_recorded"])
+        self.assertEqual(main.build_analytics_overview(self.db)["guest_week"], 1)

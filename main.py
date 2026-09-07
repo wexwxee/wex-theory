@@ -1044,16 +1044,17 @@ def register_failed_verification_attempt(
     return invalid_message
 
 
-def compute_admin_expiry(duration_value: int, duration_unit: str) -> datetime:
+def compute_admin_expiry(duration_value: int, duration_unit: str, *, start_at: Optional[datetime] = None) -> datetime:
     unit = (duration_unit or "days").strip().lower()
     value = max(int(duration_value), 0)
     if value == 0:
         return datetime.utcnow()
+    start = max(datetime.utcnow(), start_at or datetime.utcnow())
     if unit == "minutes":
-        return datetime.utcnow() + timedelta(minutes=value)
+        return start + timedelta(minutes=value)
     if unit == "hours":
-        return datetime.utcnow() + timedelta(hours=value)
-    return datetime.utcnow() + timedelta(days=value)
+        return start + timedelta(hours=value)
+    return start + timedelta(days=value)
 
 
 def generate_unique_promo_code(db: Session) -> str:
@@ -3011,7 +3012,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260830-context-word-help-fix2"
+templates.env.globals["asset_version"] = "20260907-learning-admin-v1"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 templates.env.globals["test_image_url"] = test_image_url
@@ -4839,6 +4840,8 @@ async def api_activity_ping(request: Request, db: Session = Depends(get_db)):
     session_id = get_or_create_activity_session_id(request)
     now = datetime.utcnow()
     current_user = get_current_user(request, db)
+    if (current_user and current_user.is_admin) or not include_in_admin_visit_analytics(page_path):
+        return JSONResponse({"success": True, "tracked": False, "reason": "excluded_from_analytics"})
     try:
         ensure_activity_tables(db)
     except Exception as e:
@@ -6711,7 +6714,7 @@ async def api_admin_update_user(user_id: int, request: Request, db: Session = De
     if "days" in data or "duration_value" in data:
         duration_value = int(data.get("duration_value", data.get("days", 0)) or 0)
         duration_unit = str(data.get("duration_unit", "days") or "days")
-        u.expires_at = compute_admin_expiry(duration_value, duration_unit)
+        u.expires_at = compute_admin_expiry(duration_value, duration_unit, start_at=get_user_access_expiry(u))
         # Keep subscription_status in sync so all UI checks are consistent
         if duration_value > 0:
             u.subscription_status = "active"

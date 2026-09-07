@@ -583,6 +583,40 @@
       font-size: 0.82rem;
     }
   }
+
+  .admin-overview-charts { display:grid; grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,1fr)); gap:14px; margin-bottom:32px; }
+  .admin-overview-charts > * { min-width:0; }
+  @media(max-width:760px) { .admin-overview-charts { grid-template-columns:minmax(0,1fr); } }
+  .duration-units { display:flex; gap:3px; padding:3px; border:1px solid var(--border); border-radius:9px; }
+  .duration-units button, .duration-presets button { background:transparent; color:var(--text-muted); border:0; border-radius:6px; padding:8px 10px; cursor:pointer; font:inherit; font-size:.82rem; }
+  .duration-units button[aria-pressed="true"] { background:var(--text); color:var(--bg); }
+  .duration-units button:focus-visible, .duration-presets button:focus-visible { outline:2px solid var(--text); outline-offset:2px; }
+  .duration-hint { color:var(--text-muted); font-size:.78rem; line-height:1.5; margin:-5px 0 10px; }
+  .duration-presets { display:flex; gap:6px; margin-bottom:18px; }
+  .duration-presets button { border:1px solid var(--border); }
+  .traffic-section { margin:24px 0 32px; padding:24px; border:1px solid var(--border); border-radius:14px; background:var(--bg-card); }
+  .traffic-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+  .traffic-heading h2 { margin:0 0 6px; font-size:1.15rem; }
+  .traffic-heading p { color:var(--text-muted); font-size:.82rem; line-height:1.5; margin:0; }
+  .traffic-live { display:flex; align-items:center; flex-wrap:wrap; gap:12px 24px; padding:18px 0; margin-bottom:18px; border-bottom:1px solid var(--border); font-size:.82rem; color:var(--text-muted); }
+  .traffic-live strong { color:var(--text); }
+  .traffic-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:#71bc90; margin-right:8px; }
+  .traffic-window { margin-left:auto; font-size:.75rem; }
+  .traffic-section .admin-stat-card { border:0; border-right:1px solid var(--border); border-radius:0; background:none; box-shadow:none; min-height:90px; padding:4px 18px 10px; }
+  .traffic-section .admin-stat-card:first-child { padding-left:0; }
+  .traffic-section .admin-stat-card:last-child { border-right:0; }
+  .traffic-section .admin-stat-card::after { display:none; }
+  .traffic-section .admin-stat-value { font-size:1.85rem; margin-top:12px; }
+  .traffic-section .admin-analytics-layout { margin:20px 0; align-items:stretch; }
+  .traffic-section .admin-analytics-panel { background:none; border-radius:10px; padding:16px; }
+  .traffic-section .admin-analytics-intro { background:none; border:0; padding:12px 0; }
+  .traffic-section .admin-empty-state { background:none; padding:12px 0; }
+  .traffic-empty { min-height:125px; display:flex; flex-direction:column; justify-content:center; }
+  .traffic-empty strong { font-size:.95rem; }
+  .traffic-empty p { color:var(--text-muted); font-size:.82rem; max-width:370px; margin:8px 0 0; line-height:1.5; }
+  .traffic-details { border-top:1px solid var(--border); padding-top:16px; }
+  .traffic-details summary { cursor:pointer; font-size:.84rem; color:var(--text-muted); margin-bottom:12px; }
+  @media(max-width:640px) { .traffic-section { padding:16px; } .traffic-window { margin-left:0; } .traffic-section .admin-analytics-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .traffic-section .admin-stat-card { padding:8px 0; border:0; } }
 </style>
 {% endblock %}
 
@@ -629,7 +663,7 @@
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:14px;margin-bottom:32px;" id="adminChartsGrid">
+  <div class="admin-overview-charts" id="adminChartsGrid">
     <div class="card" style="padding:18px;">
       <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">Registrations · 7 days</div>
       <div style="position:relative;height:220px;"><canvas id="chartRegistrations"></canvas></div>
@@ -644,43 +678,16 @@
     </div>
   </div>
 
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px;">
-    <div>
-      <h2 style="font-size:1.02rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:4px;">Live activity</h2>
-      <div style="font-size:0.82rem;color:var(--text-muted);max-width:760px;">Aggregated only. No email, IP, precise location, device fingerprint, or per-user click tracking is shown here.</div>
+  <section class="traffic-section" id="trafficOverview">
+    <div class="traffic-heading">
+      <div><h2>Traffic overview</h2><p>Visits from learners and guests who allow analytics. Your admin visits are excluded.</p></div>
+      <a class="btn-ghost btn-sm" href="/admin#trafficOverview">Refresh</a>
     </div>
-  </div>
-
-  <div class="admin-live-grid">
-    <div class="card" style="padding:18px;text-align:center;">
-      <div style="font-size:1.75rem;font-weight:800;line-height:1;">{{ activity_overview.online_now }}</div>
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">Online now</div>
+    <div class="traffic-live">
+      <span><i class="traffic-dot"></i><strong>{{ activity_overview.online_now }}</strong> online now</span>
+      <span>{{ activity_overview.logged_in_now }} signed in · {{ activity_overview.guests_now }} guests</span>
+      <span class="traffic-window">Last 5 min: {{ activity_overview.active_5m }} · Last 10 min: {{ activity_overview.active_10m }}</span>
     </div>
-    <div class="card" style="padding:18px;text-align:center;">
-      <div style="font-size:1.75rem;font-weight:800;line-height:1;">{{ activity_overview.active_5m }}</div>
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">Active in 5 min</div>
-    </div>
-    <div class="card" style="padding:18px;text-align:center;">
-      <div style="font-size:1.75rem;font-weight:800;line-height:1;">{{ activity_overview.active_10m }}</div>
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">Active in 10 min</div>
-    </div>
-    <div class="card" style="padding:18px;text-align:center;">
-      <div style="font-size:1.75rem;font-weight:800;line-height:1;">{{ activity_overview.logged_in_now }}</div>
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">Logged-in now</div>
-    </div>
-    <div class="card" style="padding:18px;text-align:center;">
-      <div style="font-size:1.75rem;font-weight:800;line-height:1;">{{ activity_overview.guests_now }}</div>
-      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;">Guests now</div>
-    </div>
-  </div>
-
-  <div class="admin-analytics-intro">
-    <div>
-      <h2>Visit analytics</h2>
-      <p>Shows visits after a learner accepts analytics cookies. Admin pages and admin accounts are hidden so the numbers stay focused on learner behavior.</p>
-    </div>
-    <span class="admin-privacy-pill"><i class="fa-solid fa-shield-halved"></i> Privacy-safe</span>
-  </div>
 
   <div class="admin-analytics-grid">
     <div class="admin-stat-card" style="--stat-glow:rgba(59,130,246,0.16);">
@@ -708,10 +715,11 @@
   <div class="admin-analytics-layout">
     <div class="admin-analytics-panel">
       <div class="admin-panel-label">Visits · 7 days</div>
-      <div style="position:relative;height:240px;"><canvas id="chartVisits"></canvas></div>
-      <div class="analytics-note" style="margin-top:14px;">
-        To test this, open the site as a learner or guest, choose Accept analytics in the cookie banner, then visit a few pages. New visits appear here after refresh.
-      </div>
+      {% if analytics_overview.week_total %}
+      <div style="position:relative;height:200px;"><canvas id="chartVisits"></canvas></div>
+      {% else %}
+      <div class="traffic-empty"><strong>No visits recorded yet</strong><p>The chart will appear when a learner or guest visits with analytics enabled.</p></div>
+      {% endif %}
     </div>
     <div class="admin-analytics-panel">
       <div class="admin-panel-label">Most visited pages</div>
@@ -733,14 +741,15 @@
         {% else %}
         <div class="admin-empty-state">
           <strong>No learner visits yet</strong>
-          Waiting for a non-admin visitor who accepted analytics. Admin browsing is intentionally excluded.
+          Pages will appear after the first recorded visit.
         </div>
         {% endfor %}
       </div>
     </div>
   </div>
 
-  <div class="admin-analytics-panel" style="margin-bottom:32px;">
+  <details class="traffic-details"><summary>Learner activity details</summary>
+  <div class="admin-analytics-panel" style="margin-bottom:16px;">
     <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px;">
       <div>
         <div class="admin-panel-label" style="margin-bottom:4px;">Learner account visits</div>
@@ -815,6 +824,9 @@
       {% endfor %}
     </div>
   </div>
+
+  </details>
+  </section>
 
   <div class="tabs">
     <a href="/admin?tab=users" class="tab-btn{% if active_tab == 'users' %} active{% endif %}" id="tabUsers">Users ({{ users|length }})</a>
@@ -1171,14 +1183,21 @@
     </div>
     <div class="form-group">
       <label class="form-label">Extend access by</label>
-      <div style="display:grid;grid-template-columns:1fr 140px;gap:10px;">
+      <div style="display:grid;grid-template-columns:minmax(80px,1fr) auto;gap:10px;">
         <input type="number" id="editDays" placeholder="e.g. 30" min="0" max="525600">
-        <select id="editDurationUnit">
-          <option value="minutes">Minutes</option>
-          <option value="hours">Hours</option>
-          <option value="days" selected>Days</option>
-        </select>
+        <input type="hidden" id="editDurationUnit" value="days">
+        <div class="duration-units" role="group" aria-label="Duration unit" data-unit-target="editDurationUnit">
+          <button type="button" data-unit="days" aria-pressed="true">Days</button>
+          <button type="button" data-unit="hours" aria-pressed="false">Hours</button>
+          <button type="button" data-unit="minutes" aria-pressed="false">Min</button>
+        </div>
       </div>
+    </div>
+    <p class="duration-hint">Added to the current expiry. Leave empty to keep access unchanged; 0 ends manual access.</p>
+    <div class="duration-presets" aria-label="Quick access duration">
+      <button type="button" data-access-days="7">+7 days</button>
+      <button type="button" data-access-days="30">+30 days</button>
+      <button type="button" data-access-days="90">+90 days</button>
     </div>
     <div class="form-group" style="flex-direction:row;align-items:center;gap:10px;">
       <input type="checkbox" id="editIsAdmin" style="width:auto;">
@@ -1215,13 +1234,14 @@
     </div>
     <div class="form-group">
       <label class="form-label">Access duration</label>
-      <div style="display:grid;grid-template-columns:1fr 140px;gap:10px;">
+      <div style="display:grid;grid-template-columns:minmax(80px,1fr) auto;gap:10px;">
         <input type="number" id="createDays" value="30" min="0" max="525600">
-        <select id="createDurationUnit">
-          <option value="minutes">Minutes</option>
-          <option value="hours">Hours</option>
-          <option value="days" selected>Days</option>
-        </select>
+        <input type="hidden" id="createDurationUnit" value="days">
+        <div class="duration-units" role="group" aria-label="Duration unit" data-unit-target="createDurationUnit">
+          <button type="button" data-unit="days" aria-pressed="true">Days</button>
+          <button type="button" data-unit="hours" aria-pressed="false">Hours</button>
+          <button type="button" data-unit="minutes" aria-pressed="false">Min</button>
+        </div>
       </div>
     </div>
     <div class="form-group" style="flex-direction:row;align-items:center;gap:10px;">
