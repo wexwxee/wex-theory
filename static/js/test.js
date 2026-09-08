@@ -27,6 +27,44 @@ const wordHelpContexts = new WeakMap();
 const wordHelpCache = new Map();
 let wordHelpRequestId = 0;
 let wordHelpSelectionTimer = null;
+const DRAFT_KEY = `wexDraft:v1:${testContainer.dataset.userId || 'guest'}:${TEST_ID}:${WORDING_MODE}`;
+let draftReady = false;
+let draftFinished = false;
+let savedDraft = null;
+try {
+  savedDraft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
+  if (!savedDraft || !Number.isFinite(savedDraft.savedAt) || Date.now() - savedDraft.savedAt > 7 * 86400000) savedDraft = null;
+} catch (_) {}
+function saveDraft() {
+  if (!draftReady || draftFinished || !questions.length) return;
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({ savedAt: Date.now(), attemptId,
+      ids: questions.map(q => q.id), selectedAnswers, currentIndex, timerSeconds,
+      flags: [...flaggedQuestions] }));
+  } catch (_) {}
+}
+function clearDraft() {
+  draftFinished = true;
+  try { localStorage.removeItem(DRAFT_KEY); localStorage.removeItem(FLAG_STORAGE_KEY); } catch (_) {}
+}
+function restoreDraft() {
+  if (savedDraft && JSON.stringify(savedDraft.ids) === JSON.stringify(questions.map(q => q.id)) &&
+      (TEST_ID !== EXAM_MODE_TEST_ID || savedDraft.attemptId === attemptId)) {
+    for (const q of questions) {
+      const answers = savedDraft.selectedAnswers?.[q.id];
+      if (Array.isArray(answers)) selectedAnswers[q.id] = answers.filter(id => q.answers.some(a => a.id === id));
+    }
+    currentIndex = Math.max(0, Math.min(questions.length - 1, Math.trunc(Number(savedDraft.currentIndex) || 0)));
+    if (Number.isInteger(savedDraft.attemptId)) attemptId = savedDraft.attemptId;
+    timerSeconds = Math.max(1, Math.min(1500, Number(savedDraft.timerSeconds) || 1500));
+    flaggedQuestions = new Set((Array.isArray(savedDraft.flags) ? savedDraft.flags : []).filter(id => questions.some(q => q.id === id)));
+    document.getElementById('resumeNotice').hidden = false;
+  }
+  draftReady = true;
+  renderQuestion();
+  saveDraft();
+}
+window.addEventListener('pagehide', saveDraft);
 
 function getExamAttemptIdFromUrl() {
   const raw = new URLSearchParams(window.location.search).get('attempt_id');
@@ -43,6 +81,13 @@ function syncExamAttemptInUrl() {
 
 // в”Ђв”Ђ Init в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 document.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('restartDraftBtn')?.addEventListener('click', () => {
+    if (!confirm('Start again and discard the saved answers for this test?')) return;
+    clearDraft();
+    const url = new URL(location.href);
+    url.searchParams.delete('attempt_id');
+    location.replace(url);
+  });
   document.getElementById('testBurgerBtn')?.addEventListener('click', sbOpen);
   document.getElementById('translateBtn')?.addEventListener('click', toggleTranslate);
   document.getElementById('navThemeBtn')?.addEventListener('click', toggleTheme);
@@ -74,12 +119,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadBookmarks();
   if (TEST_ID === EXAM_MODE_TEST_ID) {
     attemptId = getExamAttemptIdFromUrl();
+    if (!attemptId && Number.isInteger(savedDraft?.attemptId)) {
+      attemptId = savedDraft.attemptId;
+      syncExamAttemptInUrl();
+    }
     if (!attemptId) {
       await ensureExamAttempt(true);
     }
   }
   await loadQuestions();
+  if (!questions.length) return;
   loadFlags();
+  restoreDraft();
   updateFlagBtn();
   refreshQuestionMap();
   startTimer();
@@ -117,6 +168,10 @@ async function loadQuestions() {
     document.getElementById('loadingState').style.display = 'none';
     document.getElementById('errorState').style.display = 'block';
     document.getElementById('errorMsg').textContent = e.message || 'Failed to load questions.';
+    if (savedDraft) {
+      document.getElementById('resumeNotice').hidden = false;
+      document.getElementById('resumeMessage').textContent = 'The saved practice could not be reopened. Retry loading or start again.';
+    }
   }
 }
 
@@ -126,6 +181,7 @@ function startTimer() {
   maybeShowTimeWarning();
   timerInterval = setInterval(() => {
     timerSeconds--;
+    saveDraft();
     updateTimerDisplay();
     maybeShowTimeWarning();
     if (timerSeconds <= 0) {
@@ -831,8 +887,10 @@ function createSpeakButton(textGetter, title = 'Listen') {
 
 function renderQuestion() {
   if (!questions.length) return;
+  saveDraft();
   closeWordHelp(true);
   const q = questions[currentIndex];
+  document.getElementById('reportQuestionLink').href = '/contact?' + new URLSearchParams({ test: TEST_ID, question: q.id, number: currentIndex + 1, wording: WORDING_MODE });
 
   document.getElementById('questionCounter').textContent = `Question ${currentIndex + 1} of ${questions.length}`;
 
@@ -970,13 +1028,14 @@ function toggleAnswer(questionId, answerId, clickedDiv) {
     current.splice(idx, 1);
   }
   selectedAnswers[questionId] = current;
+  saveDraft();
   clickedDiv.classList.toggle('selected', current.includes(answerId));
   clickedDiv.setAttribute('aria-checked', current.includes(answerId) ? 'true' : 'false');
   updateDots();
   refreshQuestionMap();
 }
 
-const FLAG_STORAGE_KEY = `wexFlags:${TEST_ID}`;
+const FLAG_STORAGE_KEY = `wexFlags:${testContainer.dataset.userId || 'guest'}:${TEST_ID}:${WORDING_MODE}`;
 let flaggedQuestions = new Set();
 
 function loadFlags() {
@@ -991,6 +1050,7 @@ function loadFlags() {
 }
 
 function saveFlags() {
+  saveDraft();
   try {
     localStorage.setItem(FLAG_STORAGE_KEY, JSON.stringify([...flaggedQuestions]));
   } catch (e) {
@@ -1195,6 +1255,7 @@ async function submitTest(auto = false) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ answers })
       });
+      if (!res.ok) throw new Error('Could not submit the sample. Your answers are saved; please try again.');
       const data = await res.json();
       sessionStorage.setItem('freeResult', JSON.stringify({
         data,
@@ -1202,6 +1263,7 @@ async function submitTest(auto = false) {
         selectedAnswers,
         testMeta: { id: FREE_SAMPLE_TEST_ID, title: 'Test 0', total: questions.length }
       }));
+      clearDraft();
       window.location.href = '/results/free';
       return;
     }
@@ -1211,13 +1273,14 @@ async function submitTest(auto = false) {
     }
 
       // 1. Start attempt
-      if (TEST_ID !== EXAM_MODE_TEST_ID) {
+      if (TEST_ID !== EXAM_MODE_TEST_ID && !attemptId) {
         const startQuery = TEST_ID >= 1 && TEST_ID <= 13 ? `?wording=${encodeURIComponent(WORDING_MODE)}` : '';
         const startRes = await fetch(`/api/tests/${TEST_ID}/start${startQuery}`, { method: 'POST' });
         if (startRes.status === 403) { window.location.href = '/pricing'; return; }
         if (!startRes.ok) throw new Error('Failed to start attempt');
         const { attempt_id } = await startRes.json();
       attemptId = attempt_id;
+      saveDraft();
     }
 
     // 2. Save all answers in a single batch request (was: 25 sequential requests)
@@ -1237,13 +1300,15 @@ async function submitTest(auto = false) {
     if (!finRes.ok) throw new Error('Failed to finish attempt');
 
     // 4. Redirect to results
+    clearDraft();
     window.location.href = `/test/${TEST_ID}/results/${attemptId}`;
 
   } catch(e) {
     isSubmitting = false;
     hideSubmitOverlay();
     if (btn) { btn.disabled = false; btn.textContent = 'Submit answers'; }
-    showToast('Failed to submit: ' + e.message, 'error');
+    showSingleTestToast('Failed to submit: ' + e.message, 'error');
+    if (timerSeconds > 0) startTimer();
   }
 }
 
@@ -1288,7 +1353,7 @@ function showSingleTestToast(message, type = 'success') {
   });
   testToastTimer = window.setTimeout(() => {
     toast.classList.remove('show', 'error');
-  }, 1800);
+  }, type === 'error' ? 6000 : 1800);
 }
 
 function updateBookmarkBtn() {

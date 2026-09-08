@@ -38,6 +38,7 @@ const path = require('node:path');
     }
     await page.locator('#submitBtn').tap();
     await page.waitForURL(/results/);
+    assert(await page.evaluate(() => !Object.keys(localStorage).some(key => key.startsWith('wexDraft:v1:'))));
     await width(`results ${total}`);
     console.log(`OK complete ${total}-question test by touch`);
   }
@@ -58,6 +59,8 @@ const path = require('node:path');
     console.log('OK score agrees with question results and survives reload');
     await page.locator('.result-card').first().tap();
     await page.locator('#modalQuestion').waitFor({ state: 'visible' });
+    const originalExplanation = await page.evaluate(() => JSON.parse(document.getElementById('resultsDataJson').value)[0].explanation);
+    assert.equal(await page.locator('#modalExplanationBody').textContent(), originalExplanation);
     const firstQuestion = await page.locator('#modalQuestion').textContent();
     await page.locator('#modalNext').tap();
     assert.notEqual(await page.locator('#modalQuestion').textContent(), firstQuestion);

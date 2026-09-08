@@ -57,6 +57,13 @@
   }
 
   document.getElementById('contactBurgerBtn')?.addEventListener('click', sbOpen);
+  const params = new URLSearchParams(location.search);
+  if (/^\d+$/.test(params.get('test') || '') && /^\d+$/.test(params.get('question') || '')) {
+    document.getElementById('cSubject').value = 'Content';
+    const number = /^\d+$/.test(params.get('number') || '') ? params.get('number') : '?';
+    const mode = params.get('wording') === 'exam' ? 'exam' : 'original';
+    document.getElementById('cMsg').value = `Test ${params.get('test')}, question ${number} (ID ${params.get('question')}, ${mode}).\n\nPlease describe the issue here: `;
+  }
   document.getElementById('navThemeBtn')?.addEventListener('click', toggleTheme);
   document.getElementById('sendBtn')?.addEventListener('click', sendMessage);
   document.getElementById('cAttachment')?.addEventListener('change', () => {

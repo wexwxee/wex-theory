@@ -724,7 +724,11 @@
   <div class="progress-fill" id="progressBar" style="width:0%;"></div>
 </div>
 
-<div class="page" style="padding-top:14px;padding-bottom:90px;" id="testContainer" data-test-id="{{ test.id }}" data-is-authenticated="{% if user %}true{% else %}false{% endif %}" data-wording-mode="{{ wording_mode or 'original' }}">
+<div class="page" style="padding-top:14px;padding-bottom:90px;" id="testContainer" data-user-id="{{ user.id if user else 'guest' }}" data-test-id="{{ test.id }}" data-is-authenticated="{% if user %}true{% else %}false{% endif %}" data-wording-mode="{{ wording_mode or 'original' }}">
+  <div id="resumeNotice" hidden style="padding:12px;margin-bottom:12px;border:1px solid var(--border);border-radius:10px;">
+    <span id="resumeMessage">Saved practice restored on this browser. Your remaining time is saved when you leave.</span>
+    <button id="restartDraftBtn" class="btn-ghost btn-sm" type="button">Start again</button>
+  </div>
   <div id="loadingState" style="text-align:center;padding:80px 0;">
     <div style="color:var(--text-muted);font-size:0.9rem;">Loading questions...</div>
   </div>
@@ -777,6 +781,7 @@
           </div>
           <span id="questionSpeakWrap"></span>
         </div>
+        <a id="reportQuestionLink" href="/contact" target="_blank" rel="noopener noreferrer" style="display:inline-block;font-size:0.8rem;color:var(--text-muted);margin-bottom:10px;">Report an issue with this question</a>
         <div id="questionTextRu" style="display:none;font-size:0.9rem;color:#6b7280;font-style:italic;margin-bottom:20px;animation:fadeIn 0.25s ease both;"></div>
         <div class="word-help-hint" id="wordHelpHint" lang="ru">
           <span class="word-help-hint-badge" aria-hidden="true">Aa</span>

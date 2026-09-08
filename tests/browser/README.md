@@ -1,5 +1,13 @@
 # Learning progress browser checks
 
+`npm run test:resume` uses the temporary fixture on 8765 to check recovery after
+closing a tab, saved answers, flags, position and remaining practice time,
+account/wording isolation, the random exam's question set, failed submission,
+restart and the prefilled question report. Reports are not sent. Drafts live in
+the same browser for up to seven days and pause their saved time while closed;
+they do not synchronize to other devices. The student journey also checks that
+submitted drafts are cleared and original explanations are displayed unchanged.
+
 `node tests/browser/admin-session.test.js` is a separate regression check against
 the persistent localhost preview on port 8010 and its seeded admin/free accounts.
 It switches accounts between two tabs, verifies admin read APIs return 403 for a
