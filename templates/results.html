@@ -1045,6 +1045,7 @@
       <span id="modalStatusPill"></span>
     </div>
     <div id="modalAnswers" style="margin-bottom:16px;"></div>
+    <a id="modalReportLink" href="/contact" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-bottom:14px;color:var(--text-muted);font-size:0.85rem;">Report an issue with this question</a>
     <div id="modalExplanation" class="review-expl-box">
       <div class="review-expl-title">Explanation</div>
       <div id="modalExplanationBody"></div>
@@ -1062,7 +1063,7 @@
 </div>
 
 <textarea id="resultsDataJson" hidden>[{% for qr in question_results %}{{ qr.review_json | tojson }}{% if not loop.last %}, {% endif %}{% endfor %}]</textarea>
-<div id="resultsPageMeta" hidden data-score="{{ result_score }}" data-total="{{ result_total }}"></div>
+<div id="resultsPageMeta" hidden data-test-id="{{ test.id }}" data-attempt-id="{{ attempt.id }}" data-wording="{{ wording_mode or 'original' }}" data-score="{{ result_score }}" data-total="{{ result_total }}"></div>
 
 {% if is_triumph %}
 <div id="triumphOverlay" class="triumph-overlay"
@@ -1520,6 +1521,6 @@
 
 {% block scripts %}
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/lightbox-zoom.js?v=20260408-lbz"></script>
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-viewer.js?v=20260505-speech-restart"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-viewer.js?v={{ asset_version }}-report"></script>
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/results.js?v=20260407-review2"></script>
 {% endblock %}

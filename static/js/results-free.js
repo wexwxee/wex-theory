@@ -29,6 +29,7 @@
       const question = Array.isArray(questions) ? questions.find((q) => q.id === result.question_id) : null;
       return {
         index: result.question_index,
+        question_id: result.question_id,
         text: question?.question_text || `Question ${result.question_index}`,
         translation_source_text: question?.translation_source_text || question?.question_text || '',
         text_ru: question?.question_text_ru || '',

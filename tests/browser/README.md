@@ -1,5 +1,10 @@
 # Learning progress browser checks
 
+`node tests/browser/results-report.test.js` uses the temporary fixture on 8765
+to verify question reports from paid and sample result viewers, updating the
+question after navigation, including the paid attempt ID and opening a mobile
+contact form. It never submits the report.
+
 `npm run test:resume` uses the temporary fixture on 8765 to check recovery after
 closing a tab, saved answers, flags, position and remaining practice time,
 account/wording isolation, the random exam's question set, failed submission,

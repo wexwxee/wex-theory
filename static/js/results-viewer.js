@@ -525,6 +525,15 @@ function voiceDisplayName(voice) {
 
     function renderModal() {
       const d = DATA[currentModal];
+      const report = document.getElementById('modalReportLink');
+      const meta = document.getElementById('resultsPageMeta');
+      if (report) {
+        const params = new URLSearchParams({ test: meta.dataset.testId || '0',
+          question: d.question_id, number: d.index, wording: meta.dataset.wording || 'original' });
+        if (meta.dataset.attemptId) params.set('attempt', meta.dataset.attemptId);
+        report.href = '/contact?' + params;
+        report.hidden = !d.question_id;
+      }
       const trans = resultsTranslateMode ? _resultTranslated(d) : null;
 
       document.getElementById('modalMeta').textContent = `Question ${d.index} of ${DATA.length}`;
