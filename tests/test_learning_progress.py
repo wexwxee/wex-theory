@@ -136,6 +136,24 @@ class LearningProgressTests(unittest.TestCase):
                 self.user.id, request({"duration_value": 2, "duration_unit": "hours"}), self.db))
         self.assertEqual(self.user.expires_at, original_expiry + timedelta(days=30, hours=2))
 
+    def test_profile_keeps_access_active_in_last_hour(self):
+        for subscription in (False, True):
+            self.user.expires_at = datetime.utcnow() + timedelta(minutes=40)
+            if subscription:
+                self.user.expires_at = datetime.utcnow() - timedelta(days=1)
+                self.user.subscription_status = 'active'
+                self.user.current_period_end = datetime.utcnow() + timedelta(minutes=40)
+            self.db.commit()
+            req = request()
+            req.state.csp_nonce = 'test-nonce'
+            with patch('main.get_current_user', return_value=self.user):
+                response = asyncio.run(main.profile_page(req, self.db))
+            html = response.body.decode()
+            self.assertIn('Less than a day', html)
+            self.assertIn('access-status ok', html)
+            self.assertIn('Access active until', html)
+            self.assertNotIn('Your full access has ended.', html)
+
     def test_activity_requires_consent_and_excludes_admin_from_live_and_visits(self):
         payload = {"path": "/signs", "tab_id": "test-tab", "reason": "load", "analytics_consent": False}
         response = self.call(main.api_activity_ping, self.user, payload)

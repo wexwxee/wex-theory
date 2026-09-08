@@ -3027,7 +3027,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260908-auth-journey-v1"
+templates.env.globals["asset_version"] = "20260908-site-walk-v1"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 templates.env.globals["test_image_url"] = test_image_url
@@ -4600,7 +4600,8 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
         .first()
     )
     now = datetime.utcnow()
-    days_left = (user.expires_at - now).days
+    access_expiry = get_user_access_expiry(user)
+    days_left = (access_expiry - now).days if access_expiry else 0
     active_days = max(days_left, 0)
     has_access = user_has_access(user)
     profile_stats = {
@@ -4616,6 +4617,7 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
         "days_left": days_left,
         "active_days": active_days,
         "has_access": has_access,
+        "access_expiry": access_expiry,
         "access_meter": 100 if user.is_admin else round((min(active_days, 30) / 30) * 100),
     }
     return templates.TemplateResponse(request, "profile.html", {

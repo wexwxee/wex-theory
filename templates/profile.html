@@ -921,7 +921,7 @@
         <div class="access-card access-card--subscription">
           <div class="access-head">
             <div class="access-label">{{ 'WEXTheory All Access' if user.is_admin else 'WEXTheory Access' }}</div>
-            {% if user.is_admin or days_left > 0 %}
+            {% if profile_stats.has_access %}
               <span class="access-status ok">Active</span>
             {% else %}
               <span class="access-status warn">Expired</span>
@@ -931,17 +931,17 @@
             {% if user.is_admin %}
               Unlimited
             {% else %}
-              {{ active_days }} day{{ 's' if active_days != 1 else '' }}
+              {% if profile_stats.has_access and active_days == 0 %}Less than a day{% else %}{{ active_days }} day{{ 's' if active_days != 1 else '' }}{% endif %}
             {% endif %}
           </div>
           <div class="meter" aria-label="Access progress"><span style="--value: {{ access_meter }}%;"></span></div>
           <div class="subscription-subcopy">
             {% if user.is_admin %}
               Full workspace access, admin tools, support inbox, and every training mode.
-            {% elif days_left > 0 %}
-              Your training access is live. Keep the streak going while the pass is active.
+            {% elif profile_stats.has_access %}
+              Access active until {{ profile_stats.access_expiry.strftime('%d %b %Y, %H:%M') }} UTC.
             {% else %}
-              Renew access to unlock the full practice library and certificate path.
+              Your full access has ended. <a href="/pricing">Extend access through Telegram</a> to continue with the full library.
             {% endif %}
           </div>
         </div>

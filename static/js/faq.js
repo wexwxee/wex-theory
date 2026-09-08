@@ -13,7 +13,7 @@
     {
       group: 'Tests',
       q: 'How many questions are in each test?',
-      a: 'Each practice test contains 25 questions. The study target is at least 20 correct answers out of 25.'
+      a: 'The free Starter Test 0 contains 15 questions. Tests 1–13 and Test 14 Exam Mode contain 25 questions each. For the full tests, the study target is at least 20 correct answers out of 25.'
     },
     {
       group: 'Tests',
