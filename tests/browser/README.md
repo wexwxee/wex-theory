@@ -1,5 +1,11 @@
 # Learning progress browser checks
 
+`node tests/browser/admin-session.test.js` is a separate regression check against
+the persistent localhost preview on port 8010 and its seeded admin/free accounts.
+It switches accounts between two tabs, verifies admin read APIs return 403 for a
+learner, and checks the old admin page clears after account switching and logout.
+It does not edit user records. Do not run it against production.
+
 Install Python dependencies with `python -m pip install -r requirements-dev.txt`.
 From this directory, run `npm install` and `npx playwright install chromium`.
 

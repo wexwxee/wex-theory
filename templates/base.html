@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
+  {% if request.url.path == '/admin' or request.url.path.startswith('/admin/') %}
+  <script nonce="{{ request.state.csp_nonce }}" src="/static/js/admin-session.js?v={{ asset_version }}" data-user-id="{{ user.id if user is defined and user else '' }}"></script>
+  {% endif %}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}WEX Theory{% endblock %}</title>
