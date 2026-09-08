@@ -21,6 +21,10 @@ services:
         value: "production"
       - key: PRIMARY_SUPER_ADMIN_EMAIL
         sync: false
+      - key: BASE_URL
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
       - key: SECRET_KEY
         generateValue: true
 
