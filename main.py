@@ -973,6 +973,8 @@ def validate_registration_email(email: str) -> Optional[str]:
 
 
 def validate_password_strength(password: str) -> Optional[str]:
+    if len(password.encode("utf-8")) > 72:
+        return "Password is too long (maximum 72 UTF-8 bytes)"
     if len(password) < 8:
         return "Password must be at least 8 characters"
     if not re.search(r"[A-Za-z]", password):
@@ -1055,6 +1057,19 @@ def compute_admin_expiry(duration_value: int, duration_unit: str, *, start_at: O
     if unit == "hours":
         return start + timedelta(hours=value)
     return start + timedelta(days=value)
+
+
+def parse_admin_duration(data: dict, default: int = 0):
+    raw = data.get("duration_value", data.get("days", default))
+    unit = str(data.get("duration_unit", "days") or "days").strip().lower()
+    if isinstance(raw, bool) or not re.fullmatch(r"\d+", str(raw)):
+        raise ValueError("Access duration must be a whole number from 0 to 525600")
+    value = int(raw)
+    if value > 525600:
+        raise ValueError("Access duration must be a whole number from 0 to 525600")
+    if unit not in {"days", "hours", "minutes"}:
+        raise ValueError("Choose days, hours or minutes")
+    return value, unit
 
 
 def generate_unique_promo_code(db: Session) -> str:
@@ -2695,6 +2710,7 @@ def should_refresh_auth_cookie(request: Request) -> bool:
     if path.startswith(("/api/", "/static/", "/test-images/", "/uploads/")):
         return False
     auth_managed_paths = {
+        "/verify-email",
         "/api/auth/logout",
         "/logout",
         "/api/auth/login",
@@ -2737,16 +2753,15 @@ async def refresh_auth_session(request: Request, call_next):
             user_id = int(sub)
         except (TypeError, ValueError):
             user_id = None
-        # Only refresh if the user still exists — otherwise clear the stale cookie
+        # Password changes also invalidate sessions; never renew a stale token.
         if user_id is not None:
-            from models import User
             db_for_check = SessionLocal()
             try:
-                exists = db_for_check.query(User.id).filter(User.id == user_id).first()
+                session_user = get_current_user(request, db_for_check)
+                refreshed = create_token(session_user.id, session_user.password_hash) if session_user else None
             finally:
                 db_for_check.close()
-            if exists:
-                refreshed = create_token(user_id)
+            if refreshed:
                 set_auth_cookie(response, refreshed, request)
             else:
                 clear_auth_cookie(response, request)
@@ -3012,7 +3027,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260907-telegram-access-v1"
+templates.env.globals["asset_version"] = "20260908-auth-journey-v1"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 templates.env.globals["test_image_url"] = test_image_url
@@ -3531,7 +3546,7 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
                 print(f"[GOOGLE REFERRAL BIND ERROR] {rex}")
                 referral_outcome = "error"
 
-        jwt_token = create_token(user.id)
+        jwt_token = create_token(user.id, user.password_hash)
         redirect = "/admin" if user.is_admin else "/dashboard"
         print(f"[GOOGLE CB] Issuing JWT, redirecting to {redirect}, ref={referral_outcome}")
 
@@ -3580,7 +3595,7 @@ async def telegram_callback(request: Request, db: Session = Depends(get_db)):
                 print(f"[TELEGRAM REFERRAL BIND ERROR] {rex}")
                 referral_outcome = "error"
 
-        jwt_token = create_token(user.id)
+        jwt_token = create_token(user.id, user.password_hash)
         redirect = "/admin" if user.is_admin else "/dashboard"
         print(f"[TELEGRAM CB] Issuing JWT, redirecting to {redirect}, ref={referral_outcome}")
         resp = RedirectResponse(url=redirect, status_code=302)
@@ -3597,8 +3612,7 @@ async def telegram_callback(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request, db: Session = Depends(get_db)):
-    token = request.cookies.get("token")
-    if token and decode_token(token):
+    if get_current_user(request, db):
         return RedirectResponse("/dashboard", status_code=302)
     return templates.TemplateResponse(request, "index.html", {"request": request})
 
@@ -4094,7 +4108,7 @@ async def api_register_verify(request: Request, db: Session = Depends(get_db)):
         except Exception as rex:
             print(f"[REFERRAL BIND ERROR] {rex}")
             referral_outcome = "error"
-        token = create_token(user.id)
+        token = create_token(user.id, user.password_hash)
         resp = JSONResponse({
             "success": True,
             "redirect": "/dashboard",
@@ -4238,7 +4252,7 @@ async def verify_email_link(email: str, code: str, request: Request, db: Session
     except Exception as rex:
         print(f"[REFERRAL BIND ERROR] {rex}")
         referral_outcome = "error"
-    token = create_token(user.id)
+    token = create_token(user.id, user.password_hash)
     resp = RedirectResponse("/dashboard?verified=1", status_code=302)
     set_auth_cookie(resp, token, request)
     resp.delete_cookie(REFERRAL_COOKIE_NAME, path="/")
@@ -4269,7 +4283,7 @@ async def api_login(request: Request, db: Session = Depends(get_db)):
             print("[LOGIN] rejected")
             return JSONResponse({"error": "Invalid email or password"}, status_code=401)
 
-        token = create_token(user.id)
+        token = create_token(user.id, user.password_hash)
         redirect = "/admin" if user.is_admin else "/dashboard"
         resp = JSONResponse({"success": True, "redirect": redirect, "is_admin": user.is_admin})
         set_auth_cookie(resp, token, request)
@@ -6651,8 +6665,10 @@ async def api_admin_create_user(request: Request, db: Session = Depends(get_db))
     try:
         data = await request.json()
         email = str(data["email"]).lower().strip()
-        duration_value = int(data.get("duration_value", data.get("days", 30)) or 0)
-        duration_unit = str(data.get("duration_unit", "days") or "days")
+        try:
+            duration_value, duration_unit = parse_admin_duration(data, default=30)
+        except ValueError as exc:
+            return JSONResponse({"error": str(exc)}, status_code=400)
         email_error = validate_registration_email(email)
         if email_error:
             return JSONResponse({"error": email_error}, status_code=400)
@@ -6698,6 +6714,12 @@ async def api_admin_update_user(user_id: int, request: Request, db: Session = De
         return JSONResponse({"error": "The main admin account is protected"}, status_code=403)
     if target_is_admin and not can_manage_admin_roles(admin) and admin.id != u.id:
         return JSONResponse({"error": "Only the main admin can change other admin accounts"}, status_code=403)
+    duration = None
+    if "days" in data or "duration_value" in data:
+        try:
+            duration = parse_admin_duration(data)
+        except ValueError as exc:
+            return JSONResponse({"error": str(exc)}, status_code=400)
     if "name" in data:
         u.name = data["name"]
     if "email" in data:
@@ -6705,15 +6727,17 @@ async def api_admin_update_user(user_id: int, request: Request, db: Session = De
         email_error = validate_registration_email(email)
         if email_error:
             return JSONResponse({"error": email_error}, status_code=400)
+        duplicate = db.query(models.User.id).filter(models.User.email == email, models.User.id != u.id).first()
+        if duplicate:
+            return JSONResponse({"error": "Email already registered"}, status_code=400)
         u.email = email
     if "password" in data and data["password"]:
         password_error = validate_password_strength(str(data["password"]))
         if password_error:
             return JSONResponse({"error": password_error}, status_code=400)
         u.password_hash = hash_password(data["password"])
-    if "days" in data or "duration_value" in data:
-        duration_value = int(data.get("duration_value", data.get("days", 0)) or 0)
-        duration_unit = str(data.get("duration_unit", "days") or "days")
+    if duration is not None:
+        duration_value, duration_unit = duration
         u.expires_at = compute_admin_expiry(duration_value, duration_unit, start_at=get_user_access_expiry(u))
         # Keep subscription_status in sync so all UI checks are consistent
         if duration_value > 0:

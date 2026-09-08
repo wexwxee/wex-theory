@@ -16,6 +16,8 @@ import main  # noqa: E402
 import models  # noqa: E402
 from database import SessionLocal, engine  # noqa: E402
 from sqlalchemy import inspect, text  # noqa: E402
+from auth import create_token, get_current_user, verify_password  # noqa: E402
+from starlette.requests import Request  # noqa: E402
 
 
 class AuthHardeningTests(unittest.TestCase):
@@ -55,6 +57,11 @@ class AuthHardeningTests(unittest.TestCase):
         self.assertNotIn("654321", pending.code)
         self.assertTrue(main.email_verification_code_matches(pending, "654321"))
         self.assertFalse(main.email_verification_code_matches(pending, "000000"))
+
+    def test_password_limit_counts_utf8_bytes(self):
+        self.assertIsNone(main.validate_password_strength("A1" + "x" * 70))
+        self.assertIn("too long", main.validate_password_strength("A1" + "x" * 71))
+        self.assertIn("too long", main.validate_password_strength("A1" + "я" * 36))
 
     def test_code_locks_after_five_failed_attempts(self):
         pending = self.make_pending()
@@ -114,6 +121,36 @@ class AuthHardeningTests(unittest.TestCase):
 
         self.assertIsNone(error)
         self.assertIsNotNone(user)
+
+    def test_reset_invalidates_old_sessions_and_code_cannot_be_reused(self):
+        user = models.User(email="learner@example.com", name="Learner",
+                           password_hash=main.hash_password("OldPassword123"), expires_at=datetime.utcnow())
+        self.db.add(user)
+        self.db.commit()
+        token = create_token(user.id, user.password_hash)
+        def request(value):
+            return Request({"type": "http", "headers": [(b"cookie", f"token={value}".encode())]})
+        self.assertIsNotNone(get_current_user(request(token), self.db))
+        self.make_pending(purpose="reset_password")
+        self.assertIsNone(main.complete_password_reset(self.db, user.email, "123456", "NewPassword123"))
+        self.assertIsNone(get_current_user(request(token), self.db))
+        self.assertFalse(verify_password("OldPassword123", user.password_hash))
+        self.assertTrue(verify_password("NewPassword123", user.password_hash))
+        fresh = create_token(user.id, user.password_hash)
+        self.assertIsNotNone(get_current_user(request(fresh), self.db))
+        self.assertIn("not found", main.complete_password_reset(self.db, user.email, "123456", "ThirdPassword123"))
+
+    def test_expired_reset_and_wrong_codes_do_not_change_password(self):
+        user = models.User(email="learner@example.com", name="Learner",
+                           password_hash=main.hash_password("OldPassword123"), expires_at=datetime.utcnow())
+        self.db.add(user)
+        self.db.commit()
+        pending = self.make_pending(purpose="reset_password")
+        self.assertIn("Invalid", main.complete_password_reset(self.db, user.email, "000000", "NewPassword123"))
+        pending.expires_at = datetime.utcnow() - timedelta(seconds=1)
+        self.db.commit()
+        self.assertIn("expired", main.complete_password_reset(self.db, user.email, "123456", "NewPassword123"))
+        self.assertTrue(verify_password("OldPassword123", user.password_hash))
 
     def test_production_database_never_falls_back_to_sqlite(self):
         with self.assertRaises(RuntimeError):

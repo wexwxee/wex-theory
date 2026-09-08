@@ -207,7 +207,7 @@
     const body = { name, email, is_admin: isAdmin };
     if (password) body.password = password;
     if (days !== '') {
-      body.duration_value = parseInt(days, 10);
+      body.duration_value = Number(days);
       body.duration_unit = durationUnit;
     }
 

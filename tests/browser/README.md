@@ -30,5 +30,14 @@ expired and active accounts, including the account ID in the Telegram draft,
 renewal links, both themes and mobile layout. Telegram navigation is intercepted
 locally; the suite sends no messages and makes no payments.
 
+`npm run test:auth` registers a new account using the actual form and captured
+email, rejects a wrong code, grants and extends access through the admin UI,
+checks invalid admin edits, resets the password through its email link, and
+verifies old sessions and reused codes are rejected while paid access remains.
+It also tests email confirmation with a stale cookie. The fixture-only mailbox
+exists in memory at `/__test/mailbox` on port 8765; production and the persistent
+preview do not register this route. Restart the fixture before repeating runs
+to reset accounts and authentication rate limits.
+
 The older `exam_words.test.js` is a separate JSDOM harness; it requires its own
 rendered `ew_page.html` fixture and is not part of this suite.

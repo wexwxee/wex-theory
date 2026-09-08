@@ -154,3 +154,17 @@ class LearningProgressTests(unittest.TestCase):
         response = self.call(main.api_activity_ping, None, payload)
         self.assertTrue(json.loads(response.body)["analytics_recorded"])
         self.assertEqual(main.build_analytics_overview(self.db)["guest_week"], 1)
+
+    def test_invalid_admin_edits_do_not_grant_access_or_change_email(self):
+        self.other.is_admin = True
+        self.other.is_super_admin = True
+        original = (self.user.expires_at, self.user.email)
+        for payload in [{"email": self.other.email}, {"duration_value": -1},
+                        {"duration_value": 1.5}, {"duration_value": True},
+                        {"duration_value": 999999999},
+                        {"duration_value": 7, "duration_unit": "weeks"}]:
+            with patch("main.get_current_user", return_value=self.other):
+                response = asyncio.run(main.api_admin_update_user(self.user.id, request(payload), self.db))
+            self.assertEqual(response.status_code, 400, payload)
+            self.db.refresh(self.user)
+            self.assertEqual((self.user.expires_at, self.user.email), original)

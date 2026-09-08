@@ -61,6 +61,11 @@
       const data = await res.json();
       if (data.success) {
         showMsg(data.message || 'If this email exists, we sent reset instructions.', 'success');
+        const codeLink = document.getElementById('resetCodeLink');
+        if (codeLink) {
+          codeLink.hidden = false;
+          codeLink.querySelector('a').href = '/reset-password?email=' + encodeURIComponent(email);
+        }
       } else {
         showMsg(data.error || 'Could not send reset email', 'error');
       }

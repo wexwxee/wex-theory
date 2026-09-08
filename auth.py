@@ -1,5 +1,7 @@
 import os
 import bcrypt
+import hashlib
+import hmac
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
 from fastapi import Request
@@ -27,8 +29,13 @@ def verify_password(password: str, hashed: str) -> bool:
         return False
 
 
-def create_token(user_id: int) -> str:
-    payload = {"sub": str(user_id), "exp": datetime.utcnow() + timedelta(days=30)}
+def password_session_stamp(password_hash: str) -> str:
+    return hmac.new(SECRET_KEY.encode(), password_hash.encode(), hashlib.sha256).hexdigest()
+
+
+def create_token(user_id: int, password_hash: str) -> str:
+    payload = {"sub": str(user_id), "exp": datetime.utcnow() + timedelta(days=30),
+               "pwd": password_session_stamp(password_hash)}
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
@@ -52,7 +59,13 @@ def get_current_user(request: Request, db: Session):
     except (TypeError, ValueError):
         return None
     from models import User
-    return db.query(User).filter(User.id == user_id).first()
+    user = db.query(User).filter(User.id == user_id).first()
+    stamp = payload.get("pwd")
+    if not user or not isinstance(stamp, str):
+        return None
+    if not hmac.compare_digest(stamp, password_session_stamp(user.password_hash)):
+        return None
+    return user
 
 
 def get_user_access_expiry(user):

@@ -22,6 +22,20 @@ if __name__ == "__main__":
         from import_data import import_data
         import uvicorn
 
+        # Test-only mailbox. This route is never registered by the application launcher.
+        outbox = []
+
+        def capture_mail(email, code, name, url):
+            outbox.append({"email": email, "code": code, "url": url})
+
+        main.is_email_service_configured = lambda: True
+        main.send_verification_email = capture_mail
+        main.send_password_reset_email = capture_mail
+
+        @main.app.get('/__test/mailbox')
+        def mailbox():
+            return outbox
+
         import_data()
         with SessionLocal() as db:
             for index in (1, 2, 3):
@@ -38,6 +52,10 @@ if __name__ == "__main__":
                 for question in db.query(models.Question).filter_by(test_id=1).limit(2).all():
                     db.add(models.UserAnswer(attempt_id=attempt.id, question_id=question.id,
                                              selected_answer_ids="[]", is_correct=False))
+            db.add(models.User(name='Browser Admin', email='browser-admin@example.com',
+                               password_hash=main.hash_password('BrowserAdmin123'),
+                               public_id='WEX-BROWSER-ADMIN', is_admin=True, is_super_admin=True,
+                               expires_at=datetime.utcnow() + timedelta(days=30)))
             db.commit()
             main.ensure_exam_mode_test(db)
         try:
