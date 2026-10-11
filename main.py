@@ -31,6 +31,7 @@ except Exception as _e:
     _PromInstrumentator = None
     print(f"[METRICS] prometheus_fastapi_instrumentator unavailable: {_e}")
 
+import ai_explain
 import models
 import review as review_drill
 import signs as signs_catalogue
@@ -220,6 +221,7 @@ RATE_LIMIT_CONFIG = {
     "translation_batch": (12, 60),
     "contact_submit": (6, 1800),
     "support_reply": (30, 300),
+    "ai_explain": (20, 3600),
 }
 
 # ─── Redis Rate Limiting (graceful fallback to in-memory) ─────────────────────
@@ -3027,7 +3029,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20260908-resume-v1"
+templates.env.globals["asset_version"] = "20261011-ai-v1"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 templates.env.globals["test_image_url"] = test_image_url
@@ -3984,6 +3986,31 @@ async def privacy_page(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse(request, "privacy.html", {"request": request, "user": user})
 
 
+PUBLIC_SITEMAP_PATHS = [
+    "/", "/about", "/test/0", "/pricing", "/faq", "/study-guide", "/signs",
+    "/rules-2026", "/exam-day", "/exam-language", "/exam-words-demo", "/contact", "/privacy",
+]
+ROBOTS_DISALLOWED_PREFIXES = [
+    "/admin", "/api/", "/dashboard", "/profile", "/messages", "/support", "/saved",
+    "/review", "/results", "/referrals", "/promo-code", "/success", "/cancel",
+]
+
+
+@app.get("/robots.txt")
+async def robots_txt(request: Request):
+    lines = ["User-agent: *"] + [f"Disallow: {prefix}" for prefix in ROBOTS_DISALLOWED_PREFIXES]
+    lines.append(f"Sitemap: {get_public_base_url(request)}/sitemap.xml")
+    return Response("\n".join(lines) + "\n", media_type="text/plain")
+
+
+@app.get("/sitemap.xml")
+async def sitemap_xml(request: Request):
+    base = get_public_base_url(request)
+    urls = "".join(f"<url><loc>{base}{path}</loc></url>" for path in PUBLIC_SITEMAP_PATHS)
+    body = f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>'
+    return Response(body, media_type="application/xml")
+
+
 @app.get("/subscription-expired", response_class=HTMLResponse)
 async def expired_page(request: Request):
     return templates.TemplateResponse(request, "subscription_expired.html", {"request": request})
@@ -4826,6 +4853,13 @@ async def admin_page(request: Request, db: Session = Depends(get_db)):
         "activity_overview": activity_overview,
         "analytics_overview": analytics_overview,
         "journey_insights": journey_insights,
+        "ai_explain_status": {
+            "switched_on": ai_explain.is_switched_on(db),
+            "key_configured": ai_explain.api_key_configured(),
+            "stored": ai_explain.stored_count(db),
+            "today": ai_explain.generated_today(db),
+            "daily_limit": ai_explain.daily_limit(),
+        },
     })
 
 
@@ -5485,6 +5519,88 @@ async def api_review(attempt_id: int, request: Request, db: Session = Depends(ge
             is_correct=ua.is_correct if ua else False,
         ))
     return review_items
+
+
+# ─── AI explanation of a mistake (optional, admin switch) ─────────────────────
+
+@app.get("/api/ai/explain/status")
+async def api_ai_explain_status(db: Session = Depends(get_db)):
+    return {"enabled": ai_explain.is_enabled(db)}
+
+
+@app.post("/api/ai/explain")
+async def api_ai_explain(request: Request, db: Session = Depends(get_db)):
+    if not ai_explain.is_enabled(db):
+        return JSONResponse({"error": "AI explanations are switched off."}, status_code=404)
+    try:
+        data = await request.json()
+        question_id = int(data.get("question_id"))
+    except Exception:
+        return JSONResponse({"error": "Invalid request"}, status_code=400)
+
+    question = (
+        db.query(models.Question)
+        .options(selectinload(models.Question.answers))
+        .filter(models.Question.id == question_id)
+        .first()
+    )
+    if not question:
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    free_question_ids = {q.id for q in get_free_sample_questions(db)}
+    if question.id not in free_question_ids and not user_has_access(get_current_user(request, db)):
+        return JSONResponse({"error": "Sign in with active access to use AI explanations."}, status_code=403)
+
+    lang = data.get("lang") if data.get("lang") in ai_explain.LANGUAGES else "en"
+    wording_mode = normalize_wording_mode(data.get("wording"), test_id=question.test_id)
+    selected_ids = normalize_selected_answer_ids(question, data.get("selected_ids"))
+    answers = [
+        {"id": a.id, "text": resolve_answer_text(a, wording_mode), "is_correct": bool(a.is_correct)}
+        for a in ordered_answers(question)
+    ]
+    if set(selected_ids) == {a["id"] for a in answers if a["is_correct"]}:
+        return JSONResponse({"error": "This answer is already correct."}, status_code=400)
+
+    key = ai_explain.selected_key(selected_ids)
+    stored = ai_explain.find_stored(db, question.id, key, lang, wording_mode)
+    if stored:
+        return {"text": stored.text, "cached": True}
+
+    limited = check_rate_limit(request, "ai_explain", message="Too many AI explanations. Please wait a little.")
+    if limited:
+        return limited
+    if ai_explain.generated_today(db) >= ai_explain.daily_limit():
+        return JSONResponse({"error": "The AI tutor has reached today's limit. Please try again tomorrow."}, status_code=429)
+
+    case_text = ai_explain.build_case_text(
+        question_text=resolve_question_text(question, wording_mode),
+        answers=answers,
+        selected_ids=selected_ids,
+        official_explanation=question.explanation or "",
+    )
+    image = ai_explain.image_block(BASE_DIR / "test-images", question.image_path)
+    try:
+        text = await ai_explain.generate(case_text=case_text, image=image, lang=lang)
+    except ai_explain.ExplainError as e:
+        return JSONResponse({"error": str(e)}, status_code=503)
+    text = ai_explain.store(db, question_id=question.id, key=key, lang=lang, wording_mode=wording_mode, text=text)
+    return {"text": text, "cached": False}
+
+
+@app.post("/api/admin/ai-explain")
+async def api_admin_ai_explain(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user or not user.is_admin:
+        return JSONResponse({"error": "Forbidden"}, status_code=403)
+    try:
+        data = await request.json()
+    except Exception:
+        return JSONResponse({"error": "Invalid request"}, status_code=400)
+    ai_explain.set_switched_on(db, bool(data.get("enabled")))
+    return {
+        "switched_on": ai_explain.is_switched_on(db),
+        "key_configured": ai_explain.api_key_configured(),
+        "enabled": ai_explain.is_enabled(db),
+    }
 
 
 # ─── Dictionary (curated word translations) ───────────────────────────────────

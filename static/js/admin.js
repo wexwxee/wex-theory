@@ -698,4 +698,30 @@
       }
     });
   });
+
+  const aiCard = document.getElementById('aiExplainCard');
+  const aiToggle = document.getElementById('aiExplainToggle');
+  aiToggle?.addEventListener('click', async () => {
+    const turnOn = aiCard.dataset.switchedOn !== 'true';
+    aiToggle.disabled = true;
+    try {
+      const res = await fetch('/api/admin/ai-explain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: turnOn })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Could not change the AI tutor');
+      aiCard.dataset.switchedOn = data.switched_on ? 'true' : 'false';
+      aiToggle.textContent = data.switched_on ? 'Turn off' : 'Turn on';
+      document.getElementById('aiExplainState').textContent = data.enabled
+        ? 'On for learners'
+        : (data.switched_on ? 'Switched on, waiting for the API key' : 'Off');
+      showToast(data.switched_on ? 'AI tutor switched on' : 'AI tutor switched off', 'success');
+    } catch (e) {
+      showToast(e.message, 'error');
+    } finally {
+      aiToggle.disabled = false;
+    }
+  });
 })();

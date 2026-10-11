@@ -380,3 +380,29 @@ class Referral(Base):
 
     referrer = relationship("User", foreign_keys=[referrer_id])
     referred = relationship("User", foreign_keys=[referred_id])
+
+
+class AppSetting(Base):
+    """Small key/value switches the admin can flip without a redeploy."""
+    __tablename__ = "app_settings"
+
+    key = Column(String(80), primary_key=True)
+    value = Column(String, nullable=False, default="")
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class AiExplanation(Base):
+    """One generated explanation per question, chosen answers, language and wording."""
+    __tablename__ = "ai_explanations"
+    __table_args__ = (
+        UniqueConstraint("question_id", "selected_key", "lang", "wording_mode", name="uq_ai_explanations_case"),
+    )
+
+    id = Column(Integer, primary_key=True)
+    question_id = Column(Integer, ForeignKey("questions.id", ondelete="CASCADE"), nullable=False, index=True)
+    selected_key = Column(String(200), nullable=False)  # sorted answer ids, e.g. "12,15"
+    lang = Column(String(8), nullable=False)
+    wording_mode = Column(String(20), nullable=False)
+    text = Column(Text, nullable=False)
+    model = Column(String(60), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

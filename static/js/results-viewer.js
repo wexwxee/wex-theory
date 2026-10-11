@@ -18,6 +18,7 @@
       btn.addEventListener('click', () => openModal(Number(btn.dataset.openModal)));
     });
     document.getElementById('modalBookmarkBtn')?.addEventListener('click', toggleModalBookmark);
+    document.getElementById('modalAiExplainBtn')?.addEventListener('click', requestAiExplain);
     initPanZoom();
     document.querySelectorAll('[data-delete-saved]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
@@ -38,6 +39,16 @@
     let voiceUsage = {};
     const liveTranslationCache = new Map();
     let liveTranslationRequestKey = '';
+    // Optional AI tutor: shown only when the admin has switched it on.
+    const aiExplainCache = new Map();
+    let aiExplainEnabled = false;
+    fetch('/api/ai/explain/status', { credentials: 'same-origin' })
+      .then((res) => (res.ok ? res.json() : {}))
+      .then((data) => {
+        aiExplainEnabled = !!data.enabled;
+        if (aiExplainEnabled && DATA.length) renderAiExplain(DATA[currentModal]);
+      })
+      .catch(() => {});
     initSpeechControls();
     function _resultTranslated(d) {
       return {
@@ -89,7 +100,8 @@
       liveTranslationRequestKey = requestKey;
       fetch('/api/translate/batch', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        // The free results page has no base.js, so send the CSRF token here.
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': readCookie(window.WEX_CSRF_COOKIE_NAME || 'csrf_token') },
         body: JSON.stringify({ texts: unique })
       })
         .then((res) => res.ok ? res.json() : null)
@@ -410,6 +422,70 @@ function voiceDisplayName(voice) {
       }
     }
 
+    function readCookie(name) {
+      const part = document.cookie.split('; ').find((item) => item.startsWith(name + '='));
+      return part ? decodeURIComponent(part.slice(name.length + 1)) : '';
+    }
+
+    function aiExplainLang() {
+      return resultsTranslateMode ? 'ru' : 'en';
+    }
+
+    function aiExplainKey(d) {
+      const selected = [...(d.selected_ids || [])].sort((a, b) => a - b).join(',');
+      return `${d.question_id}|${selected}|${aiExplainLang()}`;
+    }
+
+    function renderAiExplain(d) {
+      const wrap = document.getElementById('modalAiExplain');
+      if (!wrap || !d) return;
+      wrap.hidden = !aiExplainEnabled || d.is_correct || !d.question_id;
+      if (wrap.hidden) return;
+      const btn = document.getElementById('modalAiExplainBtn');
+      const error = document.getElementById('modalAiExplainError');
+      const box = document.getElementById('modalAiExplainBox');
+      const entry = aiExplainCache.get(aiExplainKey(d)) || {};
+      btn.style.display = entry.text ? 'none' : '';
+      btn.disabled = !!entry.pending;
+      if (entry.pending) btn.textContent = resultsTranslateMode ? 'AI-репетитор думает…' : 'AI tutor is thinking…';
+      else btn.textContent = resultsTranslateMode ? 'Объяснить ошибку с AI' : 'Explain my mistake with AI';
+      error.hidden = !entry.error;
+      error.textContent = entry.error || '';
+      box.style.display = entry.text ? 'block' : 'none';
+      document.getElementById('modalAiExplainBody').textContent = entry.text || '';
+    }
+
+    async function requestAiExplain() {
+      const d = DATA[currentModal];
+      const key = aiExplainKey(d);
+      if (aiExplainCache.get(key)?.pending) return;
+      aiExplainCache.set(key, { pending: true });
+      renderAiExplain(d);
+      let entry;
+      try {
+        const res = await fetch('/api/ai/explain', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': readCookie(window.WEX_CSRF_COOKIE_NAME || 'csrf_token'),
+          },
+          body: JSON.stringify({
+            question_id: d.question_id,
+            selected_ids: d.selected_ids,
+            lang: aiExplainLang(),
+            wording: document.getElementById('resultsPageMeta')?.dataset.wording || 'original',
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        entry = res.ok && data.text ? { text: data.text } : { error: data.error || 'The AI tutor is not available right now.' };
+      } catch (e) {
+        entry = { error: 'Network error. Please try again.' };
+      }
+      aiExplainCache.set(key, entry);
+      if (aiExplainKey(DATA[currentModal]) === key) renderAiExplain(DATA[currentModal]);
+    }
+
     function openModal(i) {
       currentModal = Math.max(0, Math.min(DATA.length - 1, Number(i) || 0));
       renderModal();
@@ -648,6 +724,7 @@ function voiceDisplayName(voice) {
       } else {
         expl.style.display = 'none';
       }
+      renderAiExplain(d);
 
       const statusLabel = document.getElementById('modalStatusLabel');
       const statusHint = document.getElementById('modalStatusHint');

@@ -617,6 +617,9 @@
   .traffic-details { border-top:1px solid var(--border); padding-top:16px; }
   .traffic-details summary { cursor:pointer; font-size:.84rem; color:var(--text-muted); margin-bottom:12px; }
   @media(max-width:640px) { .traffic-section { padding:16px; } .traffic-window { margin-left:0; } .traffic-section .admin-analytics-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .traffic-section .admin-stat-card { padding:8px 0; border:0; } }
+  .ai-explain-card { margin:0 0 20px; padding:16px 20px; }
+  .ai-explain-card .admin-panel-label { margin-bottom:6px; }
+  .ai-explain-row { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
 </style>
 {% endblock %}
 
@@ -826,6 +829,20 @@
   </div>
 
   </details>
+  </section>
+
+  <section class="admin-analytics-panel ai-explain-card" id="aiExplainCard" data-switched-on="{{ 'true' if ai_explain_status.switched_on else 'false' }}" data-key-configured="{{ 'true' if ai_explain_status.key_configured else 'false' }}">
+    <div class="ai-explain-row">
+      <div>
+        <div class="admin-panel-label">AI tutor · Explain my mistake</div>
+        <strong id="aiExplainState">{% if ai_explain_status.switched_on and ai_explain_status.key_configured %}On for learners{% elif ai_explain_status.switched_on %}Switched on, waiting for the API key{% else %}Off{% endif %}</strong>
+        <div class="admin-mini-meta">
+          {% if not ai_explain_status.key_configured %}Add ANTHROPIC_API_KEY in the Render service Environment to make it work. {% endif %}
+          {{ ai_explain_status.stored }} saved explanations · {{ ai_explain_status.today }} of {{ ai_explain_status.daily_limit }} new today
+        </div>
+      </div>
+      <button type="button" class="btn-ghost btn-sm" id="aiExplainToggle">{% if ai_explain_status.switched_on %}Turn off{% else %}Turn on{% endif %}</button>
+    </div>
   </section>
 
   <div class="tabs">

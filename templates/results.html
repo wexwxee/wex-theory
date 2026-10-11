@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block title %}Results - {{ test.title }} - WEX Theory{% endblock %}
 
@@ -587,6 +587,11 @@
   color: var(--text);
   margin-bottom: 8px;
 }
+.ai-explain { margin-top: 14px; }
+.ai-explain .review-expl-box { margin-top: 12px; }
+.ai-explain-body { color: var(--text); white-space: pre-line; }
+.ai-explain-note { margin-top: 10px; font-size: 0.76rem; line-height: 1.5; }
+.ai-explain-error { margin-top: 8px; font-size: 0.82rem; color: var(--wrong, #ef4444); }
 .review-modal-footer {
   position: sticky;
   bottom: 0;
@@ -1050,6 +1055,15 @@
       <div class="review-expl-title">Explanation</div>
       <div id="modalExplanationBody"></div>
       <div id="modalExplanationRu" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-style:italic;"></div>
+    </div>
+    <div id="modalAiExplain" class="ai-explain" hidden>
+      <button type="button" class="btn-ghost btn-sm" id="modalAiExplainBtn">Explain my mistake with AI</button>
+      <div id="modalAiExplainError" class="ai-explain-error" hidden></div>
+      <div id="modalAiExplainBox" class="review-expl-box">
+        <div class="review-expl-title">AI tutor</div>
+        <div id="modalAiExplainBody" class="ai-explain-body"></div>
+        <div class="ai-explain-note">Written by Claude AI from the official explanation. If anything differs, trust the official explanation.</div>
+      </div>
     </div>
     </div>
     <div class="review-modal-footer">
@@ -1521,6 +1535,6 @@
 
 {% block scripts %}
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/lightbox-zoom.js?v=20260408-lbz"></script>
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-viewer.js?v={{ asset_version }}-report"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-viewer.js?v={{ asset_version }}-tutor"></script>
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/results.js?v=20260407-review2"></script>
 {% endblock %}
