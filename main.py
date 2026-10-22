@@ -2807,6 +2807,36 @@ if _telegram_client_id and _telegram_client_secret:
     )
 
 
+# Rollback of 22 Oct 2026: Road Sign Tests 1-4 (ids 101-104) belong to the newer version. Remove
+# them and every row that points at them, so this version's library shows only its own tests.
+# Accounts, other attempts and progress are not touched.
+ROLLED_BACK_TEST_IDS = (101, 102, 103, 104)
+
+
+def remove_rolled_back_tests(db: Session) -> None:
+    tests = db.query(models.Test.id).filter(models.Test.id.in_(ROLLED_BACK_TEST_IDS)).all()
+    if not tests:
+        return
+    question_ids = [row[0] for row in db.query(models.Question.id).filter(models.Question.test_id.in_(ROLLED_BACK_TEST_IDS)).all()]
+    attempt_ids = [row[0] for row in db.query(models.UserTestAttempt.id).filter(models.UserTestAttempt.test_id.in_(ROLLED_BACK_TEST_IDS)).all()]
+    if attempt_ids:
+        db.query(models.UserAnswer).filter(models.UserAnswer.attempt_id.in_(attempt_ids)).delete(synchronize_session=False)
+    if question_ids:
+        db.query(models.UserAnswer).filter(models.UserAnswer.question_id.in_(question_ids)).delete(synchronize_session=False)
+        db.query(models.ReviewProgress).filter(models.ReviewProgress.question_id.in_(question_ids)).delete(synchronize_session=False)
+        db.query(models.Bookmark).filter(models.Bookmark.question_id.in_(question_ids)).delete(synchronize_session=False)
+        db.query(models.AiExplanation).filter(models.AiExplanation.question_id.in_(question_ids)).delete(synchronize_session=False)
+        db.query(models.Answer).filter(models.Answer.question_id.in_(question_ids)).delete(synchronize_session=False)
+    if attempt_ids:
+        db.query(models.UserTestAttempt).filter(models.UserTestAttempt.id.in_(attempt_ids)).delete(synchronize_session=False)
+    if question_ids:
+        db.query(models.Question).filter(models.Question.id.in_(question_ids)).delete(synchronize_session=False)
+    db.query(models.Test).filter(models.Test.id.in_(ROLLED_BACK_TEST_IDS)).delete(synchronize_session=False)
+    db.commit()
+    print(f"[STARTUP] Rollback: removed road sign tests {sorted(row[0] for row in tests)}, "
+          f"{len(question_ids)} questions, {len(attempt_ids)} attempts")
+
+
 @app.on_event("startup")
 async def startup_init():
     # Log which database is being used
@@ -2940,6 +2970,11 @@ async def startup_init():
         else:
             print("[STARTUP] PRIMARY_SUPER_ADMIN_EMAIL not set; preserving database roles")
         ensure_exam_mode_test(db)
+        try:
+            remove_rolled_back_tests(db)
+        except Exception as re:
+            db.rollback()
+            print(f"[STARTUP] Rollback cleanup error: {re}")
 
     except Exception as e:
         print(f"[STARTUP] Error: {e}")
