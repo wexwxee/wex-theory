@@ -12,7 +12,6 @@ const html = fs.readFileSync(path.join(HERE, 'ew_page.html'), 'utf8');
 const appJs = fs.readFileSync(path.join(APP, 'static/js/exam-words.js'), 'utf8');
 const examplesJs = fs.readFileSync(path.join(APP, 'static/js/exam-words-examples.js'), 'utf8');
 const dataJs = fs.readFileSync(path.join(APP, 'static/js/exam-words-data.js'), 'utf8');
-const roundJs = fs.readFileSync(path.join(APP, 'static/js/word-round-store.js'), 'utf8');
 
 const dom = new JSDOM(html, { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://local.test/exam-words' });
 const { window } = dom;
@@ -42,7 +41,7 @@ function check(name, condition, detail) {
 }
 
 // Two <script> tags share one global lexical scope in a browser; two eval calls do not.
-window.eval([dataJs, examplesJs, roundJs, appJs].join('\n'));
+window.eval([dataJs, examplesJs, appJs].join('\n'));
 
 const doc = window.document;
 const $ = (sel) => doc.querySelector(sel);
@@ -100,8 +99,7 @@ while (!/^\d+\/10/.test(stageText()) && guard < 60) {
 }
 check('round ends with a score', /Next ten words/.test(stageText()), stageText().slice(0, 60));
 
-const accountScope = window.document.getElementById('exam-words-mode')?.dataset.studyAccount;
-const stored = JSON.parse(window.localStorage.getItem(`wex-exam-words-2026-full${accountScope ? '-user-' + accountScope : ''}-progress-v1`) || '{}');
+const stored = JSON.parse(window.localStorage.getItem('wex-exam-words-2026-full-progress-v1') || '{}');
 check('progress is saved', Object.keys(stored).length > 0, 'entries=' + Object.keys(stored).length);
 
 // ── Side list: search, filter, jump ────────────────────────────────────────

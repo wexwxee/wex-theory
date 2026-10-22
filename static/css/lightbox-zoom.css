@@ -54,12 +54,6 @@
   transition: background 0.15s;
 }
 .lbz-close:hover { background: rgba(255, 255, 255, 0.22); }
-.lbz-controls{position:absolute;bottom:62px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:8px;border:1px solid #ffffff33;border-radius:14px;background:#161616ed;color:white;z-index:3;touch-action:manipulation}
-.lbz-controls button{display:grid;place-items:center;min-width:44px;min-height:44px;padding:0 10px;border:1px solid #ffffff38;border-radius:9px;background:#ffffff14;color:white;font:inherit;font-size:1.3rem;cursor:pointer}
-.lbz-controls button:disabled{opacity:.4;cursor:default}.lbz-scale{font-size:.8rem;min-width:48px;text-align:center;font-variant-numeric:tabular-nums}
-.lbz-overlay button:focus-visible{outline:2px solid white;outline-offset:3px}
-.lbz-overlay .lbz-hint{max-width:90vw;width:max-content;text-align:center;white-space:normal;line-height:1.5;border-radius:10px}
-@media(prefers-reduced-motion:reduce){.lbz-img{transition:none}}
 .lbz-hint {
   position: absolute;
   bottom: 18px;

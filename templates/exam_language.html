@@ -24,11 +24,11 @@
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" id="factsBurgerBtn" aria-label="Open navigation"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
-      <a href="/" class="logo">WEXTheory</a>{% include "_nav_links.html" %}
+      <button class="burger-btn" id="factsBurgerBtn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
+      <a href="/" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
-      <button class="theme-btn" id="navThemeBtn" aria-label="Toggle theme">&#9728;&#65039;</button>
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
       {% if user %}
       <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
       {% else %}
@@ -44,7 +44,7 @@
     <div class="info-eyebrow">Before you book</div>
     <h1 class="info-title">Which language can you take the theory test in?</h1>
     <p class="info-lede">
-      Choose from the supported languages and confirm the format with your driving school. WEXTheory offers English-first practice with a Russian helper translation; Russian is not an official test language.
+      Five languages, and no interpreter. If Danish is not an option for you, the test will be in English &mdash; which is exactly the language this platform trains you in.
     </p>
     <div class="info-actions">
       <a href="/test/0" class="btn-primary">Start free test</a>
@@ -61,13 +61,13 @@
     </div>
     <div class="info-card">
       <div class="info-card-icon"><i class="fa-solid fa-user-slash"></i></div>
-      <div class="info-card-title">Interpreter exceptions</div>
-      <p class="info-card-copy">Digital theory tests do not use interpreters. Faroese and Greenlandic tests use an interpreter in the analog format; sign-language arrangements are also available through the authority.</p>
+      <div class="info-card-title">No interpreter</div>
+      <p class="info-card-copy">Since 1 January 2025 an interpreter cannot be used &mdash; not in the theory test and not in the practical test.</p>
     </div>
     <div class="info-card">
       <div class="info-card-icon"><i class="fa-solid fa-headphones"></i></div>
       <div class="info-card-title">Digital test: three</div>
-      <p class="info-card-copy">Danish and English are offered at the digital test locations. Digital theory tests in German are held in Aabenraa. Audio is available.</p>
+      <p class="info-card-copy">The digital theory test runs in Danish, English and German, and it can read the questions aloud to you.</p>
     </div>
   </section>
 
@@ -75,19 +75,19 @@
     <div class="info-section">
       <h2 class="info-section-title">What the rule says</h2>
       <p>
-        The language rules changed on 1 January 2025. An interpreter does not make an unsupported language available: for example, an earlier test with a Persian interpreter does not allow a new test in Persian. Ask your school to book the correct language and any permitted special arrangements.
+        The language rules changed on 1 January 2025 and apply to everyone, including learners who started their education earlier. Passing the theory test with an interpreter before that date does not give you the right to use one now.
       </p>
       <ul class="info-list">
         <li>Theory and practical tests are held in Danish, English, Faroese, Greenlandic or German.</li>
-        <li>Digital theory tests do not use interpreters. Faroese, Greenlandic and sign-language arrangements must be booked through the authority.</li>
-        <li>For the digital theory test, German is available in Aabenraa; Danish and English are offered across the digital locations.</li>
+        <li>Interpreters are not allowed in either test.</li>
+        <li>The digital theory test is available in Danish, English and German, with audio.</li>
       </ul>
     </div>
 
     <div class="info-section">
       <h2 class="info-section-title">If your first language is Russian, Ukrainian, Arabic, Polish&hellip;</h2>
       <p>
-        Choose a supported language you understand well. If you choose English, practise reading and listening to exam phrases as well as studying the traffic rules. Use the Russian helper to resolve unclear wording, then try the English question again without it.
+        In practice you will sit the test in English. That is a smaller problem than it sounds, but only if you prepare for it deliberately: the traffic rules are learnable in any language, while the exam wording is not. Most people who fail on language do not fail on rules &mdash; they lose time decoding the sentence.
       </p>
       <ul class="info-list">
         <li>Practise the questions in English from the start, not translated in your head.</li>
@@ -122,10 +122,9 @@
 
   <p class="facts-source">
     <strong>Sources:</strong>
-    <a href="https://www.fstyr.dk/privat/koerekort/proever/koereproeve" target="_blank" rel="noopener">Færdselsstyrelsen: current test and language arrangements</a>,
     <a href="https://www.fstyr.dk/nyheder/2024/nov/-nye-regler-for-sprog-ved-koereproever-fra-den-1-januar-2025" target="_blank" rel="noopener">Færdselsstyrelsen on the language rules from 1 January 2025</a>
     and <a href="https://www.fstyr.dk/erhverv/koereskoler-og-koerelaerere/digitale-teoriproever" target="_blank" rel="noopener">Færdselsstyrelsen on digital theory tests</a>.
-    Checked 17 October 2026. WEXTheory is a private practice platform, not an authority &mdash; confirm your own case with your driving school.
+    Checked 29 August 2026. WEXTheory is a private practice platform, not an authority &mdash; confirm your own case with your driving school.
   </p>
 </div>
 

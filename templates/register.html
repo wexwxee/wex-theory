@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="light">
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/static/css/trust.css?v={{ asset_version }}">
   <title>Create Account - WEX Theory</title>
   <script nonce="{{ request.state.csp_nonce }}" src="/static/js/theme-init.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -218,10 +217,8 @@
     .verify-box.show {
       display: block;
     }
-    .field-optional { margin-left: 6px; color: var(--text-muted); font-size: 0.78em; font-weight: 500; text-transform: none; letter-spacing: 0; }
-  .hint a { color: var(--accent); text-underline-offset: 3px; }
-</style>
-<style>body{flex-direction:column}.auth-wrap{flex-shrink:0}.site-trust-links{width:100%;flex-shrink:0}</style></head>
+  </style>
+</head>
 <body>
   <button class="theme-toggle" id="themeBtn">&#9728;&#65039;</button>
   <div class="auth-wrap">
@@ -231,7 +228,7 @@
     </div>
     <div class="card">
       <div class="card-title">Create your account</div>
-      <div class="card-sub">Create a free account. Full test access is purchased separately.</div>
+      <div class="card-sub">Get access to all 13 practice tests</div>
       <div class="perks">
         <div class="perk"><span class="perk-icon">&#10003;</span> 13 structured practice tests</div>
         <div class="perk"><span class="perk-icon">&#10003;</span> 325 real photo questions</div>
@@ -250,8 +247,8 @@
       <div class="msg-box error">Telegram: {{ request.query_params.get('telegram_error') }}</div>
       {% endif %}
       <div class="form-group">
-        <label for="name">Name <span class="field-optional">optional</span></label>
-        <input type="text" id="name" placeholder="Leave empty and we'll pick a nickname" autocomplete="nickname" maxlength="60" autofocus>
+        <label for="name">Full name</label>
+        <input type="text" id="name" placeholder="Your name" autocomplete="name" autofocus>
       </div>
       <div class="form-group">
         <label for="email">Email address</label>
@@ -265,7 +262,6 @@
         </div>
         <div class="hint">Use at least 8 characters with one letter and one number. Example: `drive2026`</div>
       </div>
-      <p class="hint" style="margin-bottom:14px;">See <a href="/pricing">access options</a> before buying. Read how we use your information in our <a href="/privacy">Privacy Policy</a>.</p>
       <button class="btn-primary" id="btn">Send Verification Code</button>
 
       <div class="verify-box" id="verifyBox">
@@ -316,6 +312,5 @@
   </div>
 
   <script nonce="{{ request.state.csp_nonce }}" src="/static/js/register.js"></script>
-  {% include "_cookie_controls.html" %}
 </body>
 </html>

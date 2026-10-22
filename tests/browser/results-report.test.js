@@ -7,7 +7,7 @@ const assert = require('node:assert/strict');
   const page = await context.newPage();
   const errors=[];
   page.on('pageerror', e=>errors.push(e.message));
-  const base=process.env.SITE_TEST_BASE || 'http://127.0.0.1:8765';
+  const base='http://127.0.0.1:8765';
   async function checkReport(test, attempt) {
     await page.locator('[data-modal-index]').first().click();
     await page.locator('#modalReportLink').waitFor();

@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block body %}
-<div id="exam-words-mode" data-exam-words-demo="{{ '1' if demo else '0' }}" data-study-account="{{ user.id if user else 'guest' }}"></div>
+<div id="exam-words-mode" data-exam-words-demo="{{ '1' if demo else '0' }}"></div>
 
 <nav>
   <div class="nav-inner">
@@ -16,12 +16,12 @@
       <a href="{{ '/pricing' if demo else '/dashboard' }}" class="back-btn">
         <span class="back-arrow">&#8592;</span><span class="back-label"> {{ 'Access' if demo else 'Dashboard' }}</span>
       </a>
-      <h1 class="ew-brand">Exam words</h1>
+      <span class="ew-brand">Exam words</span>
     </div>
     <div class="nav-right">
       <span class="ew-nav-progress" id="ew-legend"></span>
       <button class="btn-ghost btn-sm" id="ew-reset" title="Reset what you have learned">Reset</button>
-      <button class="theme-btn" id="ew-theme" aria-label="Toggle theme">&#9728;&#65039;</button>
+      <button class="theme-btn" id="ew-theme">&#9728;&#65039;</button>
       {% if demo %}
       <a href="/pricing" class="btn-primary btn-sm">Get access</a>
       {% endif %}
@@ -36,11 +36,6 @@
     <a href="/pricing">See access</a>
   </div>
   {% endif %}
-
-  <div class="ew-round-info">
-    <p id="ew-round-status" role="status" aria-live="polite"></p>
-    <button type="button" class="btn-ghost btn-sm" id="ew-new-round">New round</button>
-  </div>
 
   <div class="ew-strip">
     <div class="ew-strip-row">
@@ -74,17 +69,16 @@
     </div>
   </div>
 
-  <p class="ew-mode-description" id="ew-mode-description"></p>
   <div class="ew-grid">
     <main class="ew-stage" id="ew-body"></main>
 
-    <aside class="ew-side" aria-label="Word library">
+    <aside class="ew-side">
       <div class="ew-side-head">
         <div class="ew-search">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="search" id="ew-search" aria-label="Search words in Danish, English or Russian" placeholder="Search all three languages" autocomplete="off">
+          <input type="search" id="ew-search" placeholder="Search all three languages" autocomplete="off">
         </div>
-        <div class="ew-side-filters" id="ew-side-filters" role="group" aria-label="Word progress"></div>
+        <div class="ew-side-filters" id="ew-side-filters"></div>
       </div>
       <div class="ew-side-list" id="ew-side-list"></div>
     </aside>
@@ -101,7 +95,5 @@
 {% block scripts %}
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/exam-words-data.js?v={{ asset_version }}"></script>
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/exam-words-examples.js?v={{ asset_version }}"></script>
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/study-session.js?v={{ asset_version }}"></script>
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/word-round-store.js?v={{ asset_version }}"></script>
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/exam-words.js?v={{ asset_version }}"></script>
 {% endblock %}

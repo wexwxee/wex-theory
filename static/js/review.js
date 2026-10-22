@@ -21,7 +21,6 @@
     shell.classList.toggle('show-ru', on);
     document.querySelectorAll('.ru-toggle button').forEach((button) => {
       button.classList.toggle('is-active', (button.dataset.ru === 'on') === on);
-      button.setAttribute('aria-pressed',String((button.dataset.ru === 'on') === on));
     });
     try {
       localStorage.setItem(RU_KEY, on ? 'on' : 'off');
@@ -121,7 +120,7 @@
     stage.innerHTML = '';
 
     const meta = el('div', 'question-meta');
-    meta.appendChild(el('span', 'question-origin', `${question.test_label || `Test ${question.test_id}`} · question ${question.question_index}`));
+    meta.appendChild(el('span', 'question-origin', `Test ${question.test_id} · question ${question.question_index}`));
     if (question.misses > 1) {
       meta.appendChild(el('span', 'question-misses', `missed ${question.misses} times`));
     }
@@ -129,8 +128,6 @@
 
     if (question.image_path) {
       const wrap = el('div', 'review-image-wrap');
-      wrap.setAttribute('role','button');wrap.tabIndex=0;wrap.setAttribute('aria-label','Enlarge road scene');
-      wrap.addEventListener('keydown',event=>{if(['Enter',' '].includes(event.key)){event.preventDefault();wrap.click();}});
       const img = document.createElement('img');
       img.className = 'review-image';
       img.src = `/test-images/${question.image_path}`;
@@ -262,7 +259,7 @@
 
     if (question.signs && question.signs.length) {
       const box = el('div', 'sign-links');
-      box.appendChild(el('div', 'sign-links-label', 'Signs shown in this scene'));
+      box.appendChild(el('div', 'sign-links-label', 'Look up the signs in this question'));
       const row = el('div', 'sign-links-row');
       question.signs.forEach((sign) => {
         const link = document.createElement('a');
@@ -310,7 +307,7 @@
         const row = el('button', 'summary-row');
         row.type = 'button';
         row.append(
-          el('span', 'summary-row-code', `${item.question.test_label || `Test ${item.question.test_id}`} · Q${item.question.question_index}`),
+          el('span', 'summary-row-code', `Test ${item.question.test_id} · Q${item.question.question_index}`),
           el('span', 'summary-row-text', item.question.question_text),
         );
         row.addEventListener('click', () => {

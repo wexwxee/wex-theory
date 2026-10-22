@@ -5,23 +5,7 @@
     "test:student": "node student-journey.test.js",
     "test:access": "node manual-access.test.js",
     "test:auth": "node auth-journey.test.js",
-    "test:resume": "node resume.test.js",
-    "test:sign-lessons": "node sign-lessons.test.js",
-    "test:sign-review": "node sign-review.test.js",
-    "test:study": "node study.test.js",
-    "test:drafts": "node test-draft-store.test.js",
-    "test:catalog": "node catalog-expansion.test.js",
-    "test:word-store": "node word-round-store.test.js",
-    "test:word-rounds": "node word-rounds.test.js",
-    "test:warnings": "node warning-lessons.test.js",
-    "test:lesson-store": "node lesson-check-store.test.js",
-    "test:lesson-quality": "node lesson-quality.test.js",
-    "test:study-session": "node study-session.test.js",
-    "test:continuity": "node site-continuity.test.js",
-    "test:results-accessibility": "node results-accessibility.test.js",
-    "test:sign-tests": "node sign-tests.test.js"
+    "test:resume": "node resume.test.js"
   },
-  "devDependencies": {
-    "playwright": "1.62.1"
-  }
+  "devDependencies": { "playwright": "1.62.1" }
 }

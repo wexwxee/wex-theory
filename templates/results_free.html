@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -196,13 +196,12 @@
     }
   }
   </style>
-  <link rel="stylesheet" href="/static/css/trust.css?v={{ asset_version }}">
 </head>
 <body data-is-authenticated="{% if user %}true{% else %}false{% endif %}">
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <a href="{% if user %}/dashboard{% else %}/{% endif %}" class="logo">WEXTheory</a>{% include "_nav_links.html" %}
+      <a href="{% if user %}/dashboard{% else %}/{% endif %}" class="logo">WEXTheory</a>
     </div>
     <div class="nav-right">
       <button class="btn-ghost btn-sm" id="resultsTranslateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:0.95rem;">RU</button>
@@ -302,6 +301,5 @@
 
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-viewer.js?v={{ asset_version }}-tutor"></script>
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-free.js?v={{ asset_version }}-report"></script>
-  {% include "_cookie_controls.html" %}
 </body>
 </html>

@@ -10,7 +10,7 @@
   function toggleTheme() {
     const current = document.documentElement.getAttribute('data-theme');
     const next = current === 'dark' ? 'light' : 'dark';
-    try { localStorage.setItem('wex-theme-v2', next); } catch (_) { /* Theme still works for this visit. */ }
+    localStorage.setItem('wex-theme', next);
     applyTheme(next);
   }
 
@@ -76,8 +76,8 @@
     const name = document.getElementById('name')?.value.trim() || '';
     const email = document.getElementById('email')?.value.trim() || '';
     const password = document.getElementById('password')?.value || '';
-    if (!email || !password) {
-      showMsg('Please enter your email and a password', 'error');
+    if (!name || !email || !password) {
+      showMsg('Please fill all fields', 'error');
       return;
     }
     if (password.length < 8) {
@@ -168,7 +168,7 @@
     }
   }
 
-  const initialTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  const initialTheme = localStorage.getItem('wex-theme') || 'dark';
   applyTheme(initialTheme);
   initFromQuery();
 

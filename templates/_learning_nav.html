@@ -1,9 +1,0 @@
-{% set signs_path = request.url.path %}
-<div class="learning-navigation" role="navigation" aria-label="Road signs">
- <a class="learning-home" href="{{ '/dashboard' if user else '/welcome' }}" data-en="← Learning" data-ru="← Обучение">← Learning</a>
- <div class="learning-tabs">
-  <a href="/signs/lessons"{% if signs_path.startswith('/signs/lesson') %} aria-current="page"{% endif %} data-en="Lessons" data-ru="Уроки">Lessons</a>
-  <a href="/signs/learn"{% if signs_path == '/signs/learn' %} aria-current="page"{% endif %} data-en="Review" data-ru="Повторение">Review</a>
-  <a href="/signs"{% if signs_path == '/signs' or (signs_path.startswith('/signs/') and not signs_path.startswith('/signs/lesson') and signs_path != '/signs/learn') %} aria-current="page"{% endif %} data-en="All signs" data-ru="Все знаки">All signs</a>
- </div>
-</div>

@@ -156,25 +156,6 @@ class SignProgress(Base):
     __table_args__ = (UniqueConstraint("user_id", "code", name="uq_sign_progress_user_code"),)
 
 
-class SignLessonResult(Base):
-    """The first finished situation check of a sign lesson. The first score never changes;
-    the score after reviewing mistakes may rise. A new question revision starts a new result."""
-    __tablename__ = "sign_lesson_results"
-
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    lesson_id = Column(String(40), nullable=False)
-    revision = Column(String(40), nullable=False)
-    first_score = Column(Integer, nullable=False)
-    total = Column(Integer, nullable=False)
-    reviewed_score = Column(Integer, nullable=False)
-    recall_first = Column(Integer, nullable=True)
-    recall_total = Column(Integer, nullable=True)
-    completed_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    __table_args__ = (UniqueConstraint("user_id", "lesson_id", name="uq_sign_lesson_result_user_lesson"),)
-
-
 class ContactMessage(Base):
     __tablename__ = "contact_messages"
 

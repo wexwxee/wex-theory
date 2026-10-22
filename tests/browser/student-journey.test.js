@@ -11,7 +11,7 @@ const path = require('node:path');
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
-  const base = process.env.SITE_TEST_BASE || 'http://127.0.0.1:8765';
+  const base = 'http://127.0.0.1:8765';
   async function width(label) {
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `Overflow: ${label}`);
   }
@@ -104,19 +104,23 @@ const path = require('node:path');
     const words = await page.evaluate(async () => (await (await fetch('/api/exam-words/progress')).json()).progress);
     assert(Object.keys(words).length > 0);
 
-    for (const [route, size] of [['/signs/learn', 12], ['/signs/learn?lesson=priority', 7]]) {
-      await page.goto(base + route);
-      await page.locator('#learnStage [data-code]').first().waitFor();
-      const types = new Set();
-      for (let index = 0; index < size; index++) {
-        types.add(await page.locator('.sr-card').getAttribute('class'));
-        await page.locator('.learn-option, .image-option').first().tap();
-        await page.locator('#nextBtn').tap();
+    await page.goto(base + '/signs/learn');
+    await page.locator('#revealBtn').waitFor();
+    for (const mode of ['cards', 'name', 'image']) {
+      await page.locator(`.mode-btn[data-mode="${mode}"]`).tap();
+      for (let index = 0; index < 12; index++) {
+        if (mode === 'cards') {
+          await page.locator('#revealBtn').tap();
+          await page.getByRole('button', { name: 'I knew it', exact: true }).tap();
+        } else {
+          await page.locator('.learn-option, .image-option').first().tap();
+        }
+        const next = page.locator('#nextBtn');
+        if (await next.count()) await next.tap();
       }
       await page.getByText('Round finished', { exact: true }).waitFor();
-      assert.equal(types.size, 2, 'a round mixes naming a sign and finding it');
-      await width(`signs ${route}`);
-      console.log(`OK ${size}-sign round: ${route}`);
+      await width(`signs ${mode}`);
+      console.log(`OK twelve-sign round: ${mode}`);
     }
     await page.screenshot({ path: path.join(__dirname, 'signs-mobile.png'), fullPage: true });
     assert.deepEqual(errors, []);

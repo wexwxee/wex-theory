@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}{{ test.title }} - WEX Theory{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="/static/css/lightbox-zoom.css?v={{ asset_version }}">
+<link rel="stylesheet" href="/static/css/lightbox-zoom.css?v=20260408-lbz">
 <style>
   #testContainer {
     max-width: 1420px;
@@ -690,15 +690,13 @@
   .qm-swatch.is-answered { background: var(--border); }
   .qm-swatch.is-flagged { background: #d97706; border-color: #d97706; }
 </style>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="/static/css/test-room.css?v={{ asset_version }}">
 {% endblock %}
 
 {% block body %}
 <nav class="test-nav">
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" id="testBurgerBtn" aria-label="Open navigation"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
+      <button class="burger-btn" id="testBurgerBtn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
       <a href="{% if user %}/dashboard{% else %}/{% endif %}" class="back-btn" title="{% if user %}Back to Dashboard{% else %}Back to Home{% endif %}">
         <span class="back-arrow">&#8592;</span><span class="back-label"> Tests</span>
       </a>
@@ -716,7 +714,7 @@
           <div class="voice-list" id="voiceList"></div>
         </div>
       </div>
-      <button class="theme-btn" id="navThemeBtn" aria-label="Toggle theme">&#9728;&#65039;</button>
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
       <button class="btn-primary btn-sm" id="finishBtn">Finish</button>
     </div>
   </div>
@@ -813,10 +811,7 @@
 
 <div class="nav-buttons" id="navButtons" style="display:none;">
   <button class="btn-ghost" id="prevBtn" disabled>&#8592; Previous</button>
-  <div class="nav-center">
-    <span style="font-size:0.85rem;color:var(--text-muted);" id="navCounter">1 / 25</span>
-    <span class="test-keys-hint" aria-hidden="true"><kbd>←</kbd> <kbd>→</kbd> questions · <kbd>1</kbd>–<kbd>4</kbd> answers</span>
-  </div>
+  <span style="font-size:0.85rem;color:var(--text-muted);" id="navCounter">1 / 25</span>
   <button class="btn-primary" id="nextBtn">Next &#8594;</button>
 </div>
 
@@ -872,7 +867,6 @@
 {% endblock %}
 
 {% block scripts %}
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/lightbox-zoom.js?v={{ asset_version }}"></script>
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/test-draft-store.js?v={{ asset_version }}"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/lightbox-zoom.js?v=20260408-lbz"></script>
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/test.js?v={{ asset_version }}"></script>
 {% endblock %}

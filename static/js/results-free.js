@@ -12,7 +12,7 @@
   function toggleTheme() {
     const current = document.documentElement.getAttribute('data-theme');
     const next = current === 'dark' ? 'light' : 'dark';
-    localStorage.setItem('wex-theme-v2', next);
+    localStorage.setItem('wex-theme', next);
     applyTheme(next);
   }
 
@@ -141,7 +141,7 @@
     });
   }
 
-  applyTheme(localStorage.getItem('wex-theme-v2') === 'light' ? 'light' : 'dark');
+  applyTheme(localStorage.getItem('wex-theme') || 'dark');
   document.getElementById('navThemeBtn')?.addEventListener('click', toggleTheme);
 
   document.addEventListener('DOMContentLoaded', () => {
