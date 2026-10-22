@@ -1,5 +1,0 @@
-{
-  "note": "Image-specific sign references visually checked against the scene. These override phrase matching in mistake review.",
-  "checked": "2026-10-18",
-  "images": {"Test01/screenshots/q02.jpg": ["E45"]}
-}

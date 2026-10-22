@@ -32,10 +32,6 @@ except Exception as _e:
     print(f"[METRICS] prometheus_fastapi_instrumentator unavailable: {_e}")
 
 import ai_explain
-import sign_lessons
-import study as study_plan
-import sign_curriculum
-import sign_tests
 import models
 import review as review_drill
 import signs as signs_catalogue
@@ -2944,12 +2940,6 @@ async def startup_init():
         else:
             print("[STARTUP] PRIMARY_SUPER_ADMIN_EMAIL not set; preserving database roles")
         ensure_exam_mode_test(db)
-        try:
-            sign_tests.sync(db)
-            print(f"[STARTUP] Road sign tests ready: {sorted(sign_tests.test_ids())}")
-        except Exception as se:
-            db.rollback()
-            print(f"[STARTUP] Road sign tests sync error: {se}")
 
     except Exception as e:
         print(f"[STARTUP] Error: {e}")
@@ -3039,8 +3029,7 @@ async def serve_upload(subdir: str, filename: str):
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["asset_version"] = "20261022-plain-numerals-v5"
-templates.env.globals["user_has_access"] = user_has_access
+templates.env.globals["asset_version"] = "20261011-ai-v1"
 templates.env.globals["telegram_login_enabled"] = bool(_telegram_client_id and _telegram_client_secret)
 templates.env.globals["profile_avatar_url"] = profile_avatar_url
 templates.env.globals["test_image_url"] = test_image_url
@@ -3458,7 +3447,7 @@ def _upsert_telegram_user(db: Session, info: dict, request: Optional[Request] = 
 
     username = str(info.get("preferred_username") or info.get("username") or "").strip()
     phone = str(info.get("phone_number") or "").strip()
-    display_name = str(info.get("name") or username or generate_nickname()).strip()
+    display_name = str(info.get("name") or username or f"Telegram {telegram_id[-4:]}").strip()
 
     user = db.query(models.User).filter(models.User.telegram_id == telegram_id).first()
     created_user = False
@@ -3518,7 +3507,7 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
         token = await oauth.google.authorize_access_token(request)
         info = token.get("userinfo") or {}
         email = info.get("email", "").lower().strip()
-        name = str(info.get("name") or "").strip() or generate_nickname()
+        name = info.get("name", email.split("@")[0] if email else "User")
         if not email:
             print("[GOOGLE CB] ERROR: no email in userinfo")
             return RedirectResponse("/login?error=no_email", status_code=302)
@@ -3623,144 +3612,20 @@ async def telegram_callback(request: Request, db: Session = Depends(get_db)):
 
 # ─── Public pages ──────────────────────────────────────────────────────────────
 
-HOME_DEMO_QUESTIONS = [(1, 1), (2, 3), (3, 5), (4, 7), (6, 11)]
-HOME_WALL_DIR = BASE_DIR / "static" / "home" / "wall"
-_home_curriculum_cache = {}
-
-
-def _home_question(db: Session, test_id: int, question_index: int):
-    return (
-        db.query(models.Question)
-        .options(selectinload(models.Question.answers))
-        .filter(models.Question.test_id == test_id, models.Question.question_index == question_index)
-        .first()
-    )
-
-
-def _home_curriculum() -> dict:
-    if not _home_curriculum_cache:
-        data = sign_curriculum.catalogue()
-        _home_curriculum_cache.update({
-            "e45": data["notes"].get("E45"),
-            "signs_explained": len(data["notes"]),
-            "comparisons": len(data["comparisons"]),
-            "lesson_questions": len(data["questions"]),
-        })
-    return _home_curriculum_cache
-
-
-_home_word_cache = {}
-
-
-def _home_exam_word_count() -> int:
-    """Terms in the Exam Words dictionary (each entry has one Danish `dk` key)."""
-    if "count" not in _home_word_cache:
-        source = (BASE_DIR / "static" / "js" / "exam-words-data.js").read_text(encoding="utf-8")
-        _home_word_cache["count"] = len(re.findall(r"\bdk\s*:", source))
-    return _home_word_cache["count"]
-
-
-def build_home_context(db: Session) -> dict:
-    """Real material for the home page: the starter questions, the scene wall and catalogue counts."""
-    questions = []
-    for test_id, question_index in HOME_DEMO_QUESTIONS:
-        q = _home_question(db, test_id, question_index)
-        if not q:
-            continue
-        scene = f"T{test_id:02d}-q{question_index:02d}"
-        questions.append({
-            "scene": scene,
-            "image": f"/static/home/q/{scene}.webp",
-            "text": q.question_text,
-            "explanation": q.explanation or "",
-            "answers": [{"text": a.text, "correct": bool(a.is_correct)} for a in ordered_answers(q)],
-        })
-
-    # The scroll tour demonstrates the window on one example that is not in the sample: the
-    # Test 1 scene with sign E45, so the sign step can point at the same photo.
-    tour = None
-    demo = _home_question(db, 1, 2)
-    if demo and demo.answers:
-        demo_answers = ordered_answers(demo)
-        first_right = next((n for n, a in enumerate(demo_answers) if a.is_correct), None)
-        first_wrong = next((n for n, a in enumerate(demo_answers) if not a.is_correct), None)
-        picks = [n for n in (first_right, first_wrong) if n is not None]
-        why = (demo.explanation or "").strip()
-        tour = {
-            "image": "/static/home/q/T01-q02.webp",
-            "text": demo.question_text,
-            "plain": demo.exam_style_text or demo.question_text,
-            "why": re.split(r"(?<=[.!?])\s+", why, maxsplit=1)[0] if why else "",
-            "answers": [
-                {
-                    "text": a.text,
-                    "plain": a.exam_style_text or a.text,
-                    "correct": bool(a.is_correct),
-                    "pick": picks.index(n) if n in picks else None,
-                }
-                for n, a in enumerate(demo_answers)
-            ],
-        }
-
-    wording = None
-    first = _home_question(db, 1, 1)
-    if first and first.exam_style_text and first.answers:
-        wording = {
-            "image": "/static/home/q/T01-q01.webp",
-            "original": first.question_text,
-            "plain": first.exam_style_text,
-            "answers": [
-                {"original": a.text, "plain": a.exam_style_text or a.text}
-                for a in ordered_answers(first)
-            ],
-        }
-
-    curriculum = _home_curriculum()
-    lessons = sign_lessons.all_lessons()
-    # Interleave the tests (q01 of every test, then q02, ...) so neighbouring tiles differ.
-    wall = sorted((path.stem for path in HOME_WALL_DIR.glob("*.webp")), key=lambda stem: (stem[4:], stem[:3]))
-    tests = db.query(models.Test.id, models.Test.title).filter(models.Test.id.between(1, 13)).order_by(models.Test.id).all()
-    return {
-        "home_questions": questions,
-        "home_tests": [{"id": test_id, "title": title} for test_id, title in tests],
-        "home_wall": wall,
-        "home_lessons": lessons,
-        "home_e45": curriculum["e45"],
-        "home_wording": wording,
-        "home_tour": tour,
-        "home_facts": {
-            "tests": db.query(sql_func.count(models.Test.id)).filter(models.Test.id.between(1, 13)).scalar() or 0,
-            "questions": db.query(sql_func.count(models.Question.id)).filter(models.Question.test_id.between(1, 13)).scalar() or 0,
-            "free_questions": len(FREE_SAMPLE_QUESTION_MAP),
-            "lessons": len(lessons),
-            "lesson_questions": curriculum["lesson_questions"],
-            "comparisons": curriculum["comparisons"],
-            "signs_explained": curriculum["signs_explained"],
-            "exam_words": _home_exam_word_count(),
-        },
-    }
-
-
-def render_home(request: Request, db: Session, user=None):
-    context = {"request": request}
-    if user:
-        context["user"] = user
-    if request.query_params.get("look") == "classic":
-        return templates.TemplateResponse(request, "index_classic.html", context)
-    context.update(build_home_context(db))
-    return templates.TemplateResponse(request, "index.html", context)
-
-
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request, db: Session = Depends(get_db)):
     if get_current_user(request, db):
         return RedirectResponse("/dashboard", status_code=302)
-    return render_home(request, db)
+    return templates.TemplateResponse(request, "index.html", {"request": request})
 
 
 @app.get("/welcome", response_class=HTMLResponse)
 async def welcome_page(request: Request, db: Session = Depends(get_db)):
-    return render_home(request, db, get_current_user(request, db))
+    user = get_current_user(request, db)
+    context = {"request": request}
+    if user:
+        context["user"] = user
+    return templates.TemplateResponse(request, "index.html", context)
 
 
 @app.get("/login", response_class=HTMLResponse)
@@ -3991,9 +3856,8 @@ async def api_sign_progress(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
     if not user:
         raise HTTPException(status_code=401, detail="Sign in to sync progress")
-    rows = db.query(models.SignProgress).filter_by(user_id=user.id).all()
-    return {"progress": {row.code: {"box": row.box} for row in rows},
-            "reviewed_at": {row.code: row.updated_at.isoformat() + "Z" for row in rows}}
+    return {"progress": {row.code: {"box": row.box} for row in
+                         db.query(models.SignProgress).filter_by(user_id=user.id).all()}}
 
 
 @app.post("/api/signs/progress")
@@ -4017,7 +3881,6 @@ async def api_save_sign_progress(request: Request, db: Session = Depends(get_db)
     db.query(models.User).filter_by(id=user.id).with_for_update().one()
     if data.get("reset"):
         db.query(models.SignProgress).filter_by(user_id=user.id).delete()
-        db.query(models.SignLessonResult).filter_by(user_id=user.id).delete()
     rows = {row.code: row for row in db.query(models.SignProgress).filter_by(user_id=user.id).all()}
     for code, entry in changes.items():
         row = rows.get(code)
@@ -4028,63 +3891,6 @@ async def api_save_sign_progress(request: Request, db: Session = Depends(get_db)
         row.updated_at = datetime.utcnow()
     db.commit()
     return {"success": True}
-
-
-def _sign_lesson_result_payload(row) -> dict:
-    return {"revision": row.revision, "first": row.first_score, "total": row.total,
-            "reviewed": row.reviewed_score, "recall_first": row.recall_first,
-            "recall_total": row.recall_total, "completed_at": row.completed_at.isoformat() + "Z"}
-
-
-@app.get("/api/signs/lessons")
-async def api_sign_lesson_results(request: Request, db: Session = Depends(get_db)):
-    user = get_current_user(request, db)
-    if not user:
-        raise HTTPException(status_code=401, detail="Sign in to sync lessons")
-    rows = db.query(models.SignLessonResult).filter_by(user_id=user.id).all()
-    return {"results": {row.lesson_id: _sign_lesson_result_payload(row) for row in rows}}
-
-
-@app.post("/api/signs/lessons")
-async def api_save_sign_lesson_result(request: Request, db: Session = Depends(get_db)):
-    """Store a finished lesson check. The first score is kept; later corrections only raise
-    the reviewed score. A result for an older question revision is replaced."""
-    user = get_current_user(request, db)
-    if not user:
-        raise HTTPException(status_code=401, detail="Sign in to sync lessons")
-    try:
-        data = await request.json()
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid lesson result")
-    lesson = sign_lessons.by_id(data.get("lesson")) if isinstance(data, dict) and isinstance(data.get("lesson"), str) else None
-    if not lesson:
-        raise HTTPException(status_code=400, detail="Invalid lesson result")
-    total = len(sign_curriculum.for_lesson(lesson["id"])["questions"])
-    first, reviewed = data.get("first"), data.get("reviewed")
-    recall_first, recall_total = data.get("recall_first"), data.get("recall_total")
-    recall_given = recall_first is not None or recall_total is not None
-    if (data.get("revision") != sign_curriculum.revision(lesson["id"]) or data.get("total") != total
-            or type(first) is not int or type(reviewed) is not int or not 0 <= first <= reviewed <= total
-            or (recall_given and (type(recall_first) is not int or recall_total != len(lesson["codes"])
-                                  or not 0 <= recall_first <= recall_total))):
-        raise HTTPException(status_code=400, detail="Invalid lesson result")
-    db.query(models.User).filter_by(id=user.id).with_for_update().one()
-    row = db.query(models.SignLessonResult).filter_by(user_id=user.id, lesson_id=lesson["id"]).first()
-    now = datetime.utcnow()
-    if row is None or row.revision != data["revision"]:
-        if row is None:
-            row = models.SignLessonResult(user_id=user.id, lesson_id=lesson["id"])
-            db.add(row)
-        row.revision, row.first_score, row.total, row.reviewed_score = data["revision"], first, total, reviewed
-        row.recall_first, row.recall_total = (recall_first, recall_total) if recall_given else (None, None)
-        row.completed_at = now
-    else:
-        row.reviewed_score = max(row.reviewed_score, reviewed)
-        if recall_given and row.recall_first is None:
-            row.recall_first, row.recall_total = recall_first, recall_total
-    row.updated_at = now
-    db.commit()
-    return {"success": True, "result": _sign_lesson_result_payload(row)}
 
 
 @app.get("/signs", response_class=HTMLResponse)
@@ -4099,108 +3905,22 @@ async def signs_page(request: Request, db: Session = Depends(get_db)):
     })
 
 
-def _course_codes() -> list[str]:
-    """Distinct signs taught by the lessons, in course order."""
-    seen: dict[str, None] = {}
-    for lesson in sign_lessons.all_lessons():
-        seen.update(dict.fromkeys(lesson["codes"]))
-    return list(seen)
-
-
-def _sign_quiz_card(sign: dict, full: bool = True) -> dict:
-    """What the lesson recall step needs about one sign: only checked study text."""
-    teaching = sign.get("teaching") or {}
-    card = {"code": sign["code"], "group": sign["group"], "image": sign["image"],
-            "name": {"en": sign["name_en"], "ru": sign.get("name_ru") or sign["name_en"]},
-            "eq": teaching.get("quiz_equivalence")}
-    if full:
-        card.update(action=teaching.get("action"), mistake=teaching.get("mistake"), meaning=teaching.get("meaning"))
-    return card
-
-
-def sign_test_cards(db: Session, user) -> list[dict]:
-    """Road sign tests 1-4 as the course page shows them after the lessons: the first situation's
-    picture, the latest full score and whether the test is open to this account."""
-    latest: dict[int, int] = {}
-    if user:
-        attempts = (
-            db.query(models.UserTestAttempt)
-            .options(selectinload(models.UserTestAttempt.user_answers))
-            .filter(
-                models.UserTestAttempt.user_id == user.id,
-                models.UserTestAttempt.test_id.in_(sign_tests.test_ids()),
-                models.UserTestAttempt.finished_at.isnot(None),
-            )
-            .order_by(models.UserTestAttempt.finished_at.desc(), models.UserTestAttempt.id.desc())
-            .all()
-        )
-        for attempt in attempts:
-            if attempt.test_id not in latest and is_full_attempt(db, attempt):
-                latest[attempt.test_id] = attempt.score or 0
-    locked = not user_has_access(user)
-    return [{"id": test["id"], "number": test["number"], "title": test["title"],
-             "image": sign_tests.image_path(sign_tests.questions(test["id"])[0]),
-             "score": latest.get(test["id"]), "locked": locked} for test in sign_tests.tests()]
-
-
-@app.get("/signs/lessons", response_class=HTMLResponse)
-async def signs_lessons_page(request: Request, db: Session = Depends(get_db)):
-    lessons = sign_lessons.all_lessons()
-    user = get_current_user(request, db)
-    return templates.TemplateResponse(request, "sign_lessons.html", {
-        "request": request, "user": user,
-        "lessons": lessons,
-        "sign_test_cards": sign_test_cards(db, user),
-        "curriculum_revision": sign_curriculum.revision(),
-        "lesson_checks": sign_curriculum.checks(), "lesson_topics": sign_lessons.TOPICS,
-        "course_codes": _course_codes(),
-        "lesson_compare_counts": {lesson["id"]: len(sign_curriculum.for_lesson(lesson["id"])["comparisons"]) for lesson in lessons},
-        "meta": signs_catalogue.catalogue_meta(),
-    })
-
-
-@app.get("/signs/lesson/{lesson_id}", response_class=HTMLResponse)
-async def signs_lesson_page(lesson_id: str, request: Request, db: Session = Depends(get_db)):
-    lesson = sign_lessons.by_id(lesson_id)
-    if not lesson:
-        raise HTTPException(status_code=404, detail="Lesson not found")
-    material = sign_curriculum.for_lesson(lesson_id)
-    lookup = {sign["code"]: sign for sign in signs_catalogue.all_signs()}
-    signs = [lookup[code] for code in lesson["codes"]]
-    groups = {sign["group"] for sign in signs}
-    pool = [_sign_quiz_card(sign, full=False) for sign in signs_catalogue.all_signs()
-            if sign["verified"] and sign["group"] in groups and sign["code"] not in lesson["codes"]]
-    lessons = sign_lessons.all_lessons()
-    return templates.TemplateResponse(request, "sign_lesson.html", {
-        "request": request, "user": get_current_user(request, db), "lesson": lesson,
-        "lesson_signs": signs, "material": material, "next_lesson": sign_lessons.next_lesson(lesson_id),
-        "previous_lesson": lessons[lesson["number"] - 2] if lesson["number"] > 1 else None,
-        "lesson_total": len(lessons), "topic": sign_lessons.topic_label(lesson["topic"]),
-        "sign_lookup": lookup,
-        "recall_data": {"signs": [_sign_quiz_card(sign) for sign in signs], "pool": pool},
-        "scene_examples": {code: example for code in lesson["codes"] if (example := sign_curriculum.scene_example(code))},
-    })
-
-
 @app.get("/signs/learn", response_class=HTMLResponse)
-async def signs_learn_page(request: Request, group: str = "all", lesson: str = "", db: Session = Depends(get_db)):
+async def signs_learn_page(request: Request, group: str = "all", db: Session = Depends(get_db)):
     user = get_current_user(request, db)
     known_groups = {item["group"] for item in signs_catalogue.groups()}
-    selected_lesson = sign_lessons.by_id(lesson)
     return templates.TemplateResponse(request, "sign_learn.html", {
-        "request": request, "user": user,
-        "group": group if group in known_groups and "group" in request.query_params else "",
-        "lesson": selected_lesson["id"] if selected_lesson else "",
-        "lessons": sign_lessons.all_lessons(),
-        "groups": signs_catalogue.groups(), "meta": signs_catalogue.catalogue_meta(),
-        "course_codes": _course_codes(),
+        "request": request,
+        "user": user,
+        "group": group if group in known_groups else "all",
+        "groups": signs_catalogue.groups(),
+        "meta": signs_catalogue.catalogue_meta(),
     })
 
 
 @app.get("/api/signs")
 async def api_signs():
     return {
-        "lessons": sign_lessons.all_lessons(),
         "signs": [
             {
                 "code": sign["code"],
@@ -4212,7 +3932,6 @@ async def api_signs():
                 "name_da": sign.get("name_da", ""),
                 "meaning_ru": sign.get("meaning_ru", ""),
                 "image": sign["image"],
-                "teaching": sign.get("teaching", {}),
             }
             for sign in signs_catalogue.all_signs()
         ]
@@ -4227,21 +3946,13 @@ async def sign_detail_page(code: str, request: Request, db: Session = Depends(ge
     if sign["code"] != code:
         return RedirectResponse(f"/signs/{sign['code']}", status_code=301)
     user = get_current_user(request, db)
-    group = next((item for item in signs_catalogue.groups() if item["group"] == sign["group"]), None)
     return templates.TemplateResponse(request, "sign_detail.html", {
         "request": request,
         "user": user,
         "sign": sign,
-        "group": group,
         "group_note": signs_catalogue.group_note(sign["group"]),
         "group_note_ru": signs_catalogue.group_note_ru(sign["group"]),
         "related": signs_catalogue.related_signs(sign),
-        "teaching_sources": sign_curriculum.sources_for(sign["code"]),
-        "scene_examples": sign_curriculum.photos_for(sign["code"]),
-        "illustration": sign_curriculum.scene_example(sign["code"]),
-        "sign_lessons_for_code": sign_lessons.lessons_for_code(sign["code"]),
-        "comparisons": sign_curriculum.comparisons_for(sign["code"]),
-        "sign_lookup": {item["code"]: item for item in signs_catalogue.all_signs()},
     })
 
 
@@ -4307,23 +4018,6 @@ async def expired_page(request: Request):
 
 # ─── Auth API ──────────────────────────────────────────────────────────────────
 
-# New accounts without a name get a friendly English nickname instead of an email prefix.
-NICKNAME_ADJECTIVES = (
-    "Steady", "Calm", "Careful", "Bright", "Clear", "Smooth", "Alert", "Keen",
-    "Patient", "Swift", "Sunny", "Quiet", "Bold", "Sharp", "Easy", "Nordic",
-)
-NICKNAME_NOUNS = (
-    "Mirror", "Signal", "Junction", "Roundabout", "Lane", "Crossing", "Indicator", "Headlight",
-    "Compass", "Route", "Highway", "Wheel", "Bridge", "Harbour", "Gear", "Overtake",
-)
-
-
-def generate_nickname() -> str:
-    """A driving-themed nickname such as "Steady Mirror 27"."""
-    rng = secrets.SystemRandom()
-    return f"{rng.choice(NICKNAME_ADJECTIVES)} {rng.choice(NICKNAME_NOUNS)} {rng.randint(10, 99)}"
-
-
 @app.post("/api/auth/register")
 async def api_register(request: Request, db: Session = Depends(get_db)):
     limited = check_rate_limit(
@@ -4337,12 +4031,12 @@ async def api_register(request: Request, db: Session = Depends(get_db)):
         data = await request.json()
         print("[REGISTER] request received")
 
-        name     = str(data.get("name", "")).strip()[:60] or generate_nickname()
+        name     = str(data.get("name", "")).strip()
         email    = str(data.get("email", "")).strip().lower()
         password = str(data.get("password", ""))
 
-        if not email or not password:
-            return JSONResponse({"error": "Email and password are required"}, status_code=400)
+        if not name or not email or not password:
+            return JSONResponse({"error": "All fields are required"}, status_code=400)
         email_error = validate_registration_email(email)
         if email_error:
             return JSONResponse({"error": email_error}, status_code=400)
@@ -4685,11 +4379,9 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         }
         for test_id in range(1, 14)
     }
-    full_attempts = []
     for a in finished:
         if not is_full_attempt(db, a):
             continue
-        full_attempts.append(a)
         if a.test_id not in latest_scores:
             latest_scores[a.test_id] = a.score or 0
         if supports_exam_style_wording(a.test_id):
@@ -4742,52 +4434,21 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         ).first()
         images[t.id] = q.image_path if q else ""
 
-    # Road sign tests have their own block; the practice library counts stay Theory Tests and Exam Mode.
-    sign_test_list = [t for t in tests if sign_tests.is_sign_test(t.id)]
-    tests = [t for t in tests if not sign_tests.is_sign_test(t.id)]
-    completed = sum(1 for test_id, score in latest_scores.items()
-                    if test_id != FREE_SAMPLE_TEST_ID and not sign_tests.is_sign_test(test_id) and score >= EXAM_MODE_PASS_SCORE)
+    completed = sum(1 for test_id, score in latest_scores.items() if test_id != FREE_SAMPLE_TEST_ID and score >= EXAM_MODE_PASS_SCORE)
     library_total = sum(1 for t in tests if t.id != FREE_SAMPLE_TEST_ID)
     has_full_access = user_has_access(user)
     access_expires_at = None if user.is_admin else get_user_access_expiry(user)
 
-    due_count = review_drill.review_count(db, user.id) if has_full_access else 0
-    next_test = next((test for test in tests if test.id in range(1, 14) and latest_scores.get(test.id, 0) < EXAM_MODE_PASS_SCORE), None)
-    next_study = {
-        "href": "/review" if due_count else (f"/test/{next_test.id}" if has_full_access and next_test else "/signs/lessons"),
-        "title": "Review today's mistakes" if due_count else (f"Practise {next_test.title}" if has_full_access and next_test else "Start a road sign lesson"),
-        "description": f"{due_count} questions are ready for another look." if due_count else "A short, focused session. Review the explanations before moving on.",
-    }
-    study_overview = study_plan.overview(db, user.id, full_attempts)
     return templates.TemplateResponse(request, "dashboard.html", {
         "request": request, "user": user, "tests": tests,
-        "sign_tests": sign_test_list, "sign_test_numbers": {t.id: sign_tests.number(t.id) for t in sign_test_list},
         "latest_scores": latest_scores, "images": images,
         "latest_scores_by_mode": latest_scores_by_mode,
         "completed": completed, "has_access": has_full_access,
         "library_total": library_total,
         "show_study_start": completed == 0,
-        "next_study": next_study,
-        "study_overview": study_overview,
-        "due_count": due_count,
-        "ready_wording": [key for key, value in exam_wording_statuses.items() if value["label"] == "Ready"],
         "exam_wording_statuses": exam_wording_statuses,
         "access_expires_at": access_expires_at,
         "now": datetime.utcnow(),
-    })
-
-
-@app.get("/study", response_class=HTMLResponse)
-async def study_page(request: Request, db: Session = Depends(get_db)):
-    user = get_current_user(request, db)
-    if not user:
-        return RedirectResponse("/login", status_code=302)
-    has_access = user_has_access(user)
-    return templates.TemplateResponse(request, "study.html", {
-        "request": request, "user": user, "has_access": has_access,
-        "study_overview": study_plan.overview(db, user.id),
-        "lessons": sign_lessons.all_lessons(), "curriculum_revision": sign_curriculum.revision(),
-        "due_count": review_drill.review_count(db, user.id) if has_access else 0,
     })
 
 
@@ -4956,7 +4617,7 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
     scored_attempts = [a for a in attempts if a.score is not None]
     passed_test_ids = {
         a.test_id for a in attempts
-        if a.passed and a.test_id != FREE_SAMPLE_TEST_ID and not sign_tests.is_sign_test(a.test_id)
+        if a.passed and a.test_id != FREE_SAMPLE_TEST_ID
     }
     official_total = EXAM_MODE_TEST_ID
     certificate = (
@@ -7275,7 +6936,6 @@ async def api_admin_delete_user(user_id: int, request: Request, db: Session = De
     db.query(models.UserTestAttempt).filter(models.UserTestAttempt.user_id == user_id).delete()
     db.query(models.ReviewProgress).filter_by(user_id=user_id).delete()
     db.query(models.SignProgress).filter_by(user_id=user_id).delete()
-    db.query(models.SignLessonResult).filter_by(user_id=user_id).delete()
     db.delete(u)
     db.commit()
     return JSONResponse({"success": True})

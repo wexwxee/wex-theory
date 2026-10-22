@@ -1,45 +1,367 @@
 {% extends "base.html" %}
-{% block title %}Repeat road signs - WEX Theory{% endblock %}
-{% block head %}<link rel="stylesheet" href="/static/css/signs.css?v={{ asset_version }}">{% endblock %}
-{% block body %}
-<nav><div class="nav-inner"><div class="nav-left"><button class="burger-btn" id="signsBurgerBtn" aria-label="Open navigation">☰</button><a href="{{ '/dashboard' if user else '/welcome' }}" class="logo">WEXTheory</a>{% include "_nav_links.html" %}</div><div class="nav-right"><button class="theme-btn" id="navThemeBtn" aria-label="Toggle theme">☀</button>{% if user %}<a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>{% else %}<a href="/login" class="btn-ghost btn-sm">Sign in</a>{% endif %}</div></div></nav>
-<main class="sx sr learn-shell" id="learnShell" data-group="{{ group }}" data-lesson="{{ lesson }}" data-user-id="{{ user.id if user else '' }}">
- <div class="sx-topline">{% include "_learning_nav.html" %}<div class="lesson-lang lang-switch" role="group" aria-label="Language"><button type="button" class="lang-btn" data-lang="en">EN</button><button type="button" class="lang-btn" data-lang="ru">RU</button></div></div>
 
- {# The round sits right under the tabs, like the test room: title and progress in one bar, then the question. #}
- <section class="sr-room" aria-labelledby="learnTitle">
-  <header class="sr-roombar">
-   <div class="sr-roomtitle">
-    <h1 id="learnTitle">Repeat road signs</h1>
-    <p class="sr-scope" id="learnScope"></p>
-   </div>
-   <div class="sr-progress"><span class="sr-counter" id="sessionCounter"></span><span class="sr-pills" id="sessionPills" aria-hidden="true"></span><span class="sr-score" id="sessionScore"></span></div>
-  </header>
-  <div class="learn-stage sr-stage" id="learnStage" aria-live="polite"><p class="sl-note">Loading the signs…</p></div>
- </section>
+{% block title %}Practise road signs - WEX Theory{% endblock %}
 
- <div class="sr-foot">
-  <ul class="sr-facts" id="learnStats" aria-label="Your road signs">
-   <li><b id="statDue">0</b> <span id="statDueLabel">to repeat now</span></li>
-   <li><b id="statLearning">0</b> <span id="statLearningLabel">learning</span></li>
-   <li><b><span id="statLearned">0</span> / {{ course_codes|length }}</b> <span id="statLearnedLabel">learned</span></li>
-  </ul>
-  <p id="learnSyncStatus" class="sr-sync" role="status"></p>
-  <button id="learnSyncRetry" class="btn-ghost btn-sm" type="button" hidden>Retry sync</button>
-  <p class="sr-hint" id="learnHint"></p>
-  <p class="keys-hint sr-keys" id="keysHint"></p>
-  <details class="practice-settings sr-settings" id="practiceSettings">
-   <summary id="practiceSettingsLabel">Progress settings</summary>
-   <p id="resetCopy"></p>
-   <button type="button" class="btn-ghost btn-sm" id="learnReset">Reset my progress</button>
-  </details>
- </div>
- <script nonce="{{ request.state.csp_nonce }}" id="courseCodes" type="application/json">{{ course_codes|tojson }}</script>
-</main>
+{% block head %}
+<style>
+  #learnSyncRetry[hidden] { display: none; }
+  .learn-shell {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0 4px 70px;
+  }
+  .learn-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .learn-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; }
+  .lang-switch {
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-card);
+  }
+  .lang-btn {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 999px;
+    background: none;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+  }
+  .lang-btn.is-active { background: var(--text); color: var(--bg); }
+  .learn-stats { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px; }
+  .learn-stats b { color: var(--text); }
+  .learn-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .mode-switch {
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-card);
+    flex-wrap: wrap;
+  }
+  .mode-btn {
+    padding: 7px 14px;
+    border: none;
+    border-radius: 999px;
+    background: none;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mode-btn.is-active { background: var(--text); color: var(--bg); }
+  .learn-reset {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 6px 2px;
+  }
+  .learn-reset:hover { color: var(--text); }
+  .learn-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .learn-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .learn-chip:hover { color: var(--text); border-color: var(--text-muted); }
+  .learn-chip.is-active { color: var(--text); border-color: var(--text); }
+  .chip-meter {
+    width: 34px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--border);
+    overflow: hidden;
+  }
+  .chip-meter span { display: block; height: 100%; background: currentColor; width: 0; }
+  .session-line {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0 14px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .session-bar {
+    flex: 1;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--border);
+    overflow: hidden;
+  }
+  .session-bar span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--text);
+    transition: width 0.25s ease;
+  }
+  .learn-stage {
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    background: var(--bg-card);
+    padding: clamp(20px, 4vw, 30px);
+    text-align: center;
+  }
+  .learn-art {
+    width: min(210px, 55vw);
+    aspect-ratio: 1 / 1;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .learn-art img { width: 78%; height: 78%; object-fit: contain; }
+  .learn-prompt {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+  .learn-code {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .learn-name { font-size: 1.25rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.01em; }
+  .learn-danish {
+    font-size: 0.86rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .explain-danish {
+    margin-top: 6px;
+    font-size: 0.86rem;
+    color: var(--text-muted);
+  }
+  .learn-meaning {
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 54ch;
+    margin: 0 auto;
+  }
+  .learn-question {
+    font-size: 1.12rem;
+    font-weight: 700;
+    line-height: 1.5;
+    max-width: 52ch;
+    margin: 0 auto 18px;
+  }
+  .learn-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  .learn-actions .btn-primary,
+  .learn-actions .btn-ghost { min-width: 150px; justify-content: center; }
+  .learn-options { display: grid; gap: 9px; text-align: left; }
+  .learn-option {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    padding: 13px 15px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.95rem;
+    line-height: 1.4;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .learn-option:hover:not(:disabled) { border-color: var(--text-muted); }
+  .learn-option:disabled { cursor: default; }
+  .option-key {
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--text-muted);
+  }
+  .learn-option.is-correct { border-color: #16a34a; background: rgba(22, 163, 74, 0.10); }
+  .learn-option.is-correct .option-key { border-color: #16a34a; color: #16a34a; }
+  .learn-option.is-wrong { border-color: #dc2626; background: rgba(220, 38, 38, 0.10); }
+  .learn-option.is-wrong .option-key { border-color: #dc2626; color: #dc2626; }
+  .learn-images {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .image-option {
+    position: relative;
+    padding: 14px 10px 10px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--bg);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .image-option:hover:not(:disabled) { border-color: var(--text-muted); }
+  .image-option img { width: 78px; height: 78px; object-fit: contain; display: block; margin: 0 auto; }
+  .image-option .option-key { position: absolute; top: 8px; left: 8px; }
+  .image-option.is-correct { border-color: #16a34a; background: rgba(22, 163, 74, 0.10); }
+  .image-option.is-wrong { border-color: #dc2626; background: rgba(220, 38, 38, 0.10); }
+  .learn-feedback {
+    margin-top: 16px;
+    font-size: 0.93rem;
+    line-height: 1.55;
+    color: var(--text-muted);
+    min-height: 20px;
+  }
+  .learn-feedback b { color: var(--text); }
+  .learn-explain {
+    margin-top: 10px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    text-align: left;
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+  .learn-explain .explain-code { font-weight: 800; margin-right: 6px; }
+  .summary-score { font-size: 2.4rem; font-weight: 800; letter-spacing: -0.03em; }
+  .summary-line { color: var(--text-muted); margin-bottom: 18px; }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+    margin: 14px 0 4px;
+    text-align: center;
+  }
+  .summary-item {
+    padding: 12px 8px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--bg);
+    text-decoration: none;
+    color: inherit;
+  }
+  .summary-item img { width: 54px; height: 54px; object-fit: contain; }
+  .summary-item span { display: block; font-size: 0.74rem; color: var(--text-muted); margin-top: 6px; line-height: 1.3; }
+  .learn-hint { margin-top: 16px; font-size: 0.82rem; color: var(--text-muted); text-align: center; }
+  .learn-hint a { color: inherit; }
+  .keys-hint { margin-top: 6px; font-size: 0.76rem; color: var(--text-muted); text-align: center; }
+  @media (max-width: 560px) {
+    .learn-images { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .keys-hint { display: none; }
+  }
+</style>
 {% endblock %}
+
+{% block body %}
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" id="signsBurgerBtn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
+      <a href="/signs" class="logo">Road signs</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
+      {% if user %}
+      <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
+      {% else %}
+      <a href="/login" class="btn-ghost btn-sm">Sign In</a>
+      <a href="/register" class="btn-primary btn-sm">Create Account</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="page" style="padding-top:18px;">
+  <div class="learn-shell" id="learnShell" data-group="{{ group }}" data-user-id="{{ user.id if user else '' }}">
+    <p id="learnSyncStatus" role="status" style="color:var(--text-muted);font-size:.85rem;"></p>
+    <button id="learnSyncRetry" class="btn-ghost btn-sm" type="button" hidden>Retry sync / Повторить</button>
+    <div class="learn-head">
+      <div class="learn-title" id="learnTitle">Practise road signs</div>
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" class="lang-btn is-active" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="ru">RU</button>
+      </div>
+    </div>
+    <div class="learn-stats" id="learnStats"></div>
+
+    <div class="learn-controls">
+      <div class="mode-switch" role="group" aria-label="Practice mode">
+        <button type="button" class="mode-btn is-active" data-mode="cards" id="modeCards">Cards</button>
+        <button type="button" class="mode-btn" data-mode="name" id="modeName">Sign &rarr; meaning</button>
+        <button type="button" class="mode-btn" data-mode="image" id="modeImage">Meaning &rarr; sign</button>
+      </div>
+      <button type="button" class="learn-reset" id="learnReset">Reset my progress</button>
+    </div>
+
+    <div class="learn-chips" id="learnChips">
+      <button type="button" class="learn-chip is-active" data-group="all"><span data-chip-label>All signs</span><span class="chip-meter"><span data-meter></span></span></button>
+      {% for group_item in groups %}
+      <button type="button" class="learn-chip" data-group="{{ group_item.group }}"><span data-chip-label>{{ group_item.group }} &middot; {{ group_item.label }}</span><span class="chip-meter"><span data-meter></span></span></button>
+      {% endfor %}
+    </div>
+
+    <div class="session-line">
+      <span id="sessionCounter"></span>
+      <span class="session-bar"><span id="sessionBar"></span></span>
+      <span id="sessionScore"></span>
+    </div>
+
+    <div class="learn-stage" id="learnStage" aria-live="polite">
+      <div class="learn-meaning">Loading the signs&hellip;</div>
+    </div>
+
+    <p class="learn-hint" id="learnHint">
+      Progress stays in this browser. Signs you miss come back sooner, and a sign counts as learned after
+      three correct answers in a row.
+    </p>
+    <p class="keys-hint" id="keysHint">Keyboard: 1-4 to answer, Enter to continue.</p>
+  </div>
+</div>
+{% endblock %}
+
 {% block scripts %}
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/signs.js?v={{ asset_version }}"></script>
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/sign-review.js?v={{ asset_version }}"></script>
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/sign-progress.js?v={{ asset_version }}"></script>
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/sign-learn.js?v={{ asset_version }}"></script>
 {% endblock %}

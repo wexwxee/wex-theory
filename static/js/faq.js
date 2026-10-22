@@ -8,7 +8,7 @@
     {
       group: 'Demo',
       q: 'Can I try the platform before full access?',
-      a: 'Yes. Starter Test 0 works without registration. The <a href="/signs/lessons">sign lessons</a>, catalogue and sign trainer are also free. You can open the <a href="/exam-words-demo">Exam Words demo</a> to see how the dictionary, cards, quiz, and audio feel before unlocking the full tool.'
+      a: 'Yes. Starter Test 0 works without registration. You can also open the <a href="/exam-words-demo">Exam Words demo</a> to see how the dictionary, cards, quiz, and audio feel before unlocking the full tool.'
     },
     {
       group: 'Tests',
@@ -28,12 +28,12 @@
     {
       group: 'Exam rules',
       q: 'Which language can I take the theory test in?',
-      a: 'Danish, English, Faroese, Greenlandic or German. Digital tests do not use interpreters; Faroese and Greenlandic use the analog format with an interpreter, and sign-language arrangements are available. German digital tests take place in Aabenraa. More on <a href="/exam-language">the test language page</a>.'
+      a: 'Danish, English, Faroese, Greenlandic or German. Interpreters have not been allowed since 1 January 2025, and the digital theory test runs in Danish, English and German with audio. More on <a href="/exam-language">the test language page</a>.'
     },
     {
       group: 'Exam rules',
       q: 'What is the difference between the paper and the digital theory test?',
-      a: 'Both formats show scenes and statements on screen, and you mark the correct statement or statements. In the analog test you write answers on paper and cannot go back. In the digital test you can revisit and flag questions, and see the result on screen. Category B has 25 questions in 25 minutes with at most five mistakes. See <a href="/exam-day">test day</a>.'
+      a: 'The paper test uses real photographs and yes/no answers, and you go straight through it. The digital test uses computer-generated scenes, you pick the correct answer or answers, you can move back and forth and flag questions, and the result appears on screen at once. Both are 25 questions in 25 minutes. See <a href="/exam-day">test day</a>.'
     },
     {
       group: 'Account',
@@ -43,7 +43,7 @@
     {
       group: 'Progress',
       q: 'Does progress save after I close the site?',
-      a: 'Account test history, saved questions, individual sign progress and full Exam Words known/difficult progress stay with your account. Unfinished test drafts, word and sign rounds, lesson checks and short sessions can be restored in the same browser for up to seven days. They do not move to another device; demo progress is browser-local.'
+      a: 'Account test history, saved questions, and full Exam Words known/difficult progress are stored with your account. Demo progress can still stay only in the current browser.'
     },
     {
       group: 'Exam Words',
@@ -93,15 +93,11 @@
       const nextBtn = document.getElementById(`abtn-${i}`);
       if (nextBody) nextBody.style.maxHeight = '0px';
       nextBtn?.classList.remove('open');
-      nextBtn?.setAttribute('aria-expanded', 'false');
-      if(nextBody)nextBody.inert=true;
     });
 
     if (!isOpen) {
       body.style.maxHeight = body.scrollHeight + 'px';
       btn.classList.add('open');
-      btn.setAttribute('aria-expanded','true');
-      body.inert=false;
     }
   }
 
@@ -115,14 +111,14 @@
     const div = document.createElement('div');
     div.className = 'accordion-item';
     div.innerHTML = `
-      <button class="accordion-btn" id="abtn-${i}" aria-expanded="false" aria-controls="abody-${i}" type="button">
+      <button class="accordion-btn" id="abtn-${i}" aria-expanded="false" type="button">
         <span>
           <span class="accordion-kicker">${item.group}</span>
           <span>${item.q}</span>
         </span>
         <span class="accordion-icon" id="aicon-${i}" aria-hidden="true">+</span>
       </button>
-      <div class="accordion-body" id="abody-${i}" role="region" aria-labelledby="abtn-${i}" inert>
+      <div class="accordion-body" id="abody-${i}">
         <div class="accordion-body-inner">${item.a}</div>
       </div>
     `;
@@ -134,7 +130,6 @@
     });
   });
 
-  window.addEventListener('resize',()=>{const open=list.querySelector('.accordion-btn.open');if(open){const body=document.getElementById(open.getAttribute('aria-controls'));body.style.maxHeight=body.scrollHeight+'px';}});
   toggleAccordion(0);
   document.getElementById('abtn-0')?.setAttribute('aria-expanded', 'true');
 })();

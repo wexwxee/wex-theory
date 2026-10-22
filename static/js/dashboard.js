@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   function showPaywall() {
     document.getElementById('paywallModal')?.classList.add('open');
   }
@@ -36,39 +36,17 @@
   document.getElementById('paywallCloseBtn')?.addEventListener('click', () => {
     document.getElementById('paywallModal')?.classList.remove('open');
   });
-  function openCard(card) {
-    if (card.dataset.locked === 'true') {
-      showPaywall();
-      return;
-    }
-    if (card.dataset.testUrl) {
-      window.location.href = card.dataset.testUrl;
-    }
-  }
   document.querySelectorAll('[data-test-card]').forEach((card) => {
-    card.addEventListener('click', () => openCard(card));
-    // The cards are focusable, so Enter and Space open them too.
-    card.addEventListener('keydown', (event) => {
-      if (event.key !== 'Enter' && event.key !== ' ') return;
-      event.preventDefault();
-      openCard(card);
+    card.addEventListener('click', function () {
+      if (this.dataset.locked === 'true') {
+        showPaywall();
+        return;
+      }
+      if (this.dataset.testUrl) {
+        window.location.href = this.dataset.testUrl;
+      }
     });
   });
 
-  function resumeSavedTest(){
-    const root=document.getElementById('dashboardStudy');
-    if(!root)return;
-    const entries=window.WEXTestDrafts.list(root.dataset.userId,root.dataset.hasAccess==='true',JSON.parse(root.dataset.tests),JSON.parse(root.dataset.readyWording));
-    const panel=document.getElementById('resumeTest');
-    panel.hidden=!entries.length;
-    if(!entries.length)return;
-    const entry=entries[0],draft=entry.draft;
-    const name=entry.test===0?'Starter test':entry.test===14?'Exam Mode':`Test ${entry.test}`;
-    document.getElementById('resumeTestCopy').textContent=`${name}${entry.wording==='exam'?' · Alternative wording':''} · ${entry.answered}/${draft.ids.length} answered · question ${draft.currentIndex+1} · ${Math.ceil(draft.timerSeconds/60)} min remaining`;
-    document.getElementById('resumeTestLink').href=entry.href;
-  }
-  window.addEventListener('pageshow',resumeSavedTest);
-  window.addEventListener('storage',resumeSavedTest);
-  resumeSavedTest();
   updateSubscriptionTimer();
 })();

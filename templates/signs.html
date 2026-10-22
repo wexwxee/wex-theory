@@ -1,67 +1,248 @@
 {% extends "base.html" %}
+
 {% block title %}Danish road signs - WEX Theory{% endblock %}
-{% block head %}<link rel="stylesheet" href="/static/css/signs.css?v={{ asset_version }}">{% endblock %}
-{% block body %}
-<nav><div class="nav-inner"><div class="nav-left"><button class="burger-btn" id="signsBurgerBtn" aria-label="Open navigation">☰</button><a href="{{ '/dashboard' if user else '/' }}" class="logo">WEXTheory</a>{% include "_nav_links.html" %}</div><div class="nav-right"><button class="theme-btn" id="navThemeBtn" aria-label="Toggle theme">☀</button>{% if user %}<a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>{% else %}<a href="/login" class="btn-ghost btn-sm">Sign in</a>{% endif %}</div></div></nav>
-<main class="sx sc" id="signsCatalogue" data-user-id="{{ user.id if user else '' }}">
- <div class="sx-topline">{% include "_learning_nav.html" %}<div class="lesson-lang lang-switch" role="group" aria-label="Language"><button type="button" class="lang-btn" data-lang="en">EN</button><button type="button" class="lang-btn" data-lang="ru">RU</button></div></div>
- <header class="sc-head">
-  <div>
-   <h1 data-en="All road signs" data-ru="Все дорожные знаки">All road signs</h1>
-   <p class="sx-lede" data-en="{{ meta.count }} signs of the Danish sign order, grouped by family. {{ meta.reviewed }} have a checked study explanation; for the others we show the official name only." data-ru="{{ meta.count }} знаков датского приказа о знаках, по группам. У {{ meta.reviewed }} есть проверенное учебное пояснение; у остальных показываем только официальное название.">{{ meta.count }} signs of the Danish sign order, grouped by family. {{ meta.reviewed }} have a checked study explanation; for the others we show the official name only.</p>
-  </div>
-  <ul class="wx-gantry" aria-label="Catalogue">
-   <li><span class="wx-led">{{ meta.count }}</span><span class="wx-gantry-label" data-en="signs" data-ru="знаков">signs</span></li>
-   <li><span class="wx-led">{{ meta.reviewed }}</span><span class="wx-gantry-label" data-en="checked explanations" data-ru="проверенных пояснений">checked explanations</span></li>
-   <li><span class="wx-led" id="catalogueLearned">0</span><span class="wx-gantry-label" data-en="learned by you" data-ru="выучено вами">learned by you</span></li>
-  </ul>
- </header>
 
- <div class="signs-toolbar sc-toolbar">
-  <input type="search" class="signs-search" id="signsSearch" placeholder="Search by code or name, e.g. C55 or roundabout" autocomplete="off" aria-label="Search signs">
-  <label class="sc-check"><input type="checkbox" id="signsReviewed"><span data-en="Only checked explanations" data-ru="Только с проверенным пояснением">Only checked explanations</span></label>
-  <div class="signs-chips" id="signsChips" role="group" aria-label="Sign family">
-   <button type="button" class="signs-chip is-active" data-group="all" aria-pressed="true"><span data-en="All" data-ru="Все">All</span></button>
-   {% for group in groups %}<button type="button" class="signs-chip" data-group="{{ group.group }}" aria-pressed="false" title="{{ group.label }}">{{ group.group }} <small>{{ group.count }}</small></button>{% endfor %}
-  </div>
- </div>
- <p class="sc-legend" aria-hidden="true"><span><i class="sc-dot" data-state="learned"></i><span data-en="learned" data-ru="выучен">learned</span></span><span><i class="sc-dot" data-state="learning"></i><span data-en="learning" data-ru="изучается">learning</span></span><span><i class="sc-dot" data-state="due"></i><span data-en="repeat now" data-ru="пора повторить">repeat now</span></span><span><i class="sc-tag-sample" data-en="name only" data-ru="только название">name only</i><span data-en="explanation not checked yet" data-ru="пояснение ещё не проверено">explanation not checked yet</span></span></p>
-
- <div id="signsResults">
-  {% for group in groups %}
-  <section class="signs-group" data-group="{{ group.group }}" aria-labelledby="group-{{ group.group }}">
-   <div class="signs-group-head"><h2 class="signs-group-title" id="group-{{ group.group }}"><span class="sc-group-code">{{ group.group }}</span> <span data-en="{{ group.label }}" data-ru="{{ group.label_ru }}">{{ group.label }}</span></h2><span class="signs-group-count" data-en="{{ group.count }} signs" data-ru="{{ group.count }} знаков">{{ group.count }} signs</span></div>
-   {% if group.note %}<p class="signs-group-note" data-en="{{ group.note }}" data-ru="{{ group.note_ru }}">{{ group.note }}</p>{% endif %}
-   <div class="signs-grid">
-    {% for sign in signs if sign.group == group.group %}
-    <a class="sign-card" href="/signs/{{ sign.code }}" data-code="{{ sign.code|lower }}" data-sign="{{ sign.code }}" data-reviewed="{{ 'true' if sign.teaching else 'false' }}" data-name="{{ sign.name_en|lower }} {{ sign.name_ru|lower }} {{ sign.name_da|lower }}" title="{% if sign.name_da %}{{ sign.name_da }} · {% endif %}{{ sign.code }}">
-     <i class="sc-dot" data-status aria-hidden="true"></i>
-     <img src="{{ sign.image }}?v={{ asset_version }}" alt="" loading="lazy" width="64" height="64">
-     <span class="sign-card-code">{{ sign.code }}</span>
-     <span class="sign-card-name" data-en="{{ sign.name_en }}" data-ru="{{ sign.name_ru }}">{{ sign.name_en }}</span>
-     {% if not sign.teaching %}<span class="sc-tag" data-en="name only" data-ru="только название">name only</span>{% endif %}
-    </a>
-    {% endfor %}
-   </div>
-  </section>
-  {% endfor %}
- </div>
- <div class="signs-empty" id="signsEmpty" hidden>Nothing matches that. Try a code like C55 or a word like cycle.</div>
-
- <p class="facts-source sx-note">
-  <strong data-en="Where this comes from:" data-ru="Откуда данные:">Where this comes from:</strong>
-  codes and names follow the signs of executive order 425 of 13 April 2023 on road marking, as listed on
-  <a href="https://en.wikipedia.org/wiki/Road_signs_in_Denmark" target="_blank" rel="noopener">Wikipedia</a>;
-  the drawings come from <a href="https://commons.wikimedia.org/wiki/Category:SVG_road_signs_in_Denmark" target="_blank" rel="noopener">Wikimedia Commons</a>,
-  where they are free of copyright under section 9 of the Danish copyright act. Catalogue built {{ meta.fetched }}.
-  Checked study notes cite the <a href="https://www.retsinformation.dk/eli/lta/2023/425" target="_blank" rel="noopener">official sign order</a>
-  and show their review date. Study explanations complement the official rules and your instructor's guidance.
- </p>
-</main>
+{% block head %}
+<style>
+  .info-hero--signs::after { content: "A11"; }
+  .signs-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    padding: 12px 0;
+    margin-bottom: 6px;
+    background: var(--bg);
+  }
+  .signs-search {
+    flex: 1 1 240px;
+    min-height: 44px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+  .signs-search:focus { outline: 2px solid var(--text-muted); outline-offset: 1px; }
+  .signs-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .signs-chip {
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .signs-chip:hover { color: var(--text); border-color: var(--text-muted); }
+  .signs-chip.is-active {
+    color: var(--text);
+    border-color: var(--text);
+  }
+  .lang-switch {
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-card);
+  }
+  .lang-btn {
+    padding: 5px 12px;
+    border: none;
+    border-radius: 999px;
+    background: none;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+  }
+  .lang-btn.is-active { background: var(--text); color: var(--bg); }
+  .signs-group { margin-bottom: 34px; }
+  .signs-group-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .signs-group-title { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.01em; }
+  .signs-group-count { font-size: 0.8rem; color: var(--text-muted); }
+  .signs-group-note {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.55;
+    max-width: 70ch;
+    margin-bottom: 16px;
+  }
+  .signs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    gap: 12px;
+  }
+  .sign-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--bg-card);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .sign-card:hover { border-color: var(--text-muted); transform: translateY(-2px); }
+  .sign-card img {
+    width: 68px;
+    height: 68px;
+    object-fit: contain;
+  }
+  .sign-card-code {
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+  }
+  .sign-card-name {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.35;
+  }
+  .signs-empty {
+    display: none;
+    padding: 40px 0;
+    text-align: center;
+    color: var(--text-muted);
+  }
+  .facts-source {
+    margin-top: 8px;
+    padding: 14px 18px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--bg-card);
+    color: var(--text-muted);
+    font-size: 0.86rem;
+    line-height: 1.6;
+  }
+  .facts-source a { color: inherit; text-decoration: underline; }
+  .facts-source strong { color: var(--text); }
+</style>
 {% endblock %}
+
+{% block body %}
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" id="signsBurgerBtn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
+      <a href="/" class="logo">WEXTheory</a>
+    </div>
+    <div class="nav-right">
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" class="lang-btn is-active" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="ru">RU</button>
+      </div>
+      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
+      {% if user %}
+      <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
+      {% else %}
+      <a href="/login" class="btn-ghost btn-sm">Sign In</a>
+      <a href="/register" class="btn-primary btn-sm">Create Account</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="info-page">
+  <section class="info-hero info-hero--signs">
+    <div class="info-eyebrow" data-en="Free reference" data-ru="Бесплатный справочник">Free reference</div>
+    <h1 class="info-title" data-en="Danish road signs" data-ru="Дорожные знаки Дании">Danish road signs</h1>
+    <p class="info-lede"
+       data-en="{{ meta.count }} signs, grouped by family. The theory test asks you to state what a sign means by picking the right answer, so learn them by family first - the shape and colour already tell you half the answer."
+       data-ru="{{ meta.count }} знаков по семьям. На экзамене надо выбрать значение знака из нескольких вариантов, поэтому учите семьями: форма и цвет уже подсказывают половину ответа.">
+      {{ meta.count }} signs, grouped by family. The theory test asks you to state what a sign means by
+      picking the right answer, so learn them by family first &mdash; the shape and colour already tell you
+      half the answer.
+    </p>
+    <div class="info-actions">
+      <a href="/signs/learn" class="btn-primary" data-en="Practise signs" data-ru="Тренажёр знаков">Practise signs</a>
+      <a href="/test/0" class="btn-ghost" data-en="See them in real scenes" data-ru="Увидеть на фото">See them in real scenes</a>
+      <a href="/exam-day" class="btn-ghost" data-en="How the test works" data-ru="Как проходит экзамен">How the test works</a>
+    </div>
+  </section>
+
+  <div class="signs-toolbar">
+    <input type="search" class="signs-search" id="signsSearch" placeholder="Search by code or name, e.g. C55 or roundabout" autocomplete="off" aria-label="Search signs">
+    <div class="signs-chips" id="signsChips">
+      <button type="button" class="signs-chip is-active" data-group="all">All</button>
+      {% for group in groups %}
+      <button type="button" class="signs-chip" data-group="{{ group.group }}">{{ group.group }} &middot; {{ group.count }}</button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div id="signsResults">
+    {% for group in groups %}
+    <section class="signs-group" data-group="{{ group.group }}">
+      <div class="signs-group-head">
+        <span class="signs-group-title" data-en="{{ group.label }}" data-ru="{{ group.label_ru }}">{{ group.label }}</span>
+        <span class="signs-group-count">{{ group.group }} &middot; {{ group.count }} signs</span>
+      </div>
+      {% if group.note %}<p class="signs-group-note" data-en="{{ group.note }}" data-ru="{{ group.note_ru }}">{{ group.note }}</p>{% endif %}
+      <div class="signs-grid">
+        {% for sign in signs if sign.group == group.group %}
+        <a class="sign-card" href="/signs/{{ sign.code }}" data-code="{{ sign.code|lower }}" data-name="{{ sign.name_en|lower }} {{ sign.name_ru|lower }} {{ sign.name_da|lower }}" title="{% if sign.name_da %}{{ sign.name_da }} · {% endif %}{{ sign.code }}">
+          <img src="{{ sign.image }}?v={{ asset_version }}" alt="{{ sign.code }}: {{ sign.name_en }}" loading="lazy">
+          <span class="sign-card-code">{{ sign.code }}</span>
+          <span class="sign-card-name" data-en="{{ sign.name_en }}" data-ru="{{ sign.name_ru }}">{{ sign.name_en }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% endfor %}
+  </div>
+
+  <div class="signs-empty" id="signsEmpty">Nothing matches that. Try a code like <strong>C55</strong> or a word like <strong>cycle</strong>.</div>
+
+  <p class="facts-source">
+    <strong>Where this comes from:</strong> codes and names follow the signs of executive order 425 of
+    13 April 2023 on road marking, as listed on
+    <a href="https://en.wikipedia.org/wiki/Road_signs_in_Denmark" target="_blank" rel="noopener">Wikipedia</a>;
+    the drawings come from
+    <a href="https://commons.wikimedia.org/wiki/Category:SVG_road_signs_in_Denmark" target="_blank" rel="noopener">Wikimedia Commons</a>,
+    where they are free of copyright under section 9 of the Danish copyright act.
+    Catalogue built {{ meta.fetched }}. The signs are amended from time to time &mdash; most recently with effect
+    from 1 May 2026 &mdash; so treat this as study material, not as the legal text.
+  </p>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/signs">Road signs</a>
+      <a href="/rules-2026">2026 rules</a>
+      <a href="/exam-language">Test language</a>
+      <a href="/exam-day">Test day</a>
+      <a href="/faq">FAQ</a>
+      <a href="/contact">Contact</a>
+    </div>
+    <div>&copy; 2026 WEXTheory</div>
+  </div>
+</footer>
+{% endblock %}
+
 {% block scripts %}
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/signs.js?v={{ asset_version }}"></script>
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/sign-review.js?v={{ asset_version }}"></script>
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/sign-progress.js?v={{ asset_version }}"></script>
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/sign-status.js?v={{ asset_version }}"></script>
 {% endblock %}

@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
         import_data()
         with SessionLocal() as db:
-            for index in (1, 2, 3, 4, 5):
+            for index in (1, 2, 3):
                 user = models.User(name=f"Browser Learner {index}", email=f"browser{index}@example.com",
                                    public_id=f"WEX-BROWSER-{index}",
                                    password_hash=main.hash_password("BrowserTest123"),
@@ -58,7 +58,6 @@ if __name__ == "__main__":
                                expires_at=datetime.utcnow() + timedelta(days=30)))
             db.commit()
             main.ensure_exam_mode_test(db)
-            main.sign_tests.sync(db)
         try:
             uvicorn.run(main.app, host="127.0.0.1", port=8765, lifespan="off", log_level="warning")
         finally:

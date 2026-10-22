@@ -4,7 +4,7 @@
 
   // ── Language ────────────────────────────────────────────────────────────────
   // Both languages are in the page; the switch only chooses which one shows.
-  // The choice is shared by every sign page, so it follows the learner around.
+  // The choice is shared with the trainer, so it follows you across sign pages.
   const LANG_KEY = 'wexSignsLang';
   const SEARCH_PLACEHOLDER = {
     en: 'Search by code or name, e.g. C55 or roundabout',
@@ -30,14 +30,12 @@
     });
     document.querySelectorAll('.lang-btn').forEach((button) => {
       button.classList.toggle('is-active', button.dataset.lang === lang);
-      button.setAttribute('aria-pressed', String(button.dataset.lang === lang));
     });
     const search = document.getElementById('signsSearch');
     if (search) search.placeholder = SEARCH_PLACEHOLDER[lang];
     const empty = document.getElementById('signsEmpty');
     if (empty) empty.textContent = EMPTY_TEXT[lang];
     document.documentElement.lang = lang === 'ru' ? 'ru' : 'en';
-    document.querySelectorAll('.lesson-lang').forEach(group => group.setAttribute('aria-label', lang === 'ru' ? 'Язык' : 'Language'));
   }
 
   let lang = readLang();
@@ -58,13 +56,11 @@
   // ── Catalogue search and family filter ──────────────────────────────────────
   const search = document.getElementById('signsSearch');
   const chips = document.getElementById('signsChips');
-  const reviewed = document.getElementById('signsReviewed');
   const empty = document.getElementById('signsEmpty');
   const groups = Array.from(document.querySelectorAll('.signs-group'));
   if (!groups.length) return;
 
   let activeGroup = 'all';
-  try { if (reviewed && localStorage.getItem('wexSignsReviewedOnly') === 'true') reviewed.checked = true; } catch (_) { /* storage blocked */ }
 
   function apply() {
     const query = (search?.value || '').trim().toLowerCase();
@@ -77,21 +73,19 @@
       group.querySelectorAll('.sign-card').forEach((card) => {
         const matches =
           groupMatches &&
-          (!reviewed?.checked || card.dataset.reviewed === 'true') &&
           (!query || card.dataset.code.includes(query) || card.dataset.name.includes(query));
-        card.hidden = !matches;
+        card.style.display = matches ? '' : 'none';
         if (matches) shownInGroup += 1;
       });
 
-      group.hidden = !shownInGroup;
+      group.style.display = shownInGroup ? '' : 'none';
       visible += shownInGroup;
     });
 
-    if (empty) empty.hidden = Boolean(visible);
+    if (empty) empty.style.display = visible ? 'none' : 'block';
   }
 
   search?.addEventListener('input', apply);
-  reviewed?.addEventListener('change', () => { try { localStorage.setItem('wexSignsReviewedOnly', String(reviewed.checked)); } catch (_) { /* storage blocked */ } apply(); });
 
   chips?.addEventListener('click', (event) => {
     const chip = event.target.closest('.signs-chip');
@@ -99,10 +93,7 @@
     activeGroup = chip.dataset.group;
     chips.querySelectorAll('.signs-chip').forEach((item) => {
       item.classList.toggle('is-active', item === chip);
-      item.setAttribute('aria-pressed', String(item === chip));
     });
     apply();
   });
-  window.addEventListener('pageshow', apply);
-  apply();
 })();

@@ -33,10 +33,46 @@
 
   const COOKIE_CONSENT_KEY = 'wex-cookie-consent';
 
+  function getCookieConsentChoice() {
+    try {
+      return window.localStorage.getItem(COOKIE_CONSENT_KEY) || '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function setCookieConsentChoice(choice) {
+    try {
+      window.localStorage.setItem(COOKIE_CONSENT_KEY, choice);
+    } catch (e) {}
+  }
+
   function hasAnalyticsConsent() {
-    return window.WEXCookieConsent?.choice() === 'analytics';
+    return getCookieConsentChoice() === 'analytics';
   }
   window.hasAnalyticsConsent = hasAnalyticsConsent;
+
+  function setupCookieConsentBanner() {
+    const banner = document.getElementById('cookieConsentBanner');
+    if (!banner || getCookieConsentChoice()) return;
+
+    const acceptBtn = document.getElementById('cookieAcceptBtn');
+    const essentialBtn = document.getElementById('cookieEssentialBtn');
+    banner.classList.add('show');
+
+    acceptBtn?.addEventListener('click', () => {
+      setCookieConsentChoice('analytics');
+      banner.classList.remove('show');
+      if (typeof window.sendActivityPing === 'function') {
+        window.sendActivityPing('consent');
+      }
+    });
+
+    essentialBtn?.addEventListener('click', () => {
+      setCookieConsentChoice('essential');
+      banner.classList.remove('show');
+    });
+  }
 
   (function () {
     const nativeFetch = window.fetch.bind(window);
@@ -66,8 +102,7 @@
   })();
 
   (function () {
-    let t = 'dark';
-    try { t = localStorage.getItem('wex-theme-v2') === 'light' ? 'light' : 'dark'; } catch (_) { /* This visit still works without storage. */ }
+    const t = localStorage.getItem('wex-theme') || 'dark';
     document.documentElement.setAttribute('data-theme', t);
   })();
 
@@ -75,70 +110,19 @@
     const h = document.documentElement;
     const next = h.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     h.setAttribute('data-theme', next);
-    try { localStorage.setItem('wex-theme-v2', next); } catch (_) { /* The theme still changes for this visit. */ }
+    localStorage.setItem('wex-theme', next);
   }
   window.toggleTheme = toggleTheme;
 
-  const sidebar = document.getElementById('sidebar');
-  const sidebarOverlay = document.getElementById('sbOverlay');
-  let navigationFocus = null;
-  let navigationOverflow = '';
-  let navigationBackground = [];
-  function navigationButtons(open) {
-    document.querySelectorAll('.burger-btn').forEach(button => {
-      button.setAttribute('aria-controls', 'sidebar');
-      button.setAttribute('aria-expanded', String(open));
-    });
-  }
-  navigationButtons(false);
-  sidebar?.querySelectorAll('a.is-current').forEach(link => link.setAttribute('aria-current', 'page'));
   function sbOpen() {
-    if (!sidebar || sidebar.classList.contains('open')) return;
-    navigationFocus = document.activeElement;
-    navigationOverflow = document.body.style.overflow;
-    navigationBackground = [...document.body.children]
-      .filter(node => node !== sidebar && node !== sidebarOverlay)
-      .map(node => [node, node.inert]);
-    navigationBackground.forEach(([node]) => { node.inert = true; });
-    document.body.style.overflow = 'hidden';
-    sidebar.inert = false;
-    sidebar.setAttribute('aria-hidden', 'false');
-    sidebar.classList.add('open');
-    sidebarOverlay?.classList.add('open');
-    navigationButtons(true);
-    document.getElementById('sbCloseBtn')?.focus({preventScroll: true});
+    document.getElementById('sidebar')?.classList.add('open');
+    document.getElementById('sbOverlay')?.classList.add('open');
   }
 
   function sbClose() {
-    if (!sidebar?.classList.contains('open')) return;
-    sidebar.classList.remove('open');
-    sidebarOverlay?.classList.remove('open');
-    navigationBackground.forEach(([node, inert]) => { node.inert = inert; });
-    navigationBackground = [];
-    document.body.style.overflow = navigationOverflow;
-    navigationButtons(false);
-    if (navigationFocus?.isConnected) navigationFocus.focus({preventScroll: true});
-    sidebar.inert = true;
-    sidebar.setAttribute('aria-hidden', 'true');
-    navigationFocus = null;
+    document.getElementById('sidebar')?.classList.remove('open');
+    document.getElementById('sbOverlay')?.classList.remove('open');
   }
-  window.WEXNavigation = { isOpen: () => Boolean(sidebar?.classList.contains('open')) };
-  document.addEventListener('keydown', event => {
-    if (!window.WEXNavigation.isOpen()) return;
-    if (event.key === 'Escape') {
-      event.preventDefault(); event.stopImmediatePropagation(); sbClose(); return;
-    }
-    if (event.key !== 'Tab') return;
-    const controls = [...sidebar.querySelectorAll('a[href], button:not(:disabled), [tabindex="0"]')]
-      .filter(node => node.getClientRects().length && getComputedStyle(node).visibility !== 'hidden');
-    const first = controls[0], last = controls[controls.length - 1];
-    if (!controls.length) return;
-    if (event.shiftKey && (document.activeElement === first || !sidebar.contains(document.activeElement))) {
-      event.preventDefault(); last.focus();
-    } else if (!event.shiftKey && (document.activeElement === last || !sidebar.contains(document.activeElement))) {
-      event.preventDefault(); first.focus();
-    }
-  }, true);
 
   window.sbOpen = sbOpen;
   window.sbClose = sbClose;
@@ -265,6 +249,7 @@
   });
 
   injectThemeIcons();
+  setupCookieConsentBanner();
   (function () {
     const HEARTBEAT_INTERVAL_MS = 90000;
     const MIN_REPEAT_MS = 15000;
