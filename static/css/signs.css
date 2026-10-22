@@ -540,3 +540,50 @@
   .sl-panel { animation: none; }
   .sx-meter span { transition: none; }
 }
+
+/* Phone pass (22 Oct 2026). The owner found the sign pages awkward on a phone. Less above the
+   content (smaller headings, no method strip, no lesson lede while studying), compact lesson rows,
+   and a solid action bar whose Next button stays on one line. */
+@media (max-width: 760px) {
+  .sx { padding-top: 10px; padding-bottom: 56px; }
+  .sx-topline { padding-bottom: 10px; margin-bottom: 14px; }
+  .sx-hub-intro h1, .sc-head h1 { font-size: clamp(1.8rem, 7.6vw, 2.1rem); margin-bottom: 8px; }
+  .sx-lede { font-size: 0.96rem; line-height: 1.55; }
+  .sx-gantry { margin-top: 16px; }
+  .sx-method { display: none; }
+  .sx-course { margin-top: 28px; }
+  .sx-lesson { grid-template-columns: 30px minmax(0, 1fr) auto; align-items: center; gap: 2px 10px; padding: 10px 12px; border-radius: 14px; }
+  .sx-lesson-state { grid-column: 3; grid-row: 1; display: grid; grid-template-columns: auto; justify-items: end; gap: 3px; }
+  .sx-lesson-state .sx-meter { display: none; }
+  .sx-lesson-num { font-size: 1.1rem; padding-top: 3px; }
+  .sx-lesson-copy strong { font-size: 0.98rem; }
+  .sx-lesson-copy .lesson-meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sx-lesson-state .lesson-result { grid-column: auto; font-size: 0.72rem; white-space: nowrap; }
+  .sx-lesson-state .lesson-result:empty { display: none; }
+  .sx-state { min-height: 22px; padding: 0 8px; font-size: 0.72rem; }
+  .sx-exam-tests { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .sx-exam-copy { padding: 10px 12px 12px; }
+  .sx-exam-copy strong { font-size: 0.92rem; }
+  .sx-exam-copy small { font-size: 0.78rem; }
+  .sx-exam-num { font-size: 1.25rem; left: 10px; top: 8px; }
+  .sl-head { margin-bottom: 12px; }
+  .sl-kicker { font-size: 0.8rem; margin-bottom: 2px; }
+  .sl-head h1 { font-size: clamp(1.4rem, 6.2vw, 1.7rem); }
+  .sign-lesson.is-player .sl-focus { display: none; }
+  .sl-stages { margin-bottom: 10px; }
+  .sl-stages a { min-height: 54px; }
+  .sl-panel-head { margin-bottom: 12px; }
+  .sign-lesson.is-player #lessonRead .sl-actions { padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--sx-line); background: var(--sx-panel); flex-wrap: nowrap; }
+  #learnPrev { flex: 0 0 auto; padding: 0 16px; }
+  #learnNext { flex: 1 1 auto; white-space: nowrap; }
+  #lessonQuiz .sl-panel-head .sl-counter { display: none; }
+  #lessonCheck { width: 100%; }
+}
+/* On touch screens a tapped answer keeps its hover look, which reads as "selected". Only real
+   selections and verdicts may colour an answer there. */
+@media (hover: none) {
+  .sl-option:hover:not(:disabled):not([aria-checked="true"]):not(.is-correct):not(.is-wrong),
+  .lesson-option:hover:not(:disabled):not([aria-checked="true"]):not(.is-correct):not(.is-wrong),
+  .sr-option:hover:not(:disabled):not(.is-correct):not(.is-wrong),
+  .sr-image-option:hover:not(:disabled):not(.is-correct):not(.is-wrong) { border-color: var(--sx-line-2); background: var(--sx-ground); }
+}
