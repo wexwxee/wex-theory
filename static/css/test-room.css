@@ -100,12 +100,9 @@ body:has(#testContainer) .site-trust-links {
   border-radius: 14px;
   background: var(--bg-card);
 }
-/* Hover only where a pointer can hover: on touch screens it would stick to a tapped answer. */
-@media (hover: hover) {
-  #answersContainer .answer-option:hover {
-    border-color: color-mix(in srgb, var(--accent) 45%, var(--border-strong));
-    background: var(--bg-card);
-  }
+#answersContainer .answer-option:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border-strong));
+  background: var(--bg-card);
 }
 #answersContainer .answer-option.selected {
   border-color: var(--accent);

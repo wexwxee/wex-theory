@@ -151,7 +151,7 @@
     // Keep the steps at the top so the new step has the screen; a phone needs the room most.
     const bar = root.querySelector('.sl-stages');
     const top = bar.getBoundingClientRect().top;
-    if (top < 0 || (window.innerWidth < 760 && top > 96)) bar.scrollIntoView({ block: 'start', behavior: reduceMotion || !document.hasFocus() ? 'auto' : 'smooth' });
+    if (top < 0 || (window.innerWidth < 760 && top > window.innerHeight * 0.3)) bar.scrollIntoView({ block: 'start', behavior: reduceMotion || !document.hasFocus() ? 'auto' : 'smooth' });
     if (focus) focusStage();
   }
   function focusStage() {
