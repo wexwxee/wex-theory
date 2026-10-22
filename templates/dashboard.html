@@ -1,795 +1,177 @@
 {% extends "base.html" %}
 
 {% block title %}Dashboard - WEX Theory{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="/static/css/study.css?v={{ asset_version }}">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/static/css/dashboard.css?v={{ asset_version }}">
+{% endblock %}
 
 {% block body %}
-<style>
-  .dashboard-stat-card--review {
-    text-decoration: none;
-    color: inherit;
-    transition: border-color 0.15s, transform 0.15s;
-  }
-  .dashboard-stat-card--review:hover { border-color: var(--text-muted); transform: translateY(-1px); }
-  .dashboard-stat-card--review[hidden] { display: none; }
-  .dashboard-stat-note {
-    font-size: 0.74rem;
-    color: var(--text-muted);
-    margin-top: 4px;
-    line-height: 1.3;
-  }
-  .dashboard-page {
-    position: relative;
-    max-width: 1180px;
-    padding-top: 34px;
-  }
-  .dashboard-page::before {
-    content: "";
-    position: fixed;
-    inset: 60px 0 auto 0;
-    height: 360px;
-    pointer-events: none;
-    background:
-      radial-gradient(circle at 18% 10%, rgba(0, 0, 0, 0.035), transparent 28%),
-      radial-gradient(circle at 76% 0%, rgba(0, 0, 0, 0.025), transparent 30%);
-    opacity: 0.75;
-    z-index: -1;
-  }
-  [data-theme="light"] .dashboard-page::before {
-    background:
-      radial-gradient(circle at 20% 0%, rgba(0, 0, 0, 0.035), transparent 30%),
-      radial-gradient(circle at 82% 0%, rgba(0, 0, 0, 0.025), transparent 32%);
-  }
-  .dashboard-hero {
-    position: relative;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    border-radius: 22px;
-    padding: 26px 26px 22px;
-    margin-bottom: 18px;
-    background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 96%, #fff 4%), var(--bg-card));
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.10);
-  }
-  [data-theme="light"] .dashboard-hero {
-    border-color: var(--border);
-    background:
-      radial-gradient(circle at 10% 0%, rgba(0, 0, 0, 0.035), transparent 34%),
-      radial-gradient(circle at 92% 6%, rgba(0, 0, 0, 0.025), transparent 32%),
-      linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(250, 250, 250, 0.76)),
-      #fff;
-    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.06);
-  }
-  .dashboard-hero::after {
-    content: "WEX";
-    position: absolute;
-    right: 22px;
-    bottom: 10px;
-    font-size: clamp(3rem, 7vw, 5.5rem);
-    font-weight: 900;
-    letter-spacing: -0.06em;
-    line-height: 1;
-    color: rgba(255, 255, 255, 0.028);
-    pointer-events: none;
-  }
-  [data-theme="light"] .dashboard-hero::after {
-    color: rgba(0, 0, 0, 0.022);
-  }
-  .dashboard-hero > * {
-    position: relative;
-    z-index: 1;
-  }
-
-  .study-tool-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 14px;
-    margin: 0 0 22px;
-  }
-  .study-tool-card {
-    position: relative;
-    overflow: hidden;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 18px;
-    align-items: center;
-    padding: 20px 22px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: var(--bg-card);
-  }
-  .study-tool-card::after {
-    content: "2026";
-    position: absolute;
-    right: 18px;
-    bottom: 8px;
-    font-size: 2.6rem;
-    font-weight: 900;
-    letter-spacing: -0.06em;
-    color: rgba(255, 255, 255, 0.03);
-    pointer-events: none;
-  }
-  [data-theme="light"] .study-tool-card::after {
-    color: rgba(0, 0, 0, 0.035);
-  }
-  .study-tool-copy,
-  .study-tool-actions {
-    position: relative;
-    z-index: 1;
-  }
-  .study-tool-kicker {
-    color: var(--text-muted);
-    font-size: 0.72rem;
-    font-weight: 850;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    margin-bottom: 7px;
-  }
-  .study-tool-title {
-    font-size: clamp(1.05rem, 2.2vw, 1.3rem);
-    font-weight: 850;
-    letter-spacing: -0.035em;
-    line-height: 1.08;
-    margin-bottom: 6px;
-  }
-  .study-tool-subcopy {
-    color: var(--text-muted);
-    max-width: 660px;
-    font-size: 0.86rem;
-    line-height: 1.4;
-  }
-  .study-tool-card.locked {
-    opacity: 0.78;
-  }
-  .study-start {
-    margin: 0 0 18px;
-    padding: 18px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: var(--bg-card);
-    display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-    gap: 16px;
-    align-items: center;
-  }
-  .study-start-title {
-    font-size: 1.15rem;
-    font-weight: 900;
-    letter-spacing: -0.035em;
-    margin-bottom: 6px;
-  }
-  .study-start-copy {
-    color: var(--text-muted);
-    font-size: 0.88rem;
-    line-height: 1.55;
-  }
-  .study-start-steps {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
-  }
-  .study-start-step {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    padding: 12px;
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    background: color-mix(in srgb, var(--bg-card) 86%, transparent);
-    min-width: 0;
-  }
-  .study-start-step i {
-    width: 28px;
-    height: 28px;
-    border-radius: 10px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #0ea5e9;
-    background: rgba(14,165,233,0.11);
-    flex: 0 0 auto;
-  }
-  .study-start-step strong {
-    display: block;
-    font-size: 0.84rem;
-    line-height: 1.2;
-  }
-  .study-start-step span {
-    display: block;
-    margin-top: 3px;
-    color: var(--text-muted);
-    font-size: 0.75rem;
-    line-height: 1.35;
-  }
-  .sub-status-card {
-    margin-top: 14px;
-    max-width: 420px;
-    padding: 14px;
-    border-radius: 18px;
-    border: 1px solid color-mix(in srgb, var(--border) 72%, var(--text) 8%);
-    background:
-      linear-gradient(135deg, color-mix(in srgb, var(--bg-card) 92%, #fff 8%), var(--bg-card));
-    box-shadow: 0 16px 42px rgba(0, 0, 0, 0.045);
-  }
-  .sub-status-content {
-    display: grid;
-    grid-template-columns: 38px minmax(0, 1fr);
-    gap: 12px;
-    align-items: start;
-  }
-  .sub-status-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 14px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #0ea5e9;
-    border: 1px solid rgba(14,165,233,0.22);
-    background: linear-gradient(135deg, rgba(14,165,233,0.14), rgba(168,85,247,0.10));
-  }
-  .sub-status-title {
-    font-size: 0.92rem;
-    font-weight: 900;
-    letter-spacing: -0.02em;
-    margin-bottom: 4px;
-    color: var(--text);
-  }
-  .sub-status-meta {
-    color: var(--text-muted);
-    font-size: 0.84rem;
-    line-height: 1.55;
-  }
-  .sub-status-card.active {
-    border-color: rgba(14, 165, 233, 0.22);
-    background:
-      radial-gradient(circle at 0 0, rgba(14,165,233,0.11), transparent 36%),
-      linear-gradient(135deg, color-mix(in srgb, var(--bg-card) 94%, #fff 6%), var(--bg-card));
-  }
-  .sub-status-card.expired {
-    border-color: rgba(239, 68, 68, 0.35);
-    background: linear-gradient(180deg, rgba(239, 68, 68, 0.08), var(--bg-card));
-  }
-  .access-pill-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    margin-top: 10px;
-  }
-  .access-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    height: 30px;
-    padding: 0 11px;
-    border-radius: 999px;
-    border: 1px solid rgba(14,165,233,0.26);
-    background: linear-gradient(135deg, rgba(14,165,233,0.12), rgba(168,85,247,0.10));
-    color: var(--text);
-    font-size: 0.75rem;
-    font-weight: 850;
-    letter-spacing: -0.01em;
-    text-decoration: none;
-  }
-  .access-pill i {
-    color: #0ea5e9;
-    font-size: 0.72rem;
-  }
-  .access-pill--free {
-    border-color: var(--border);
-    background: color-mix(in srgb, var(--bg-card) 88%, #fff 12%);
-    color: var(--text-muted);
-  }
-  .access-pill--admin {
-    border-color: rgba(168,85,247,0.25);
-    background: linear-gradient(135deg, rgba(168,85,247,0.13), rgba(14,165,233,0.10));
-  }
-  .dashboard-head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 16px;
-    margin-bottom: 0;
-  }
-  .dashboard-kicker {
-    color: var(--text-muted);
-    font-size: 0.76rem;
-    font-weight: 850;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-  .dashboard-title {
-    font-size: clamp(1.9rem, 3.4vw, 2.7rem);
-    font-weight: 800;
-    line-height: 1.05;
-    letter-spacing: -0.03em;
-    margin-bottom: 10px;
-  }
-  .dashboard-subcopy {
-    max-width: 610px;
-    color: var(--text-muted);
-    font-size: 1rem;
-    line-height: 1.65;
-  }
-  .dashboard-subcopy strong {
-    color: var(--text);
-  }
-  .dashboard-actions {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  .dashboard-stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin: 18px 0 24px;
-  }
-  .dashboard-stat-card {
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    gap: 2px;
-    padding: 16px 18px;
-    min-height: 104px;
-    border-radius: 16px;
-    background: color-mix(in srgb, var(--bg-card) 92%, var(--bg) 8%);
-    transition: border-color 0.18s ease, background 0.18s ease;
-  }
-  .dashboard-stat-card:hover {
-    border-color: color-mix(in srgb, var(--text) 16%, var(--border));
-  }
-  .stat-meter {
-    height: 3px;
-    border-radius: 999px;
-    background: var(--border);
-    overflow: hidden;
-    margin-top: 10px;
-  }
-  .stat-meter span {
-    display: block;
-    height: 100%;
-    background: var(--text);
-    border-radius: 999px;
-  }
-  .dashboard-stat-value {
-    font-size: 2rem;
-    font-weight: 900;
-    line-height: 1;
-    letter-spacing: -0.05em;
-  }
-  .dashboard-stat-label {
-    color: var(--text-muted);
-    font-size: 0.74rem;
-    font-weight: 820;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-top: 10px;
-  }
-  [data-theme="light"] .dashboard-stat-card {
-    background: #fff;
-    border-color: var(--border);
-    box-shadow: none;
-  }
-  .tests-grid {
-    gap: 18px;
-  }
-  .tests-grid .test-card {
-    position: relative;
-    border-radius: 20px;
-    background: var(--bg-card);
-    box-shadow: none;
-    transform: translateY(0);
-    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-  }
-  .tests-grid .test-card:hover {
-    transform: translateY(-5px);
-    border-color: color-mix(in srgb, var(--text) 18%, var(--border));
-    box-shadow: 0 22px 58px rgba(0, 0, 0, 0.09);
-  }
-  [data-theme="light"] .tests-grid .test-card {
-    background: linear-gradient(180deg, #fff, #f8f8f8);
-    border-color: var(--border);
-  }
-  .tests-grid .test-card img {
-    transition: transform 0.35s ease, filter 0.35s ease;
-  }
-  .tests-grid .test-card:hover img {
-    transform: scale(1.035);
-    filter: saturate(1.05) contrast(1.03);
-  }
-  .test-card-body {
-    position: relative;
-  }
-  .mode-progress-item {
-    transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
-  }
-  .mode-progress-item:hover {
-    transform: translateY(-1px);
-    border-color: color-mix(in srgb, var(--text) 16%, var(--border));
-  }
-  [data-theme="light"] .mode-progress-item {
-    background: rgba(255, 255, 255, 0.72);
-    border-color: var(--border);
-  }
-  @media (max-width: 900px) {
-    .dashboard-stats {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-  @media (max-width: 640px) {
-    .dashboard-page {
-      width: min(100% - 24px, 1180px);
-      padding-left: 0;
-      padding-right: 0;
-    }
-    .dashboard-hero {
-      padding: 22px;
-      border-radius: 20px;
-    }
-    .dashboard-head {
-      margin-bottom: 24px;
-    }
-    .dashboard-actions {
-      width: 100%;
-    }
-    .dashboard-actions a {
-      flex: 1 1 calc(50% - 6px);
-      justify-content: center;
-    }
-    .study-tool-card {
-      grid-template-columns: 1fr;
-    }
-    .study-start {
-      grid-template-columns: 1fr;
-    }
-    .study-start-steps {
-      grid-template-columns: 1fr;
-    }
-    .study-tool-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .dashboard-stats {
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 24px;
-    }
-    .dashboard-title {
-      font-size: clamp(2.25rem, 15vw, 4rem);
-    }
-  }
-  .wording-meta {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 6px;
-    font-size: 0.74rem;
-    color: var(--text-muted);
-  }
-  .wording-meta-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 999px;
-    background: var(--border);
-    flex: 0 0 7px;
-  }
-  .wording-meta.ready .wording-meta-dot {
-    background: #22c55e;
-  }
-  .wording-meta.in-progress .wording-meta-dot {
-    background: #f59e0b;
-  }
-  .wording-meta.not-started .wording-meta-dot {
-    background: var(--border);
-  }
-  .mode-progress {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
-  .mode-progress-item {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: 8px;
-    padding: 10px 12px;
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    background: color-mix(in srgb, var(--bg-card) 94%, #fff 6%);
-    min-width: 0;
-  }
-  .mode-progress-label {
-    font-size: 0.7rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-  }
-  .mode-progress-item.original {
-    background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 94%, #fff 6%), var(--bg-card));
-  }
-  .mode-progress-item.ai {
-    background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 93%, #ecfdf5 7%), var(--bg-card));
-  }
-  [data-theme="light"] .mode-progress-item.original,
-  [data-theme="light"] .mode-progress-item.ai {
-    background: rgba(255, 255, 255, 0.72);
-    border-color: var(--border);
-  }
-  .mode-progress-value {
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    min-width: 0;
-    width: 100%;
-  }
-  .mode-progress-empty {
-    color: var(--text-muted);
-    font-size: 0.82rem;
-    text-align: left;
-  }
-  @media (max-width: 640px) {
-    .mode-progress {
-      grid-template-columns: 1fr;
-      gap: 8px;
-    }
-  }
-</style>
-<nav>
+{% set words_href = '/exam-words' if has_access else '/exam-words-demo' %}
+<nav class="dw-nav">
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" id="dashboardBurgerBtn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
+      <button class="burger-btn" id="dashboardBurgerBtn" aria-label="Open navigation"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
       <a href="/" class="logo">WEXTheory</a>
+      {% include "_nav_links.html" %}
     </div>
     <div class="nav-right">
-      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
+      <button class="theme-btn" id="navThemeBtn" aria-label="Toggle theme">&#9728;&#65039;</button>
       <a href="/profile" class="btn-ghost btn-sm">{{ user.name }}</a>
     </div>
   </div>
 </nav>
 
-<div class="page dashboard-page">
-  <section class="dashboard-hero">
-  <div class="dashboard-head">
-    <div>
-      <div class="dashboard-kicker">Practice Library</div>
-      <h1 class="dashboard-title">My Tests</h1>
-      <p class="dashboard-subcopy">
-        Train through the official WEXTheory set, keep your saved questions close, and return to any finished attempt for a full answer review.
-      </p>
-      <div class="access-pill-row">
-      {% if user.is_admin %}
-        <span class="access-pill access-pill--admin"><i class="fa-solid fa-shield-halved"></i> Admin access</span>
-        <a href="/admin/triumph-preview" class="access-pill access-pill--admin" title="Preview Triumph Screen (admin only, no DB writes)"><i class="fa-solid fa-trophy"></i> Preview Triumph</a>
-      {% elif has_access %}
-        <span class="access-pill"><i class="fa-solid fa-bolt"></i> All Access</span>
-      {% else %}
-        <span class="access-pill access-pill--free"><i class="fa-regular fa-circle"></i> Starter plan</span>
-      {% endif %}
+<div class="wx-wall" aria-hidden="true">
+  {% for scene in ['T01-q03', 'T05-q03', 'T02-q04', 'T09-q05', 'T04-q02', 'T11-q02', 'T07-q02', 'T13-q04', 'T06-q05', 'T10-q03', 'T08-q04', 'T05-q06'] %}<img src="/static/home/wall/{{ scene }}.webp" alt="" width="320" height="192" decoding="async">{% endfor %}
+</div>
+
+<div class="page dashboard-page dw" id="dashboardStudy" data-user-id="{{ user.id }}" data-has-access="{{ 'true' if has_access else 'false' }}" data-tests='{{ tests|map(attribute="id")|list|tojson }}' data-ready-wording='{{ ready_wording|tojson }}'>
+  <section class="study-panel study-resume" id="resumeTest" hidden aria-labelledby="resumeTestTitle">
+    <div><h2 id="resumeTestTitle">Continue your saved test</h2><p id="resumeTestCopy"></p><p class="study-small">Saved in this browser for up to seven days. Answers and remaining practice time reopen together.</p></div>
+    <a class="btn-primary" id="resumeTestLink">Continue test</a>
+  </section>
+
+  <section class="dashboard-hero dw-hero">
+    <div class="dashboard-head">
+      <div class="dw-intro">
+        <h1 class="dashboard-title">Your learning</h1>
+        <p class="dashboard-subcopy">Choose a test, learn road signs or practise exam words.</p>
+        <div class="access-pill-row">
+        {% if user.is_admin %}
+          <span class="access-pill access-pill--admin"><i class="fa-solid fa-shield-halved"></i> Admin access</span>
+          <a href="/admin/triumph-preview" class="access-pill access-pill--admin" title="Preview Triumph Screen (admin only, no DB writes)"><i class="fa-solid fa-trophy"></i> Preview Triumph</a>
+        {% elif has_access %}
+          <span class="access-pill"><i class="fa-solid fa-bolt"></i> All Access</span>
+        {% else %}
+          <span class="access-pill access-pill--free"><i class="fa-regular fa-circle"></i> Starter plan</span>
+        {% endif %}
+        </div>
+        {% if not user.is_admin %}
+          {% if has_access and access_expires_at %}
+          <div class="dashboard-access-note">Access until {{ access_expires_at.strftime('%d %b %Y') }} <span aria-hidden="true">·</span> <span id="subTimer" data-access-expiry="{{ access_expires_at.isoformat() }}Z"></span></div>
+          {% elif user.subscription_status != 'free' %}
+          <div class="sub-status-card expired">
+            <div class="sub-status-content">
+              <span class="sub-status-icon"><i class="fa-solid fa-lock"></i></span>
+              <div>
+                <div class="sub-status-title">Access expired</div>
+                <div class="sub-status-meta">Tests 1 to 13 are unavailable until access is renewed.</div>
+                <div class="sub-status-action"><a href="/pricing" class="btn-primary btn-sm">Review Access</a></div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        {% endif %}
       </div>
-      {% if not user.is_admin %}
-        {% if has_access and access_expires_at %}
-        <div class="sub-status-card active">
-          <div class="sub-status-content">
-            <span class="sub-status-icon"><i class="fa-solid fa-unlock-keyhole"></i></span>
-            <div>
-              <div class="sub-status-title">Access active</div>
-              <div class="sub-status-meta">
-                Valid until {{ access_expires_at.strftime('%d %b %Y %H:%M') }}.
-              </div>
-              <div id="subTimer" class="sub-status-meta" style="margin-top:4px;" data-access-expiry="{{ access_expires_at.isoformat() }}Z"></div>
-            </div>
-          </div>
-        </div>
-{% elif user.subscription_status != 'free' %}
-        <div class="sub-status-card expired">
-          <div class="sub-status-content">
-            <span class="sub-status-icon" style="color:var(--wrong);border-color:rgba(239,68,68,0.25);background:rgba(239,68,68,0.09);"><i class="fa-solid fa-lock"></i></span>
-            <div>
-              <div class="sub-status-title">Access expired</div>
-              <div class="sub-status-meta">Tests 1 to 13 are unavailable until access is renewed.</div>
-              <div style="margin-top:12px;">
-                <a href="/pricing" class="btn-primary btn-sm">Review Access</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      {% endif %}
-      {% endif %}
-    </div>
       <div class="dashboard-actions">
         <a href="/profile" class="btn-ghost btn-sm"><i class="fa-regular fa-clock"></i> History</a>
         <a href="/saved" class="btn-ghost btn-sm"><i class="fa-solid fa-bookmark"></i> Saved</a>
-      {% if not user.is_admin and not has_access %}
+        {% if not user.is_admin and not has_access %}
         <a href="/pricing" class="btn-primary btn-sm">{% if user.subscription_status != 'free' %}Review Access{% else %}Open Access Overview{% endif %}</a>
-      {% endif %}
-    </div>
-  </div>
-
-  <div class="dashboard-stats">
-    <div class="card dashboard-stat-card">
-      <div class="dashboard-stat-value">{{ completed }}</div>
-      <div class="dashboard-stat-label">Completed</div>
-      <div class="stat-meter"><span style="width: {{ ((completed / library_total) * 100) | round(0, 'floor') if library_total else 0 }}%;"></span></div>
-    </div>
-    <div class="card dashboard-stat-card">
-      <div class="dashboard-stat-value">{{ library_total - completed }}</div>
-      <div class="dashboard-stat-label">Remaining</div>
-    </div>
-    <div class="card dashboard-stat-card">
-      <div class="dashboard-stat-value">{{ latest_scores.values() | list | sum if latest_scores else 0 }}</div>
-      <div class="dashboard-stat-label">Total Score</div>
-    </div>
-    <a href="/review" class="card dashboard-stat-card dashboard-stat-card--review" id="reviewTile" hidden>
-      <div class="dashboard-stat-value" id="reviewTileValue">0</div>
-      <div class="dashboard-stat-label">To review today</div>
-      <div class="dashboard-stat-note">questions you got wrong</div>
-    </a>
-  </div>
-  </section>
-
-  {% if show_study_start %}
-  <section class="study-start">
-    <div>
-      <div class="study-start-title">Start here</div>
-      <p class="study-start-copy">A simple first path: try the sample, preview the vocabulary, then move into the full tests when you are ready.</p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
-        <a href="/study-guide" class="btn-primary btn-sm">How to study</a>
-        <a href="/exam-words-demo" class="btn-ghost btn-sm">Words demo</a>
-      </div>
-    </div>
-    <div class="study-start-steps">
-      <div class="study-start-step">
-        <i class="fa-solid fa-play"></i>
-        <div><strong>Sample</strong><span>Start with Test 0.</span></div>
-      </div>
-      <div class="study-start-step">
-        <i class="fa-solid fa-language"></i>
-        <div><strong>Words</strong><span>Check key exam terms.</span></div>
-      </div>
-      <div class="study-start-step">
-        <i class="fa-solid fa-list-check"></i>
-        <div><strong>Tests</strong><span>Continue through 1-13.</span></div>
-      </div>
-    </div>
-  </section>
-  {% endif %}
-
-  <section class="study-tool-grid">
-    <div class="study-tool-card {% if not has_access %}locked{% endif %}">
-      <div class="study-tool-copy">
-        <div class="study-tool-title">Exam Words 2026</div>
-        <div class="study-tool-subcopy">
-          Dictionary, cards, quiz, audio.
-        </div>
-      </div>
-      <div class="study-tool-actions">
-        {% if has_access %}
-          <a href="/exam-words" class="btn-primary btn-sm">Open words</a>
-        {% else %}
-          <a href="/exam-words-demo" class="btn-primary btn-sm">Preview</a>
-          <a href="/pricing" class="btn-ghost btn-sm">Access</a>
         {% endif %}
       </div>
     </div>
+
+    <ul class="wx-gantry" aria-label="Your progress">
+      <li><span class="wx-led">{{ completed }}<small>/{{ library_total }}</small></span><span class="wx-gantry-label">tests completed</span></li>
+      {% if has_access and due_count %}
+      <li><a href="/review" class="wx-gantry-link"><span class="wx-led">{{ due_count }}</span><span class="wx-gantry-label">mistakes to review <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span></a></li>
+      {% endif %}
+      {% if has_access and access_expires_at and not user.is_admin %}
+      {% set days_left = (access_expires_at - now).days %}
+      <li><span class="wx-led">{{ days_left if days_left > 0 else 0 }}</span><span class="wx-gantry-label">days of access left</span></li>
+      {% endif %}
+    </ul>
   </section>
 
-  <div class="tests-grid">
+  <section class="learning-entry dw-entry" aria-label="Choose what to practise">
+    <div class="learning-entry-grid">
+      <a href="#practiceTests" class="learning-entry-card dw-entry-tests">
+        <span class="dw-entry-art" aria-hidden="true"><img src="/static/home/wall/T02-q03.webp" alt="" width="320" height="192" decoding="async"></span>
+        <span class="dw-entry-copy"><strong>Practice tests</strong><small>Road scenes and answer review</small></span>
+        <span class="dw-entry-go" aria-hidden="true"><i class="fa-solid fa-arrow-down"></i></span>
+      </a>
+      <a href="/signs/lessons" class="learning-entry-card dw-entry-signs">
+        <span class="dw-entry-art" aria-hidden="true">{% for code in ['E45', 'B11', 'C55', 'A17'] %}<img src="/static/signs/{{ code }}.svg" alt="" width="56" height="56">{% endfor %}</span>
+        <span class="dw-entry-copy"><strong>Road signs</strong><small>{% if study_overview and study_overview.signs_due %}{{ study_overview.signs_due }} {{ 'sign' if study_overview.signs_due == 1 else 'signs' }} to repeat today{% elif study_overview %}{{ study_overview.lessons_done }} of {{ study_overview.lessons_total }} lessons done · next lesson {{ '%02d'|format(study_overview.lesson.number) }}{% else %}Short lessons and daily review{% endif %}</small></span>
+        <span class="dw-entry-go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a href="{{ words_href }}" class="learning-entry-card dw-entry-words">
+        <span class="dw-entry-art" aria-hidden="true"><span class="dw-term"><span lang="da">være særligt opmærksom på</span><b>to be particularly mindful of</b></span></span>
+        <span class="dw-entry-copy"><strong>Exam words</strong><small>Meanings, cards and listening</small></span>
+        <span class="dw-entry-go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+    </div>
+    <div class="learning-entry-footer"><a href="/study" id="nextStudyLink">Quick session: 10 words + one sign lesson →</a><a href="/study-guide">How to study</a></div>
+  </section>
+
+  <div class="learning-tests-heading" id="practiceTests"><h2>Practice tests</h2><p>Choose a test to begin. Your finished attempts stay in History.</p></div>
+  <div class="tests-grid dw-tests">
     {% for t in tests %}
     {% set is_locked = (t.id != 0 and not has_access) %}
-    <div class="test-card {% if is_locked %}test-card-locked{% endif %}"
+    <div class="test-card dw-test{% if is_locked %} test-card-locked{% endif %}{% if t.id == 0 %} is-free{% endif %}"
          data-test-card
          data-locked="{{ 'true' if is_locked else 'false' }}"
-         data-test-url="/test/{{ t.id }}">
-      {% if images[t.id] %}
-      {% set img_src = images[t.id] %}
-      <img
-        src="{{ test_image_url(img_src, thumb=True) }}"
-        data-full-src="{{ test_image_url(img_src) }}"
-        alt="Test {{ t.id }}"
-        loading="{% if loop.index <= 4 %}eager{% else %}lazy{% endif %}"
-        decoding="async"
-        fetchpriority="{% if loop.index <= 2 %}high{% else %}low{% endif %}">
-      {% else %}
-      <div style="aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center;color:#333;font-size:0.8rem;">No image</div>
-      {% endif %}
-      {% if is_locked %}
-      <div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);border-radius:6px;padding:4px 8px;font-size:0.8rem;">LOCKED</div>
-      {% endif %}
+         data-test-url="/test/{{ t.id }}"
+         role="link" tabindex="0" aria-label="{{ t.title }}{% if is_locked %}, full access{% endif %}">
+      <div class="dw-test-shot">
+        {% if images[t.id] %}
+        {% set img_src = images[t.id] %}
+        <img
+          src="{{ test_image_url(img_src, thumb=True) }}"
+          data-full-src="{{ test_image_url(img_src) }}"
+          alt=""
+          loading="{% if loop.index <= 4 %}eager{% else %}lazy{% endif %}"
+          decoding="async"
+          fetchpriority="{% if loop.index <= 2 %}high{% else %}low{% endif %}">
+        {% endif %}
+        <span class="dw-test-num wx-led" aria-hidden="true">{{ '%02d' % t.id }}</span>
+        {% if is_locked %}<span class="dw-test-chip"><i class="fa-solid fa-lock" aria-hidden="true"></i> Full access</span>
+        {% elif t.id == 0 %}<span class="dw-test-chip is-free">Free</span>{% endif %}
+      </div>
       <div class="test-card-body">
         {% if t.id >= 1 and t.id <= 13 %}
         {% set wording_status = exam_wording_statuses.get(t.id) %}
         {% set original_score = latest_scores_by_mode.get(t.id, {}).get('original') %}
         {% set ai_score = latest_scores_by_mode.get(t.id, {}).get('exam') %}
         {% endif %}
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <div>
-            <div style="font-weight:600;font-size:0.95rem;">{{ t.title }}</div>
-            {% if t.id >= 1 and t.id <= 13 and wording_status %}
-              {% if wording_status.label == 'Ready' %}
-              <div class="wording-meta ready">
-                <span class="wording-meta-dot"></span>
-                <span>AI wording ready</span>
-              </div>
-              {% elif wording_status.label == 'In Progress' %}
-              <div class="wording-meta in-progress">
-                <span class="wording-meta-dot"></span>
-                <span>AI wording {{ wording_status.filled }}/{{ wording_status.total }}</span>
-              </div>
-              {% else %}
-              <div class="wording-meta not-started">
-                <span class="wording-meta-dot"></span>
-                <span>AI wording not added yet</span>
-              </div>
-              {% endif %}
-            {% endif %}
-          </div>
-        </div>
+        <div class="dw-test-title">{{ t.title }}</div>
+        {% if t.id >= 1 and t.id <= 13 and wording_status and wording_status.label == 'Ready' %}
+        <div class="wording-meta ready"><span class="wording-meta-dot"></span><span>Alternative wording available</span></div>
+        {% endif %}
         {% if t.id >= 1 and t.id <= 13 %}
         <div class="mode-progress">
           <div class="mode-progress-item original">
             <span class="mode-progress-label">Original</span>
             <div class="mode-progress-value">
               {% if original_score is not none %}
-                {% if original_score >= 20 %}
-                  <span class="badge-green">&#10003; {{ original_score }}/25</span>
-                {% else %}
-                  <span class="badge-red">&#10005; {{ original_score }}/25</span>
-                {% endif %}
-              {% elif not is_locked %}
-                <span class="mode-progress-empty">Not started</span>
-              {% else %}
-                <span style="font-size:0.7rem;color:var(--text-muted);border:1px solid var(--border);padding:2px 8px;border-radius:999px;">Extended</span>
-              {% endif %}
+                {% if original_score >= 20 %}<span class="badge-green">&#10003; {{ original_score }}/25</span>{% else %}<span class="badge-red">&#10005; {{ original_score }}/25</span>{% endif %}
+              {% elif not is_locked %}<span class="mode-progress-empty">Not started</span>
+              {% else %}<span class="mode-progress-empty">Locked</span>{% endif %}
             </div>
           </div>
+          {% if wording_status and wording_status.label == 'Ready' %}
           <div class="mode-progress-item ai">
-            <span class="mode-progress-label">AI</span>
+            <span class="mode-progress-label">Alternative</span>
             <div class="mode-progress-value">
-              {% if wording_status and wording_status.label == 'Not Started' %}
-                <span class="mode-progress-empty">Not available</span>
-              {% elif ai_score is not none %}
-                {% if ai_score >= 20 %}
-                  <span class="badge-green">&#10003; {{ ai_score }}/25</span>
-                {% else %}
-                  <span class="badge-red">&#10005; {{ ai_score }}/25</span>
-                {% endif %}
-              {% elif is_locked %}
-                <span style="font-size:0.7rem;color:var(--text-muted);border:1px solid var(--border);padding:2px 8px;border-radius:999px;">Extended</span>
-              {% else %}
-                <span class="mode-progress-empty">Not started</span>
-              {% endif %}
+              {% if ai_score is not none %}
+                {% if ai_score >= 20 %}<span class="badge-green">&#10003; {{ ai_score }}/25</span>{% else %}<span class="badge-red">&#10005; {{ ai_score }}/25</span>{% endif %}
+              {% elif is_locked %}<span class="mode-progress-empty">Locked</span>
+              {% else %}<span class="mode-progress-empty">Not started</span>{% endif %}
             </div>
           </div>
+          {% endif %}
         </div>
         {% else %}
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          {% if t.id == 0 %}
-          <span style="font-size:0.7rem;color:var(--correct);border:1px solid var(--correct);padding:2px 8px;border-radius:999px;">STARTER</span>
-          {% elif t.id == 14 %}
-          <span style="font-size:0.7rem;color:var(--text);border:1px solid var(--text);padding:2px 8px;border-radius:999px;">TEST 14</span>
-          {% elif is_locked %}
-            <span style="font-size:0.7rem;color:var(--text-muted);border:1px solid var(--border);padding:2px 8px;border-radius:999px;">Extended</span>
-          {% endif %}
+        <div class="dw-test-status">
+          {% if t.id == 0 %}<span class="dw-tag is-free">Starter · 15 questions</span>
+          {% elif t.id == 14 %}<span class="dw-tag">25 mixed questions</span>
+          {% elif is_locked %}<span class="dw-tag">Locked</span>{% endif %}
           {% if t.id in latest_scores %}
-            {% if latest_scores[t.id] >= 20 %}
-              <span class="badge-green">&#10003; {{ latest_scores[t.id] }}/25</span>
-            {% else %}
-              <span class="badge-red">&#10005; {{ latest_scores[t.id] }}/25</span>
-            {% endif %}
-          {% elif not is_locked %}
-            <span style="color:var(--text-muted);font-size:0.82rem;">Not started</span>
-          {% endif %}
+            {% if latest_scores[t.id] >= 20 %}<span class="badge-green">&#10003; {{ latest_scores[t.id] }}/25</span>{% else %}<span class="badge-red">&#10005; {{ latest_scores[t.id] }}/25</span>{% endif %}
+          {% elif not is_locked %}<span class="mode-progress-empty">Not started</span>{% endif %}
         </div>
         {% endif %}
       </div>
@@ -797,12 +179,45 @@
     {% endfor %}
   </div>
 
-  {% if not has_access %}
-  <div class="card" style="padding:32px;text-align:center;margin-top:24px;border:1px solid var(--border);">
-    <div style="font-size:1.3rem;font-weight:800;margin-bottom:8px;">Continue with the full practice library</div>
-    <p style="color:var(--text-muted);margin-bottom:20px;max-width:440px;margin-left:auto;margin-right:auto;">Start with the 15-question sample, then move into the larger practice library with all 13 structured tests, Exam Mode, explanations, and saved progress.</p>
-    <a href="/pricing" class="btn-primary">{% if user.subscription_status != 'free' %}Review Access{% else %}Open Access Overview{% endif %}</a>
+  {% if sign_tests %}
+  <div class="learning-tests-heading" id="signTests"><h2>Road sign tests</h2><p>Best after the sign lessons: four tests of 25 road-sign situations, answered like the exam. Each one mixes every lesson topic.{% if study_overview %} <a class="dw-sign-course" href="/signs/lessons">Sign lessons: {{ study_overview.lessons_done }} of {{ study_overview.lessons_total }} done →</a>{% endif %}</p></div>
+  <div class="tests-grid dw-tests dw-sign-tests">
+    {% for t in sign_tests %}
+    {% set is_locked = not has_access %}
+    <div class="test-card dw-test{% if is_locked %} test-card-locked{% endif %}"
+         data-test-card
+         data-locked="{{ 'true' if is_locked else 'false' }}"
+         data-test-url="/test/{{ t.id }}"
+         role="link" tabindex="0" aria-label="{{ t.title }}{% if is_locked %}, full access{% endif %}">
+      <div class="dw-test-shot">
+        {% if images[t.id] %}
+        <img src="{{ test_image_url(images[t.id], thumb=True) }}" data-full-src="{{ test_image_url(images[t.id]) }}" alt="" loading="lazy" decoding="async">
+        {% endif %}
+        <span class="dw-test-num wx-led" aria-hidden="true">{{ '%02d' % sign_test_numbers[t.id] }}</span>
+        {% if is_locked %}<span class="dw-test-chip"><i class="fa-solid fa-lock" aria-hidden="true"></i> Full access</span>{% endif %}
+      </div>
+      <div class="test-card-body">
+        <div class="dw-test-title">{{ t.title }}</div>
+        <div class="dw-test-status">
+          <span class="dw-tag">Road signs · 25 situations</span>
+          {% if t.id in latest_scores %}
+            {% if latest_scores[t.id] >= 20 %}<span class="badge-green">&#10003; {{ latest_scores[t.id] }}/25</span>{% else %}<span class="badge-red">&#10005; {{ latest_scores[t.id] }}/25</span>{% endif %}
+          {% elif not is_locked %}<span class="mode-progress-empty">Not started</span>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
   </div>
+  {% endif %}
+
+  {% if not has_access %}
+  <section class="dw-upsell">
+    <div>
+      <h2>Continue with the full practice library</h2>
+      <p>Start with the 15-question sample, then move into the larger practice library with all 13 structured tests, Exam Mode, explanations, and saved progress.</p>
+    </div>
+    <a href="/pricing" class="btn-primary">{% if user.subscription_status != 'free' %}Review Access{% else %}Open Access Overview{% endif %}</a>
+  </section>
   {% endif %}
 </div>
 
@@ -821,14 +236,14 @@
 
 <div class="modal-overlay" id="paywallModal">
   <div class="modal" style="max-width:420px;text-align:center;padding:40px 32px;">
-    <div style="font-size:2.5rem;margin-bottom:16px;">&#128274;</div>
+    <div class="dw-paywall-icon" aria-hidden="true"><i class="fa-solid fa-lock"></i></div>
     <h2 style="font-weight:800;font-size:1.3rem;margin-bottom:10px;">Extended Library Test</h2>
     <p style="color:var(--text-muted);margin-bottom:28px;line-height:1.6;">
       This test is part of the extended practice library. You can still use the starter sample for free, or open the access overview if you want the full set of 13 tests and study tools.
     </p>
     <div style="display:flex;flex-direction:column;gap:10px;max-width:240px;margin:0 auto;">
-      <a href="/pricing" class="btn-primary">Open Access Overview</a>
-      <button id="paywallCloseBtn" class="btn-ghost">Maybe later</button>
+      <a href="/pricing" class="btn-primary" style="justify-content:center;">Open Access Overview</a>
+      <button id="paywallCloseBtn" class="btn-ghost" style="justify-content:center;">Maybe later</button>
     </div>
   </div>
 </div>
@@ -836,5 +251,6 @@
 
 {% block scripts %}
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/review-badge.js?v={{ asset_version }}"></script>
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/dashboard.js"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/test-draft-store.js?v={{ asset_version }}"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/dashboard.js?v={{ asset_version }}"></script>
 {% endblock %}

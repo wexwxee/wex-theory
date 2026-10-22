@@ -20,7 +20,6 @@ import sys
 from pathlib import Path
 
 import httpx
-from pypdf import PdfReader
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data" / "signs"
@@ -33,6 +32,7 @@ USER_AGENT = (
 
 CODE_LINE = re.compile(r"^(U?[A-Z]{1,2})\s?(\d{1,3}(?:,\d{1,2})*)\s+(\S.*)$")
 BARE_CODE = re.compile(r"^(U?[A-Z]{1,2})\s?\d{1,3}(?:,\d{1,2})*$")
+DESCRIPTION = re.compile(r"^(?:(?:Under)?tavlen\s+)?angiver\b", re.IGNORECASE)
 
 
 def download_text(cache: Path) -> str:
@@ -43,6 +43,8 @@ def download_text(cache: Path) -> str:
         response = httpx.get(PDF_URL, headers={"User-Agent": USER_AGENT}, timeout=90, follow_redirects=True)
         response.raise_for_status()
         pdf_path.write_bytes(response.content)
+    from pypdf import PdfReader  # only reading the PDF needs it; the tests parse text
+
     reader = PdfReader(str(pdf_path))
     text = "\n".join((page.extract_text() or "") for page in reader.pages)
     cache.write_text(text, encoding="utf-8")
@@ -73,14 +75,31 @@ def parse_names(text: str) -> dict[str, str]:
         if BARE_CODE.match(rest) or re.match(r"^(U?[A-Z]{1,2})\s?\d", rest):
             continue
         code = normalise(prefix, number)
-        if code in names:
+        if names.get(code):
+            continue
+        # Many plates are only described: "UC 61 angiver standsningsforbud".
+        # Such a plate has no name, and it must not inherit its family's either
+        # (UA 43,1 is not "Fri bredde" like UA 43), so it is kept as "".
+        if DESCRIPTION.match(rest):
+            names.setdefault(code, "")
+            continue
+        # A name starts with a capital or a number ("500-m frakørselstavle").
+        # "A 99 og E 53." or "E 69 , eller indtil" is a sentence that happens
+        # to break after a code.
+        if not (rest[:1].isupper() or rest[:1].isdigit()):
             continue
         name = rest
         # A name can wrap onto the next line; take it unless that line starts a new sign.
-        if len(name) < 45 and index + 1 < len(lines):
+        if index + 1 < len(lines):
             following = lines[index + 1]
             if following and not CODE_LINE.match(following) and following[:1].islower():
-                name = f"{name} {following}"
+                if name.endswith("-"):
+                    # "motor-" + "redskab" is one word split by the line break,
+                    # "standsnings-" + "og parkering" is a real hyphen.
+                    joiner = " " if re.match(r"(?:og|eller)\b", following) else ""
+                    name = (name if joiner else name[:-1]) + joiner + following
+                elif len(name) < 45:
+                    name = f"{name} {following}"
         cleaned = clean_name(name)
         if 2 <= len(cleaned) <= 90:
             names[code] = cleaned
@@ -93,7 +112,7 @@ def main() -> int:
 
     print("Reading the executive order ...")
     names = parse_names(download_text(cache))
-    print(f"Parsed {len(names)} Danish names")
+    print(f"Parsed {sum(map(bool, names.values()))} Danish names")
 
     catalogue_path = DATA_DIR / "signs.json"
     if catalogue_path.exists():
@@ -107,7 +126,7 @@ def main() -> int:
                 base = base.rsplit(".", 1)[0]
                 if base in names:
                     names[code] = names[base]
-        names = {code: name for code, name in names.items() if code in known}
+        names = {code: name for code, name in names.items() if code in known and name}
         missing = sorted(known - set(names))
         print(f"Matched {len(names)} of {len(known)} catalogue signs")
         if missing:
@@ -121,7 +140,7 @@ def main() -> int:
                     "marking (retsinformation.dk). Danish law is free of copyright, section 9 of "
                     "the copyright act."
                 ),
-                "names": dict(sorted(names.items())),
+                "names": {code: name for code, name in sorted(names.items()) if name},
             },
             ensure_ascii=False,
             indent=2,

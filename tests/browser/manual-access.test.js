@@ -12,7 +12,7 @@ const path = require('node:path');
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   page.on('dialog', dialog => { errors.push(`Unexpected dialog: ${dialog.message()}`); dialog.dismiss(); });
-  const base = 'http://127.0.0.1:8765';
+  const base = process.env.SITE_TEST_BASE || 'http://127.0.0.1:8765';
   async function width(label) {
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `Overflow: ${label}`);
   }

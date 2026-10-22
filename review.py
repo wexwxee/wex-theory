@@ -13,6 +13,7 @@ from typing import Optional
 from sqlalchemy.orm import Session, selectinload
 
 import models
+import sign_tests
 import signs as signs_catalogue
 
 DEFAULT_LIMIT = 10
@@ -159,6 +160,8 @@ def as_payload(question: models.Question, wording_mode: str = "original", misses
     return {
         "id": question.id,
         "test_id": question.test_id,
+        "test_label": (f"Road signs test {sign_tests.number(question.test_id)}"
+                       if sign_tests.is_sign_test(question.test_id) else f"Test {question.test_id}"),
         "question_index": question.question_index,
         "misses": misses,
         "question_text": text_of(question, "question_text"),
@@ -173,7 +176,7 @@ def as_payload(question: models.Question, wording_mode: str = "original", misses
                 "name_ru": sign.get("name_ru", ""),
                 "image": sign["image"],
             }
-            for sign in signs_catalogue.signs_for_question(question.id)
+            for sign in signs_catalogue.signs_for_reviewed_scene(question.image_path)
         ],
         "answers": [
             {

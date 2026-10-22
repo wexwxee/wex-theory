@@ -1,7 +1,7 @@
 // Local fixture only. Mail is captured in memory; Telegram is never contacted.
 const { chromium } = require('playwright');
 const assert = require('node:assert/strict');
-const base = 'http://127.0.0.1:8765';
+const base = process.env.SITE_TEST_BASE || 'http://127.0.0.1:8765';
 (async () => {
   const browser = await chromium.launch({ headless: true,
     ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}) });

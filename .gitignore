@@ -8,3 +8,6 @@ venv/
 tests/browser/node_modules/
 tests/browser/*.png
 .local/
+
+# Design working files (scene backgrounds, briefs); the site does not use them.
+.impeccable/

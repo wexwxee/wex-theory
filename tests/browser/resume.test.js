@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   await context.addInitScript(() => localStorage.setItem('wex-cookie-consent', 'essential'));
   let page = await context.newPage();
-  const base = 'http://127.0.0.1:8765';
+  const base = process.env.SITE_TEST_BASE || 'http://127.0.0.1:8765';
   async function login(index) {
     await page.goto(base + '/login');
     await page.locator('#email').fill(`browser${index}@example.com`);
@@ -16,6 +16,7 @@ const assert = require('node:assert/strict');
   async function partial(url) {
     await page.goto(base + url);
     await page.locator('#answersContainer .answer-option').first().click();
+    await page.locator('.answer-option.selected').first().waitFor();
     assert.equal(await page.locator('.answer-option.selected').count(), 1, 'initial answer selection');
     await page.locator('#flagBtn').click();
     const first = await page.locator('#questionText').textContent();

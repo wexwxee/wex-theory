@@ -1,8 +1,9 @@
-﻿<!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/static/css/trust.css?v={{ asset_version }}">
   <title>Sign In - WEX Theory</title>
   <script nonce="{{ request.state.csp_nonce }}" src="/static/js/theme-init.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -183,7 +184,7 @@
       font-family: inherit;
     }
   </style>
-</head>
+<style>body{flex-direction:column}.auth-wrap{flex-shrink:0}.site-trust-links{width:100%;flex-shrink:0}</style></head>
 <body>
   <button class="theme-toggle" id="themeBtn">&#9728;&#65039;</button>
   <div class="auth-wrap">
@@ -259,5 +260,6 @@
   </div>
 
   <script nonce="{{ request.state.csp_nonce }}" src="/static/js/login.js"></script>
+  {% include "_cookie_controls.html" %}
 </body>
 </html>

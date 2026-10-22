@@ -3,7 +3,7 @@
 {% block title %}Results - {{ test.title }} - WEX Theory{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="/static/css/lightbox-zoom.css?v=20260408-lbz">
+<link rel="stylesheet" href="/static/css/lightbox-zoom.css?v={{ asset_version }}">
 <style>
 .result-grid {
   display: grid;
@@ -498,7 +498,7 @@
   color: #b45309; border-color: #f59e0b; background: rgba(245,158,11,0.18);
   box-shadow: 0 0 0 2px rgba(245,158,11,0.18);
 }
-[data-theme="dark"] .modal-bookmark-btn.active { color: #fbbf24; }
+[data-theme="light"] .modal-bookmark-btn.active { color: #fbbf24; }
 .modal-bookmark-btn svg { width: 16px; height: 16px; }
 .modal-bookmark-btn .mb-label-save { display: inline; }
 .modal-bookmark-btn .mb-label-saved { display: none; }
@@ -826,7 +826,7 @@
   <div class="nav-inner">
     <div class="nav-left">
       <button class="burger-btn" id="resultsBurgerBtn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
-      <a href="/" class="logo">WEXTheory</a>
+      <a href="/" class="logo">WEXTheory</a>{% include "_nav_links.html" %}
     </div>
     <div class="nav-right">
       <button type="button" class="btn-ghost btn-sm" id="resultsTranslateBtn" title="Toggle Russian translation" style="padding:5px 10px;font-size:0.95rem;">RU</button>
@@ -895,7 +895,7 @@
   <h2 style="font-size:1rem;font-weight:700;margin-bottom:16px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Question Breakdown</h2>
   <div class="result-grid">
     {% for qr in question_results %}
-    <div class="result-card {% if qr.is_correct %}correct{% else %}wrong{% endif %}" data-modal-index="{{ loop.index0 }}">
+    <div class="result-card {% if qr.is_correct %}correct{% else %}wrong{% endif %}" data-modal-index="{{ loop.index0 }}" role="button" tabindex="0" aria-label="Review question {{ qr.display_index }}: {{ 'correct' if qr.is_correct else 'needs review' }}">
       {% if qr.question.image_path %}
       <img
         src="{{ test_image_url(qr.question.image_path, thumb=True) }}"
@@ -1005,7 +1005,7 @@
   </div>
 </footer>
 
-<div class="modal-overlay" id="qModal">
+<div class="modal-overlay" id="qModal" role="dialog" aria-modal="true" aria-label="Question review" aria-hidden="true" inert>
   <div class="modal modal-wide review-modal">
     <div class="review-modal-head">
       <div class="modal-header" style="margin-bottom:0;">
@@ -1028,14 +1028,14 @@
           <span class="mb-label-save">Save</span>
           <span class="mb-label-saved">Saved</span>
         </button>
-        <button class="modal-close" id="modalCloseBtn">&times;</button>
+        <button class="modal-close" id="modalCloseBtn" aria-label="Close question review">&times;</button>
       </div>
     </div>
     </div>
     <div class="review-modal-scroll">
-    <div id="modalImgWrap" class="results-viewer-img-container" style="margin-bottom:16px;display:none;">
+    <div id="modalImgWrap" role="button" tabindex="0" aria-label="Enlarge road scene" class="results-viewer-img-container" style="margin-bottom:16px;display:none;">
       <img id="modalImg" src="" alt="">
-      <span class="results-viewer-img-hint">Drag to pan · scroll to zoom</span>
+      <span class="results-viewer-img-hint">Click to enlarge</span>
     </div>
     <div class="question-audio-row" style="margin-bottom:16px;">
       <div id="modalQuestion" style="font-size:1rem;font-weight:600;line-height:1.5;"></div>
@@ -1534,7 +1534,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script nonce="{{ request.state.csp_nonce }}" src="/static/js/lightbox-zoom.js?v=20260408-lbz"></script>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/lightbox-zoom.js?v={{ asset_version }}"></script>
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/results-viewer.js?v={{ asset_version }}-tutor"></script>
 <script nonce="{{ request.state.csp_nonce }}" src="/static/js/results.js?v=20260407-review2"></script>
 {% endblock %}

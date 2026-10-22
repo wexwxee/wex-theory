@@ -45,6 +45,20 @@
 .ew-demo b { color: var(--text); }
 .ew-demo a { color: var(--text); font-weight: 700; }
 
+.ew-round-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 12px 0 18px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+.ew-round-info p { margin: 0; flex: 1 1 210px; }
+.ew-round-info button { flex-shrink: 0; }
+.ew-mode:disabled, .ew-scope:disabled { opacity: 0.5; cursor: default; }
+
 /* ── Strip above the workspace ────────────────────────────────────────────── */
 .ew-strip {
   display: grid;
@@ -102,7 +116,7 @@
 }
 
 .ew-scope:hover { color: var(--text); border-color: var(--text-muted); }
-.ew-scope.is-active { background: var(--text); border-color: var(--text); color: var(--bg); }
+.ew-scope.is-active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-ring); box-shadow: inset 0 0 0 1px var(--accent-ring); }
 .ew-scope-count { font-variant-numeric: tabular-nums; opacity: 0.7; font-weight: 800; }
 
 .ew-bar {
@@ -177,7 +191,7 @@
 }
 
 .ew-track-dot.is-done { background: var(--text-muted); }
-.ew-track-dot.is-current { background: var(--text); }
+.ew-track-dot.is-current { background: var(--accent); }
 
 /* The word sits on the page: no box, no card, nothing to look past. */
 .ew-stage-card {
@@ -279,7 +293,7 @@
 }
 
 .ew-btn:hover { border-color: var(--text-muted); }
-.ew-btn-primary { background: var(--text); border-color: var(--text); color: var(--bg); }
+.ew-btn-primary { background: var(--btn-bg); border-color: var(--btn-bg); color: var(--btn-text); }
 
 /* ── Quiz ─────────────────────────────────────────────────────────────────── */
 .ew-options {
@@ -602,3 +616,5 @@
   line-height: 1.55;
   color: var(--text-muted);
 }
+
+h1.ew-brand{margin:0 0 0 4px;line-height:1.3}.ew-mode-description{color:var(--text-muted);font-size:.8rem;line-height:1.6;margin:-6px 0 16px;max-width:75ch}.ew-result-kind{font-size:.8rem;color:var(--text-muted);margin-bottom:12px}.ew-option-state{grid-column:2;font-size:.72rem;font-weight:700;line-height:1.5}.ew-app :focus-visible{outline:2px solid var(--text);outline-offset:4px}.ew-term:focus,.ew-done-score:focus{outline:2px solid var(--text-muted);outline-offset:6px}.ew-stage{scroll-margin-top:76px}.ew-scope,.ew-mode,.ew-chip{min-height:40px}.ew-stage-card{min-height:260px;justify-content:flex-start;padding:16px 0 26px}.ew-mode-description + .ew-grid{align-items:start}@media(max-width:620px){.ew-app{padding:16px 16px 40px}.ew-stage-card{min-height:220px;padding:10px 0 24px}.ew-round-info{margin:10px 0 14px}.ew-demo{margin-bottom:12px}.ew-grid{gap:20px}.ew-side{margin-top:8px}}

@@ -52,6 +52,14 @@ SECTIONS = {
 }
 SKIP_SECTIONS = {"Historic signs", "1932 road signs", "Route designations", "Symbols"}
 
+# Order 425/2023 §13 lists both gradients. A missing gallery entry must not
+# silently remove the descent from a later catalogue rebuild.
+REQUIRED_SIGNS = [{
+    "code": "A46.1", "group": "A", "group_label": "Warning signs",
+    "section": "Warning signs", "name_en": "Steep descent",
+    "commons_file": "Denmark road sign A46.1.svg", "image": "/static/signs/A46.1.svg",
+}]
+
 
 def fetch_wikitext() -> str:
     response = httpx.get(
@@ -141,6 +149,8 @@ def parse_signs(wikitext: str) -> list[dict]:
                 "image": f"/static/signs/{code}{Path(filename).suffix.lower()}",
             }
         )
+    if signs:  # Preserve the empty-result alarm when the source layout breaks.
+        signs.extend(dict(sign) for sign in REQUIRED_SIGNS if sign["code"] not in seen)
     return signs
 
 

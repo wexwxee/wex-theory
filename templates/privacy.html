@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block title %}Privacy Policy - WEX Theory{% endblock %}
 
@@ -6,11 +6,11 @@
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" id="privacyBurgerBtn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
-      <a href="/" class="logo">WEXTheory</a>
+      <button class="burger-btn" id="privacyBurgerBtn" aria-label="Open navigation"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
+      <a href="/" class="logo">WEXTheory</a>{% include "_nav_links.html" %}
     </div>
     <div class="nav-right">
-      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
+      <button class="theme-btn" id="navThemeBtn" aria-label="Toggle theme">&#9728;&#65039;</button>
       {% if user %}
       <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
       {% else %}
@@ -25,7 +25,7 @@
     <div class="info-eyebrow">Legal</div>
     <h1 class="info-title">Privacy Policy</h1>
     <p class="info-lede">
-      Last updated: 29 August 2026. This page explains what WEXTheory stores, why it is used, and how study tools such as tests, saved questions, and Exam Words 2026 keep progress.
+      Last updated: 17 October 2026. This page explains what WEXTheory stores, why it is used, and how study tools such as tests, saved questions, and Exam Words 2026 keep progress.
     </p>
   </section>
 
@@ -43,8 +43,9 @@
 
     <section class="info-section">
       <h2 class="info-section-title">3. Cookies and local storage</h2>
-      <p>We use an authentication cookie to keep you signed in and a CSRF cookie to protect forms. A signed invite-attribution cookie lasts up to 30 days, and a random referral-device cookie lasts up to one year to enforce one-person/one-device referral limits. Browser storage may keep theme choice, interface preferences, selected audio voice, cookie preference, and temporary test state. For full-access accounts, Exam Words known/difficult progress is also saved with your account so it can sync across your devices; demo progress may stay only in the current browser.</p>
-      <p>Optional analytics starts only after you accept analytics cookies. It counts page visits, active sessions, and limited study-flow signals such as key button clicks, repeated clicks, and long page views so we can find confusing parts of the site. It does not store IP addresses, precise location, device fingerprint, or raw per-click tracking.</p>
+      <p>We use an authentication cookie to keep you signed in and a CSRF cookie to protect forms. A signed invite-attribution cookie lasts up to 30 days, and a random referral-device cookie lasts up to one year to enforce one-person/one-device referral limits. Browser storage may keep theme choice, interface preferences, selected audio voice, cookie preference, and temporary test state. Unfinished test drafts and road-sign practice rounds can remain in the same browser for up to seven days. A saved sign round includes its question order, position and answers; it does not move between devices. For signed-in learners, individual sign progress is also saved with the account. For full-access accounts, Exam Words known/difficult progress is also saved with your account so it can sync across your devices; demo progress may stay only in the current browser.</p>
+      <p>Road-sign lesson checks also save answers, option order, the first check result and later mistake-review results in the same browser for up to seven days, separately for each account or guest. They do not sync between devices. Exam Words rounds keep their word order, position, choices, revealed answer and results in the same browser for up to seven days from the start of the round. These rounds are separate for each account or guest, demo or full access, and standalone practice or a short study session. Short study sessions keep their chosen lesson, start time and completed step scores in the same browser for up to seven days, separately for each account. Sign review dates are stored alongside individual sign progress to schedule later practice; signed-in sign progress and review dates sync with the account.</p>
+      <p>Optional analytics starts only after you accept analytics cookies. You can change or withdraw that choice using Cookie settings in the navigation or at the bottom of the page. Withdrawal stops subsequent optional analytics events. It counts page visits, active sessions, and limited study-flow signals such as key button clicks, repeated clicks, and long page views so we can find confusing parts of the site. It does not store IP addresses, precise location, device fingerprint, or raw per-click tracking.</p>
     </section>
 
     <section class="info-section">
@@ -55,6 +56,11 @@
     <section class="info-section">
       <h2 class="info-section-title">5. Email and authentication services</h2>
       <p>Verification emails and password reset emails are sent through Resend. Optional Google sign-in uses Google's authentication flow. If you choose those features, the related providers process the data needed to complete that action.</p>
+    </section>
+
+    <section class="info-section">
+      <h2 class="info-section-title">Optional AI explanations</h2>
+      <p>If the AI tutor is available and you ask for an explanation, the question, its photo where available, answer options, your selected options and the existing explanation are sent to Anthropic to generate the response. The site saves generated explanations for reuse for the same question, answer selection, language and wording. Asking for an explanation is separate from completing a test.</p>
     </section>
 
     <section class="info-section">

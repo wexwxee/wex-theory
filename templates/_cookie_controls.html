@@ -1,0 +1,15 @@
+<div class="site-trust-links" aria-label="Support and privacy">
+  <a href="/contact">Support</a><a href="/privacy">Privacy</a>
+  <button type="button" data-cookie-settings>Cookie settings</button>
+</div>
+<div class="cookie-consent" id="cookieConsentBanner" role="dialog" aria-labelledby="cookieConsentTitle" aria-hidden="true">
+  <div class="cookie-copy"><div>
+    <strong id="cookieConsentTitle">Cookie settings</strong>
+    <p>Essential cookies keep login working. Optional analytics helps us improve study tools. You can change or withdraw your choice any time using Cookie settings. <a href="/privacy">Read our privacy policy</a>.</p>
+  </div></div>
+  <div class="cookie-actions">
+    <button type="button" class="btn-ghost btn-sm" id="cookieEssentialBtn">Essential only</button>
+    <button type="button" class="btn-primary btn-sm" id="cookieAcceptBtn">Accept analytics</button>
+  </div>
+</div>
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/cookie-consent.js?v={{ asset_version }}"></script>

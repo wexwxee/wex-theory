@@ -1,7 +1,7 @@
 {
-  "source": "Codes and names: English Wikipedia, 'Road signs in Denmark', listing the signs of executive order 425 of 13 April 2023. Images: Wikimedia Commons, free of copyright under section 9 of the Danish copyright act.",
+  "source": "Codes and names: English Wikipedia, 'Road signs in Denmark', listing the signs of executive order 425 of 13 April 2023. Images: Wikimedia Commons, free of copyright under section 9 of the Danish copyright act. A46.1 was added after checking Order §13; its local SVG uses the existing A46.2 border and a descent symbol.",
   "fetched": "2026-08-30",
-  "count": 265,
+  "count": 266,
   "signs": [
     {
       "code": "A11",
@@ -2387,6 +2387,15 @@
       "name_en": "Fire extinguisher and emergency phone",
       "commons_file": "Denmark road sign UE34.svg",
       "image": "/static/signs/UE34.svg"
+    },
+    {
+      "code": "A46.1",
+      "group": "A",
+      "group_label": "Warning signs",
+      "section": "Warning signs",
+      "name_en": "Steep descent",
+      "commons_file": "Denmark road sign A46.1.svg",
+      "image": "/static/signs/A46.1.svg"
     }
   ]
 }

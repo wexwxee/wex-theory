@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Road signs - WEX Theory{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/css/signs.css?v={{ asset_version }}">{% endblock %}
+{% block body %}
+<nav><div class="nav-inner"><div class="nav-left"><button class="burger-btn" id="signsBurgerBtn" aria-label="Open navigation">☰</button><a href="{{ '/dashboard' if user else '/' }}" class="logo">WEXTheory</a>{% include "_nav_links.html" %}</div><div class="nav-right"><button class="theme-btn" id="navThemeBtn" aria-label="Toggle theme">☀</button>{% if user %}<a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>{% else %}<a href="/login" class="btn-ghost btn-sm">Sign in</a>{% endif %}</div></div></nav>
+<main class="sx sx-hub lesson-page" id="lessonOverview" data-user-id="{{ user.id if user else '' }}" data-revision="{{ curriculum_revision }}">
+ <div class="sx-topline">{% include "_learning_nav.html" %}<div class="lesson-lang" role="group" aria-label="Language"><button class="lang-btn" data-lang="en" type="button">EN</button><button class="lang-btn" data-lang="ru" type="button">RU</button></div></div>
+
+ <header class="sx-hub-head">
+  <div class="sx-hub-intro">
+   <h1 data-en="Road signs" data-ru="Дорожные знаки">Road signs</h1>
+   <p class="sx-lede" data-en="{{ lessons|length }} short lessons. Learn a few signs, check yourself straight away, then repeat them when they are due so they stay with you." data-ru="{{ lessons|length }} коротких уроков. Узнайте несколько знаков, сразу проверьте себя, а потом повторяйте их по расписанию, чтобы они запомнились.">{{ lessons|length }} short lessons. Learn a few signs, check yourself straight away, then repeat them when they are due so they stay with you.</p>
+   <ul class="wx-gantry sx-gantry" aria-label="Your road sign progress">
+    <li><span class="wx-led"><span id="gantryLearned">0</span><small>/{{ course_codes|length }}</small></span><span class="wx-gantry-label" data-en="signs in your review" data-ru="знаков в повторении">signs in your review</span></li>
+    <li><span class="wx-led" id="gantryDue">0</span><span class="wx-gantry-label" data-en="to repeat today" data-ru="повторить сегодня">to repeat today</span></li>
+    <li><span class="wx-led"><span id="gantryLessons">0</span><small>/{{ lessons|length }}</small></span><span class="wx-gantry-label" data-en="lessons done" data-ru="уроков пройдено">lessons done</span></li>
+   </ul>
+  </div>
+  <section class="sx-next" aria-labelledby="nextStepTitle">
+   <p class="sx-next-kicker" data-en="Next step" data-ru="Следующий шаг">Next step</p>
+   <h2 class="sx-next-title" id="nextStepTitle">{{ lessons[0].title }}</h2>
+   <p class="sx-next-copy" id="nextStepCopy" data-en="{{ lessons[0].focus }}" data-ru="{{ lessons[0].focus_ru }}">{{ lessons[0].focus }}</p>
+   <a id="lessonSuggested" class="btn-primary sx-btn" href="/signs/lesson/{{ lessons[0].id }}" data-en="Start lesson 01 →" data-ru="Начать урок 01 →">Start lesson 01 →</a>
+   <div class="sx-next-foot"><p id="lessonOverviewProgress" role="status">0/{{ lessons|length }}</p><a href="/signs/learn?group=all&amp;review=due" id="signReviewLink"><span data-en="Repeat signs" data-ru="Повторить знаки">Repeat signs</span> <span id="signReviewCount"></span></a></div>
+  </section>
+ </header>
+
+ <ol class="sx-method" aria-label="How a lesson works">
+  <li><span class="wx-led">1</span><span><strong data-en="Learn" data-ru="Узнать">Learn</strong><small data-en="one sign at a time" data-ru="по одному знаку">one sign at a time</small></span></li>
+  <li><span class="wx-led">2</span><span><strong data-en="Recall" data-ru="Вспомнить">Recall</strong><small data-en="name each sign" data-ru="назвать каждый знак">name each sign</small></span></li>
+  <li><span class="wx-led">3</span><span><strong data-en="Compare" data-ru="Сравнить">Compare</strong><small data-en="signs people confuse" data-ru="знаки, которые путают">signs people confuse</small></span></li>
+  <li><span class="wx-led">4</span><span><strong data-en="Decide" data-ru="Решить">Decide</strong><small data-en="road situations" data-ru="дорожные ситуации">road situations</small></span></li>
+  <li class="sx-method-days"><span><strong data-en="Repeat after" data-ru="Повторить через">Repeat after</strong><small class="sx-days" aria-label="1, 3, 7, 14 and 30 days"><span class="wx-led">1</span><span class="wx-led">3</span><span class="wx-led">7</span><span class="wx-led">14</span><span class="wx-led">30</span> <span data-en="days" data-ru="дней">days</span></small></span></li>
+ </ol>
+
+ <section class="sx-course" aria-labelledby="courseTitle">
+  <div class="sx-course-head">
+   <h2 id="courseTitle" data-en="The course" data-ru="Курс">The course</h2>
+   <div class="lesson-discovery">
+    <label for="lessonSearch" class="sx-visually-hidden" data-en="Find a lesson" data-ru="Найти урок">Find a lesson</label>
+    <input type="search" id="lessonSearch" placeholder="Topic, sign or code" autocomplete="off">
+    <div class="lesson-topic-filters" role="group" aria-label="Lesson topic"><button type="button" data-lesson-topic="all" aria-pressed="true"><span data-en="All" data-ru="Все">All</span></button>{% for topic in lesson_topics %}<button type="button" data-lesson-topic="{{ topic.id }}" aria-pressed="false"><span data-en="{{ topic.en }}" data-ru="{{ topic.ru }}">{{ topic.en }}</span></button>{% endfor %}</div>
+    <p id="lessonFilterCount" class="sx-visually-hidden" role="status"></p>
+   </div>
+  </div>
+  {% set topic_names = {} %}{% for topic in lesson_topics %}{% set _ = topic_names.update({topic.id: topic}) %}{% endfor %}
+  <ol class="sx-lessons">{% for item in lessons %}{% set topic = topic_names[item.topic] %}{% set compares = lesson_compare_counts[item.id] %}
+   <li data-lesson-card="{{ item.id }}" data-topic="{{ item.topic }}" data-search="{{ (item.title ~ ' ' ~ item.title_ru ~ ' ' ~ item.focus ~ ' ' ~ item.focus_ru ~ ' ' ~ item.codes|join(' '))|lower }}">
+    <a class="sx-lesson" href="/signs/lesson/{{ item.id }}" data-read-lesson>
+     <span class="sx-lesson-num wx-led" aria-hidden="true">{{ '%02d'|format(item.number) }}</span>
+     <span class="sx-lesson-art" aria-hidden="true">{% for code in item.codes[:3] %}<img src="/static/signs/{{ code }}.svg" alt="" width="40" height="40"{% if loop.index0 + item.number > 9 %} loading="lazy"{% endif %}>{% endfor %}</span>
+     <span class="sx-lesson-copy"><strong data-en="{{ item.title }}" data-ru="{{ item.title_ru }}">{{ item.title }}</strong><small data-en="{{ item.focus }}" data-ru="{{ item.focus_ru }}">{{ item.focus }}</small><span class="lesson-meta" data-en="{{ topic.en }} · {{ item.codes|length }} signs · {{ lesson_checks[item.id].questions|length }} situations{% if compares %} · {{ compares }} {{ 'comparison' if compares == 1 else 'comparisons' }}{% endif %}" data-ru="{{ topic.ru }} · {{ item.codes|length }} знаков · ситуаций: {{ lesson_checks[item.id].questions|length }}{% if compares %} · сравнений: {{ compares }}{% endif %}">{{ topic.en }} · {{ item.codes|length }} signs · {{ lesson_checks[item.id].questions|length }} situations{% if compares %} · {{ compares }} {{ 'comparison' if compares == 1 else 'comparisons' }}{% endif %}</span></span>
+     <span class="sx-lesson-state"><span class="sx-state" data-lesson-state="{{ item.id }}" data-state="new" data-en="New" data-ru="Новый">New</span><span class="sx-meter" aria-hidden="true"><span data-lesson-meter="{{ item.id }}"></span></span><span class="lesson-result" data-lesson-result="{{ item.id }}"></span></span>
+    </a>
+   </li>{% endfor %}
+  </ol>
+  <div id="lessonEmpty" class="sx-empty" hidden><p data-en="No lesson matches. Try another topic, a name or a sign code." data-ru="Подходящего урока нет. Попробуйте другую тему, название или код знака.">No lesson matches. Try another topic, a name or a sign code.</p><button type="button" id="lessonShowAll" class="btn-ghost" data-en="Show every lesson" data-ru="Показать все уроки">Show every lesson</button></div>
+ </section>
+
+ {# After the lessons comes the exam-format check: the same situations mixed, 25 per test, then the official practice test. #}
+ <section class="sx-exam" id="signTests" aria-labelledby="signTestsTitle">
+  <div class="sx-exam-head">
+   <h2 id="signTestsTitle" data-en="After the lessons: road sign tests" data-ru="После уроков: тесты по знакам">After the lessons: road sign tests</h2>
+   <p data-en="Four tests of 25 situations in the theory-test format, with every lesson topic mixed in each. Most situations are the ones you met in the lessons, now mixed and timed; 15 are new. Your mistakes go to Review mistakes." data-ru="Четыре теста по 25 ситуаций в формате экзамена; в каждом — все темы уроков вперемешку. Большинство ситуаций вы уже видели в уроках, теперь они перемешаны и идут на время; 15 — новые. Ошибки попадают в «Разбор ошибок».">Four tests of 25 situations in the theory-test format, with every lesson topic mixed in each. Most situations are the ones you met in the lessons, now mixed and timed; 15 are new. Your mistakes go to Review mistakes.</p>
+  </div>
+  <ol class="sx-exam-tests">{% for test in sign_test_cards %}
+   <li><a class="sx-exam-test{% if test.locked %} is-locked{% endif %}" href="/test/{{ test.id }}">
+    <span class="sx-exam-shot"><img src="{{ test_image_url(test.image, thumb=True) }}" alt="" width="320" height="192" loading="lazy" decoding="async"><span class="sx-exam-num" aria-hidden="true">{{ '%02d'|format(test.number) }}</span></span>
+    <span class="sx-exam-copy"><strong data-en="Road Signs Test {{ test.number }}" data-ru="Тест по знакам {{ test.number }}">Road Signs Test {{ test.number }}</strong>
+     {% if test.score is not none %}<small class="sx-exam-score{% if test.score >= 20 %} is-pass{% endif %}" data-en="Last result {{ test.score }}/25" data-ru="Последний результат {{ test.score }}/25">Last result {{ test.score }}/25</small>
+     {% elif test.locked %}<small data-en="25 situations · full access" data-ru="25 ситуаций · полный доступ">25 situations · full access</small>
+     {% else %}<small data-en="25 situations · not started" data-ru="25 ситуаций · не начат">25 situations · not started</small>{% endif %}</span>
+   </a></li>{% endfor %}
+  </ol>
+  <p class="sx-exam-foot"><span data-en="Last rehearsal before the test: the official practice test from Færdselsstyrelsen (on a computer)." data-ru="Последняя репетиция перед экзаменом — официальный пробный тест Færdselsstyrelsen (с компьютера).">Last rehearsal before the test: the official practice test from Færdselsstyrelsen (on a computer).</span> <a href="https://dtp.fstyr.dk/" target="_blank" rel="noopener">dtp.fstyr.dk</a></p>
+ </section>
+
+ <aside class="sx-catalogue-link">
+  <div><h2 data-en="All {{ meta.count }} signs" data-ru="Все {{ meta.count }} знаков">All {{ meta.count }} signs</h2><p data-en="A reference with search. {{ meta.reviewed }} signs have a checked study explanation; the others show their official names." data-ru="Справочник с поиском. У {{ meta.reviewed }} знаков есть проверенное учебное пояснение, у остальных показаны официальные названия.">A reference with search. {{ meta.reviewed }} signs have a checked study explanation; the others show their official names.</p></div>
+  <a href="/signs" class="btn-ghost" data-en="Open the catalogue" data-ru="Открыть каталог">Open the catalogue</a>
+ </aside>
+ <p class="sx-note" data-en="These lessons complement driving school. A short check is practice, not a prediction of your exam result." data-ru="Уроки дополняют занятия в автошколе. Короткая проверка — это тренировка, а не прогноз результата экзамена.">These lessons complement driving school. A short check is practice, not a prediction of your exam result.</p>
+ <script nonce="{{ request.state.csp_nonce }}" id="lessonChecks" type="application/json">{{ lesson_checks|tojson }}</script>
+ <script nonce="{{ request.state.csp_nonce }}" id="lessonData" type="application/json">{{ lessons|tojson }}</script>
+</main>
+{% endblock %}
+{% block scripts %}<script nonce="{{ request.state.csp_nonce }}" src="/static/js/signs.js?v={{ asset_version }}"></script><script nonce="{{ request.state.csp_nonce }}" src="/static/js/sign-review.js?v={{ asset_version }}"></script><script nonce="{{ request.state.csp_nonce }}" src="/static/js/sign-progress.js?v={{ asset_version }}"></script><script nonce="{{ request.state.csp_nonce }}" src="/static/js/lesson-check-store.js?v={{ asset_version }}"></script><script nonce="{{ request.state.csp_nonce }}" src="/static/js/sign-hub.js?v={{ asset_version }}"></script>{% endblock %}

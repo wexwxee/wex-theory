@@ -1,0 +1,56 @@
+{
+ "note": "Illustrated example scenes for the sign lessons. The street is AI-made (Gemini or Codex image generation) without any signs; the official sign drawing from static/signs is placed on the empty post. Where a plate is shown, 'with' names the main sign it is read with, as in the checked study note. These are illustrations, not test photographs.",
+ "made": "2026-10-21",
+ "examples": {
+  "A36.1": {
+   "image": "/static/signs/scenes/A36.1.webp",
+   "scene": "residential-1",
+   "with": null
+  },
+  "C12": {
+   "image": "/static/signs/scenes/C12.webp",
+   "scene": "town-street-4",
+   "with": null
+  },
+  "C19": {
+   "image": "/static/signs/scenes/C19.webp",
+   "scene": "oneway-entry",
+   "with": null
+  },
+  "C23.2": {
+   "image": "/static/signs/scenes/C23.2.webp",
+   "scene": "town-street-3",
+   "with": null
+  },
+  "C62": {
+   "image": "/static/signs/scenes/C62.webp",
+   "scene": "town-street-3",
+   "with": null
+  },
+  "E68.4": {
+   "image": "/static/signs/scenes/E68.4.webp",
+   "scene": "residential-1",
+   "with": null
+  },
+  "U3.4": {
+   "image": "/static/signs/scenes/U3.4.webp",
+   "scene": "town-street-3",
+   "with": "E33.1"
+  }
+ },
+ "hidden": {
+  "note": "Kept out of the lessons on 2026-10-21 at the owner's request until a realistic picture replaces them. The files stay in static/signs/scenes.",
+  "UC60.1": {
+   "image": "/static/signs/scenes/UC60.1.webp",
+   "reason": "Cars are parked along the kerb on the sign's side, exactly where the sign forbids parking."
+  },
+  "C55": {
+   "image": "/static/signs/scenes/C55.webp",
+   "reason": "A 60 limit in a narrow residential street with parked cars; in a Danish town 60 belongs on a wide arterial road."
+  },
+  "E19": {
+   "image": "/static/signs/scenes/E19.webp",
+   "reason": "The plate faces the viewer with the arrow pointing into house walls; no road goes left there. Smeared roof behind the plate."
+  }
+ }
+}

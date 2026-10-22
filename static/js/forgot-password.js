@@ -10,7 +10,7 @@
   function toggleTheme() {
     const current = document.documentElement.getAttribute('data-theme');
     const next = current === 'dark' ? 'light' : 'dark';
-    localStorage.setItem('wex-theme', next);
+    try { localStorage.setItem('wex-theme-v2', next); } catch (_) { /* Theme still works for this visit. */ }
     applyTheme(next);
   }
 
@@ -78,7 +78,7 @@
     }
   }
 
-  const initialTheme = localStorage.getItem('wex-theme') || 'dark';
+  const initialTheme = document.documentElement.getAttribute('data-theme') || 'light';
   applyTheme(initialTheme);
 
   document.getElementById('themeBtn')?.addEventListener('click', toggleTheme);

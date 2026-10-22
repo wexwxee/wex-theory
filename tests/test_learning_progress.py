@@ -109,6 +109,20 @@ class LearningProgressTests(unittest.TestCase):
         self.assertEqual(self.call(main.api_sign_progress, self.user)["progress"], {})
         self.assertEqual(self.call(main.api_sign_progress, self.other)["progress"][codes[0]]["box"], 2)
 
+    def test_sign_review_dates_use_server_time_and_follow_account_reset(self):
+        code = main.signs_catalogue.all_signs()[0]["code"]
+        before = datetime.utcnow()
+        self.call(main.api_save_sign_progress, self.user, {
+            "progress": {code: {"box": 2}}, "reviewed_at": {code: "2099-01-01T00:00:00Z"}})
+        response = self.call(main.api_sign_progress, self.user)
+        timestamp = datetime.fromisoformat(response["reviewed_at"][code].removesuffix("Z"))
+        self.assertLessEqual(before, timestamp)
+        self.assertLessEqual(timestamp, datetime.utcnow())
+        self.assertEqual(response["progress"], {code: {"box": 2}})
+        self.assertEqual(self.call(main.api_sign_progress, self.other)["reviewed_at"], {})
+        self.call(main.api_save_sign_progress, self.user, {"progress": {}, "reset": True})
+        self.assertEqual(self.call(main.api_sign_progress, self.user)["reviewed_at"], {})
+
     def test_invalid_sign_payloads_do_not_write_and_login_is_required(self):
         code = main.signs_catalogue.all_signs()[0]["code"]
         for data in [[], {"progress": []}, {"progress": {"unknown": {"box": 0}}},

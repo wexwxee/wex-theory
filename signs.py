@@ -9,6 +9,7 @@ the details and makes the data easy to rebuild.
 from __future__ import annotations
 
 import json
+import sign_curriculum
 import re
 import threading
 from pathlib import Path
@@ -104,10 +105,22 @@ def _load() -> dict:
         da_names = _read_side_file(DA_FILE, "names")
         for sign in payload["signs"]:
             code = sign["code"]
+            # The source list lost the variant pictures of one name, leaving "(Variants: and )".
+            sign["name_en"] = re.sub(r"\s*\(Variants:\s*(?:and\s*)?\)", "", sign["name_en"])
             sign["meaning"] = meanings.get(code, "")
             sign["name_ru"] = ru_names.get(code, "")
             sign["meaning_ru"] = ru_meanings.get(code, "")
             sign["name_da"] = da_names.get(code, "")
+            teaching = sign_curriculum.note_for(code)
+            sign["teaching"] = teaching
+            # Only a source-checked note may be taught; other signs show their official names only.
+            sign["verified"] = bool(teaching)
+            if teaching.get("meaning"):
+                sign["meaning"] = teaching["meaning"]["en"]
+                sign["meaning_ru"] = teaching["meaning"]["ru"]
+            if teaching.get("name"):
+                sign["name_en"] = teaching["name"]["en"]
+                sign["name_ru"] = teaching["name"]["ru"]
         payload["signs"].sort(key=lambda sign: (_group_rank(sign["group"]), code_key(sign["code"])))
         payload["explained"] = sum(1 for sign in payload["signs"] if sign["meaning"])
         payload["translated"] = sum(1 for sign in payload["signs"] if sign["name_ru"])
@@ -153,6 +166,7 @@ def catalogue_meta() -> dict:
     payload = _load()
     return {
         "count": len(payload["signs"]),
+        "reviewed": sum(bool(sign.get("teaching")) for sign in payload["signs"]),
         "explained": payload.get("explained", 0),
         "translated": payload.get("translated", 0),
         "danish": payload.get("danish", 0),
@@ -205,7 +219,11 @@ def related_signs(sign: dict, limit: int = 8) -> list[dict]:
     position = next((i for i, s in enumerate(family) if s["code"] == sign["code"]), 0)
     start = max(0, min(position - limit // 2, len(family) - limit - 1))
     window = [s for s in family[start : start + limit + 1] if s["code"] != sign["code"]]
-    return window[:limit]
+    pairs = {"B11":"B13", "B13":"B11", "B18":"B19", "B19":"B18", "C61":"C62", "C62":"C61", "C55":"C56", "C56":"C55"}
+    pair = by_code(pairs[sign["code"]]) if sign["code"] in pairs else None
+    ordered = ([pair] if pair else []) + window
+    seen = set()
+    return [other for other in ordered if other["code"] not in seen and not seen.add(other["code"])][:limit]
 
 
 def signs_for_question(question_id: int, limit: int = 4) -> list[dict]:
@@ -222,3 +240,19 @@ def signs_for_question(question_id: int, limit: int = 4) -> list[dict]:
         if sign:
             found.append(sign)
     return found
+
+
+def signs_for_reviewed_scene(image_path: str, limit: int = 4) -> list[dict]:
+    """Only visually reviewed scene references; never infer visible signs from text."""
+    import sign_curriculum
+    def normalized(value):
+        path = str(value or "").replace("\\", "/").split("?", 1)[0].lstrip("/")
+        return path.removeprefix("test-images/")
+    image = normalized(image_path)
+    if not image:
+        return []
+    codes = list(_read_side_file(DATA_DIR / "reviewed_scenes.json", "images").get(image, []))
+    for scene in sign_curriculum.catalogue().get("photos", []):
+        if scene.get("checked") and normalized(scene.get("image")) == image and scene["code"] not in codes:
+            codes.append(scene["code"])
+    return [sign for code in codes[:limit] if (sign := by_code(code))]

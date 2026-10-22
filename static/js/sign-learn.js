@@ -1,271 +1,76 @@
+/* Repeat road signs: short rounds of checked signs. Due signs come first; a correct answer on
+   the due day moves a sign to its next review (1, 3, 7, 14, 30 days), a mistake starts it again.
+   Questions alternate between naming a sign and finding it from its explanation. */
 (function () {
-  document.getElementById('signsBurgerBtn')?.addEventListener('click', sbOpen);
-  document.getElementById('navThemeBtn')?.addEventListener('click', toggleTheme);
-
+  'use strict';
   const shell = document.getElementById('learnShell');
   const stage = document.getElementById('learnStage');
-  if (!shell || !stage) return;
+  if (!shell || !stage || !window.WEXSignProgress) return;
 
-  const ACCOUNT_ID = shell.dataset.userId || '';
-  const PROGRESS_KEY = ACCOUNT_ID ? `wexSignsProgress-user-${ACCOUNT_ID}` : 'wexSignsProgress';
-  const QUEUE_KEY = `${PROGRESS_KEY}-queue`;
-  let queue = readQueue();
-  let syncing = false;
-  const LANG_KEY = 'wexSignsLang';
-  const LEGACY_KNOWN = 'wexSignsKnown';
-  const LEGACY_HARD = 'wexSignsHard';
-  const SESSION_SIZE = 12;
-  const LEARNED_AT = 3; // correct answers in a row before a sign counts as learned
+  const userId = shell.dataset.userId || '';
+  const store = window.WEXSignProgress.create({ userId });
+  const PROGRESS_KEY = userId ? `wexSignsProgress-user-${userId}` : 'wexSignsProgress';
+  const ROUND_KEY = `${PROGRESS_KEY}-round-v2`;
+  const params = new URLSearchParams(location.search);
+  const REVIEW_ONLY = params.get('review') === 'due';
+  const SCOPE_KEY = location.search || 'auto';
+  const ROUND_SIZE = 12;
+  const MAX_AGE = 7 * 86400000;
+  const courseCodes = JSON.parse(document.getElementById('courseCodes').textContent);
+  const lang = () => (document.documentElement.lang === 'ru' ? 'ru' : 'en');
+  const plural = (count, one, few, many) => window.WEXSignProgress.ruPlural(count, one, few, many);
 
   const T = {
     en: {
-      title: 'Practise road signs',
-      modes: { cards: 'Cards', name: 'Sign → meaning', image: 'Meaning → sign' },
-      reset: 'Reset my progress',
-      all: 'All signs',
-      stats: (learned, review, total) =>
-        `<b>${learned}</b> learned &middot; <b>${review}</b> to review &middot; ${total} in this set`,
-      counter: (index, total) => `Question ${index} of ${total}`,
-      score: (right, asked) => (asked ? `${right}/${asked} correct` : ''),
-      askCard: 'What does this sign mean?',
-      askName: 'What does this sign mean?',
-      askImage: 'Which sign means this?',
-      reveal: 'Show the answer',
-      knew: 'I knew it',
-      again: 'Show me again',
-      next: 'Next sign',
-      correct: 'Correct.',
-      wrong: (name) => `Not quite — that one is <b>${name}</b>.`,
-      summary: 'Round finished',
-      summaryLine: (right, total) => `${right} of ${total} right`,
-      missed: 'Worth another look',
-      practiseMissed: 'Practise these',
-      newRound: 'New round',
-      browse: 'Browse the catalogue',
-      empty: 'Nothing to practise in this set yet.',
-      hint:
-        `${ACCOUNT_ID ? 'Progress syncs with your account.' : 'Progress stays in this browser. Sign in to save new practice to your account.'} Signs you miss come back sooner, and a sign counts as learned after three correct answers in a row.`,
-      keys: 'Keyboard: 1-4 to answer, Enter to continue.',
-      failed: 'Could not load the signs. Reload the page to try again.',
-      danish: 'In Danish',
-      groups: {
-        A: 'Warning', B: 'Priority', C: 'Prohibitory', D: 'Mandatory', E: 'Information',
-        U: 'Subpanels', F: 'Direction', G: 'Portal', H: 'Distance', I: 'Exits',
-        J: 'Lanes', K: 'Route', M: 'Services',
-      },
+      title: 'Repeat road signs', due: 'to repeat now', learning: 'learning', learned: 'learned',
+      scopeDue: count => `Due now: ${count} ${count === 1 ? 'sign' : 'signs'}. Answer them today to move them on.`,
+      scopePractice: 'Nothing is due today. This round is extra practice with signs you have already met.',
+      scopeFresh: 'You have not started the lessons yet. This round uses the signs of lesson 01.',
+      scopeLesson: (number, title) => `Lesson ${number} · ${title}`, scopeGroup: label => `${label}: signs with a checked explanation`,
+      dueOnly: 'Only signs that are due now.',
+      counter: (index, total) => `Question ${index} of ${total}`, score: (right, asked) => (asked ? `${right}/${asked} correct` : ''),
+      askName: 'What does this sign mean?', askMeaning: 'Which sign has this meaning?', askFind: 'Find this sign', correct: 'Correct.', wrong: 'Not quite.',
+      yourAnswer: 'Your answer', rightAnswer: 'Correct answer', next: 'Next sign', last: 'See the result',
+      action: 'Your action', mistake: 'Common mistake', card: 'Full card and sources →',
+      summary: 'Round finished', summaryLine: (right, total) => `${right} of ${total} right`, missed: 'Look at these again',
+      roundSigns: 'Signs in this round', gotRight: 'Right', gotWrong: 'Missed', testsLink: 'Check yourself in the road sign tests →',
+      practiseMissed: 'Repeat the missed ones', newRound: 'New round', lessons: 'Back to lessons', practiseAnyway: 'Practise anyway',
+      nextDue: when => `Your next signs are due ${when}.`, noneDue: 'No signs are due now. Come back when the next ones are due, or start the next lesson.',
+      empty: 'There are no signs with a checked explanation in this set yet.',
+      hint: account => `${account ? 'Progress is saved to your account.' : 'Progress stays in this browser. Sign in to keep it in your account.'} A sign moves on only when you answer it right on its due day; a mistake starts it again.`,
+      keys: 'Keyboard: 1–4 to answer, Enter to continue.', settings: 'Progress settings',
+      resetCopy: 'This clears every sign level and lesson result for road signs.', reset: 'Reset my progress',
+      resetConfirm: 'Reset all your road sign progress? This also clears your lesson results and the current round.',
+      saving: 'Saving…', saved: 'Saved to your account', failed: 'Saved in this browser. Account sync is pending.', retry: 'Retry sync',
+      failedLoad: 'Could not load the signs. Reload the page to try again.', sign: 'Road sign', option: index => `Option ${index}`,
     },
     ru: {
-      title: 'Тренажёр знаков',
-      modes: { cards: 'Карточки', name: 'Знак → значение', image: 'Значение → знак' },
-      reset: 'Сбросить прогресс',
-      all: 'Все знаки',
-      stats: (learned, review, total) =>
-        `<b>${learned}</b> выучено &middot; <b>${review}</b> на повторение &middot; ${total} в наборе`,
-      counter: (index, total) => `Вопрос ${index} из ${total}`,
-      score: (right, asked) => (asked ? `${right}/${asked} верно` : ''),
-      askCard: 'Что означает этот знак?',
-      askName: 'Что означает этот знак?',
-      askImage: 'Какой знак это означает?',
-      reveal: 'Показать ответ',
-      knew: 'Знал',
-      again: 'Показать ещё раз',
-      next: 'Следующий знак',
-      correct: 'Верно.',
-      wrong: (name) => `Не то — это <b>${name}</b>.`,
-      summary: 'Круг пройден',
-      summaryLine: (right, total) => `${right} из ${total} верно`,
-      missed: 'Стоит повторить',
-      practiseMissed: 'Повторить их',
-      newRound: 'Новый круг',
-      browse: 'Открыть каталог',
-      empty: 'В этом наборе пока нечего тренировать.',
-      hint:
-        `${ACCOUNT_ID ? 'Прогресс синхронизируется с аккаунтом.' : 'Прогресс хранится в этом браузере. Войдите, чтобы сохранять новые тренировки в аккаунте.'} Знаки, где вы ошиблись, возвращаются раньше, а выученным знак считается после трёх верных ответов подряд.`,
-      keys: 'С клавиатуры: 1-4 — ответ, Enter — дальше.',
-      failed: 'Не удалось загрузить знаки. Обновите страницу.',
-      danish: 'По-датски',
-      groups: {
-        A: 'Предупреждающие', B: 'Приоритет', C: 'Запрещающие', D: 'Предписывающие',
-        E: 'Информационные', U: 'Таблички', F: 'Указатели', G: 'Порталы', H: 'Расстояния',
-        I: 'Съезды', J: 'Полосы', K: 'Маршрут', M: 'Сервис',
-      },
+      title: 'Повторение знаков', due: 'повторить сейчас', learning: 'изучаются', learned: 'выучено',
+      scopeDue: count => `Пора повторить: ${count} ${plural(count, 'знак', 'знака', 'знаков')}. Ответьте сегодня, и они перейдут дальше.`,
+      scopePractice: 'Сегодня повторять нечего. Это дополнительная тренировка по знакам, которые вы уже видели.',
+      scopeFresh: 'Вы ещё не начали уроки. В этом круге — знаки урока 01.',
+      scopeLesson: (number, title) => `Урок ${number} · ${title}`, scopeGroup: label => `${label}: знаки с проверенным пояснением`,
+      dueOnly: 'Только знаки, которым пора на повторение.',
+      counter: (index, total) => `Вопрос ${index} из ${total}`, score: (right, asked) => (asked ? `${right}/${asked} верно` : ''),
+      askName: 'Что означает этот знак?', askMeaning: 'У какого знака такое значение?', askFind: 'Найдите этот знак', correct: 'Верно.', wrong: 'Не совсем.',
+      yourAnswer: 'Ваш ответ', rightAnswer: 'Верный ответ', next: 'Следующий знак', last: 'Посмотреть итог',
+      action: 'Ваше действие', mistake: 'Частая ошибка', card: 'Карточка знака и источники →',
+      summary: 'Круг пройден', summaryLine: (right, total) => `${right} из ${total} верно`, missed: 'Стоит повторить',
+      roundSigns: 'Знаки этого круга', gotRight: 'Верно', gotWrong: 'Ошибка', testsLink: 'Проверьте себя в тестах по знакам →',
+      practiseMissed: 'Повторить ошибки', newRound: 'Новый круг', lessons: 'К урокам', practiseAnyway: 'Всё равно потренироваться',
+      nextDue: when => `Следующие знаки пора повторить ${when}.`, noneDue: 'Сейчас повторять нечего. Вернитесь, когда подойдёт срок, или начните следующий урок.',
+      empty: 'В этом наборе пока нет знаков с проверенным пояснением.',
+      hint: account => `${account ? 'Прогресс сохраняется в аккаунте.' : 'Прогресс хранится в этом браузере. Войдите, чтобы сохранять его в аккаунте.'} Знак переходит дальше, только если ответить верно в день повторения; ошибка начинает его заново.`,
+      keys: 'С клавиатуры: 1–4 — ответ, Enter — дальше.', settings: 'Настройки прогресса',
+      resetCopy: 'Это удалит уровни всех знаков и результаты уроков по знакам.', reset: 'Сбросить прогресс',
+      resetConfirm: 'Сбросить весь прогресс по знакам? Результаты уроков и текущий круг тоже будут очищены.',
+      saving: 'Сохранение…', saved: 'Сохранено в аккаунте', failed: 'Сохранено в браузере. Синхронизация ожидает подключения.', retry: 'Повторить синхронизацию',
+      failedLoad: 'Не удалось загрузить знаки. Обновите страницу.', sign: 'Дорожный знак', option: index => `Вариант ${index}`,
     },
   };
+  const t = () => T[lang()];
 
-  const state = {
-    signs: [],
-    lang: readLang(),
-    mode: 'cards',
-    group: shell.dataset.group || 'all',
-    progress: readProgress(),
-    deck: [],
-    position: 0,
-    revealed: false,
-    answered: false,
-    chosen: null,
-    right: 0,
-    missed: [],
-    finished: false,
-  };
-
-  function t() {
-    return T[state.lang] || T.en;
-  }
-
-  function readLang() {
-    try {
-      return localStorage.getItem(LANG_KEY) === 'ru' ? 'ru' : 'en';
-    } catch (e) {
-      return 'en';
-    }
-  }
-
-  function readProgress() {
-    try {
-      const stored = JSON.parse(localStorage.getItem(PROGRESS_KEY) || 'null');
-      if (stored && typeof stored === 'object') return stored;
-      if (ACCOUNT_ID) return {};
-      // First run after the old two-list version: keep what the learner had.
-      const known = JSON.parse(localStorage.getItem(LEGACY_KNOWN) || '[]');
-      const hard = JSON.parse(localStorage.getItem(LEGACY_HARD) || '[]');
-      const migrated = {};
-      (Array.isArray(known) ? known : []).forEach((code) => { migrated[code] = { box: LEARNED_AT }; });
-      (Array.isArray(hard) ? hard : []).forEach((code) => { migrated[code] = { box: 0 }; });
-      return migrated;
-    } catch (e) {
-      return {};
-    }
-  }
-
-  function save() {
-    try {
-      localStorage.setItem(PROGRESS_KEY, JSON.stringify(state.progress));
-      localStorage.setItem(LANG_KEY, state.lang);
-    } catch (e) {
-      // private mode: the session still works, it just is not remembered
-    }
-  }
-
-  function box(code) {
-    return state.progress[code]?.box || 0;
-  }
-
-  function readQueue() {
-    try {
-      const value = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
-      return Array.isArray(value) ? value : [];
-    } catch (error) { return []; }
-  }
-
-  function storeQueue() {
-    try { localStorage.setItem(QUEUE_KEY, JSON.stringify(queue)); } catch (error) { /* private mode */ }
-  }
-
-  function syncStatus(failed = false) {
-    const status = document.getElementById('learnSyncStatus');
-    const retry = document.getElementById('learnSyncRetry');
-    const ru = state.lang === 'ru';
-    if (status) status.textContent = !ACCOUNT_ID ? '' : failed
-      ? (ru ? 'Сохранено в браузере. Синхронизация ожидает подключения.' : 'Saved in this browser. Account sync is pending.')
-      : queue.length ? (ru ? 'Сохранение…' : 'Saving…') : (ru ? 'Сохранено в аккаунте' : 'Saved to your account');
-    if (retry) {
-      retry.hidden = !failed;
-      retry.textContent = ru ? 'Повторить синхронизацию' : 'Retry sync';
-    }
-  }
-
-  async function flushQueue() {
-    if (!ACCOUNT_ID || syncing) return;
-    syncing = true;
-    syncStatus();
-    try {
-      while (queue.length) {
-        const response = await fetch('/api/signs/progress', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(queue[0]),
-        });
-        if (!response.ok) throw new Error('sync failed');
-        queue.shift();
-        storeQueue();
-      }
-      syncStatus();
-    } catch (error) { syncStatus(true); }
-    finally { syncing = false; }
-  }
-
-  function enqueue(progress, reset = false) {
-    if (!ACCOUNT_ID) return;
-    queue.push({ progress, reset });
-    storeQueue();
-    flushQueue();
-  }
-
-  async function loadAccountProgress() {
-    if (!ACCOUNT_ID) return;
-    const response = await fetch('/api/signs/progress');
-    if (!response.ok) throw new Error('sync failed');
-    const data = await response.json();
-    state.progress = data.progress || {};
-    queue.forEach((operation) => {
-      if (operation.reset) state.progress = {};
-      Object.assign(state.progress, operation.progress);
-    });
-    save();
-    await flushQueue();
-  }
-
-  window.addEventListener('online', flushQueue);
-  document.getElementById('learnSyncRetry')?.addEventListener('click', flushQueue);
-
-  function grade(code, right) {
-    const entry = state.progress[code] || { box: 0 };
-    entry.box = right ? Math.min(entry.box + 1, 5) : 0;
-    state.progress[code] = entry;
-    save();
-    enqueue({ [code]: { box: entry.box } });
-  }
-
-  function label(sign) {
-    return (state.lang === 'ru' && sign.name_ru) || sign.name;
-  }
-
-  function explanation(sign) {
-    return (state.lang === 'ru' && sign.meaning_ru) || sign.meaning || '';
-  }
-
-  function inScope() {
-    return state.group === 'all'
-      ? state.signs
-      : state.signs.filter((sign) => sign.group === state.group);
-  }
-
-  function shuffle(items) {
-    const copy = items.slice();
-    for (let i = copy.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [copy[i], copy[j]] = [copy[j], copy[i]];
-    }
-    return copy;
-  }
-
-  // Weakest first: never answered or last answered wrong, then the rest by box.
-  function startSession(pool) {
-    const scope = pool || inScope();
-    const ordered = shuffle(scope).sort((a, b) => box(a.code) - box(b.code));
-    state.deck = ordered.slice(0, Math.min(SESSION_SIZE, ordered.length));
-    state.position = 0;
-    state.right = 0;
-    state.missed = [];
-    state.revealed = false;
-    state.answered = false;
-    state.chosen = null;
-    state.finished = false;
-    render();
-  }
-
-  function current() {
-    return state.deck[state.position];
-  }
+  const state = { signs: [], lessons: [], byCode: new Map(), lessonsOf: new Map(), scope: null, round: null };
 
   function el(tag, className, text) {
     const node = document.createElement(tag);
@@ -273,370 +78,320 @@
     if (text !== undefined) node.textContent = text;
     return node;
   }
+  function shuffle(items) {
+    const copy = items.slice();
+    for (let i = copy.length - 1; i > 0; i -= 1) { const j = Math.floor(Math.random() * (i + 1)); [copy[i], copy[j]] = [copy[j], copy[i]]; }
+    return copy;
+  }
+  const name = sign => (lang() === 'ru' && sign.name_ru) || sign.name;
+  const local = value => value?.[lang()] || value?.en || '';
+  // "Find the sign" shows its checked meaning; a sign whose note has no meaning is asked by its name,
+  // because its action alone ("check priority again at the next junction") reads like a riddle.
+  const describe = sign => (local(sign.teaching.meaning)
+    ? { ask: t().askMeaning, text: local(sign.teaching.meaning), kind: 'meaning' }
+    : { ask: t().askFind, text: `«${name(sign)}»`, kind: 'name' });
 
-  function signArt(sign, reveal) {
-    const art = el('div', 'learn-art');
-    const img = document.createElement('img');
-    img.src = sign.image;
-    img.alt = reveal ? `${sign.code}: ${label(sign)}` : 'Road sign';
-    art.appendChild(img);
-    return art;
+  // ── What this round is about ───────────────────────────────────────────────
+  function resolveScope() {
+    const lesson = state.lessons.find(item => item.id === shell.dataset.lesson);
+    const group = shell.dataset.group;
+    const weakest = list => shuffle(list).sort((a, b) => rank(a) - rank(b) || store.box(a.code) - store.box(b.code));
+    const rank = sign => ({ due: 0, new: 1, learning: 2, learned: 3 })[store.status(sign.code)];
+    let pool; let kind; let label = '';
+    if (lesson) {
+      pool = lesson.codes.map(code => state.byCode.get(code)).filter(Boolean);
+      kind = 'lesson'; label = t().scopeLesson(String(lesson.number).padStart(2, '0'), lang() === 'ru' ? lesson.title_ru : lesson.title);
+    } else if (group) {
+      pool = state.signs.filter(sign => sign.group === group);
+      kind = 'group'; label = t().scopeGroup(pool[0]?.group_label || group);
+    } else pool = state.signs;
+    if (REVIEW_ONLY) return { kind: 'due', pool: weakest(pool.filter(sign => store.isDue(sign.code))), label: label || t().dueOnly };
+    if (kind) return { kind, pool: weakest(pool), label };
+    const due = pool.filter(sign => store.isDue(sign.code));
+    if (due.length) return { kind: 'auto-due', pool: weakest(due), label: t().scopeDue(due.length) };
+    const met = pool.filter(sign => store.status(sign.code) !== 'new');
+    if (met.length) return { kind: 'auto-practice', pool: weakest(met), label: t().scopePractice };
+    const first = state.lessons[0];
+    return { kind: 'auto-fresh', pool: shuffle(first.codes.map(code => state.byCode.get(code)).filter(Boolean)), label: t().scopeFresh };
   }
 
-  function optionKey(index) {
-    return el('span', 'option-key', String(index + 1));
-  }
-
-  // Options never repeat a visible label: some signs share a name (D11.1-D11.8),
-  // and two identical answers would both be right.
+  // ── Questions ─────────────────────────────────────────────────────────────
+  // Wrong choices come from the same lesson or family, and never share a visible name or an
+  // equivalent arrow with the answer (D11.2 and D11.4 both mean "left").
   function buildOptions(sign) {
-    const taken = new Set([label(sign)]);
-    const family = shuffle(state.signs.filter((other) => other.group === sign.group));
-    const rest = shuffle(state.signs);
-    const distractors = [];
-
-    [...family, ...rest].forEach((other) => {
-      if (distractors.length >= 3) return;
-      const text = label(other);
-      if (other.code === sign.code || taken.has(text)) return;
-      taken.add(text);
-      distractors.push(other);
-    });
-
-    return shuffle([sign, ...distractors]);
-  }
-
-  function finishAnswer(sign, chosen, buttons, feedback) {
-    state.answered = true;
-    state.chosen = chosen;
-    const right = chosen.code === sign.code;
-    if (right) state.right += 1;
-    else state.missed.push(sign);
-    grade(sign.code, right);
-    showAnswer(sign, chosen, buttons, feedback);
-  }
-
-  // Drawing the answered state is separate from grading it: a language switch
-  // re-renders the question and must not score it a second time.
-  function showAnswer(sign, chosen, buttons, feedback) {
-    const right = chosen.code === sign.code;
-
-    buttons.forEach((button) => {
-      button.disabled = true;
-      if (button.dataset.code === sign.code) button.classList.add('is-correct');
-      if (!right && button.dataset.code === chosen.code) button.classList.add('is-wrong');
-    });
-
-    feedback.innerHTML = right ? t().correct : t().wrong(label(chosen));
-    const explain = el('div', 'learn-explain');
-    explain.appendChild(el('span', 'explain-code', sign.code));
-    explain.appendChild(document.createTextNode(explanation(sign) || label(sign)));
-    if (sign.name_da) explain.appendChild(el('div', 'explain-danish', `${t().danish}: ${sign.name_da}`));
-    feedback.appendChild(explain);
-
-    const actions = el('div', 'learn-actions');
-    const next = el('button', 'btn-primary', t().next);
-    next.type = 'button';
-    next.id = 'nextBtn';
-    next.addEventListener('click', advance);
-    actions.appendChild(next);
-    stage.appendChild(actions);
-    next.focus();
-    renderStats();
-  }
-
-  function renderCard(sign) {
-    stage.appendChild(signArt(sign, state.revealed));
-
-    if (!state.revealed) {
-      stage.appendChild(el('p', 'learn-question', t().askCard));
-      const actions = el('div', 'learn-actions');
-      const reveal = el('button', 'btn-primary', t().reveal);
-      reveal.type = 'button';
-      reveal.id = 'revealBtn';
-      reveal.addEventListener('click', () => {
-        state.revealed = true;
-        render();
-      });
-      actions.appendChild(reveal);
-      stage.appendChild(actions);
-      return;
+    const takenEn = new Set([sign.name]); const takenRu = new Set([sign.name_ru]);
+    const equivalents = new Set([sign.teaching.quiz_equivalence].filter(Boolean));
+    const mates = new Set((state.lessonsOf.get(sign.code) || []).flatMap(lesson => lesson.codes));
+    const candidates = [
+      ...shuffle(state.signs.filter(other => mates.has(other.code) && other.group === sign.group)),
+      ...shuffle(state.signs.filter(other => !mates.has(other.code) && other.group === sign.group)),
+      ...shuffle(state.signs.filter(other => mates.has(other.code) && other.group !== sign.group)),
+      ...shuffle(state.signs.filter(other => other.group !== sign.group)),
+    ];
+    const picks = [];
+    for (const other of candidates) {
+      if (picks.length >= 3) break;
+      const equivalent = other.teaching.quiz_equivalence;
+      if (other.code === sign.code || takenEn.has(other.name) || takenRu.has(other.name_ru) || (equivalent && equivalents.has(equivalent))) continue;
+      takenEn.add(other.name); takenRu.add(other.name_ru); if (equivalent) equivalents.add(equivalent);
+      picks.push(other.code);
     }
-
-    stage.appendChild(el('div', 'learn-code', `${sign.code} · ${sign.group_label}`));
-    stage.appendChild(el('div', 'learn-name', label(sign)));
-    if (sign.name_da) stage.appendChild(el('div', 'learn-danish', `${t().danish}: ${sign.name_da}`));
-    if (explanation(sign)) stage.appendChild(el('p', 'learn-meaning', explanation(sign)));
-
-    const actions = el('div', 'learn-actions');
-    const knew = el('button', 'btn-primary', t().knew);
-    knew.type = 'button';
-    knew.addEventListener('click', () => {
-      state.right += 1;
-      grade(sign.code, true);
-      advance();
-    });
-    const again = el('button', 'btn-ghost', t().again);
-    again.type = 'button';
-    again.addEventListener('click', () => {
-      state.missed.push(sign);
-      grade(sign.code, false);
-      advance();
-    });
-    actions.append(knew, again);
-    stage.appendChild(actions);
+    return shuffle([sign.code, ...picks]);
   }
 
-  function renderNameQuiz(sign) {
-    stage.appendChild(signArt(sign, state.answered));
-    stage.appendChild(el('div', 'learn-prompt', t().askName));
-
-    const list = el('div', 'learn-options');
-    const feedback = el('div', 'learn-feedback');
-    const buttons = [];
-
-    buildOptions(sign).forEach((option, index) => {
-      const button = el('button', 'learn-option');
-      button.type = 'button';
-      button.dataset.code = option.code;
-      button.append(optionKey(index), el('span', null, label(option)));
-      button.addEventListener('click', () => {
-        if (state.answered) return;
-        finishAnswer(sign, option, buttons, feedback);
-      });
-      buttons.push(button);
-      list.appendChild(button);
-    });
-
-    stage.append(list, feedback);
-    if (state.answered && state.chosen) showAnswer(sign, state.chosen, buttons, feedback);
+  function newRound(pool) {
+    const deck = (pool || state.scope.pool).slice(0, ROUND_SIZE).map(sign => sign.code);
+    const offset = Math.round(Math.random());
+    state.round = { version: 2, scope: SCOPE_KEY, createdAt: Date.now(), deck, types: deck.map((_, index) => ((index + offset) % 2 ? 'image' : 'name')),
+      position: 0, right: 0, results: [], missed: [], answered: false, chosen: null, options: [], finished: false };
+    saveRound(); render();
+  }
+  function saveRound() { try { localStorage.setItem(ROUND_KEY, JSON.stringify(state.round)); } catch (_) { /* practice still works */ } }
+  function restoreRound() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(ROUND_KEY) || 'null');
+      if (!saved || saved.version !== 2 || saved.scope !== SCOPE_KEY || !Number.isFinite(saved.createdAt)
+        || Date.now() - saved.createdAt > MAX_AGE || saved.createdAt > Date.now() + 60000 || !Array.isArray(saved.deck) || !saved.deck.length
+        || saved.deck.length > ROUND_SIZE || saved.deck.some(code => !state.byCode.has(code)) || !Array.isArray(saved.types)
+        || saved.types.length !== saved.deck.length || saved.types.some(type => !['name', 'image'].includes(type))
+        || !Number.isInteger(saved.position) || saved.position < 0 || saved.position > saved.deck.length
+        || !Number.isInteger(saved.right) || saved.right < 0 || saved.right > saved.deck.length || !Array.isArray(saved.results)
+        || !Array.isArray(saved.options) || saved.options.some(code => !state.byCode.has(code))) return false;
+      if (saved.answered && (!state.byCode.has(saved.chosen) || !saved.options.includes(saved.chosen))) return false;
+      saved.missed = Array.isArray(saved.missed) ? saved.missed.filter(code => saved.deck.includes(code)) : [];
+      saved.finished = saved.position === saved.deck.length;
+      state.round = saved;
+      return true;
+    } catch (_) { return false; }
   }
 
-  function renderImageQuiz(sign) {
-    stage.appendChild(el('div', 'learn-prompt', t().askImage));
-    stage.appendChild(el('p', 'learn-question', explanation(sign) || label(sign)));
-
-    const grid = el('div', 'learn-images');
-    const feedback = el('div', 'learn-feedback');
-    const buttons = [];
-
-    buildOptions(sign).forEach((option, index) => {
-      const button = el('button', 'image-option');
-      button.type = 'button';
-      button.dataset.code = option.code;
-      const img = document.createElement('img');
-      img.src = option.image;
-      img.alt = `Option ${index + 1}`;
-      button.append(optionKey(index), img);
-      button.addEventListener('click', () => {
-        if (state.answered) return;
-        finishAnswer(sign, option, buttons, feedback);
-      });
-      buttons.push(button);
-      grid.appendChild(button);
-    });
-
-    stage.append(grid, feedback);
-    if (state.answered && state.chosen) showAnswer(sign, state.chosen, buttons, feedback);
+  function answer(chosen) {
+    const round = state.round;
+    if (round.answered || round.finished) return;
+    const code = round.deck[round.position];
+    const right = chosen === code;
+    round.answered = true; round.chosen = chosen; round.results.push(right);
+    if (right) round.right += 1; else if (!round.missed.includes(code)) round.missed.push(code);
+    store.grade(code, right, 'quiz');
+    saveRound(); render();
+    document.getElementById('nextBtn')?.focus({ preventScroll: true });
+  }
+  function advance() {
+    const round = state.round;
+    round.position += 1; round.answered = false; round.chosen = null; round.options = [];
+    round.finished = round.position >= round.deck.length;
+    saveRound(); render();
+    (stage.querySelector('.sr-question') || stage.querySelector('.summary-score'))?.focus({ preventScroll: true });
+    // The next question starts at the top of the room, under the sticky site bar.
+    const room = document.querySelector('.sr-room');
+    if (room && room.getBoundingClientRect().top < 64) window.scrollTo({ top: room.getBoundingClientRect().top + window.scrollY - 72, behavior: 'auto' });
   }
 
-  function renderSummary() {
-    const total = state.deck.length;
-    stage.appendChild(el('div', 'summary-score', `${state.right}/${total}`));
-    stage.appendChild(el('div', 'summary-line', t().summary));
-
-    const missed = state.missed.filter(
-      (sign, index, list) => list.findIndex((other) => other.code === sign.code) === index,
-    );
-
-    if (missed.length) {
-      stage.appendChild(el('div', 'learn-prompt', t().missed));
-      const grid = el('div', 'summary-grid');
-      missed.forEach((sign) => {
-        const link = document.createElement('a');
-        link.className = 'summary-item';
-        link.href = `/signs/${sign.code}`;
-        const img = document.createElement('img');
-        img.src = sign.image;
-        img.alt = label(sign);
-        link.append(img, el('span', null, `${sign.code} · ${label(sign)}`));
-        grid.appendChild(link);
-      });
-      stage.appendChild(grid);
+  // Like the test room: the visual (the sign, or the meaning to match) on the left, the question and
+  // the answers on the right, so the eye starts at the top and reads straight down to the answers.
+  function renderQuestion() {
+    const round = state.round;
+    const sign = state.byCode.get(round.deck[round.position]);
+    const type = round.types[round.position];
+    if (!round.options.length) { round.options = buildOptions(sign); saveRound(); }
+    const options = round.options.map(code => state.byCode.get(code));
+    const card = el('div', 'sr-card sr-card--' + type);
+    const prompt = el('div', 'sr-prompt');
+    const answers = el('div', 'sr-answers');
+    const ask = el('h2', 'sr-question'); ask.tabIndex = -1; ask.id = 'learnQuestion';
+    if (type === 'name') {
+      const art = el('div', 'learn-art sr-art'); const image = el('img'); image.src = sign.image; image.alt = round.answered ? `${sign.code}: ${name(sign)}` : t().sign; image.width = 240; image.height = 240; art.append(image);
+      prompt.append(art);
+      ask.textContent = t().askName;
+      answers.append(ask);
+    } else {
+      const about = describe(sign);
+      ask.textContent = about.ask;
+      prompt.append(ask, el('p', 'learn-question sr-description sr-description--' + about.kind, about.text));
     }
-
-    const actions = el('div', 'learn-actions');
-    if (missed.length) {
-      const again = el('button', 'btn-primary', t().practiseMissed);
-      again.type = 'button';
-      again.addEventListener('click', () => startSession(missed));
-      actions.appendChild(again);
-    }
-    const fresh = el('button', missed.length ? 'btn-ghost' : 'btn-primary', t().newRound);
-    fresh.type = 'button';
-    fresh.addEventListener('click', () => startSession());
-    const browse = document.createElement('a');
-    browse.className = 'btn-ghost';
-    browse.href = '/signs';
-    browse.textContent = t().browse;
-    actions.append(fresh, browse);
-    stage.appendChild(actions);
-  }
-
-  function renderStats() {
-    const scope = inScope();
-    const learned = scope.filter((sign) => box(sign.code) >= LEARNED_AT).length;
-    const review = scope.filter((sign) => {
-      const entry = state.progress[sign.code];
-      return entry && entry.box < LEARNED_AT;
-    }).length;
-    document.getElementById('learnStats').innerHTML = t().stats(learned, review, scope.length);
-
-    const asked = state.finished ? state.deck.length : state.position + (state.answered ? 1 : 0);
-    document.getElementById('sessionCounter').textContent = state.finished
-      ? ''
-      : t().counter(Math.min(state.position + 1, state.deck.length), state.deck.length);
-    document.getElementById('sessionScore').textContent = t().score(state.right, asked);
-    document.getElementById('sessionBar').style.width = state.deck.length
-      ? `${(asked / state.deck.length) * 100}%`
-      : '0%';
-
-    document.querySelectorAll('.learn-chip').forEach((chip) => {
-      const group = chip.dataset.group;
-      const signs = group === 'all' ? state.signs : state.signs.filter((sign) => sign.group === group);
-      const done = signs.filter((sign) => box(sign.code) >= LEARNED_AT).length;
-      const meter = chip.querySelector('[data-meter]');
-      if (meter) meter.style.width = signs.length ? `${(done / signs.length) * 100}%` : '0%';
-      const labelNode = chip.querySelector('[data-chip-label]');
-      if (labelNode) {
-        labelNode.textContent =
-          group === 'all' ? t().all : `${group} · ${t().groups[group] || group}`;
+    const list = el('div', type === 'name' ? 'learn-options sr-options' : 'learn-images sr-images');
+    list.setAttribute('role', 'group'); list.setAttribute('aria-labelledby', 'learnQuestion');
+    options.forEach((option, index) => {
+      const button = el('button', type === 'name' ? 'learn-option sr-option' : 'image-option sr-image-option');
+      button.type = 'button'; button.dataset.code = option.code; button.disabled = round.answered;
+      const key = el('span', 'option-key', String(index + 1));
+      if (type === 'name') button.append(key, el('span', 'sr-option-copy', name(option)));
+      else { const image = el('img'); image.src = option.image; image.alt = t().option(index + 1); button.append(key, image); }
+      if (round.answered) {
+        if (option.code === sign.code) { button.classList.add('is-correct'); button.append(el('span', 'sr-verdict', t().rightAnswer)); }
+        else if (option.code === round.chosen) { button.classList.add('is-wrong'); button.append(el('span', 'sr-verdict', t().yourAnswer)); }
       }
+      button.addEventListener('click', () => answer(option.code));
+      list.append(button);
     });
+    answers.append(list);
+    if (round.answered) {
+      const right = round.chosen === sign.code;
+      const why = el('div', 'learn-feedback sr-why ' + (right ? 'is-correct' : 'is-wrong')); why.setAttribute('role', 'status');
+      why.append(el('strong', 'sr-why-verdict', right ? t().correct : t().wrong));
+      const head = el('div', 'sr-why-head');
+      const image = el('img'); image.src = sign.image; image.alt = ''; image.width = 48; image.height = 48;
+      head.append(image, el('span', 'explain-code', sign.code), el('b', '', name(sign)));
+      why.append(head);
+      if (sign.teaching.meaning) why.append(el('p', '', local(sign.teaching.meaning)));
+      [[t().action, sign.teaching.action], [t().mistake, sign.teaching.mistake]].forEach(([label, value]) => {
+        const row = el('p', 'sr-why-row');
+        row.append(el('b', '', `${label}: `), document.createTextNode(local(value)));
+        why.append(row);
+      });
+      if (sign.name_da) why.append(el('p', 'sr-why-da', `På dansk: ${sign.name_da}`));
+      const more = el('a', 'sr-why-link', t().card); more.href = `/signs/${sign.code}`; why.append(more);
+      const next = el('button', 'btn-primary sx-btn', round.position + 1 >= round.deck.length ? t().last : t().next); next.type = 'button'; next.id = 'nextBtn';
+      next.addEventListener('click', advance);
+      answers.append(why, el('div', 'learn-actions sr-actions'));
+      answers.lastChild.append(next);
+    }
+    card.append(prompt, answers);
+    stage.append(card);
+  }
+
+  // The result reads like a test result: the score, every sign of the round marked right or missed,
+  // then what comes next.
+  function renderSummary() {
+    const round = state.round;
+    const box = el('div', 'sr-summary');
+    const head = el('div', 'sr-summary-head');
+    const score = el('div', 'summary-score', `${round.right}/${round.deck.length}`); score.tabIndex = -1;
+    const words = el('div', 'sr-summary-words');
+    words.append(el('h2', 'summary-line', t().summary), el('p', 'sr-summary-copy', t().summaryLine(round.right, round.deck.length)));
+    const next = store.nextDue(courseCodes.concat(round.deck));
+    if (next) words.append(el('p', 'sr-summary-copy', t().nextDue(window.WEXSignProgress.formatDue(next, lang()))));
+    head.append(score, words);
+    box.append(head, el('p', 'sr-summary-label', t().roundSigns));
+    const grid = el('div', 'summary-grid');
+    round.deck.forEach((code, index) => {
+      const sign = state.byCode.get(code);
+      if (!sign) return;
+      const right = round.results[index] === true;
+      const link = el('a', 'summary-item ' + (right ? 'is-correct' : 'is-wrong')); link.href = `/signs/${sign.code}`;
+      const image = el('img'); image.src = sign.image; image.alt = '';
+      const copy = el('span', 'summary-item-copy');
+      copy.append(el('b', 'summary-item-verdict', right ? t().gotRight : t().gotWrong), el('span', '', `${sign.code} · ${name(sign)}`));
+      link.append(image, copy);
+      grid.append(link);
+    });
+    box.append(grid);
+    const missed = round.missed.map(code => state.byCode.get(code)).filter(Boolean);
+    const actions = el('div', 'learn-actions sr-actions');
+    if (missed.length) {
+      const again = el('button', 'btn-primary sx-btn', t().practiseMissed); again.type = 'button';
+      again.addEventListener('click', () => newRound(missed));
+      actions.append(again);
+    }
+    const fresh = el('button', missed.length ? 'btn-ghost sx-btn' : 'btn-primary sx-btn', t().newRound); fresh.type = 'button';
+    fresh.addEventListener('click', () => { state.scope = resolveScope(); newRound(); });
+    const lessons = el('a', 'btn-ghost sx-btn', t().lessons); lessons.href = '/signs/lessons';
+    actions.append(fresh, lessons);
+    box.append(actions);
+    if (userId) { const tests = el('a', 'sr-why-link sr-tests-link', t().testsLink); tests.href = '/dashboard#signTests'; box.append(tests); }
+    stage.append(box);
+  }
+
+  function renderEmpty() {
+    const box = el('div', 'sr-summary');
+    box.append(el('p', 'sr-summary-copy', REVIEW_ONLY ? t().noneDue : t().empty));
+    const next = store.nextDue(courseCodes);
+    if (REVIEW_ONLY && next) box.append(el('p', 'sl-note', t().nextDue(window.WEXSignProgress.formatDue(next, lang()))));
+    const actions = el('div', 'learn-actions sr-actions');
+    const lessons = el('a', 'btn-primary sx-btn', t().lessons); lessons.href = '/signs/lessons';
+    actions.append(lessons);
+    if (REVIEW_ONLY) { const anyway = el('a', 'btn-ghost sx-btn', t().practiseAnyway); anyway.href = '/signs/learn'; actions.append(anyway); }
+    box.append(actions);
+    stage.append(box);
   }
 
   function renderChrome() {
     document.getElementById('learnTitle').textContent = t().title;
-    document.getElementById('modeCards').textContent = t().modes.cards;
-    document.getElementById('modeName').textContent = t().modes.name;
-    document.getElementById('modeImage').textContent = t().modes.image;
-    document.getElementById('learnReset').textContent = t().reset;
-    document.getElementById('learnHint').textContent = t().hint;
+    document.getElementById('learnScope').textContent = state.scope?.label || '';
+    const all = state.signs.map(sign => sign.code);
+    const counts = store.summary(all);
+    document.getElementById('statDue').textContent = counts.due;
+    document.getElementById('statLearning').textContent = counts.learning;
+    document.getElementById('statLearned').textContent = store.summary(courseCodes).learned;
+    document.getElementById('statDueLabel').textContent = t().due;
+    document.getElementById('statLearningLabel').textContent = t().learning;
+    document.getElementById('statLearnedLabel').textContent = t().learned;
+    document.getElementById('learnHint').textContent = t().hint(Boolean(userId));
     document.getElementById('keysHint').textContent = t().keys;
-    document.querySelectorAll('.lang-btn').forEach((button) => {
-      button.classList.toggle('is-active', button.dataset.lang === state.lang);
-    });
+    document.getElementById('practiceSettingsLabel').textContent = t().settings;
+    document.getElementById('resetCopy').textContent = t().resetCopy;
+    document.getElementById('learnReset').textContent = t().reset;
+    const round = state.round;
+    const counter = document.getElementById('sessionCounter');
+    const pills = document.getElementById('sessionPills');
+    if (!round || round.finished) { counter.textContent = ''; pills.replaceChildren(); document.getElementById('sessionScore').textContent = ''; }
+    else {
+      counter.textContent = t().counter(Math.min(round.position + 1, round.deck.length), round.deck.length);
+      pills.replaceChildren(...round.deck.map((_, index) => {
+        const pill = el('span');
+        if (index < round.results.length) pill.className = round.results[index] ? 'is-right' : 'is-wrong';
+        else if (index === round.position) pill.className = 'is-current';
+        return pill;
+      }));
+      document.getElementById('sessionScore').textContent = t().score(round.right, round.results.length);
+    }
+    syncStatus();
+  }
+  function syncStatus() {
+    const status = document.getElementById('learnSyncStatus');
+    const retry = document.getElementById('learnSyncRetry');
+    status.textContent = !userId ? '' : store.sync === 'failed' ? t().failed : store.sync === 'saving' ? t().saving : t().saved;
+    retry.hidden = store.sync !== 'failed';
+    retry.textContent = t().retry;
   }
 
   function render() {
+    stage.replaceChildren();
+    if (!state.round || !state.round.deck.length) renderEmpty();
+    else if (state.round.finished) renderSummary();
+    else renderQuestion();
     renderChrome();
-    stage.innerHTML = '';
-
-    if (!state.deck.length) {
-      stage.appendChild(el('p', 'learn-meaning', t().empty));
-      renderStats();
-      return;
-    }
-    if (state.finished) {
-      renderSummary();
-      renderStats();
-      return;
-    }
-
-    const sign = current();
-    if (state.mode === 'cards') renderCard(sign);
-    else if (state.mode === 'name') renderNameQuiz(sign);
-    else renderImageQuiz(sign);
-    renderStats();
   }
 
-  function advance() {
-    state.position += 1;
-    state.revealed = false;
-    state.answered = false;
-    state.chosen = null;
-    if (state.position >= state.deck.length) state.finished = true;
+  shell.querySelectorAll('.lang-btn').forEach(button => button.addEventListener('click', () => {
+    if (state.scope) state.scope.label = resolveScope().label;
     render();
-  }
-
-  document.querySelectorAll('.mode-btn').forEach((button) => {
-    button.addEventListener('click', () => {
-      state.mode = button.dataset.mode;
-      document.querySelectorAll('.mode-btn').forEach((item) => {
-        item.classList.toggle('is-active', item === button);
-      });
-      startSession();
-    });
+  }));
+  document.getElementById('learnSyncRetry').addEventListener('click', () => store.flush());
+  store.onChange(syncStatus);
+  document.getElementById('learnReset').addEventListener('click', () => {
+    if (!window.confirm(t().resetConfirm)) return;
+    store.reset();
+    try { localStorage.removeItem(ROUND_KEY); } catch (_) { /* nothing stored */ }
+    state.scope = resolveScope(); newRound();
   });
-
-  document.querySelectorAll('.lang-btn').forEach((button) => {
-    button.addEventListener('click', () => {
-      state.lang = button.dataset.lang === 'ru' ? 'ru' : 'en';
-      save();
-      render();
-    });
-  });
-
-  document.getElementById('learnChips')?.addEventListener('click', (event) => {
-    const chip = event.target.closest('.learn-chip');
-    if (!chip) return;
-    state.group = chip.dataset.group;
-    document.querySelectorAll('.learn-chip').forEach((item) => {
-      item.classList.toggle('is-active', item === chip);
-    });
-    startSession();
-  });
-
-  document.getElementById('learnReset')?.addEventListener('click', () => {
-    state.progress = {};
-    try {
-      localStorage.removeItem(LEGACY_KNOWN);
-      localStorage.removeItem(LEGACY_HARD);
-    } catch (e) {
-      // nothing to clean up
-    }
-    save();
-    startSession();
-    enqueue({}, true);
-  });
-
-  document.addEventListener('keydown', (event) => {
-    if (event.target instanceof Element && event.target.matches('input, textarea, select')) return;
-    if (event.key >= '1' && event.key <= '4' && !state.answered) {
-      const options = stage.querySelectorAll('.learn-option, .image-option');
-      const option = options[Number(event.key) - 1];
-      if (option) {
-        event.preventDefault();
-        option.click();
-      }
+  document.addEventListener('keydown', event => {
+    if (event.defaultPrevented || event.repeat || event.ctrlKey || event.metaKey || event.altKey || window.WEXNavigation?.isOpen() || document.querySelector('.cookie-consent.show')) return;
+    if (event.target instanceof Element && event.target.matches('input, textarea, select, button, a, summary')) return;
+    if (event.key >= '1' && event.key <= '4' && state.round && !state.round.answered) {
+      const option = stage.querySelectorAll('.learn-option, .image-option')[Number(event.key) - 1];
+      if (option) { event.preventDefault(); option.click(); }
       return;
     }
     if (event.key === 'Enter' || event.key === ' ') {
-      const button = document.getElementById('nextBtn') || document.getElementById('revealBtn');
-      if (button) {
-        event.preventDefault();
-        button.click();
-      }
+      const button = document.getElementById('nextBtn');
+      if (button) { event.preventDefault(); button.click(); }
     }
   });
 
   fetch('/api/signs')
-    .then((response) => response.json())
-    .then(async (data) => {
-      state.signs = data.signs || [];
-      try { await loadAccountProgress(); } catch (error) { syncStatus(true); }
-      const startChip = document.querySelector(`.learn-chip[data-group="${state.group}"]`);
-      if (startChip) {
-        document.querySelectorAll('.learn-chip').forEach((item) => {
-          item.classList.toggle('is-active', item === startChip);
-        });
-      } else {
-        state.group = 'all';
-      }
-      startSession();
+    .then(response => response.json())
+    .then(async data => {
+      state.signs = (data.signs || []).filter(sign => sign.teaching && sign.teaching.action);
+      state.lessons = data.lessons || [];
+      state.byCode = new Map(state.signs.map(sign => [sign.code, sign]));
+      state.lessons.forEach(lesson => lesson.codes.forEach(code => {
+        if (!state.lessonsOf.has(code)) state.lessonsOf.set(code, []);
+        state.lessonsOf.get(code).push(lesson);
+      }));
+      await store.load();
+      state.scope = resolveScope();
+      if (restoreRound()) render(); else if (state.scope.pool.length) newRound(); else { state.round = null; render(); }
     })
-    .catch(() => {
-      stage.innerHTML = '';
-      stage.appendChild(el('p', 'learn-meaning', t().failed));
-    });
+    .catch(() => { stage.replaceChildren(el('p', 'sl-note', t().failedLoad)); });
 })();

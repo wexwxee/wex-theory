@@ -1,0 +1,17 @@
+const assert=require('node:assert/strict');
+const review=require('../../static/js/sign-review.js');
+const day=86400000, now=Date.UTC(2026,9,16,12);
+assert.equal(review.isDue(undefined,undefined,now),false);
+assert.equal(review.isDue({box:0},now,now),true);
+assert.equal(review.isDue({box:1},now,now),false);
+assert.equal(review.isDue({box:1},new Date(now-day).toISOString(),now),true);
+assert.equal(review.dueAt({box:2},now),now+3*day);
+assert.deepEqual(review.grade(undefined,undefined,true,'cards',now),{entry:{box:1},reviewedAt:now,changed:true});
+assert.equal(review.grade({box:1},now-day,true,'cards',now).changed,false,'cards cannot promote an existing review level');
+assert.equal(review.grade({box:1},now,true,'name',now).changed,false,'immediate replay cannot promote a level');
+assert.deepEqual(review.grade({box:1},now-day,true,'name',now),{entry:{box:2},reviewedAt:now,changed:true});
+assert.deepEqual(review.grade({box:4},now,true,'cards',now),{entry:{box:4},reviewedAt:now,changed:false});
+assert.deepEqual(review.grade({box:4},now,false,'image',now),{entry:{box:0},reviewedAt:now,changed:true});
+assert.equal(review.grade({box:5},now-31*day,true,'image',now).entry.box,5);
+assert.equal(review.isDue({box:3},undefined,now),true,'legacy progress without a date remains reviewable');
+console.log('OK review dates, spaced promotion, cards, legacy progress and wrong-answer reset');

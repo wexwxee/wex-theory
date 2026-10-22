@@ -1,0 +1,1007 @@
+{% extends "base.html" %}
+
+{% block title %}WEX Theory - Danish Driving Theory Practice{% endblock %}
+
+{% block body %}
+<style>
+  .landing-page {
+    overflow: hidden;
+  }
+  .landing-shell {
+    width: min(1180px, calc(100% - 32px));
+    margin: 0 auto;
+  }
+  .landing-hero {
+    position: relative;
+    min-height: min(790px, calc(100vh - 120px));
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+    gap: 52px;
+    align-items: center;
+    padding: 64px 0 70px;
+  }
+  .landing-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0 -14vw;
+    height: 100%;
+    z-index: -1;
+    background:
+      radial-gradient(circle at 18% 22%, rgba(0,0,0,0.045), transparent 26%),
+      radial-gradient(circle at 82% 12%, rgba(0,0,0,0.028), transparent 30%);
+    pointer-events: none;
+    opacity: 0.7;
+  }
+  [data-theme] .landing-hero::before {
+    background:
+      radial-gradient(circle at 16% 18%, rgba(244,114,182,0.18), transparent 28%),
+      radial-gradient(circle at 82% 14%, rgba(56,189,248,0.10), transparent 30%);
+  }
+  .landing-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-weight: 850;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    background: color-mix(in srgb, var(--bg-card) 92%, transparent);
+  }
+  .landing-kicker i {
+    color: var(--text);
+  }
+  .landing-title {
+    font-size: clamp(3.2rem, 7.4vw, 7.2rem);
+    line-height: 0.92;
+    letter-spacing: -0.085em;
+    font-weight: 900;
+    max-width: 760px;
+    margin-bottom: 22px;
+  }
+  .landing-title span {
+    display: block;
+  }
+  .landing-sub {
+    max-width: 590px;
+    color: var(--text-muted);
+    font-size: 1.08rem;
+    line-height: 1.72;
+    margin-bottom: 28px;
+  }
+  .landing-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 34px;
+  }
+  .landing-actions .btn-primary,
+  .landing-actions .btn-ghost {
+    min-height: 48px;
+    border-radius: 12px;
+    padding-inline: 22px;
+  }
+  .landing-actions:has(+ .landing-update) {
+    margin-bottom: 16px;
+  }
+  .landing-update {
+    margin: 0 0 30px;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+  .landing-update a {
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .hero-proof {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    max-width: 610px;
+  }
+  .hero-proof-item {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px;
+    background: color-mix(in srgb, var(--bg-card) 88%, transparent);
+    animation: landingRise 0.55s ease both;
+  }
+  .hero-proof-num {
+    font-size: 1.55rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.05em;
+  }
+  .hero-proof-label {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    margin-top: 6px;
+  }
+  .hero-visual {
+    position: relative;
+    min-height: 640px;
+    animation: landingRise 0.65s ease both;
+  }
+  .product-preview {
+    position: absolute;
+    inset: 44px 0 20px 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 26px;
+    background: #fff;
+    color: #0a0a0a;
+    box-shadow: 0 36px 110px rgba(0,0,0,0.16);
+  }
+  [data-theme] .product-preview {
+    background: #0d0d0d;
+    color: #f8fafc;
+    border-color: rgba(255,255,255,0.10);
+  }
+  .preview-nav {
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 0 18px;
+    border-bottom: 1px solid #e5e5e5;
+    background: rgba(255,255,255,0.92);
+  }
+  [data-theme] .preview-nav {
+    background: rgba(12,12,12,0.92);
+    border-bottom-color: rgba(255,255,255,0.10);
+  }
+  .preview-nav-left,
+  .preview-nav-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .preview-burger,
+  .preview-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    border-radius: 10px;
+    border: 1px solid #dedede;
+    background: #fff;
+    color: #111;
+    font-size: 0.84rem;
+    font-weight: 760;
+  }
+  .preview-burger {
+    width: 38px;
+  }
+  .preview-chip {
+    padding: 0 12px;
+  }
+  [data-theme] .preview-burger,
+  [data-theme] .preview-chip {
+    background: #121212;
+    border-color: rgba(255,255,255,0.13);
+    color: #fff;
+  }
+  .preview-title {
+    font-weight: 850;
+    letter-spacing: -0.03em;
+  }
+  .preview-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
+    gap: 20px;
+    padding: 24px;
+  }
+  .preview-media {
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    background: #0a0a0a;
+    box-shadow: 0 16px 42px rgba(0,0,0,0.12);
+  }
+  .preview-media img {
+    width: 100%;
+    height: 100%;
+    min-height: 360px;
+    object-fit: cover;
+    display: block;
+  }
+  .preview-media-badge {
+    position: absolute;
+    left: 14px;
+    top: 14px;
+    min-height: 30px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.92);
+    color: #111;
+    font-size: 0.76rem;
+    font-weight: 800;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+  .preview-panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .preview-progress {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: #666;
+    font-size: 0.88rem;
+    margin-bottom: 16px;
+  }
+  [data-theme] .preview-progress {
+    color: rgba(255,255,255,0.62);
+  }
+  .preview-dots {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .preview-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #d9d9d9;
+  }
+  .preview-dots span:first-child {
+    background: #0a0a0a;
+  }
+  [data-theme] .preview-dots span {
+    background: rgba(255,255,255,0.22);
+  }
+  [data-theme] .preview-dots span:first-child {
+    background: #fff;
+  }
+  .preview-question {
+    font-size: clamp(1.22rem, 2vw, 1.7rem);
+    line-height: 1.2;
+    letter-spacing: -0.045em;
+    font-weight: 850;
+    margin-bottom: 18px;
+  }
+  .preview-answers {
+    display: grid;
+    gap: 12px;
+  }
+  .preview-answer {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 12px;
+    align-items: start;
+    min-height: 66px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid #dcdcdc;
+    background: #f7f7f7;
+    color: #111;
+    font-size: 0.92rem;
+    line-height: 1.42;
+  }
+  [data-theme] .preview-answer {
+    background: rgba(255,255,255,0.055);
+    border-color: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.86);
+  }
+  .preview-box {
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
+    border: 2px solid #d6d6d6;
+    background: #fff;
+    margin-top: 1px;
+  }
+  [data-theme] .preview-box {
+    background: transparent;
+    border-color: rgba(255,255,255,0.28);
+  }
+  .preview-foot {
+    margin-top: auto;
+    padding-top: 18px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .preview-stat {
+    border: 1px solid #e0e0e0;
+    border-radius: 14px;
+    padding: 12px;
+    background: #fff;
+  }
+  [data-theme] .preview-stat {
+    background: rgba(255,255,255,0.045);
+    border-color: rgba(255,255,255,0.10);
+  }
+  .preview-stat strong {
+    display: block;
+    font-size: 1.05rem;
+    line-height: 1;
+    margin-bottom: 5px;
+  }
+  .preview-stat span {
+    color: #777;
+    font-size: 0.72rem;
+  }
+  [data-theme] .preview-stat span {
+    color: rgba(255,255,255,0.55);
+  }
+  .landing-hero {
+    grid-template-columns: minmax(0, 0.82fr) minmax(520px, 1.18fr);
+    gap: 46px;
+  }
+  .landing-title {
+    font-size: clamp(3rem, 5.7vw, 5.8rem);
+    line-height: 0.96;
+    letter-spacing: -0.072em;
+    max-width: 680px;
+  }
+  .landing-sub {
+    max-width: 540px;
+  }
+  .hero-visual {
+    min-height: 560px;
+  }
+  .hero-proof-item {
+    background: var(--bg-card);
+  }
+  .landing-section {
+    border-top: 1px solid var(--border);
+    padding: 82px 0;
+  }
+  .section-eyebrow {
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    font-size: 0.76rem;
+    font-weight: 850;
+    margin-bottom: 12px;
+  }
+  .section-row {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 30px;
+  }
+  .section-copy {
+    color: var(--text-muted);
+    max-width: 470px;
+    line-height: 1.7;
+  }
+  .media-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 18px;
+  }
+  .media-card {
+    position: relative;
+    overflow: hidden;
+    min-height: 360px;
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    box-shadow: 0 24px 70px rgba(0,0,0,0.08);
+  }
+  .media-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.45s ease;
+  }
+  .media-card:hover img {
+    transform: scale(1.04);
+  }
+  .media-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(0deg, rgba(0,0,0,0.72), transparent 48%);
+  }
+  .media-caption {
+    position: absolute;
+    z-index: 1;
+    left: 22px;
+    right: 22px;
+    bottom: 22px;
+    color: #fff;
+  }
+  .media-caption h3 {
+    font-size: 1.5rem;
+    letter-spacing: -0.04em;
+    margin-bottom: 8px;
+  }
+  .media-caption p {
+    color: rgba(255,255,255,0.72);
+    line-height: 1.55;
+  }
+  .side-demo {
+    display: grid;
+    gap: 18px;
+  }
+  .mini-panel {
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 22px;
+    background: var(--bg-card);
+    min-height: 171px;
+  }
+  .mini-panel h3 {
+    font-size: 1.1rem;
+    letter-spacing: -0.03em;
+    margin-bottom: 10px;
+  }
+  .mini-panel p {
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .library-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .library-card {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    background: var(--bg-card);
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  }
+  .library-card:hover {
+    transform: translateY(-6px);
+    border-color: color-mix(in srgb, var(--text) 22%, var(--border));
+    box-shadow: 0 22px 60px rgba(0,0,0,0.10);
+  }
+  .library-card img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    display: block;
+  }
+  .library-card-body {
+    padding: 16px;
+  }
+  .library-card-title {
+    font-weight: 850;
+    letter-spacing: -0.025em;
+    margin-bottom: 6px;
+  }
+  .library-card-text {
+    color: var(--text-muted);
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+  .flow-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .flow-card {
+    position: relative;
+    min-height: 230px;
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    background:
+      linear-gradient(145deg, color-mix(in srgb, var(--bg-card) 96%, #fff 4%), var(--bg-card));
+    padding: 24px;
+    overflow: hidden;
+  }
+  .flow-card::after {
+    content: attr(data-step);
+    position: absolute;
+    right: 16px;
+    bottom: -22px;
+    color: color-mix(in srgb, var(--text) 8%, transparent);
+    font-size: 7rem;
+    line-height: 1;
+    font-weight: 900;
+    letter-spacing: -0.08em;
+  }
+  .flow-icon {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .flow-card h3 {
+    font-size: 1.22rem;
+    letter-spacing: -0.035em;
+    margin-bottom: 10px;
+  }
+  .flow-card p {
+    color: var(--text-muted);
+    line-height: 1.65;
+    position: relative;
+    z-index: 1;
+  }
+  .landing-cta {
+    position: relative;
+    overflow: hidden;
+    border-radius: 30px;
+    border: 1px solid var(--border);
+    padding: 44px;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.08), transparent 40%),
+      #0d0d0d;
+    color: #fff;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 28px;
+    align-items: center;
+  }
+  .landing-cta::after {
+    content: "WEX";
+    position: absolute;
+    right: -16px;
+    bottom: -58px;
+    font-size: 12rem;
+    font-weight: 900;
+    letter-spacing: -0.08em;
+    color: rgba(255,255,255,0.04);
+  }
+  .landing-cta h2 {
+    font-size: clamp(2rem, 4vw, 4rem);
+    line-height: 0.98;
+    letter-spacing: -0.07em;
+    max-width: 680px;
+    margin-bottom: 14px;
+  }
+  .landing-cta p {
+    color: rgba(255,255,255,0.68);
+    max-width: 560px;
+    line-height: 1.7;
+  }
+  .landing-cta .btn-primary {
+    background: #fff;
+    color: #0a0a0a;
+  }
+  @keyframes landingRise {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .product-preview,
+    .hero-proof-item,
+    .hero-visual {
+      animation: none !important;
+    }
+  }
+  @media (max-width: 980px) {
+    .landing-hero {
+      grid-template-columns: 1fr;
+      min-height: auto;
+      padding-top: 44px;
+    }
+    .hero-visual {
+      min-height: 640px;
+    }
+    .product-preview {
+      inset: 0;
+    }
+    .preview-body {
+      grid-template-columns: 1fr;
+    }
+    .preview-media img {
+      min-height: 320px;
+    }
+    .media-grid,
+    .landing-cta {
+      grid-template-columns: 1fr;
+    }
+    .flow-grid {
+      grid-template-columns: 1fr;
+    }
+    .library-strip {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 640px) {
+    .landing-shell {
+      width: min(100% - 24px, 1180px);
+    }
+    .landing-hero {
+      gap: 30px;
+      padding-bottom: 44px;
+    }
+    .landing-title {
+      font-size: clamp(2.65rem, 17vw, 4.8rem);
+    }
+    .landing-sub {
+      font-size: 1rem;
+    }
+    .hero-proof {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .hero-visual {
+      min-height: 760px;
+    }
+    .product-preview {
+      inset: 0;
+      border-radius: 20px;
+    }
+    .preview-nav {
+      height: auto;
+      padding: 12px;
+      align-items: flex-start;
+    }
+    .preview-nav-left,
+    .preview-nav-right {
+      flex-wrap: wrap;
+    }
+    .preview-nav-right {
+      justify-content: flex-end;
+    }
+    .preview-body {
+      padding: 14px;
+      gap: 16px;
+    }
+    .preview-media {
+      border-radius: 16px;
+    }
+    .preview-media img {
+      min-height: 240px;
+    }
+    .preview-question {
+      font-size: 1.14rem;
+      letter-spacing: -0.03em;
+    }
+    .preview-answer {
+      min-height: 58px;
+      padding: 12px;
+      font-size: 0.83rem;
+    }
+    .preview-foot {
+      grid-template-columns: 1fr;
+      padding-top: 14px;
+    }
+    .preview-stat {
+      padding: 10px 12px;
+    }
+    .preview-stat strong,
+    .preview-stat span {
+      display: inline;
+      margin-right: 6px;
+    }
+    .section-row {
+      align-items: start;
+      flex-direction: column;
+    }
+    .landing-section {
+      padding: 58px 0;
+    }
+    .library-strip {
+      grid-template-columns: 1fr;
+    }
+    .landing-cta {
+      padding: 28px;
+      border-radius: 24px;
+    }
+  }
+  /* Home polish, 19 Oct 2026: same visual language, firmer hierarchy. */
+  .landing-section .section-title {
+    font-size: clamp(1.9rem, 3.4vw, 3rem);
+    line-height: 1.04;
+    letter-spacing: -0.055em;
+    font-weight: 800;
+    max-width: 20ch;
+    margin-bottom: 0;
+    text-wrap: balance;
+  }
+  .mini-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .mini-panel .flow-icon {
+    margin-bottom: 0;
+  }
+  .landing-update {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    max-width: 590px;
+    margin-top: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--bg-card) 80%, transparent);
+  }
+  .landing-update > i {
+    flex: none;
+    color: var(--text);
+  }
+  @media (min-width: 981px) {
+    .product-preview {
+      display: flex;
+      flex-direction: column;
+    }
+    .preview-nav {
+      flex: none;
+    }
+    .preview-body {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 88px), transparent);
+      mask-image: linear-gradient(to bottom, #000 calc(100% - 88px), transparent);
+    }
+  }
+  /* On phones the four library cards sit image-left, so the section is a glance, not a long scroll. */
+  @media (max-width: 640px) {
+    .library-card {
+      display: grid;
+      grid-template-columns: 38% minmax(0, 1fr);
+    }
+    .library-card img {
+      height: 100%;
+      min-height: 112px;
+      aspect-ratio: auto;
+    }
+    .library-card-body {
+      align-self: center;
+      padding: 14px;
+    }
+  }
+</style>
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <button class="burger-btn" id="indexBurgerBtn" aria-label="Open navigation"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
+      <a href="{% if user is defined and user %}/welcome{% else %}/{% endif %}" class="logo">WEXTheory</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" id="navThemeBtn" aria-label="Toggle theme">&#9728;&#65039;</button>
+      {% if user is defined and user %}
+      <a href="/dashboard" class="btn-ghost btn-sm">Dashboard</a>
+      <a href="/profile" class="btn-primary btn-sm">{{ user.name }}</a>
+      {% else %}
+      <a href="/login" class="btn-ghost btn-sm">Sign In</a>
+      <a href="/register" class="btn-primary btn-sm">Create Account</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<main class="landing-page">
+  <section class="landing-shell landing-hero">
+    <div>
+      <div class="landing-kicker"><i class="fa-solid fa-road"></i> Danish theory practice</div>
+      <h1 class="landing-title"><span>Danish theory</span><span>practice with real test scenes.</span></h1>
+      <p class="landing-sub">
+        Practice with the same kind of photo-based situations you see in the app: road signs, lanes, cyclists, buses, signals, and the small details that decide the answer.
+      </p>
+      <div class="landing-actions">
+        <a href="/test/0" class="btn-primary">Start free starter test</a>
+        <a href="/pricing" class="btn-ghost">How to get full access</a>
+      </div>
+      <p style="color:var(--text-muted);font-size:.86rem;line-height:1.55;margin-top:14px;">Full access is arranged with the admin on Telegram and activated after payment confirmation.</p>
+      <p class="landing-update">
+        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+        <span>Denmark changed the driving education on 1 July 2026. The theory test kept its format &mdash;
+        <a href="/rules-2026">what changed</a>,
+        <a href="/exam-language">which language you sit it in</a>,
+        <a href="/exam-day">what test day costs</a>.</span>
+      </p>
+      <div class="hero-proof">
+        <div class="hero-proof-item">
+          <div class="hero-proof-num">13</div>
+          <div class="hero-proof-label">practice tests</div>
+        </div>
+        <div class="hero-proof-item">
+          <div class="hero-proof-num">325</div>
+          <div class="hero-proof-label">photo questions</div>
+        </div>
+        <div class="hero-proof-item">
+          <div class="hero-proof-num">20/25</div>
+          <div class="hero-proof-label">pass target</div>
+        </div>
+        <div class="hero-proof-item">
+          <div class="hero-proof-num">Review</div>
+          <div class="hero-proof-label">after attempts</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual" aria-label="WEXTheory test interface preview">
+      <div class="product-preview">
+        <div class="preview-nav">
+          <div class="preview-nav-left">
+            <span class="preview-burger"><i class="fa-solid fa-bars"></i></span>
+            <span class="preview-chip">← Tests</span>
+            <span class="preview-title">Theory Test 1</span>
+          </div>
+          <div class="preview-nav-right">
+            <span class="preview-chip">25:00</span>
+            <span class="preview-chip">EN</span>
+            <span class="preview-chip" style="background:#0a0a0a;color:#fff;border-color:#0a0a0a;">Finish</span>
+          </div>
+        </div>
+        <div class="preview-body">
+          <div class="preview-media">
+            <img src="/test-images/Test01/screenshots/q01.jpg" alt="Road situation from a WEXTheory practice test">
+            <span class="preview-media-badge">Question 1 of 25</span>
+          </div>
+          <div class="preview-panel">
+            <div class="preview-progress">
+              <span>Original wording</span>
+              <div class="preview-dots" aria-hidden="true">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+            <h3 class="preview-question">You are required to turn right at the signal-controlled junction. There is no traffic directly behind you. How should you proceed?</h3>
+            <div class="preview-answers">
+              <div class="preview-answer"><span class="preview-box"></span><span>I keep to my own lane all the way to the pedestrian crossing.</span></div>
+              <div class="preview-answer"><span class="preview-box"></span><span>I pull in to the bus lane and remain there all the way to the pedestrian crossing.</span></div>
+              <div class="preview-answer"><span class="preview-box"></span><span>I drive across the bus lane and pull all the way in to the kerb in front of the cycle path.</span></div>
+            </div>
+            <div class="preview-foot" aria-hidden="true">
+              <div class="preview-stat"><strong>325</strong><span>questions</span></div>
+              <div class="preview-stat"><strong>13</strong><span>tests</span></div>
+              <div class="preview-stat"><strong>Review</strong><span>answers</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-section">
+    <div class="landing-shell">
+      <div class="section-row">
+        <div>
+          <p class="section-eyebrow">What you practice</p>
+          <h2 class="section-title">A visual library, not a wall of theory text</h2>
+        </div>
+        <p class="section-copy">Each session is built around road scenes and answer feedback, so the page feels close to what you actually need to notice during a Danish theory test.</p>
+      </div>
+      <div class="media-grid">
+        <article class="media-card">
+          <img src="/test-images/Test07/screenshots/q01.jpg" alt="Road situation with traffic lights">
+          <div class="media-caption">
+            <h3>Photo-based questions</h3>
+            <p>Train your eye on signs, lanes, pedestrians, buses, cyclists, and right-of-way details.</p>
+          </div>
+        </article>
+        <div class="side-demo">
+          <div class="mini-panel">
+            <span class="flow-icon" aria-hidden="true"><i class="fa-regular fa-bookmark"></i></span>
+            <div>
+              <h3>Save hard questions</h3>
+              <p>Mark questions while training and come back to them later from your saved list.</p>
+            </div>
+          </div>
+          <div class="mini-panel">
+            <span class="flow-icon" aria-hidden="true"><i class="fa-solid fa-chart-simple"></i></span>
+            <div>
+              <h3>Review every attempt</h3>
+              <p>Open your completed tests again and see exactly what you selected, missed, and should remember.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-section">
+    <div class="landing-shell">
+      <div class="section-row">
+        <div>
+          <p class="section-eyebrow">Inside the library</p>
+          <h2 class="section-title">Structured sets for repeatable practice</h2>
+        </div>
+        <p class="section-copy">Start with the free starter test, then move through the full library when you want more complete preparation.</p>
+      </div>
+      <div class="info-actions" style="margin-bottom:22px;"><a href="/signs/lessons" class="btn-ghost">Free sign lessons</a><a href="/exam-words-demo" class="btn-ghost">Try ten exam words</a>{% if user %}<a href="/study" class="btn-ghost">Start a short session</a>{% endif %}</div>
+      <div class="library-strip">
+        <article class="library-card">
+          <img src="/test-images/Test01/screenshots/q11.jpg" alt="Road practice scene">
+          <div class="library-card-body">
+            <div class="library-card-title">Starter test</div>
+            <p class="library-card-text">A quick free sample you can open before creating an account.</p>
+          </div>
+        </article>
+        <article class="library-card">
+          <img src="/test-images/Test04/screenshots/q02.jpg" alt="Country road practice scene">
+          <div class="library-card-body">
+            <div class="library-card-title">Full test sets</div>
+            <p class="library-card-text">25-question sessions with pass/fail structure and saved progress.</p>
+          </div>
+        </article>
+        <article class="library-card">
+          <img src="/test-images/Test08/screenshots/q04.jpg" alt="Road sign practice scene">
+          <div class="library-card-body">
+            <div class="library-card-title">Answer explanations</div>
+            <p class="library-card-text">Understand why an answer is right instead of only memorising it.</p>
+          </div>
+        </article>
+        <article class="library-card">
+          <img src="/test-images/ExamMode/mock-exam.png" alt="Exam mode preview">
+          <div class="library-card-body">
+            <div class="library-card-title">Exam mode</div>
+            <p class="library-card-text">Mixed questions for a more realistic final practice rhythm.</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-section">
+    <div class="landing-shell">
+      <div class="section-row">
+        <div>
+          <p class="section-eyebrow">How it works</p>
+          <h2 class="section-title">Practice, review, repeat</h2>
+        </div>
+      </div>
+      <div class="flow-grid">
+        <article class="flow-card" data-step="01">
+          <div class="flow-icon"><i class="fa-solid fa-display"></i></div>
+          <h3>Open a test</h3>
+          <p>Work through photo-based questions in a clean test interface with progress, timer, and saved questions.</p>
+        </article>
+        <article class="flow-card" data-step="02">
+          <div class="flow-icon"><i class="fa-solid fa-list-check"></i></div>
+          <h3>Check your answers</h3>
+          <p>After the attempt, review correct, missed, and wrong selections with explanations.</p>
+        </article>
+        <article class="flow-card" data-step="03">
+          <div class="flow-icon"><i class="fa-solid fa-rotate-right"></i></div>
+          <h3>Repeat smarter</h3>
+          <p>Use history and saved questions to focus on the situations that still catch you out.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-section">
+    <div class="landing-shell">
+      <div class="landing-cta">
+        <div>
+          <h2>Start with the free starter test.</h2>
+          <p>Try 15 questions without an account. For the full library, create an account and message the admin on Telegram. Agree on the price and period; the admin activates access after payment confirmation.</p>
+        </div>
+        <div class="landing-actions" style="margin:0;">
+          <a href="/test/0" class="btn-primary">Start starter test</a>
+          <a href="/pricing" class="btn-ghost" style="color:#fff;border-color:rgba(255,255,255,0.22);">Get full access</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/test/0">Starter Test</a>
+      <a href="/signs">Road signs</a>
+      <a href="/pricing">Access</a>
+      <a href="/faq">FAQ</a>
+      <a href="/contact">Contact</a>
+    </div>
+    <div>&copy; 2026 WEXTheory. All rights reserved.</div>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ request.state.csp_nonce }}" src="/static/js/index.js"></script>
+{% endblock %}

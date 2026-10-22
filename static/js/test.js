@@ -1,4 +1,4 @@
-﻿const testContainer = document.getElementById('testContainer');
+const testContainer = document.getElementById('testContainer');
 const TEST_ID = Number(testContainer?.dataset.testId || 0);
 const IS_AUTHENTICATED = testContainer?.dataset.isAuthenticated === 'true';
 const WORDING_MODE = testContainer?.dataset.wordingMode || 'original';
@@ -17,7 +17,7 @@ let bookmarkRequestInFlight = false;
 let testToastTimer = null;
 let speechVoices = [];
 const speechPrefs = {
-  voiceURI: localStorage.getItem('wexVoiceURI') || '',
+  voiceURI: (() => { try { return localStorage.getItem('wexVoiceURI') || ''; } catch (_) { return ''; } })(),
 };
 let speechState = { button: null, text: '', paused: false };
 let voiceUsage = {};
@@ -30,11 +30,7 @@ let wordHelpSelectionTimer = null;
 const DRAFT_KEY = `wexDraft:v1:${testContainer.dataset.userId || 'guest'}:${TEST_ID}:${WORDING_MODE}`;
 let draftReady = false;
 let draftFinished = false;
-let savedDraft = null;
-try {
-  savedDraft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
-  if (!savedDraft || !Number.isFinite(savedDraft.savedAt) || Date.now() - savedDraft.savedAt > 7 * 86400000) savedDraft = null;
-} catch (_) {}
+let savedDraft = window.WEXTestDrafts.read(DRAFT_KEY);
 function saveDraft() {
   if (!draftReady || draftFinished || !questions.length) return;
   try {
@@ -104,6 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') closeQuestionMap();
   });
+  document.addEventListener('keydown', handleQuestionKeys);
   document.getElementById('finishModalCloseBtn')?.addEventListener('click', closeFinishModal);
   document.getElementById('finishKeepGoingBtn')?.addEventListener('click', closeFinishModal);
   document.getElementById('submitBtn')?.addEventListener('click', () => submitTest());
@@ -589,29 +586,29 @@ function attachAnswerOptionInteraction(option, sourceElement, questionId, answer
       && pointerType === 'mouse'
       && event.detail >= 2;
     gesture.startedAt = 0;
-    if (gesture.cancelled || gesture.moved || held || hasSelection || isMouseMultiClick) {
+    if (isMouseMultiClick) {
+      // A double-click on the text selects a word for the word helper. The first click already
+      // ticked the answer, so the second one takes that back instead of every click waiting.
+      if (event.detail === 2 && lastTextToggle.option === option && performance.now() - lastTextToggle.at < 700) {
+        toggleAnswer(questionId, answerId, option);
+      }
+      lastTextToggle.option = null;
+      cancelPendingTextClick();
+      scheduleWordHelpInspection(0);
+      return;
+    }
+    if (gesture.cancelled || gesture.moved || held || hasSelection) {
       cancelPendingTextClick();
       scheduleWordHelpInspection(0);
       return;
     }
 
-    if (onSourceText && pointerType === 'mouse') {
-      // Delay only mouse clicks directly on text so a second click can turn
-      // them into native word selection. Checkbox/padding and touch stay fast.
-      cancelPendingTextClick();
-      pendingTextClick = window.setTimeout(() => {
-        pendingTextClick = 0;
-        if (!option.isConnected || questions[currentIndex]?.id !== questionId) return;
-        if (hasSelectionInsideElement(sourceElement)) {
-          scheduleWordHelpInspection(0);
-          return;
-        }
-        toggleAnswer(questionId, answerId, option);
-      }, 420);
-      return;
-    }
-
+    cancelPendingTextClick();
     toggleAnswer(questionId, answerId, option);
+    if (onSourceText && pointerType === 'mouse') {
+      lastTextToggle.option = option;
+      lastTextToggle.at = performance.now();
+    }
   });
   sourceElement.addEventListener('dblclick', () => {
     cancelPendingTextClick();
@@ -636,7 +633,7 @@ function loadVoiceUsage() {
 function saveVoiceUsage(voiceURI) {
   if (!voiceURI) return;
   voiceUsage[voiceURI] = (voiceUsage[voiceURI] || 0) + 1;
-  localStorage.setItem('wexVoiceUsage', JSON.stringify(voiceUsage));
+  try { localStorage.setItem('wexVoiceUsage', JSON.stringify(voiceUsage)); } catch (_) { /* Voice playback still works for this visit. */ }
 }
 
 function voiceLanguageMode(text) {
@@ -769,7 +766,7 @@ function renderVoiceList(searchTerm = '') {
     option.appendChild(meta);
     option.addEventListener('click', () => {
       speechPrefs.voiceURI = voice.voiceURI;
-      localStorage.setItem('wexVoiceURI', speechPrefs.voiceURI);
+      try { localStorage.setItem('wexVoiceURI', speechPrefs.voiceURI); } catch (_) { /* The selected voice still works for this visit. */ }
       saveVoiceUsage(voice.voiceURI);
       updateVoicePickerLabel();
       renderVoiceList(document.getElementById('voiceSearchInput')?.value || '');
@@ -1171,8 +1168,8 @@ function updateDots() {
     const q = questions[i];
     const answered = (selectedAnswers[q.id] || []).length > 0;
     if (i === currentIndex) {
-      dot.style.background = 'var(--text)';
-      dot.style.borderColor = 'var(--text)';
+      dot.style.background = 'var(--accent)';
+      dot.style.borderColor = 'var(--accent)';
     } else if (answered) {
       dot.style.background = 'var(--text-muted)';
       dot.style.borderColor = 'var(--text-muted)';
@@ -1182,6 +1179,32 @@ function updateDots() {
     }
   }
 }
+
+// Arrow keys move between questions and number keys tick answers, as in the home page's sample.
+function handleQuestionKeys(event) {
+  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.defaultPrevented) return;
+  if (!questions.length || document.getElementById('questionArea')?.style.display === 'none') return;
+  const target = event.target;
+  if (target?.closest?.('input, textarea, select, [contenteditable="true"], .voice-picker, .word-help-popup, .modal')) return;
+  if (window.WEXNavigation?.isOpen() || document.querySelector('.modal-overlay.open, .lbz-overlay.is-open')) return;
+  if (!document.getElementById('questionMap')?.hidden) return;
+  if (String(window.getSelection?.() || '').trim()) return;
+  if (event.key === 'ArrowLeft' && currentIndex > 0) {
+    event.preventDefault();
+    prevQuestion();
+  } else if (event.key === 'ArrowRight' && currentIndex < questions.length - 1) {
+    event.preventDefault();
+    nextQuestion();
+  } else if (/^[1-9]$/.test(event.key) && !event.repeat) {
+    const option = document.querySelectorAll('#answersContainer .answer-option')[Number(event.key) - 1];
+    if (!option) return;
+    event.preventDefault();
+    option.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+  }
+}
+
+// The answer last ticked by a single click on its text, so a double-click can take it back.
+const lastTextToggle = { option: null, at: 0 };
 
 function prevQuestion() {
   if (currentIndex > 0) { currentIndex--; renderQuestion(); }

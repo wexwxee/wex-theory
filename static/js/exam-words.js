@@ -42,16 +42,24 @@
   });
 
   // ── Storage ────────────────────────────────────────────────────────────────
-  const SCOPE_KEY = DEMO_MODE ? 'demo' : 'full';
+  const accountScope = modeNode?.dataset.studyAccount;
+  const SCOPE_KEY = (DEMO_MODE ? 'demo' : 'full') + (accountScope ? `-user-${accountScope}` : '');
   const PROGRESS_KEY = `wex-exam-words-2026-${SCOPE_KEY}-progress-v1`; // { id: 'known' | 'hard' }
   const STREAK_KEY = `wex-exam-words-2026-${SCOPE_KEY}-streaks-v1`;    // { id: rightInARow }
   const SETTINGS_KEY = `wex-exam-words-2026-${SCOPE_KEY}-settings-v1`;
   const SERVER_SYNC = !DEMO_MODE;
+  const roundStore = window.WEXWordRoundStore;
+  const guidedStudy = window.WEXStudy?.active('words');
+  const ROUND_OWNER = `${SCOPE_KEY}:${guidedStudy ? 'study-' + guidedStudy.id : 'standalone'}`;
+  const ROUND_KEY = `wexWordRound:v1:${ROUND_OWNER}`;
+  const roundContext = { owner: ROUND_OWNER, terms: ALL_TERMS, revision: roundStore.revision(ALL_TERMS), guided: Boolean(guidedStudy) };
+  function browserStorage() { try { return window.localStorage; } catch (_) { return null; } }
 
   function readJson(key, fallback) {
     try {
       const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : fallback;
+      const value = raw ? JSON.parse(raw) : fallback;
+      return value && typeof value === 'object' && !Array.isArray(value) ? value : fallback;
     } catch (e) {
       return fallback;
     }
@@ -73,16 +81,21 @@
     query: '',
   };
 
-  state.scope = state.settings.scope || 'exam';
-  state.mode = state.settings.mode || 'mixed';
-  state.filter = state.settings.filter || 'all';
+  state.scope = roundStore.SCOPES.includes(state.settings.scope) ? state.settings.scope : 'exam';
+  state.mode = roundStore.MODES.includes(state.settings.mode) ? state.settings.mode : 'mixed';
+  state.filter = ['all', 'new', 'hard', 'known'].includes(state.settings.filter) ? state.settings.filter : 'all';
+  if (guidedStudy) { state.scope = 'exam'; state.mode = 'quiz'; state.filter = 'all'; }
+  let roundRestored = false;
+  let roundSaved = false;
 
   let syncTimer = null;
+  let progressDirty = false;
 
   function saveProgress() {
     writeJson(PROGRESS_KEY, state.progress);
     writeJson(STREAK_KEY, state.streaks);
     if (!SERVER_SYNC) return;
+    progressDirty = true;
     clearTimeout(syncTimer);
     syncTimer = setTimeout(pushProgress, 500);
   }
@@ -94,18 +107,23 @@
     writeJson(SETTINGS_KEY, state.settings);
   }
 
-  async function pushProgress() {
+  async function pushProgress(keepalive = false) {
+    const snapshot = JSON.stringify(state.progress);
     try {
-      await fetch('/api/exam-words/progress', {
+      const response = await fetch('/api/exam-words/progress', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
         body: JSON.stringify({ progress: state.progress }),
+        keepalive,
       });
+      if(response.ok && JSON.stringify(state.progress) === snapshot)progressDirty=false;
     } catch (e) {
       // offline: localStorage still holds it, the next change tries again
     }
   }
+
+  window.addEventListener('pagehide',()=>{if(SERVER_SYNC&&progressDirty){clearTimeout(syncTimer);pushProgress(true);}});
 
   async function pullProgress() {
     if (!SERVER_SYNC) return;
@@ -294,8 +312,36 @@
     if (firstItem) {
       queue = [firstItem, ...queue.filter((item) => item.id !== firstItem.id)].slice(0, SESSION_SIZE);
     }
-    state.session = { queue, index: 0, revealed: false, answered: null, right: 0, missed: [] };
+    state.session = { queue, index: 0, revealed: false, answered: null, right: 0, missed: [],
+      answers: [], options: [], startedAt: Date.now(), audioPlayed: false };
+    roundRestored = false;
     render();
+  }
+
+  function saveRound() {
+    const session = state.session;
+    roundSaved = roundStore.write(browserStorage(), ROUND_KEY, {
+      version: 1, owner: ROUND_OWNER, revision: roundContext.revision, startedAt: session.startedAt,
+      mode: state.mode, scope: state.scope, queue: session.queue.map(item => item.id),
+      answers: session.answers, revealed: session.revealed, answered: session.answered,
+      options: session.options.map(item => item.id),
+    });
+  }
+
+  function restoreRound() {
+    const saved = roundStore.read(browserStorage(), ROUND_KEY, roundContext);
+    if (!saved) return false;
+    const terms = new Map(ALL_TERMS.map(item => [item.id, item]));
+    state.mode = saved.mode;
+    state.scope = saved.scope;
+    const queue = saved.queue.map(id => terms.get(id));
+    state.session = { queue, index: saved.answers.length, answers: saved.answers, revealed: saved.revealed,
+      answered: saved.answered, options: saved.options.map(id => terms.get(id)), startedAt: saved.startedAt,
+      right: saved.answers.filter(Boolean).length, missed: queue.filter((_, i) => saved.answers[i] === false),
+      audioPlayed: true }; // Restoring a listening question must not start audio without a gesture.
+    roundRestored = true;
+    render();
+    return true;
   }
 
   function sessionItem() {
@@ -307,27 +353,38 @@
   // What the current word asks of you. "mixed" alternates so a round has both
   // recognition and recall; the other modes do one thing all the way through.
   function stepKind(index) {
-    if (state.mode === 'cards') return 'recall';
-    if (state.mode === 'quiz') return 'quiz';
-    if (state.mode === 'reverse') return 'reverse';
-    if (state.mode === 'listening') return 'listening';
-    if (index % 3 === 2) return 'quiz';
-    return 'recall';
+    return roundStore.kind(state.mode, index);
   }
 
   function advance(right, item) {
-    grade(item, right);
     const session = state.session;
+    if (sessionItem() !== item) return; // Ignore a second activation of a detached Next button.
+    grade(item, right);
+    session.answers.push(right);
     if (right) session.right += 1;
     else session.missed.push(item);
     session.index += 1;
     session.revealed = false;
     session.answered = null;
+    session.options = [];
+    session.audioPlayed = false;
     render();
+    focusStage();
+  }
+
+  function focusStage() {
+    const target = $('#ew-body .ew-term') || $('#ew-body .ew-done-score');
+    if (target) { target.tabIndex = -1; target.focus({preventScroll: true}); }
   }
 
   function quizOptions(item) {
-    const pool = shuffle(scopeTerms().filter((other) => other.id !== item.id && other.ru !== item.ru));
+    const label = option => state.mode === 'reverse' ? option.en : option.ru;
+    const seen = new Set([label(item)]);
+    const pool = shuffle(scopeTerms().filter(other => other.id !== item.id)).filter(other => {
+      if (seen.has(label(other))) return false;
+      seen.add(label(other));
+      return true;
+    });
     return shuffle([item, ...pool.slice(0, 3)]);
   }
 
@@ -338,6 +395,7 @@
 
     if (session.index >= session.queue.length) {
       const done = el('div', 'ew-done');
+      done.appendChild(el('p', 'ew-result-kind', state.mode === 'cards' ? 'Cards · self-assessed recall' : state.mode === 'mixed' ? 'Mixed · includes self-assessed recall' : 'Quiz · checked answers'));
       done.appendChild(el('div', 'ew-done-score', `${session.right}/${session.queue.length}`));
       done.appendChild(el('p', 'ew-done-copy', session.missed.length
         ? 'The words you missed lead the next round.'
@@ -349,7 +407,7 @@
           const row = el('button', 'ew-done-row');
           row.type = 'button';
           row.append(el('b', null, item.en), el('span', null, item.ru));
-          row.addEventListener('click', () => startSession(item));
+          row.addEventListener('click', () => { startSession(item); focusStage(); $('#ew-body').scrollIntoView({block: 'start', behavior: 'instant'}); });
           list.appendChild(row);
         });
         done.appendChild(list);
@@ -359,6 +417,7 @@
       again.type = 'button';
       again.addEventListener('click', () => startSession());
       done.appendChild(again);
+      window.WEXStudy?.returnLink(done,'words',session.right,session.queue.length,state.mode);
       root.appendChild(done);
       return;
     }
@@ -386,6 +445,7 @@
 
     function finishWith(right, extra) {
       const verdict = el('div', `ew-verdict ${right ? 'is-right' : 'is-wrong'}`);
+      verdict.setAttribute('role', 'status');
       verdict.append(el('b', null, right ? 'Correct' : 'Not this one'), el('span', null, extra));
       card.appendChild(verdict);
       const example = exampleBlock(item);
@@ -397,33 +457,34 @@
       const actions = el('div', 'ew-actions');
       actions.appendChild(next);
       card.appendChild(actions);
-      next.focus();
     }
 
     function askOptions(promptText, promptNode, optionText, answerHint) {
       card.appendChild(el('div', 'ew-ask', promptText));
       card.appendChild(promptNode);
       const options = el('div', 'ew-options');
-      const buttons = [];
-      quizOptions(item).forEach((option, index) => {
+      if (!session.options.length) session.options = quizOptions(item);
+      session.options.forEach((option, index) => {
         const button = el('button', 'ew-option');
         button.type = 'button';
-        button.append(el('span', 'ew-option-key', String(index + 1)), el('span', null, optionText(option)));
+        button.append(el('span', 'ew-option-key', String(index + 1)), el('span', 'ew-option-meaning', optionText(option)));
         button.addEventListener('click', () => {
           if (session.answered) return;
           session.answered = option.id;
-          const right = option.id === item.id;
-          buttons.forEach((entry) => {
-            entry.button.disabled = true;
-            if (entry.option.id === item.id) entry.button.classList.add('is-right');
-            else if (entry.option.id === option.id) entry.button.classList.add('is-wrong');
-          });
-          finishWith(right, answerHint());
+          render();
+          $('#ew-body [data-role="next"]')?.focus();
         });
-        buttons.push({ button, option });
+        if (session.answered) {
+          button.disabled = true;
+          const label = [option.id === session.answered ? 'Your answer' : '', option.id === item.id ? 'Correct meaning' : ''].filter(Boolean).join(' · ');
+          if (label) button.appendChild(el('span', 'ew-option-state', label));
+          if (option.id === item.id) button.classList.add('is-right');
+          else if (option.id === session.answered) button.classList.add('is-wrong');
+        }
         options.appendChild(button);
       });
       card.appendChild(options);
+      if (session.answered) finishWith(session.answered === item.id, answerHint());
     }
 
     if (kind === 'quiz') {
@@ -453,7 +514,15 @@
       play.addEventListener('click', () => say(item.en, 'en'));
       const holder = el('div', 'ew-listen');
       holder.appendChild(play);
-      say(item.en, 'en');
+      if (!session.audioPlayed && !session.answered && canSpeak('en')) {
+        say(item.en, 'en');
+        session.audioPlayed = true;
+      }
+      if (!canSpeak('en')) {
+        play.disabled = true;
+        holder.append(el('p', 'ew-no-voice', 'No English voice is available on this device. Read the phrase instead:'),
+          el('div', 'ew-term', item.en));
+      }
       askOptions('', holder, (option) => option.ru, () => `${item.en} — ${item.ru}`);
       card.querySelector('.ew-ask:nth-of-type(2)')?.remove();
       root.appendChild(card);
@@ -470,6 +539,7 @@
       card.addEventListener('click', () => {
         session.revealed = true;
         render();
+        $('#ew-body [data-role="knew"]')?.focus({preventScroll: true});
       });
       card.appendChild(el('div', 'ew-ask', 'What does this mean?'));
       card.appendChild(phrase);
@@ -537,11 +607,14 @@
     filters.forEach(([key, label, count]) => {
       const chip = el('button', 'ew-chip' + (state.filter === key ? ' is-active' : ''));
       chip.type = 'button';
+      chip.dataset.filter = key;
+      chip.setAttribute('aria-pressed', String(state.filter === key));
       chip.append(el('span', null, label), el('span', 'ew-chip-count', String(count)));
       chip.addEventListener('click', () => {
         state.filter = key;
         saveSettings();
         render();
+        $(`#ew-side-filters [data-filter="${key}"]`)?.focus({preventScroll: true});
       });
       wrap.appendChild(chip);
     });
@@ -567,7 +640,7 @@
 
       const row = el('button', `ew-list-row is-${statusOf(item)}`);
       row.type = 'button';
-      if (current && current.id === item.id) row.classList.add('is-current');
+      if (current && current.id === item.id) { row.classList.add('is-current'); row.setAttribute('aria-current', 'true'); }
       const body = el('span', 'ew-list-body');
       body.append(el('span', 'ew-list-term', item.en), el('span', 'ew-list-ru', item.ru));
       row.append(body, el('span', 'ew-list-dot'));
@@ -587,14 +660,21 @@
 
     document.querySelectorAll('.ew-mode').forEach((button) => {
       button.classList.toggle('is-active', button.dataset.mode === state.mode);
+      button.setAttribute('aria-pressed', String(button.dataset.mode === state.mode));
+      button.hidden = button.dataset.mode === 'listening' && !canSpeak('en') && state.mode !== 'listening';
+      button.disabled = Boolean(guidedStudy) && button.dataset.mode !== 'quiz';
     });
 
     document.querySelectorAll('.ew-scope').forEach((button) => {
       button.classList.toggle('is-active', button.dataset.scope === state.scope);
+      button.setAttribute('aria-pressed', String(button.dataset.scope === state.scope));
+      button.disabled = Boolean(guidedStudy) && button.dataset.scope !== 'exam';
       const count = button.querySelector('.ew-scope-count');
       if (count) count.textContent = scopeCounts[button.dataset.scope];
     });
 
+    const descriptions = {mixed: 'Mixed: recall a meaning, then check it in a quiz. Card answers are self-assessed.', cards: 'Cards: recall the meaning before revealing it, then assess your own answer.', quiz: 'Quiz: read the English phrase and choose its Russian meaning.', reverse: 'RU → EN: choose the English phrase for the Russian meaning.', listening: 'Listening: hear the English phrase and choose its Russian meaning.'};
+    $('#ew-mode-description').textContent = descriptions[state.mode];
     $('#ew-bar-known').style.width = c.total ? `${(c.known / c.total) * 100}%` : '0%';
     $('#ew-bar-hard').style.width = c.total ? `${(c.hard / c.total) * 100}%` : '0%';
     $('#ew-legend').innerHTML = `<b>${c.known}</b> learned &middot; <b>${c.hard}</b> to repeat &middot; ${c.total} in set`;
@@ -607,11 +687,22 @@
     stage.innerHTML = '';
     renderStage(stage);
     renderList($('#ew-side-list'));
+    saveRound();
+    const notice = $('#ew-round-status');
+    const text = !roundSaved ? 'Browser storage is unavailable. This round lasts for this visit.'
+      : roundRestored ? 'Saved round restored. It stays in this browser for up to seven days.'
+      : 'Your round stays in this browser for up to seven days.';
+    if (notice && notice.textContent !== text) notice.textContent = text;
   }
 
   // ── Keyboard: the loop should not need the mouse ───────────────────────────
   document.addEventListener('keydown', (event) => {
-    if (event.target instanceof Element && event.target.matches('input, textarea, select')) return;
+    if (event.defaultPrevented || event.repeat || event.ctrlKey || event.metaKey || event.altKey || window.WEXNavigation?.isOpen() || document.querySelector('.cookie-consent.show')) return;
+    if (event.target instanceof Element) {
+      if (event.target.closest('input, textarea, select, a, summary, [contenteditable="true"], [role="dialog"]')) return;
+      const control = event.target.closest('button');
+      if (control && !(control.closest('#ew-body') && /^[1-4]$/.test(event.key))) return;
+    }
     const session = state.session;
     if (!session) return;
 
@@ -620,12 +711,13 @@
       if (button) {
         event.preventDefault();
         button.click();
+        return true;
       }
+      return false;
     };
 
     if (event.key === ' ' || event.key === 'Enter') {
-      press('next');
-      press('reveal');
+      if (!press('next')) press('reveal');
       return;
     }
     if (event.key === '1') {
@@ -661,6 +753,7 @@
   // ── Wiring ─────────────────────────────────────────────────────────────────
   document.querySelectorAll('.ew-scope').forEach((button) => {
     button.addEventListener('click', () => {
+      if (guidedStudy && button.dataset.scope !== 'exam') return;
       state.scope = button.dataset.scope;
       saveSettings();
       startSession();
@@ -668,11 +761,9 @@
   });
 
   document.querySelectorAll('.ew-mode').forEach((button) => {
-    if (button.dataset.mode === 'listening' && !canSpeak('en')) {
-      button.hidden = true;
-      return;
-    }
     button.addEventListener('click', () => {
+      if (guidedStudy && button.dataset.mode !== 'quiz') return;
+      if (button.dataset.mode === 'listening' && !canSpeak('en')) return;
       state.mode = button.dataset.mode;
       saveSettings();
       startSession();
@@ -689,6 +780,11 @@
     state.progress = {};
     state.streaks = {};
     saveProgress();
+    startSession();
+  });
+
+  $('#ew-new-round')?.addEventListener('click', () => {
+    if (!window.confirm('Start a new round? The saved round will be replaced. Learned words will stay.')) return;
     startSession();
   });
 
@@ -709,6 +805,6 @@
     }
   }
 
-  startSession();
+  if (!restoreRound()) startSession();
   pullProgress();
 })();

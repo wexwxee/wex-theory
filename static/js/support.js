@@ -1,5 +1,5 @@
 (function () {
-  const currentTheme = localStorage.getItem('wex-theme') || 'dark';
+  const currentTheme = localStorage.getItem('wex-theme-v2') === 'light' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', currentTheme);
 
   const navBtn = document.getElementById('navThemeBtn');

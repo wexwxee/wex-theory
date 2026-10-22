@@ -1,0 +1,327 @@
+accelerere Accelerate
+advarselstrekant Warning triangle
+afskærmning Wheel covers
+akkumulator Battery
+akseltryk Axle load
+alarmcentral Emergency services
+anordning Device
+ansøgning                     Application
+baglys Rear light / tail light
+bagudrettede Rear-facing
+bagudvendende Rear-facing
+bakke rundt om hjørnet Reverse around the corner
+baklys Reversing light
+bedømmelsesskema   Evaluation form
+bestemmelse Rules / Requirement
+betinget frakendelse af kørekort Suspended driver’s license
+blinklys Blinkers / Indicators
+blinksignal Flashing light
+bremsebelægning Brake lining
+bremseforstærker Vacuum brake booster
+bremselys Brake light
+bremselængde Braking distance
+bremseskiver/bremseklodser Brake discs/Brake pads
+bremsetromler/bremsebakker Brake drums/shoes
+bremsevæske Brake fluid
+bremsevæskebeholder Brake fluid reservoir
+bump Speed bump
+busbane Bus lane
+bæreevne Load capacity
+bærekugle Ball joint
+cpr-nummer Social Security Number
+cykelfeltet (blåt) Blue bicycle lane
+cykelsti Bicycle lane / path
+defekt Faulty
+diagonaldæk Diagonal tires
+driftsbremse Service brake
+el-løbehjul Electric scooter
+energiforbrug Fuel consumption
+energirigtig Energy-efficient
+enkeltsporet jernbane Single-track railroad
+fare Danger
+farligt vejsving Dangerous bend in the road
+fjernlys High beam
+flersporet jernbane Multi-track railroad
+fodgængerfelt Crosswalk
+forankørende Vehicle in front
+forbrænding af alkohol Rate at which my body metabolises alcohol
+forbudstavl Prohibition sign
+forhjulslejer Front wheel bearings
+forhold Conditions
+forude Ahead / Up ahead
+frakørselsbane Exit lane / Off ramp
+frem mod/nærme sig Approach
+fri bane Clear lane /all clear
+fælg Rim
+færdselstavle Traffic sign
+førerspejl Rear view mirror
+førersædet Driver's seat
+gods Goods/Cargo
+grusvej Gravel road
+gul(e) lys Amber light(s)
+hajtænder Yield line/Give way line
+hastighedsbegrænser Speed limiter
+hastighedstavle Speed limit sign
+havariblink Hazard warning lights
+havneplads Harbour/Port area
+helle med græs Traffic island with grass
+hindring Obstacles
+hjulcylinder Wheel cylinder
+hjulenes sporing Wheel alignment
+hjulophæng Wheel suspension
+højre svingspil Right-turn signal
+højre vigepligt Give way to traffic from the right
+ildeslukker Fire extinguisher
+indkørsel forbudt No entry
+indsnævret vej Narrow road
+indstillet Adjusted
+jernbane overkørsel Railroad crossing
+jernbaneoverkørsel uden bomme Railroad crossing without barriers
+kamera Camera
+kantlinje Solid side line
+kantsten Curb
+Knallert Moped
+koblingspunkt Clutch engagement (”half clutch” I daglig tale)
+kofanger Bumper, Front/rear
+kontrollampen for ABS-bremsesystem Warning light for the ABS braking system
+krybespor Crawler lane
+krydset Intersection / Junction
+kø Traffic congestion / Traffic jam
+kølerhjelm Hood / Bonnet
+kørebanen Roadway
+kørebanestriber Road markings
+køreklare vægt Curb weight
+kørekort Driver’s license
+kørende Traffic
+køretøjsbetjening Vehicle operation (how you operate the vehicle)
+kørselsformål Driving purpose
+kørselsretning Driving direction
+Lastbil Truck
+lektionsplan Logbook
+letbane Light rail
+ligeud Straight ahead
+lovbestemmelse Legal provision
+lovkrav Legal requirement
+lukke af for cyklister Block for bicyclists
+lygtetændingstid Lighting-up time
+lyskryds Traffic lights
+lysregulerede kryds Traffic light-controlled intersection
+lyssignal Traffic Light
+manglende justering Poor adjustment
+manglende orientering Lack of orientation
+markvej Dirt road
+metaldæksler Manhole covers
+Midterrabat Median
+miljørigtig Environmentally friendly / Eco friendly
+minusgrønt-signal Minus-green signal
+modkørende Oncoming traffic
+modsatte bane Opposite lane
+motortrafikvej Expressway / Carriageway
+motorvej Motorway
+nakkestøtte Headrest
+nedsat vejgreb reduced traction
+nærlys Low-beam headlights
+nødbremse Emergency brake
+nødspor Emergency lane
+opbygningen Construction
+opholds- og legeområde Residential area
+opnå tilladt hastighed Achieve/obtain permitted speed
+parat Ready
+parkeringsbremse Parking brake
+parkeringsskive Parking disc
+pause Break
+Personbil Passenger car
+positionslys Position lights
+p-pladsen Parking area / Parking lot
+promille Blood alcohol concentration
+prøvesagkyndig Driving examinor
+punkterede linje Broken line
+påbudt Mandatory
+Rabat Shoulder
+radial dæk Radial tire
+rasteplads Rest area
+ratslør Play in the steering wheel
+ratstamme Steering column
+Ratstamme Steering columm
+reaktionstid Reaction time
+reflekser Reflectors
+registreringsattest Vehicle registration certificate
+retningsstabil Directional stability
+rul med kobling nedtrådt Freewheel / coasting – roll with clutch down
+Rundkørsel Roundabout
+Sammenfletningsregel Merge rule
+selvjusterende Self-adjusting
+servostyring Power steering
+sidevejene har ubetinget vigepligt… Traffic coming from the side roads must give way…
+sidevind Crosswind
+signalanordning Signal device
+sikker anbringelse Secure placement
+sikkerhedsafstand Safety distance
+sikkerhedssele Seat belt
+skrå Diagonal
+skærm Fender, Front/rear
+Slidindikator Treadwear indicator
+slidt Worn
+slør Play
+småbørn Young children
+spejlet Mirror
+spirituskørsel Driving under the influence (DUI)
+spærreflade Hatched road markings
+spærrelinje Solid line
+spærrelinje, dobbelt Double solid line
+standselængde Stopping distance
+stiplet linje broken line/dotted line
+Stoplinje Stopline
+stoppligt Duty to stop
+stor knallert Large moped
+strafbart Illegal
+styreegenskaber Steering characteristics
+styreforbindelse Steering connection
+Styrehus Steering gearbox
+styrekugle Tie rod
+styretøj Steering Unit
+støddæmpere Shock absorbers
+tandstang Sterring Rack
+tilladt Permitted
+T-kryds T-junction
+to-kreds driftsbremse Dual-circuit service brake
+to-kredsbremse Dual-circuit brake
+totalvægt Gross vehicle weight (GVW)
+trafikafvikling Flow of traffic
+trafikanter Road users
+transport Transport
+tættere bebygget område Built-up area
+tønder Barrels
+tøvende Hesitant
+ubetinget frakendelse af kørekort Revoked driver’s license
+Ubetinget vigepligt Duty to give way to all traffic
+ude af drift Out of order
+udragende læs Oversized load
+udrykningskøretøj Emergency vehicle
+udvendige spejle Exterior mirrors
+udåndingsprøve Breathalyzer test
+ulempe Inconvenience
+undertavle Supplementary traffic sign
+unødig ulempe Unnecessary inconvenience
+u-vending forbudt No U-turn
+uvirksom Ineffective
+vakuumforstærket Vacuum boosted servo breaks
+vandring Travel e.g. pedal travel
+varmluftblæser Fan heater / Defroster
+varslingslinje Broken long lines/Hazard lines
+vasker og viskere Windscreen washer and wipers
+vejafmærkning Road markings
+vejarbejde Road Construction
+vejens tilstand Road condition
+vejgreb Road grip/Traction
+vejsving Curved road or turn
+vejudformningen Shape of the road
+vending forbudt No turning
+venstre svingsbane Left-turn lane
+venstre svingspil Left-turn signal
+vigepligtsforhold Rules for the duty to give way
+vognbanen længst til venstre Far left lane
+vognbanesignal Lane signal
+vognbanestriber Road markings
+vogntog Truck and trailer
+væltning Overturning
+være til fare Cause danger for…
+værksted Garage/Repair shop
+bremsegreb Brake lever
+bremsekabler Brake cables
+bremsepedal Brake pedal
+eger Spokes
+gaffelkrone/samlestykke Triple clamp
+håndtag Handles
+kronrør/styrestamme Central Column
+kæde Chain
+skridsikker overflade Non-slip surface
+styrudslag Handlebar clearence
+teleskoprør Telescopic tube
+busvogntog Bus and trailer
+campingvogn Caravan
+drejekrans Turntable
+fast kombination Fixed combination
+forskydelig sættevognsskammel Sliding fifth wheel hitch
+forskydelig trækstang Extendible drawbar
+hovedbolttryk Kingpin load
+koblingsattest Coupling certificate
+koblingslængde Coupling length
+kærre Centre-axle trailer
+presenning Tarpaulin
+påhængskøretøj Trailer
+påhængsvogn Trailer
+påløbsbremse Overrun brake
+rokke prøve Tug test
+sammenkobling Hook up
+sikkerhedskæde Safety chain/wire
+stødstang Compressible drawbar
+synsfri sammenkobling Non-inspected combination
+sættevogn Semi-trailer
+tilkoblingsanordning Trailer hitch / Tow hitch / Coupling device
+traktorvogntog Tractor and trailer
+variable kombination Variable combination
+ALB-ventil ALB-valve
+bagsmækken Rear tailgate
+bakspærre-anordning Reverse-blocking device
+belæsningen (vægtfordeling) Load (Load distribution)
+blindvinkelspejl Blind spot mirror
+bogietryk Bogie axle load
+boltforbindelse Bolt connection
+bremsekraftregulator ALB valve (Load sensing valve)
+bremsemembrane Brake chamber
+certifikat for særlig uddannelse Certificate of special training
+chaufføruddannelsesbevis Driver educational certificate
+containerlad Container flatbed
+containerlås Container lock
+diagramark Record sheet
+dobbeltdækkerbus Double-decker bus
+erhvervsmæssig godstransport Commercial transport of goods
+erhvervsmæssig personbefordring Commercial passenger transport
+fast lad Fixed flatbed
+fjederbremser Spring Brakes
+forsmæk Front headboard
+frontspejl Front mirror
+funktionstid Brake lag
+hejseanordning Hoisting device
+hjælpebremse Auxiliary brake
+kompressor Compressor
+kontrolapparat (fartskriveren) Control device (tachograph)
+kølekasse Refrigerated box
+kølevogn Refrigerated truck
+køre- hviletid Driving and rest time
+lastbil/forvogn Truck/Rigid truck
+lastbilmonterede kran Truck-mounted crane
+luftfjederbælg Air spring bellows / Air suspention
+lufttørreanlægget Air dryer system
+læssebagsmæk Tail lift
+læssekran Loading crane
+markeringslygte Outline marker light
+mekanisk sikring Mechanical safety device
+nærzone spejl Close proximity mirror
+nødudgangsdør Emergency exit door
+overvågning Monitor
+presenning Tarpaulin
+påskrift Decal
+reaktionstid Reaction time
+refleksplanke Reflective plate
+relæventil Relay Valve
+skiftelad Swap body
+soveplads Sleeping cab
+stempelvandring Stroke length / Piston travel
+surringsreb Lashing belt
+sættelad Detachable bed
+tankvogn Tanker truck or trailer
+termorude Double-glazed windows
+tilstoppet luftfilter Clogged air filter for the compressor
+tippelad Dump bed
+trykluft kontrollys Air pressure warning light
+trykluft-hydraulisk transformer Compressed air hydraulic transformer
+trykluftstank Compressed air tank
+trykregulator Governor
+tryksikringsventil (4-kredsventil) Double Check Valve
+trækkende lastbil (Sættevognstog) Towing truck/tractor or unit
+udstigningsdør Exit door
+underkøringsafskærmning Underride guard
+veksellad Swap body
+vidvinkelsspejl Wide angle mirror

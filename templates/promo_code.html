@@ -42,7 +42,7 @@
   <div class="nav-inner">
     <div class="nav-left">
       <button class="burger-btn" id="promoBurgerBtn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
-      <a href="/" class="logo">WEXTheory</a>
+      <a href="/" class="logo">WEXTheory</a>{% include "_nav_links.html" %}
     </div>
     <div class="nav-right">
       <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
@@ -65,7 +65,7 @@
       <div style="font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;">Promo Code</div>
       <div id="promoRedeemMsg" style="display:none;padding:10px 12px;border-radius:10px;font-size:0.84rem;margin-bottom:12px;"></div>
       <div class="promo-form-row">
-        <input type="text" id="promoCodeInput" placeholder="Enter promo code" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1;min-width:220px;">
+        <input type="text" id="promoCodeInput" aria-label="Promo code" placeholder="Enter promo code" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1;min-width:220px;">
         <button class="btn-primary" id="promoRedeemBtn" type="button">Activate</button>
       </div>
     </div>

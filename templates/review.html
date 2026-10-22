@@ -30,7 +30,7 @@
     font-variant-numeric: tabular-nums;
   }
   .review-bar { flex: 1; height: 4px; border-radius: 999px; background: var(--border); overflow: hidden; }
-  .review-bar span { display: block; height: 100%; width: 0; background: var(--text); transition: width 0.25s ease; }
+  .review-bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.25s ease; }
   .review-dots { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
   .review-dots[hidden] { display: none; }
   .review-dot {
@@ -259,7 +259,7 @@
     font-weight: 800;
     cursor: pointer;
   }
-  .ru-toggle button.is-active { background: var(--text); color: var(--bg); }
+  .ru-toggle button.is-active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-ring); box-shadow: inset 0 0 0 1px var(--accent-ring); }
 </style>
 {% endblock %}
 
@@ -267,7 +267,7 @@
 <nav>
   <div class="nav-inner">
     <div class="nav-left">
-      <button class="burger-btn" id="reviewBurgerBtn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
+      <button class="burger-btn" id="reviewBurgerBtn" aria-label="Open navigation"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="14" y2="17"/></svg></button>
       <a href="/dashboard" class="back-btn" title="Back to dashboard">
         <span class="back-arrow">&#8592;</span><span class="back-label"> Dashboard</span>
       </a>
@@ -277,7 +277,7 @@
         <button type="button" data-ru="off" class="is-active">EN</button>
         <button type="button" data-ru="on">RU</button>
       </div>
-      <button class="theme-btn" id="navThemeBtn">&#9728;&#65039;</button>
+      <button class="theme-btn" id="navThemeBtn" aria-label="Toggle theme">&#9728;&#65039;</button>
     </div>
   </div>
 </nav>
@@ -286,7 +286,7 @@
   <div class="review-shell" id="reviewShell" data-pending="{{ pending }}">
     <a href="/dashboard" class="review-back">&#8592; Back to my tests</a>
 
-    <div class="review-title">Review your mistakes</div>
+    <h1 class="review-title">Review your mistakes</h1>
     <p class="review-sub">
       Practise the questions due today, starting with the ones you missed most often.
       Your answers are saved. Correct answers return after 1, 3, 7 and 21 days;

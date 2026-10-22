@@ -13,6 +13,10 @@
     document.getElementById('modalNext')?.addEventListener('click', () => modalNav(1));
     document.querySelectorAll('[data-modal-index]').forEach((card) => {
       card.addEventListener('click', () => openModal(Number(card.dataset.modalIndex)));
+      card.addEventListener('keydown', event => {
+        if(event.target !== card || !['Enter',' '].includes(event.key))return;
+        event.preventDefault();openModal(Number(card.dataset.modalIndex));
+      });
     });
     document.querySelectorAll('[data-open-modal]').forEach((btn) => {
       btn.addEventListener('click', () => openModal(Number(btn.dataset.openModal)));
@@ -34,7 +38,7 @@
     let currentModal = 0;
     let resultsTranslateMode = false;
     let speechVoices = [];
-    const speechPrefs = { voiceURI: localStorage.getItem('wexVoiceURI') || '' };
+    const speechPrefs = { voiceURI: (() => { try { return localStorage.getItem('wexVoiceURI') || ''; } catch (_) { return ''; } })() };
     let speechState = { button: null, text: '', paused: false };
     let voiceUsage = {};
     const liveTranslationCache = new Map();
@@ -132,7 +136,7 @@
     function saveVoiceUsage(voiceURI) {
       if (!voiceURI) return;
       voiceUsage[voiceURI] = (voiceUsage[voiceURI] || 0) + 1;
-      localStorage.setItem('wexVoiceUsage', JSON.stringify(voiceUsage));
+      try { localStorage.setItem('wexVoiceUsage', JSON.stringify(voiceUsage)); } catch (_) { /* Voice playback still works for this visit. */ }
     }
 
     function voiceLanguageMode(text) {
@@ -262,7 +266,7 @@ function voiceDisplayName(voice) {
         option.appendChild(meta);
         option.addEventListener('click', () => {
           speechPrefs.voiceURI = voice.voiceURI;
-          localStorage.setItem('wexVoiceURI', speechPrefs.voiceURI);
+          try { localStorage.setItem('wexVoiceURI', speechPrefs.voiceURI); } catch (_) { /* The selected voice still works for this visit. */ }
           saveVoiceUsage(voice.voiceURI);
           updateVoicePickerLabel();
           renderVoiceList(document.getElementById('modalVoiceSearchInput')?.value || '');
@@ -486,20 +490,46 @@ function voiceDisplayName(voice) {
       if (aiExplainKey(DATA[currentModal]) === key) renderAiExplain(DATA[currentModal]);
     }
 
+    let modalFocus = null, modalOverflow = '', modalBackground = [];
+    const reviewDialog = document.getElementById('qModal');
     function openModal(i) {
+      if (!DATA.length || !reviewDialog) return;
+      if (!reviewDialog.classList.contains('open')) {
+        modalFocus = document.activeElement;
+        modalOverflow = document.body.style.overflow;
+        modalBackground = [...document.body.children].filter(node => node !== reviewDialog).map(node => [node, node.inert]);
+        modalBackground.forEach(([node]) => { node.inert = true; });
+      }
       currentModal = Math.max(0, Math.min(DATA.length - 1, Number(i) || 0));
       renderModal();
-      document.getElementById('qModal').classList.add('open');
+      reviewDialog.inert = false;
+      reviewDialog.classList.add('open');
+      reviewDialog.setAttribute('aria-hidden','false');
+      document.body.style.overflow = 'hidden';
+      document.getElementById('modalCloseBtn')?.focus({preventScroll:true});
     }
 
     function closeModal() {
-      document.getElementById('qModal').classList.remove('open');
+      if (!reviewDialog?.classList.contains('open')) return;
+      reviewDialog.classList.remove('open');
+      modalBackground.forEach(([node,inert]) => { node.inert = inert; });
+      modalBackground = [];
+      document.body.style.overflow = modalOverflow;
+      const target = modalFocus?.isConnected && modalFocus !== document.body ? modalFocus : document.querySelector('[data-modal-index]');
+      target?.focus({preventScroll:true});
+      reviewDialog.inert = true;
+      reviewDialog.setAttribute('aria-hidden','true');
+      modalFocus = null;
     }
 
     // ── Click question image to open shared lightbox ────────────────────
     function initPanZoom() {
       const wrap = document.getElementById("modalImgWrap");
       if (!wrap) return;
+      wrap.addEventListener('keydown', event => {
+        if(!['Enter',' '].includes(event.key))return;
+        event.preventDefault();event.stopPropagation();wrap.click();
+      });
       wrap.addEventListener("click", () => {
         const img = document.getElementById("modalImg");
         if (!img || !img.src || wrap.style.display === "none") return;
@@ -768,10 +798,17 @@ function voiceDisplayName(voice) {
     });
     document.addEventListener('keydown', (e) => {
       const open = document.getElementById('qModal')?.classList.contains('open');
-      if (!open) return;
-      if (e.key === 'ArrowLeft') modalNav(-1);
-      if (e.key === 'ArrowRight') modalNav(1);
-      if (e.key === 'Escape') closeModal();
+      if (!open || e.defaultPrevented || document.querySelector('.lbz-overlay.is-open') || window.WEXNavigation?.isOpen()) return;
+      if (e.key === 'Tab') {
+        const nodes=[...reviewDialog.querySelectorAll('button:not(:disabled),a[href],input:not(:disabled),[tabindex="0"]')].filter(node=>node.getClientRects().length&&!node.closest('[hidden]'));
+        if(e.shiftKey&&(document.activeElement===nodes[0]||!reviewDialog.contains(document.activeElement))){e.preventDefault();nodes.at(-1)?.focus();}
+        else if(!e.shiftKey&&(document.activeElement===nodes.at(-1)||!reviewDialog.contains(document.activeElement))){e.preventDefault();nodes[0]?.focus();}
+        return;
+      }
+      if (e.target instanceof Element && e.target.closest('input,textarea,select,[contenteditable="true"]')) return;
+      if (e.key === 'ArrowLeft') { e.preventDefault(); modalNav(-1); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); modalNav(1); }
+      if (e.key === 'Escape') { e.preventDefault(); closeModal(); }
     });
 
     (function renderScore() {
