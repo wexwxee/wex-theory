@@ -1,0 +1,436 @@
+{
+  "note": "WEXTheory's own topic tests, written by us from Færdselsstyrelsen's category B teaching plan (undervisningsplan kategori B, version 1.1, May 2026). Every statement names the teaching-plan point it rests on in `source`. Nothing here is copied from another test, app or school, and nothing from the official practice test at dtp.fstyr.dk. Pictures are our own 3D scenes; the instrument displays are drawn by us.",
+  "source": {
+    "en": "Færdselsstyrelsen's teaching plan for category B (version 1.1, May 2026)",
+    "ru": "учебный план Færdselsstyrelsen для категории B (версия 1.1, май 2026)",
+    "url": "https://cdn.fstyr.dk/faerdselsstyrelsen/Media/639159124710541258/undervisningsplan-kategori-b-almindelig-bil-version-11-maj-2026_pdf290526.pdf"
+  },
+  "tests": [
+    {
+      "id": 201,
+      "number": 1,
+      "section": "1",
+      "topic": "Car & equipment",
+      "title": "Car & Equipment Test 1",
+      "description": "25 questions on the car, its equipment and documents (teaching plan section 1).",
+      "questions": [
+        {
+          "id": "car1-rear-lamp",
+          "section": "1.2.4",
+          "image": "/test-images/Topics/car1-01.webp",
+          "alt": {"en": "Your car from behind at dusk with its lights on; one rear lamp is dark.", "ru": "Ваша машина сзади в сумерках с включёнными фонарями; один задний фонарь не горит."},
+          "prompt": {"en": "You check your car's lights before driving off in the evening. What is right?", "ru": "Вечером перед поездкой вы проверяете фонари машины. Что верно?"},
+          "statements": [
+            {"text": {"en": "The car must have two rear lamps with red light.", "ru": "У машины должны быть два задних габаритных фонаря с красным светом."}, "correct": true,
+             "why": {"en": "Two rear lamps are required, and their light must be red.", "ru": "Два задних фонаря обязательны, и их свет должен быть красным."}, "source": "1.2.4 (2), (8)"},
+            {"text": {"en": "I may drive anyway, because the brake lights still work.", "ru": "Можно ехать: стоп-сигналы ведь работают."}, "correct": false,
+             "why": {"en": "All lamps must be undamaged and able to light; a dead rear lamp must be fixed first.", "ru": "Все фонари должны быть целыми и гореть; неработающий задний фонарь сначала чинят."}, "source": "1.2.4 (4)"},
+            {"text": {"en": "The brake lights must give a clearly stronger light than the rear lamps.", "ru": "Стоп-сигналы должны светить заметно ярче задних габаритов."}, "correct": true,
+             "why": {"en": "Brake lights must be clearly brighter than the rear lamps.", "ru": "Стоп-сигналы обязаны быть заметно ярче габаритов."}, "source": "1.2.4 (15)"},
+            {"text": {"en": "As the driver, I am responsible for the car being safe to drive.", "ru": "Как водитель, я отвечаю за то, чтобы машина была безопасна для езды."}, "correct": true,
+             "why": {"en": "The owner answers for the car being legal; the driver answers for it being safe.", "ru": "Владелец отвечает за то, что машина в законном состоянии, а водитель — за то, что она безопасна."}, "source": "1.2.1 (1), (2)"}
+          ],
+          "explanation": {"en": "One rear lamp is out. Every required lamp must work, so it is fixed before you drive.", "ru": "Один задний фонарь не горит. Все обязательные фонари должны работать, поэтому его чинят до поездки."}
+        },
+        {
+          "id": "car1-abs-lamp",
+          "section": "1.2.3",
+          "image": "/test-images/Topics/car1-02.webp",
+          "alt": {"en": "Driver's view moving off into a town street; the amber ABS lamp is lit in the display.", "ru": "Вид с места водителя, машина трогается на городской улице; на панели горит жёлтая лампа ABS."},
+          "prompt": {"en": "You have just driven off. This lamp has not gone out. What is right?", "ru": "Вы только что тронулись. Эта лампа не погасла. Что верно?"},
+          "statements": [
+            {"text": {"en": "The car can no longer brake.", "ru": "Машина больше совсем не может тормозить."}, "correct": false,
+             "why": {"en": "The ordinary brakes still work, but braking changes: the wheels can lock under hard braking.", "ru": "Обычные тормоза работают, но торможение меняется: при резком торможении колёса могут заблокироваться."}, "source": "1.2.3 (4)"},
+            {"text": {"en": "There may be a fault in the ABS brake system.", "ru": "Возможно, неисправна система ABS."}, "correct": true,
+             "why": {"en": "An ABS lamp that does not go out shortly after moving off is a sign of an ABS fault.", "ru": "Если лампа ABS не гаснет вскоре после начала движения, это признак неисправности ABS."}, "source": "1.2.3 (22)"},
+            {"text": {"en": "I may finish my trip and have the car checked next month.", "ru": "Можно закончить поездку и показать машину в мастерской через месяц."}, "correct": false,
+             "why": {"en": "With an ABS fault, only driving to the nearest workshop is allowed.", "ru": "С неисправной ABS разрешено ехать только до ближайшей мастерской."}, "source": "1.2.3 (22)"},
+            {"text": {"en": "I may only drive to the nearest workshop.", "ru": "Мне можно ехать только до ближайшей мастерской."}, "correct": true,
+             "why": {"en": "This is exactly what is allowed with a faulty ABS.", "ru": "Именно это и разрешено при неисправной ABS."}, "source": "1.2.3 (4), (22)"}
+          ],
+          "explanation": {"en": "The ABS lamp staying on means an ABS fault. The brakes work, but you may only drive to the nearest workshop.", "ru": "Лампа ABS не гаснет — значит, неисправна ABS. Тормоза работают, но ехать можно только до ближайшей мастерской."}
+        },
+        {
+          "id": "car1-eco-lights",
+          "section": "1.2.6",
+          "image": "/test-images/Topics/car1-03.webp",
+          "alt": {"en": "Approaching traffic lights that show yellow, with a car ahead slowing down.", "ru": "Подъезд к светофору, на котором жёлтый; машина впереди замедляется."},
+          "prompt": {"en": "You are approaching traffic lights that will soon show red. What is right?", "ru": "Вы подъезжаете к светофору, который скоро загорится красным. Что верно?"},
+          "statements": [
+            {"text": {"en": "I adjust my speed early instead of driving on fast and braking hard at the end.", "ru": "Я заранее снижаю скорость, а не еду быстро, чтобы резко затормозить в конце."}, "correct": true,
+             "why": {"en": "Foreseeing the stop and slowing down early saves energy.", "ru": "Предвидеть остановку и замедляться заранее — это экономия энергии."}, "source": "1.2.6 (16)"},
+            {"text": {"en": "Driving in as low a gear as possible saves fuel.", "ru": "Езда на как можно более низкой передаче экономит топливо."}, "correct": false,
+             "why": {"en": "It is the other way round: as high a gear as possible lowers energy use.", "ru": "Наоборот: как можно более высокая передача снижает расход."}, "source": "1.2.6 (8)"},
+            {"text": {"en": "When I slow down, I take my foot fully off the accelerator and avoid declutching where I can.", "ru": "Замедляясь, я полностью отпускаю газ и по возможности не выжимаю сцепление."}, "correct": true,
+             "why": {"en": "Releasing the accelerator fully and not declutching reduces energy use when slowing down.", "ru": "Полностью отпущенный газ без выжатого сцепления снижает расход при замедлении."}, "source": "1.2.6 (7)"}
+          ],
+          "explanation": {"en": "Energy-wise driving: see the stop coming, lift off early, stay in gear and choose high gears.", "ru": "Экономная езда: заранее видеть остановку, рано отпускать газ, не выжимать сцепление и выбирать высокие передачи."}
+        },
+        {
+          "id": "car1-tread-depth",
+          "section": "1.2.7",
+          "image": "/test-images/Topics/car1-04.webp",
+          "alt": {"en": "Close-up of your car's front tyre with very worn tread.", "ru": "Крупно: переднее колесо вашей машины с сильно изношенным протектором."},
+          "prompt": {"en": "You measure your tyres: the tread in the main grooves is 1.4 mm deep. What is right?", "ru": "Вы измерили шины: глубина протектора в основных канавках 1,4 мм. Что верно?"},
+          "statements": [
+            {"text": {"en": "It is enough if the front tyres have at least 1.6 mm.", "ru": "Достаточно, чтобы передние шины имели не меньше 1,6 мм."}, "correct": false,
+             "why": {"en": "The 1.6 mm minimum applies to the tyres on all wheels.", "ru": "Минимум 1,6 мм действует для шин на всех колёсах."}, "source": "1.2.7 (9)"},
+            {"text": {"en": "The tyres are too worn to be used.", "ru": "Шины слишком изношены, ездить на них нельзя."}, "correct": true,
+             "why": {"en": "Tyres must have at least 1.6 mm in the main tread; 1.4 mm is too little.", "ru": "В основном рисунке должно быть не меньше 1,6 мм; 1,4 мм — мало."}, "source": "1.2.7 (9)"},
+            {"text": {"en": "The wear indicators in the grooves can show me when the tread is too low.", "ru": "Индикаторы износа в канавках подскажут, что протектор стал слишком мал."}, "correct": true,
+             "why": {"en": "The tread depth may be judged by the wear indicators.", "ru": "Глубину протектора можно оценивать по индикаторам износа."}, "source": "1.2.7 (9)"}
+          ],
+          "explanation": {"en": "At least 1.6 mm in the main tread on all wheels. 1.4 mm is too little.", "ru": "Не меньше 1,6 мм в основном рисунке на всех колёсах. 1,4 мм — слишком мало."}
+        },
+        {
+          "id": "car1-heavy-steering",
+          "section": "1.2.2",
+          "image": "/test-images/Topics/car1-05.webp",
+          "alt": {"en": "Driver's view on a forest road; the power-steering warning lamp is lit.", "ru": "Вид с места водителя на лесной дороге; горит лампа неисправности усилителя руля."},
+          "prompt": {"en": "The steering suddenly feels heavy, and this lamp lights up. What is right?", "ru": "Руль вдруг стал тугим, и загорелась эта лампа. Что верно?"},
+          "statements": [
+            {"text": {"en": "There may be too little fluid or a fault in the power steering.", "ru": "Возможно, мало жидкости или неисправен усилитель руля."}, "correct": true,
+             "why": {"en": "Heavy steering can come from low power-steering fluid, a worn or broken drive belt or an electrical fault.", "ru": "Тугой руль бывает из-за нехватки жидкости, изношенного или порванного ремня или электрической неисправности усилителя."}, "source": "1.2.2 (10)"},
+            {"text": {"en": "Heavy steering is normal in a car with power steering.", "ru": "Тугой руль — это нормально для машины с усилителем."}, "correct": false,
+             "why": {"en": "Power steering makes steering lighter; heavy steering is a sign of a fault.", "ru": "Усилитель облегчает руль; тугой руль — признак неисправности."}, "source": "1.2.2 (3), (10)"},
+            {"text": {"en": "The car can still be steered, but driving on can be irresponsible and therefore illegal.", "ru": "Машиной ещё можно управлять, но ехать дальше может быть безответственно, а значит, незаконно."}, "correct": true,
+             "why": {"en": "A car must steer even if the power steering fails, but driving on can be irresponsible and illegal.", "ru": "Машина должна управляться и без усилителя, но продолжать езду может быть безответственно и незаконно."}, "source": "1.2.2 (3)"}
+          ],
+          "explanation": {"en": "Heavy steering with this lamp points to a power-steering fault. The car still steers, but have it checked before driving on.", "ru": "Тугой руль и эта лампа указывают на неисправность усилителя. Машина управляется, но её нужно проверить, прежде чем ехать дальше."}
+        },
+        {
+          "id": "car1-low-sun",
+          "section": "1.2.9",
+          "image": "/test-images/Topics/car1-06.webp",
+          "alt": {"en": "Driving towards a low sun through a hazy windscreen.", "ru": "Езда против низкого солнца через мутное лобовое стекло."},
+          "prompt": {"en": "You are driving towards a low sun. The windscreen is hazy on the inside. What is right?", "ru": "Вы едете против низкого солнца. Лобовое стекло изнутри мутное. Что верно?"},
+          "statements": [
+            {"text": {"en": "Only the outside of the windscreen gets dirty in daily driving.", "ru": "При обычной езде грязнится только наружная сторона стекла."}, "correct": false,
+             "why": {"en": "Daily use leaves a thin film on the inside of the windows too.", "ru": "От повседневной езды тонкая плёнка оседает и на внутренней стороне стёкол."}, "source": "1.2.9 (13)"},
+            {"text": {"en": "A film on the inside of the windscreen can make it impossible to see in low sun.", "ru": "Плёнка на внутренней стороне стекла при низком солнце может полностью закрыть обзор."}, "correct": true,
+             "why": {"en": "In low sun or against dazzling lights, a dirty inside can make the view impossible.", "ru": "При низком солнце или слепящих фарах грязное изнутри стекло может сделать обзор невозможным."}, "source": "1.2.9 (13)"},
+            {"text": {"en": "The car must be able to keep the windscreen clean with its wipers and washer.", "ru": "Машина должна уметь очищать лобовое стекло дворниками и омывателем."}, "correct": true,
+             "why": {"en": "The windscreen must be kept clean by wipers and washer.", "ru": "Лобовое стекло должно очищаться дворниками и омывателем."}, "source": "1.2.9 (4)"}
+          ],
+          "explanation": {"en": "Clean the windscreen on the inside too: in low sun a thin film can blind you completely.", "ru": "Стекло нужно мыть и изнутри: при низком солнце тонкая плёнка может полностью ослепить."}
+        },
+        {
+          "id": "car1-trailer-papers",
+          "section": "1.3.1",
+          "image": "/test-images/Topics/car1-07.webp",
+          "alt": {"en": "Your car with a small box trailer on the tow bar, ready for a trip.", "ru": "Ваша машина с небольшим прицепом на фаркопе, готова к поездке."},
+          "prompt": {"en": "You are going to tow this trailer to Germany. What is right?", "ru": "Вы повезёте этот прицеп в Германию. Что верно?"},
+          "statements": [
+            {"text": {"en": "I must bring the registration certificates for both the car and the trailer.", "ru": "Мне нужно взять с собой свидетельства о регистрации и машины, и прицепа."}, "correct": true,
+             "why": {"en": "When towing, the certificates of both the car and the trailer must be carried.", "ru": "При езде с прицепом нужны свидетельства обеих машин — тягача и прицепа."}, "source": "1.3.1 (4)"},
+            {"text": {"en": "The registration certificates show whether the car and the trailer may be coupled.", "ru": "По свидетельствам о регистрации можно понять, можно ли сцеплять эту машину с этим прицепом."}, "correct": true,
+             "why": {"en": "The certificates give the weights the driver needs to decide this.", "ru": "В свидетельствах указаны массы, по которым водитель это решает."}, "source": "1.3.1 (2), (3)"},
+            {"text": {"en": "Abroad, copies I printed at home are enough.", "ru": "За границей хватит копий, распечатанных дома."}, "correct": false,
+             "why": {"en": "Abroad you need the originals or a copy issued by Motorstyrelsen; ordinary copies are enough only in Denmark.", "ru": "За границей нужны оригиналы или дубликат от Motorstyrelsen; простые копии годятся только в Дании."}, "source": "1.3.1 (4), (5)"},
+            {"text": {"en": "I must make sure the trailer is properly coupled.", "ru": "Я должен убедиться, что прицеп сцеплен надёжно."}, "correct": true,
+             "why": {"en": "When driving with a trailer, the driver must make sure the coupling is safe.", "ru": "При езде с прицепом водитель обязан убедиться в надёжной сцепке."}, "source": "1.2.1 (3)"}
+          ],
+          "explanation": {"en": "Bring both registration certificates (originals or Motorstyrelsen's copy abroad) and check the coupling.", "ru": "Возьмите оба свидетельства (за границей — оригиналы или дубликат от Motorstyrelsen) и проверьте сцепку."}
+        },
+        {
+          "id": "car1-brake-lamp",
+          "section": "1.2.3",
+          "image": "/test-images/Topics/car1-08.webp",
+          "alt": {"en": "Driver's view on a country road; the red brake warning lamp is lit.", "ru": "Вид с места водителя на загородной дороге; горит красная лампа тормозов."},
+          "prompt": {"en": "The parking brake is released. This red lamp lights up while you are driving. What is right?", "ru": "Стояночный тормоз отпущен. Во время езды загорается эта красная лампа. Что верно?"},
+          "statements": [
+            {"text": {"en": "There may be a fault in the brake system or too little brake fluid.", "ru": "Возможно, неисправна тормозная система или мало тормозной жидкости."}, "correct": true,
+             "why": {"en": "This lamp warns of a brake fault; the brake fluid level is right when it is between min and max, or when this lamp is off.", "ru": "Эта лампа предупреждает о неисправности тормозов; уровень жидкости в норме, если он между min и max или если лампа не горит."}, "source": "1.1.2 (2); 1.2.3 (15)"},
+            {"text": {"en": "I may drive on until the next service, as long as the brakes feel normal.", "ru": "Можно ездить до ближайшего ТО, пока тормоза кажутся нормальными."}, "correct": false,
+             "why": {"en": "Brakes must be checked at once if the warning lamp lights while driving.", "ru": "Если контрольная лампа горит во время езды, тормоза проверяют немедленно."}, "source": "1.2.3 (21)"},
+            {"text": {"en": "The brakes must be checked straight away.", "ru": "Тормоза нужно проверить сразу."}, "correct": true,
+             "why": {"en": "A lamp that lights while driving means the brakes are checked at once.", "ru": "Лампа, загоревшаяся в пути, означает немедленную проверку тормозов."}, "source": "1.2.3 (21)"}
+          ],
+          "explanation": {"en": "The red brake lamp with the parking brake off means a brake fault or low brake fluid. Have the brakes checked at once.", "ru": "Красная лампа тормозов при отпущенном стояночном тормозе — неисправность или мало жидкости. Тормоза проверяют немедленно."}
+        },
+        {
+          "id": "car1-studded-april",
+          "section": "1.2.7",
+          "image": "/test-images/Topics/car1-09.webp",
+          "alt": {"en": "A country road in late April with yellow rapeseed fields.", "ru": "Загородная дорога в конце апреля, вокруг жёлтые поля рапса."},
+          "prompt": {"en": "It is 25 April. Your car still has studded tyres. What is right?", "ru": "Сегодня 25 апреля. На машине всё ещё шипованные шины. Что верно?"},
+          "statements": [
+            {"text": {"en": "I may keep them on as long as there can be frost at night.", "ru": "Можно ездить на них, пока бывают ночные заморозки."}, "correct": false,
+             "why": {"en": "The period is fixed by date, whatever the weather.", "ru": "Срок задан датами, погода тут ни при чём."}, "source": "1.2.7 (7)"},
+            {"text": {"en": "Studded tyres may only be used from 1 November to 15 April.", "ru": "Шипованные шины разрешены только с 1 ноября по 15 апреля."}, "correct": true,
+             "why": {"en": "That is the period when studded tyres are allowed.", "ru": "Это и есть разрешённый период для шипов."}, "source": "1.2.7 (7)"},
+            {"text": {"en": "When studded tyres are used, they must be on all wheels.", "ru": "Если ставят шипованные шины, то на все колёса."}, "correct": true,
+             "why": {"en": "Studded tyres go on all wheels, a coupled trailer included.", "ru": "Шипы ставят на все колёса, включая прицеп."}, "source": "1.2.7 (7)"}
+          ],
+          "explanation": {"en": "Studded tyres: only 1 November to 15 April, and then on all wheels. On 25 April they must come off.", "ru": "Шипы — только с 1 ноября по 15 апреля и на всех колёсах. 25 апреля их уже нужно снять."}
+        },
+        {
+          "id": "car1-fast-indicator",
+          "section": "1.2.4",
+          "image": "/test-images/Topics/car1-10.webp",
+          "alt": {"en": "Driver's view before a right turn in town; the right indicator arrow is lit.", "ru": "Вид с места водителя перед правым поворотом в городе; горит стрелка правого поворотника."},
+          "prompt": {"en": "You indicate right. The indicator flashes and clicks much faster than usual. What is right?", "ru": "Вы включили правый поворотник. Он мигает и щёлкает намного чаще обычного. Что верно?"},
+          "statements": [
+            {"text": {"en": "One or more indicator lamps are probably not working.", "ru": "Скорее всего, не работает одна или несколько ламп поворотников."}, "correct": true,
+             "why": {"en": "Much faster flashing than usual is normally a sign that an indicator lamp is out.", "ru": "Заметно более частое мигание обычно означает, что какая-то лампа поворотника не горит."}, "source": "1.2.4 (20)"},
+            {"text": {"en": "Fast flashing means the hazard warning lights are on.", "ru": "Частое мигание означает, что включена аварийка."}, "correct": false,
+             "why": {"en": "The hazard lights flash all indicators at the same time; fast flashing points to a lamp that does not work.", "ru": "Аварийка включает все поворотники разом; частое мигание говорит о неработающей лампе."}, "source": "1.2.4 (17), (20)"},
+            {"text": {"en": "Indicators must flash with yellow light that is clearly visible in sunlight.", "ru": "Поворотники должны мигать жёлтым светом, хорошо заметным на солнце."}, "correct": true,
+             "why": {"en": "That is the requirement for indicator lamps.", "ru": "Таково требование к поворотникам."}, "source": "1.2.4 (16)"}
+          ],
+          "explanation": {"en": "Fast flashing normally means an indicator lamp is out. Indicators must flash yellow and be clearly visible in sunlight.", "ru": "Частое мигание обычно значит, что лампа поворотника не горит. Поворотники мигают жёлтым и должны быть видны на солнце."}
+        },
+        {
+          "id": "car1-open-boot",
+          "section": "1.2.5",
+          "image": "/test-images/Topics/car1-11.webp",
+          "alt": {"en": "Your car from behind with the boot lid open and long planks sticking out.", "ru": "Ваша машина сзади с открытой крышкой багажника, из него торчат длинные доски."},
+          "prompt": {"en": "You want to drive home with the boot lid open because the load is long. What is right?", "ru": "Вы хотите ехать домой с открытым багажником, потому что груз длинный. Что верно?"},
+          "statements": [
+            {"text": {"en": "Exhaust gas with carbon monoxide can get into the car.", "ru": "Выхлопные газы с угарным газом могут попасть в салон."}, "correct": true,
+             "why": {"en": "Driving with the boot lid open can let carbon monoxide into the car.", "ru": "При езде с открытым багажником угарный газ может попасть в салон."}, "source": "1.2.5 (3)"},
+            {"text": {"en": "Carbon monoxide smells strongly, so I will notice it in time.", "ru": "У угарного газа резкий запах, так что я вовремя его замечу."}, "correct": false,
+             "why": {"en": "Carbon monoxide has no smell.", "ru": "Угарный газ ничем не пахнет."}, "source": "1.2.5 (3)"},
+            {"text": {"en": "Carbon monoxide is dangerous even in small amounts.", "ru": "Угарный газ опасен даже в малом количестве."}, "correct": true,
+             "why": {"en": "Even small amounts are dangerous.", "ru": "Опасны даже малые количества."}, "source": "1.2.5 (3)"},
+            {"text": {"en": "The doors, bonnet and boot lid must have locks that keep them closed while driving.", "ru": "У дверей, капота и крышки багажника должны быть замки, чтобы они не открывались в пути."}, "correct": true,
+             "why": {"en": "This is a requirement for the car body.", "ru": "Это требование к кузову."}, "source": "1.2.8 (3)"}
+          ],
+          "explanation": {"en": "With the boot open, odourless and dangerous carbon monoxide can get in. Body panels must be able to stay closed while driving.", "ru": "Через открытый багажник в салон может попасть угарный газ — он без запаха и опасен. Двери, капот и багажник должны закрываться на замок в пути."}
+        },
+        {
+          "id": "car1-esc-lamp",
+          "section": "1.2.3",
+          "image": "/test-images/Topics/car1-12.webp",
+          "alt": {"en": "Driver's view on a wet country road before a bend; the ESC lamp is lit.", "ru": "Вид с места водителя на мокрой загородной дороге перед поворотом; горит лампа ESC."},
+          "prompt": {"en": "This lamp stays lit the whole time you drive. What is right?", "ru": "Эта лампа горит всё время, пока вы едете. Что верно?"},
+          "statements": [
+            {"text": {"en": "There may be a fault in the ESC system, and I follow the car maker's instructions.", "ru": "Возможно, неисправна система ESC, и я действую по инструкции производителя."}, "correct": true,
+             "why": {"en": "An ESC lamp that stays lit can mean an ESC fault; follow the car maker's instructions.", "ru": "Постоянно горящая лампа ESC может означать неисправность; действуйте по указаниям производителя."}, "source": "1.2.3 (23)"},
+            {"text": {"en": "With ESC working, I can take bends faster than usual.", "ru": "С работающей ESC можно проходить повороты быстрее обычного."}, "correct": false,
+             "why": {"en": "ESC only lowers the risk of skidding and rolling over; it does not make faster bends safe.", "ru": "ESC лишь снижает риск заноса и опрокидывания; быстрее проходить повороты безопасно от этого не становится."}, "source": "1.2.2 (4)"},
+            {"text": {"en": "ESC lowers the risk of skidding by braking one or more wheels.", "ru": "ESC снижает риск заноса, подтормаживая одно или несколько колёс."}, "correct": true,
+             "why": {"en": "That is how ESC works, especially in bends.", "ru": "Так работает ESC, особенно в поворотах."}, "source": "1.2.2 (4)"}
+          ],
+          "explanation": {"en": "A constantly lit ESC lamp can mean an ESC fault: follow the car maker's instructions. ESC lowers risk; it does not raise safe speed.", "ru": "Постоянно горящая лампа ESC может означать неисправность: следуйте инструкции производителя. ESC снижает риск, но не повышает безопасную скорость."}
+        },
+        {
+          "id": "car1-level-crossing",
+          "section": "1.2.6",
+          "image": "/test-images/Topics/car1-13.webp",
+          "alt": {"en": "Waiting at a level crossing with the barriers down while a train passes.", "ru": "Ожидание у железнодорожного переезда: шлагбаумы опущены, идёт поезд."},
+          "prompt": {"en": "You are waiting at the level crossing, and the barriers are down. What is right?", "ru": "Вы ждёте у переезда, шлагбаумы опущены. Что верно?"},
+          "statements": [
+            {"text": {"en": "I leave the engine idling so that it stays warm.", "ru": "Я оставляю двигатель работать на холостых, чтобы он не остыл."}, "correct": false,
+             "why": {"en": "To limit air and noise pollution, do not let the engine idle for long.", "ru": "Чтобы меньше загрязнять воздух и шуметь, не стоит долго держать двигатель на холостых."}, "source": "1.2.6 (2)"},
+            {"text": {"en": "Switching off the engine while I wait here saves energy.", "ru": "Если заглушить двигатель, пока я жду, это сэкономит энергию."}, "correct": true,
+             "why": {"en": "Energy use drops if the engine is switched off during a longer stop, for example at a level crossing.", "ru": "Расход снижается, если глушить двигатель при долгой остановке, например у переезда."}, "source": "1.2.6 (5)"},
+            {"text": {"en": "Idling is allowed everywhere in Denmark for as long as I like.", "ru": "В Дании холостой ход разрешён везде и сколько угодно."}, "correct": false,
+             "why": {"en": "There can be local bans on idling for longer than a certain time.", "ru": "Могут действовать местные запреты на холостой ход дольше определённого времени."}, "source": "1.2.6 (29)"}
+          ],
+          "explanation": {"en": "During a long wait, such as at a level crossing, switch the engine off. Long idling pollutes and can be banned locally.", "ru": "При долгом ожидании, например у переезда, двигатель глушат. Долгий холостой ход загрязняет воздух и может быть запрещён местными правилами."}
+        },
+        {
+          "id": "car1-assistance",
+          "section": "1.1.6",
+          "image": "/test-images/Topics/car1-14.webp",
+          "alt": {"en": "Driver's view on a motorway with adaptive cruise control and lane assist shown in the display.", "ru": "Вид с места водителя на автостраде; на панели показаны адаптивный круиз-контроль и удержание в полосе."},
+          "prompt": {"en": "Adaptive cruise control and lane assist are switched on. What is right?", "ru": "Включены адаптивный круиз-контроль и система удержания в полосе. Что верно?"},
+          "statements": [
+            {"text": {"en": "Adaptive cruise control can adjust speed and distance to the car ahead by itself.", "ru": "Адаптивный круиз-контроль сам подстраивает скорость и дистанцию до машины впереди."}, "correct": true,
+             "why": {"en": "That is what adaptive cruise control does.", "ru": "Именно это и делает адаптивный круиз-контроль."}, "source": "1.1.6 (3)"},
+            {"text": {"en": "If a system makes a mistake, I am not responsible for an accident.", "ru": "Если система ошибётся, я не отвечаю за аварию."}, "correct": false,
+             "why": {"en": "Assistance systems never free the driver from responsibility for offences or accidents.", "ru": "Системы помощи никогда не снимают с водителя ответственность за нарушения и аварии."}, "source": "1.1.6 (4)"},
+            {"text": {"en": "The systems can fail or give misleading information.", "ru": "Системы могут отказать или выдать неверную информацию."}, "correct": true,
+             "why": {"en": "The driver must stay critical of the systems, as they can fail.", "ru": "Водитель должен относиться к системам критически: они могут ошибаться."}, "source": "1.1.6 (4)"},
+            {"text": {"en": "Drivers often pay less attention in cars with assistance systems.", "ru": "В машинах с системами помощи водители часто менее внимательны."}, "correct": true,
+             "why": {"en": "Inattention is often greater in cars with assistance systems.", "ru": "Невнимательность в таких машинах часто выше."}, "source": "1.1.6 (5)"}
+          ],
+          "explanation": {"en": "Assistance systems help but can fail, and they tempt drivers to relax. You stay responsible.", "ru": "Системы помогают, но могут ошибаться и расслабляют водителя. Ответственность остаётся на вас."}
+        },
+        {
+          "id": "car1-winter-tyres",
+          "section": "1.2.7",
+          "image": "/test-images/Topics/car1-15.webp",
+          "alt": {"en": "Close-up of your car's wheel on a snowy driveway.", "ru": "Крупно: колесо вашей машины на заснеженной подъездной дорожке."},
+          "prompt": {"en": "You are buying tyres for the winter. One tyre is marked only M+S, without the mountain-and-snowflake symbol. What is right?", "ru": "Вы покупаете шины на зиму. На одной шине только маркировка M+S, без значка «гора со снежинкой». Что верно?"},
+          "statements": [
+            {"text": {"en": "Summer tyres are made for lower temperatures than winter tyres.", "ru": "Летние шины рассчитаны на более низкие температуры, чем зимние."}, "correct": false,
+             "why": {"en": "Ordinary tyres are made for higher temperatures than winter tyres.", "ru": "Обычные шины рассчитаны на более высокие температуры, чем зимние."}, "source": "1.2.7 (5)"},
+            {"text": {"en": "This tyre may be an all-season tyre.", "ru": "Это может быть всесезонная шина."}, "correct": true,
+             "why": {"en": "With only the M+S mark, the tyre may be an all-season tyre.", "ru": "Если есть только M+S, это может быть всесезонная шина."}, "source": "1.2.7 (6)"},
+            {"text": {"en": "A tyre marked M+S together with the mountain-and-snowflake symbol is a winter tyre.", "ru": "Шина с M+S и значком «гора со снежинкой» — зимняя."}, "correct": true,
+             "why": {"en": "Both marks together mean a winter tyre.", "ru": "Обе маркировки вместе означают зимнюю шину."}, "source": "1.2.7 (6)"},
+            {"text": {"en": "On the same axle, I may mix tyres of different types.", "ru": "На одной оси можно ставить шины разных типов."}, "correct": false,
+             "why": {"en": "Tyres on the same axle must be the same size and type, apart from a temporary spare wheel.", "ru": "На одной оси шины должны быть одного размера и типа; исключение — временная запаска."}, "source": "1.2.7 (2)"}
+          ],
+          "explanation": {"en": "M+S plus the mountain-and-snowflake symbol means a winter tyre; M+S alone may be an all-season tyre. Same size and type on each axle.", "ru": "M+S вместе с «горой со снежинкой» — зимняя шина; одна M+S — возможно, всесезонная. На одной оси — один размер и тип."}
+        },
+        {
+          "id": "car1-pedal-sinks",
+          "section": "1.2.3",
+          "image": "/test-images/Topics/car1-16.webp",
+          "alt": {"en": "Braking for a red light behind a car that has stopped.", "ru": "Торможение на красный за остановившейся машиной."},
+          "prompt": {"en": "You brake for the red light. The brake pedal suddenly goes much further down than usual. What is right?", "ru": "Вы тормозите перед красным. Педаль тормоза вдруг уходит намного глубже обычного. Что верно?"},
+          "statements": [
+            {"text": {"en": "I may drive on as usual, because the other brake circuit still works.", "ru": "Можно ехать дальше как обычно: второй контур ведь работает."}, "correct": false,
+             "why": {"en": "The second circuit only works as an emergency brake; driving on is irresponsible and illegal.", "ru": "Второй контур — лишь аварийный тормоз; ехать дальше безответственно и незаконно."}, "source": "1.2.3 (3)"},
+            {"text": {"en": "One of the two brake circuits may be defective.", "ru": "Возможно, отказал один из двух тормозных контуров."}, "correct": true,
+             "why": {"en": "A pedal that suddenly goes further down is a sign that one brake circuit is defective.", "ru": "Педаль, которая вдруг уходит глубже, — признак отказа одного контура."}, "source": "1.2.3 (18)"},
+            {"text": {"en": "The brakes must be checked straight away.", "ru": "Тормоза нужно проверить сразу."}, "correct": true,
+             "why": {"en": "A pedal that goes further down than normal means the brakes are checked at once.", "ru": "Если педаль уходит глубже нормы, тормоза проверяют немедленно."}, "source": "1.2.3 (21)"}
+          ],
+          "explanation": {"en": "A pedal that suddenly goes deeper points to a failed brake circuit. Do not drive on; have the brakes checked.", "ru": "Педаль вдруг уходит глубже — отказал тормозной контур. Дальше не едут, тормоза проверяют."}
+        },
+        {
+          "id": "car1-oil-lamp",
+          "section": "1.2.5",
+          "image": "/test-images/Topics/car1-17.webp",
+          "alt": {"en": "Driver's view on a motorway; the red oil-pressure lamp is lit.", "ru": "Вид с места водителя на автостраде; горит красная лампа давления масла."},
+          "prompt": {"en": "This red lamp lights up while you are driving. What is right?", "ru": "Во время езды загорается эта красная лампа. Что верно?"},
+          "statements": [
+            {"text": {"en": "The lamp warns about the engine's oil pressure.", "ru": "Лампа предупреждает о давлении масла в двигателе."}, "correct": true,
+             "why": {"en": "The oil-can symbol is the oil pressure lamp.", "ru": "Значок маслёнки — это лампа давления масла."}, "source": "1.1.2 (2)"},
+            {"text": {"en": "The lamp shows that the battery is being charged.", "ru": "Лампа показывает, что идёт зарядка аккумулятора."}, "correct": false,
+             "why": {"en": "Electric current has its own lamp with a battery symbol.", "ru": "Для электричества есть своя лампа со значком аккумулятора."}, "source": "1.1.2 (2)"},
+            {"text": {"en": "Too little oil can damage the engine.", "ru": "Нехватка масла может повредить двигатель."}, "correct": true,
+             "why": {"en": "Too little oil in the engine can cause engine damage.", "ru": "Слишком мало масла может вывести двигатель из строя."}, "source": "1.2.5 (4)"},
+            {"text": {"en": "I can check the oil level between the min and max marks on the dipstick.", "ru": "Уровень масла можно проверить по меткам min и max на щупе."}, "correct": true,
+             "why": {"en": "The oil level is read on the dipstick, on the instruments or as the handbook says.", "ru": "Уровень масла смотрят по щупу, по приборам или по инструкции к машине."}, "source": "1.2.5 (1)"}
+          ],
+          "explanation": {"en": "The red oil can warns about oil pressure. Too little oil can ruin the engine; check the level on the dipstick.", "ru": "Красная маслёнка — давление масла. Нехватка масла может погубить двигатель; уровень проверяют щупом."}
+        },
+        {
+          "id": "car1-cracked-mirror",
+          "section": "1.2.9",
+          "image": "/test-images/Topics/car1-18.webp",
+          "alt": {"en": "The driver's left door mirror with cracked glass.", "ru": "Левое наружное зеркало водителя с треснувшим стеклом."},
+          "prompt": {"en": "The left door mirror is cracked. What is right?", "ru": "Левое наружное зеркало треснуло. Что верно?"},
+          "statements": [
+            {"text": {"en": "A cracked mirror is fine, as long as I can still see something in it.", "ru": "Треснувшее зеркало — не беда, если в нём ещё что-то видно."}, "correct": false,
+             "why": {"en": "Mirrors must be clean and undamaged.", "ru": "Зеркала должны быть чистыми и целыми."}, "source": "1.2.9 (6), (12)"},
+            {"text": {"en": "The car must have an inside mirror and an outside mirror on each side.", "ru": "У машины должны быть внутреннее зеркало и наружное зеркало с каждой стороны."}, "correct": true,
+             "why": {"en": "That is the required set of mirrors.", "ru": "Таков обязательный набор зеркал."}, "source": "1.2.9 (5)"},
+            {"text": {"en": "Mirrors can be replaced by a camera and a screen.", "ru": "Зеркала можно заменить камерой и экраном."}, "correct": true,
+             "why": {"en": "A camera and monitor solution may replace the mirrors.", "ru": "Зеркала может заменить система «камера + монитор»."}, "source": "1.2.9 (7)"}
+          ],
+          "explanation": {"en": "An inside mirror and an outside mirror on each side are required, clean and undamaged, or a camera and screen instead.", "ru": "Нужны внутреннее зеркало и по наружному с каждой стороны, чистые и целые, либо камера с экраном вместо них."}
+        },
+        {
+          "id": "car1-hill-revs",
+          "section": "1.2.5",
+          "image": "/test-images/Topics/car1-19.webp",
+          "alt": {"en": "Driver's view up a steep hill; the rev counter is high while the speed is low.", "ru": "Вид с места водителя на крутом подъёме; обороты высокие, а скорость низкая."},
+          "prompt": {"en": "You are driving up a steep hill. The engine revs rise, but the car does not go faster. What is right?", "ru": "Вы едете в крутую гору. Обороты двигателя растут, а скорость нет. Что верно?"},
+          "statements": [
+            {"text": {"en": "This points to a fault in the clutch.", "ru": "Это указывает на неисправность сцепления."}, "correct": true,
+             "why": {"en": "Revs rising without the speed rising points to a clutch fault.", "ru": "Обороты растут, а скорость нет — признак неисправного сцепления."}, "source": "1.2.5 (7)"},
+            {"text": {"en": "Higher gears are meant for driving at low speed.", "ru": "Высокие передачи предназначены для езды на малой скорости."}, "correct": false,
+             "why": {"en": "Higher gears are for high speed; lower gears for low speed and pulling power.", "ru": "Высокие передачи — для большой скорости; низкие — для малой скорости и тяги."}, "source": "1.1.5 (3), (4)"},
+            {"text": {"en": "Lower gears give great pulling power, for example up a steep hill.", "ru": "Низкие передачи дают большую тягу, например в крутую гору."}, "correct": true,
+             "why": {"en": "Lower gears are used where great pulling power is needed, such as on steep hills.", "ru": "Низкие передачи нужны там, где требуется тяга, например на крутых подъёмах."}, "source": "1.1.5 (3)"}
+          ],
+          "explanation": {"en": "Revs up but no extra speed means the clutch is slipping: a fault. Use low gears for pulling power on hills.", "ru": "Обороты растут без прибавки скорости — сцепление пробуксовывает, это неисправность. На подъёмах тягу дают низкие передачи."}
+        },
+        {
+          "id": "car1-roof-box",
+          "section": "1.2.6",
+          "image": "/test-images/Topics/car1-20.webp",
+          "alt": {"en": "Your car loaded for a holiday with a roof box on the roof.", "ru": "Ваша машина, загруженная для отпуска, с боксом на крыше."},
+          "prompt": {"en": "You are setting off on holiday with a roof box. What is right?", "ru": "Вы едете в отпуск с боксом на крыше. Что верно?"},
+          "statements": [
+            {"text": {"en": "A closed roof box does not affect energy use.", "ru": "Закрытый бокс на крыше не влияет на расход."}, "correct": false,
+             "why": {"en": "Driving with a roof box or similar raises energy use.", "ru": "Езда с боксом на крыше или чем-то подобным увеличивает расход."}, "source": "1.2.6 (13)"},
+            {"text": {"en": "Unnecessary weight in the car increases energy use.", "ru": "Лишний вес в машине увеличивает расход."}, "correct": true,
+             "why": {"en": "Carrying weight you do not need raises energy use.", "ru": "Ненужный груз повышает расход."}, "source": "1.2.6 (10)"},
+            {"text": {"en": "Air conditioning has no effect on energy use.", "ru": "Кондиционер никак не влияет на расход."}, "correct": false,
+             "why": {"en": "Air conditioning and other electrical equipment raise energy use.", "ru": "Кондиционер и другие электроприборы увеличивают расход."}, "source": "1.2.6 (14)"}
+          ],
+          "explanation": {"en": "A roof box, unnecessary weight and air conditioning all raise energy use. Take off what you do not need.", "ru": "Бокс на крыше, лишний вес и кондиционер увеличивают расход. Снимайте и выгружайте то, что не нужно."}
+        },
+        {
+          "id": "car1-main-beam",
+          "section": "1.2.4",
+          "image": "/test-images/Topics/car1-21.webp",
+          "alt": {"en": "Driver's view on a dark country road at dusk; the blue main-beam lamp is lit.", "ru": "Вид с места водителя на тёмной загородной дороге в сумерках; горит синяя лампа дальнего света."},
+          "prompt": {"en": "You are driving on a dark country road with this lamp lit. What is right?", "ru": "Вы едете по тёмной загородной дороге, и горит эта лампа. Что верно?"},
+          "statements": [
+            {"text": {"en": "The headlights may shine blue.", "ru": "Фары могут светить синим."}, "correct": false,
+             "why": {"en": "Headlight light must be white or yellowish.", "ru": "Свет фар должен быть белым или желтоватым."}, "source": "1.2.4 (5)"},
+            {"text": {"en": "Main beam must light up the road at least 100 m ahead of the car.", "ru": "Дальний свет должен освещать дорогу минимум на 100 м вперёд."}, "correct": true,
+             "why": {"en": "That is the minimum reach of main beam.", "ru": "Это минимальная дальность дальнего света."}, "source": "1.2.4 (3)"},
+            {"text": {"en": "Dipped beam must light up the road at least 30 m ahead without dazzling.", "ru": "Ближний свет должен освещать дорогу минимум на 30 м вперёд и не слепить."}, "correct": true,
+             "why": {"en": "That is the requirement for dipped beam.", "ru": "Таково требование к ближнему свету."}, "source": "1.2.4 (3)"}
+          ],
+          "explanation": {"en": "The blue lamp shows that main beam is on. Main beam reaches at least 100 m, dipped beam at least 30 m without dazzling; the light is white or yellowish.", "ru": "Синяя лампа — включён дальний свет. Дальний — не меньше 100 м, ближний — не меньше 30 м и без ослепления; свет белый или желтоватый."}
+        },
+        {
+          "id": "car1-tyre-pressure",
+          "section": "1.2.7",
+          "image": "/test-images/Topics/car1-22.webp",
+          "alt": {"en": "An exposed country road in a strong side wind.", "ru": "Открытая загородная дорога при сильном боковом ветре."},
+          "prompt": {"en": "Your car pulls to one side when you brake lightly, and it is unusually sensitive to side wind. What is right?", "ru": "При лёгком торможении машину тянет в сторону, и она необычно чувствительна к боковому ветру. Что верно?"},
+          "statements": [
+            {"text": {"en": "It may be wrong tyre pressure.", "ru": "Возможно, неправильное давление в шинах."}, "correct": true,
+             "why": {"en": "Pulling when braking lightly and extra sensitivity to side wind can show wrong tyre pressure.", "ru": "Увод при лёгком торможении и чувствительность к боковому ветру бывают из-за неправильного давления."}, "source": "1.2.7 (13), (18)"},
+            {"text": {"en": "Low tyre pressure lowers energy use.", "ru": "Низкое давление в шинах снижает расход."}, "correct": false,
+             "why": {"en": "Too low tyre pressure raises energy use.", "ru": "Слишком низкое давление увеличивает расход."}, "source": "1.2.6 (12)"},
+            {"text": {"en": "Wrong tyre pressure must be put right straight away.", "ru": "Неправильное давление нужно сразу исправить."}, "correct": true,
+             "why": {"en": "Wrong tyre pressure is corrected at once.", "ru": "Неправильное давление исправляют немедленно."}, "source": "1.2.7 (18)"}
+          ],
+          "explanation": {"en": "Pulling when braking lightly and sensitivity to side wind can mean wrong tyre pressure. Correct it at once.", "ru": "Увод при лёгком торможении и чувствительность к ветру могут означать неправильное давление. Его исправляют сразу."}
+        },
+        {
+          "id": "car1-head-restraints",
+          "section": "1.2.9",
+          "image": "/test-images/Topics/car1-23.webp",
+          "alt": {"en": "The rear seat of a car with the head restraints taken out.", "ru": "Заднее сиденье машины со снятыми подголовниками."},
+          "prompt": {"en": "The rear head restraints have been taken out for a better view. Two friends will sit in the back. What is right?", "ru": "Задние подголовники сняли, чтобы было лучше видно. Сзади поедут двое друзей. Что верно?"},
+          "statements": [
+            {"text": {"en": "The required head restraints may not be removed when the seats are used.", "ru": "Обязательные подголовники нельзя снимать, если на этих местах сидят."}, "correct": true,
+             "why": {"en": "Required head restraints must stay in place when the seat is used.", "ru": "Обязательные подголовники должны стоять на месте, если сиденье занято."}, "source": "1.2.9 (3)"},
+            {"text": {"en": "A damaged seat belt is fine, as long as it can still be buckled.", "ru": "Повреждённый ремень — не беда, если он ещё застёгивается."}, "correct": false,
+             "why": {"en": "Seat belts must be free of damage.", "ru": "Ремни безопасности должны быть без повреждений."}, "source": "1.2.9 (2)"},
+            {"text": {"en": "The car must normally have seat belts in all seats.", "ru": "Как правило, ремни безопасности должны быть на всех местах."}, "correct": true,
+             "why": {"en": "Cars must normally have seat belts in every seat.", "ru": "Обычно ремни обязательны на каждом месте."}, "source": "1.2.9 (1)"}
+          ],
+          "explanation": {"en": "Put the head restraints back before anyone sits there. Seat belts in all seats, without damage.", "ru": "Подголовники ставят на место, прежде чем кто-то сядет. Ремни — на всех местах и без повреждений."}
+        },
+        {
+          "id": "car1-steering-play",
+          "section": "1.2.2",
+          "image": "/test-images/Topics/car1-24.webp",
+          "alt": {"en": "Driver's view in a car park before driving off.", "ru": "Вид с места водителя на парковке перед поездкой."},
+          "prompt": {"en": "Before driving off, you turn the steering wheel a little. The front wheels do not follow straight away. What is right?", "ru": "Перед поездкой вы немного поворачиваете руль. Передние колёса реагируют не сразу. Что верно?"},
+          "statements": [
+            {"text": {"en": "This may be a sign of play in the steering linkage.", "ru": "Это может быть признаком люфта в рулевых тягах."}, "correct": true,
+             "why": {"en": "Wheels that do not follow the steering wheel at once can show play in the steering linkage.", "ru": "Если колёса не сразу следуют за рулём, это может быть люфт в рулевых тягах."}, "source": "1.2.2 (11)"},
+            {"text": {"en": "A little steering play is fine, as long as the car drives straight.", "ru": "Небольшой люфт руля допустим, если машина едет прямо."}, "correct": false,
+             "why": {"en": "Normally there must be no steering play: the wheels must follow the steering wheel at once.", "ru": "Обычно люфта быть не должно: колёса сразу следуют за рулём."}, "source": "1.2.2 (6), (8)"},
+            {"text": {"en": "The steering must be checked.", "ru": "Рулевое управление нужно проверить."}, "correct": true,
+             "why": {"en": "Significant steering play means the steering is inspected.", "ru": "При заметном люфте рулевое управление проверяют."}, "source": "1.2.2 (12)"},
+            {"text": {"en": "At low speed, the steering wheel must turn easily from side to side without uneven resistance or strange noises.", "ru": "На малой скорости руль должен легко поворачиваться из стороны в сторону без неровного сопротивления и посторонних звуков."}, "correct": true,
+             "why": {"en": "That is the legal requirement for the steering at low speed.", "ru": "Таково требование закона к рулевому управлению на малой скорости."}, "source": "1.2.2 (7)"}
+          ],
+          "explanation": {"en": "The wheels must follow the steering wheel at once. Delay points to play in the steering, which must be checked.", "ru": "Колёса должны сразу следовать за рулём. Задержка говорит о люфте, рулевое управление нужно проверить."}
+        },
+        {
+          "id": "car1-one-pedal",
+          "section": "1.2.3",
+          "image": "/test-images/Topics/car1-25.webp",
+          "alt": {"en": "Driver's view in an electric car in town traffic; the car ahead is braking.", "ru": "Вид с места водителя электромобиля в городском потоке; машина впереди тормозит."},
+          "prompt": {"en": "You are driving an electric car with one-pedal drive switched on. The car ahead slows down. What is right?", "ru": "Вы едете на электромобиле с включённым режимом «одной педали». Машина впереди замедляется. Что верно?"},
+          "statements": [
+            {"text": {"en": "To brake hard, I first press the clutch pedal.", "ru": "Чтобы резко затормозить, я сначала выжимаю сцепление."}, "correct": false,
+             "why": {"en": "Electric cars have no clutch pedal.", "ru": "У электромобиля нет педали сцепления."}, "source": "1.1.4 (7)"},
+            {"text": {"en": "When I lift my foot off the accelerator, the car brakes and charges the battery.", "ru": "Когда я отпускаю газ, машина тормозит и заряжает аккумулятор."}, "correct": true,
+             "why": {"en": "One-pedal drive brakes regeneratively when the accelerator is lifted, charging the battery.", "ru": "В режиме «одной педали» машина при отпущенном газе тормозит рекуперацией и подзаряжает батарею."}, "source": "1.2.3 (7)"},
+            {"text": {"en": "If this braking is not enough, I press the brake pedal.", "ru": "Если такого торможения мало, я нажимаю педаль тормоза."}, "correct": true,
+             "why": {"en": "When regenerative braking is not enough, the brake pedal must be used.", "ru": "Если рекуперации недостаточно, нужно нажать на тормоз."}, "source": "1.2.3 (7)"}
+          ],
+          "explanation": {"en": "One-pedal drive brakes and charges when you lift off; press the brake when that is not enough. Electric cars have no clutch.", "ru": "В режиме «одной педали» машина тормозит и заряжается, когда вы отпускаете газ; если мало — жмите тормоз. Сцепления у электромобиля нет."}
+        }
+      ]
+    }
+  ]
+}

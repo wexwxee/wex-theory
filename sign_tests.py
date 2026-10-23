@@ -64,43 +64,48 @@ def questions(test_id):
 
 
 def sync(db) -> None:
-    """Create or update the four sign tests. Question and answer rows are updated in place, so the
-    ids that earlier attempts point to stay the same."""
+    """Create or update the four sign tests."""
     for test in _data()[0]:
-        row = db.query(models.Test).filter(models.Test.id == test["id"]).first()
-        description = f"{QUESTIONS_PER_TEST} exam-style road-sign situations."
-        if not row:
-            row = models.Test(id=test["id"], title=test["title"], description=description)
-            db.add(row)
-            db.flush()
-        row.title, row.description = test["title"], description
-        existing = {question.question_index: question for question in
-                    db.query(models.Question).filter(models.Question.test_id == test["id"]).all()}
-        for index, situation in enumerate(questions(test["id"]), start=1):
-            question = existing.pop(index, None)
-            if question is None:
-                question = models.Question(test_id=test["id"], question_index=index, question_text="")
-                db.add(question)
-                db.flush()
-            question.question_text = situation["prompt"]["en"]
-            question.question_text_ru = situation["prompt"]["ru"]
-            question.explanation = explanation(situation, "en")
-            question.explanation_ru = explanation(situation, "ru")
-            question.image_path = image_path(situation)
-            question.exam_style_text = None
-            answers = sorted(question.answers, key=lambda answer: answer.id)
-            for position, statement in enumerate(situation["statements"]):
-                if position < len(answers):
-                    answer = answers[position]
-                else:
-                    answer = models.Answer(question_id=question.id, text="")
-                    db.add(answer)
-                answer.text = statement["text"]["en"]
-                answer.text_ru = statement["text"]["ru"]
-                answer.is_correct = statement["correct"]
-                answer.exam_style_text = None
-            for extra in answers[len(situation["statements"]):]:
-                db.delete(extra)
-        for stale in existing.values():
-            db.delete(stale)
+        write_test(db, test["id"], test["title"], f"{QUESTIONS_PER_TEST} exam-style road-sign situations.",
+                   questions(test["id"]))
     db.commit()
+
+
+def write_test(db, test_id, title, description, situations, explain=explanation) -> None:
+    """Store one test of situations in the ordinary test tables. Question and answer rows are updated
+    in place, so the ids that earlier attempts point to stay the same. The caller commits."""
+    row = db.query(models.Test).filter(models.Test.id == test_id).first()
+    if not row:
+        row = models.Test(id=test_id, title=title, description=description)
+        db.add(row)
+        db.flush()
+    row.title, row.description = title, description
+    existing = {question.question_index: question for question in
+                db.query(models.Question).filter(models.Question.test_id == test_id).all()}
+    for index, situation in enumerate(situations, start=1):
+        question = existing.pop(index, None)
+        if question is None:
+            question = models.Question(test_id=test_id, question_index=index, question_text="")
+            db.add(question)
+            db.flush()
+        question.question_text = situation["prompt"]["en"]
+        question.question_text_ru = situation["prompt"]["ru"]
+        question.explanation = explain(situation, "en")
+        question.explanation_ru = explain(situation, "ru")
+        question.image_path = image_path(situation)
+        question.exam_style_text = None
+        answers = sorted(question.answers, key=lambda answer: answer.id)
+        for position, statement in enumerate(situation["statements"]):
+            if position < len(answers):
+                answer = answers[position]
+            else:
+                answer = models.Answer(question_id=question.id, text="")
+                db.add(answer)
+            answer.text = statement["text"]["en"]
+            answer.text_ru = statement["text"]["ru"]
+            answer.is_correct = statement["correct"]
+            answer.exam_style_text = None
+        for extra in answers[len(situation["statements"]):]:
+            db.delete(extra)
+    for stale in existing.values():
+        db.delete(stale)

@@ -59,6 +59,7 @@ if __name__ == "__main__":
             db.commit()
             main.ensure_exam_mode_test(db)
             main.sign_tests.sync(db)
+            main.topic_tests.sync(db)
         try:
             uvicorn.run(main.app, host="127.0.0.1", port=8765, lifespan="off", log_level="warning")
         finally:

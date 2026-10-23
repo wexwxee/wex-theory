@@ -36,6 +36,7 @@ import sign_lessons
 import study as study_plan
 import sign_curriculum
 import sign_tests
+import topic_tests
 import models
 import review as review_drill
 import signs as signs_catalogue
@@ -2950,6 +2951,12 @@ async def startup_init():
         except Exception as se:
             db.rollback()
             print(f"[STARTUP] Road sign tests sync error: {se}")
+        try:
+            topic_tests.sync(db)
+            print(f"[STARTUP] Topic tests ready: {sorted(topic_tests.test_ids())}")
+        except Exception as te:
+            db.rollback()
+            print(f"[STARTUP] Topic tests sync error: {te}")
 
     except Exception as e:
         print(f"[STARTUP] Error: {e}")
@@ -4742,11 +4749,13 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         ).first()
         images[t.id] = q.image_path if q else ""
 
-    # Road sign tests have their own block; the practice library counts stay Theory Tests and Exam Mode.
+    # Road sign tests and topic tests have their own blocks; the practice library counts stay Theory Tests and Exam Mode.
     sign_test_list = [t for t in tests if sign_tests.is_sign_test(t.id)]
-    tests = [t for t in tests if not sign_tests.is_sign_test(t.id)]
+    topic_test_list = [t for t in tests if topic_tests.is_topic_test(t.id)]
+    tests = [t for t in tests if not sign_tests.is_sign_test(t.id) and not topic_tests.is_topic_test(t.id)]
     completed = sum(1 for test_id, score in latest_scores.items()
-                    if test_id != FREE_SAMPLE_TEST_ID and not sign_tests.is_sign_test(test_id) and score >= EXAM_MODE_PASS_SCORE)
+                    if test_id != FREE_SAMPLE_TEST_ID and not sign_tests.is_sign_test(test_id)
+                    and not topic_tests.is_topic_test(test_id) and score >= EXAM_MODE_PASS_SCORE)
     library_total = sum(1 for t in tests if t.id != FREE_SAMPLE_TEST_ID)
     has_full_access = user_has_access(user)
     access_expires_at = None if user.is_admin else get_user_access_expiry(user)
@@ -4762,6 +4771,8 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse(request, "dashboard.html", {
         "request": request, "user": user, "tests": tests,
         "sign_tests": sign_test_list, "sign_test_numbers": {t.id: sign_tests.number(t.id) for t in sign_test_list},
+        "topic_tests": topic_test_list, "topic_test_numbers": {t.id: topic_tests.number(t.id) for t in topic_test_list},
+        "topic_test_topics": {test["id"]: test["topic"] for test in topic_tests.tests()},
         "latest_scores": latest_scores, "images": images,
         "latest_scores_by_mode": latest_scores_by_mode,
         "completed": completed, "has_access": has_full_access,
@@ -4957,6 +4968,7 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
     passed_test_ids = {
         a.test_id for a in attempts
         if a.passed and a.test_id != FREE_SAMPLE_TEST_ID and not sign_tests.is_sign_test(a.test_id)
+        and not topic_tests.is_topic_test(a.test_id)
     }
     official_total = EXAM_MODE_TEST_ID
     certificate = (

@@ -210,6 +210,37 @@
   </div>
   {% endif %}
 
+  {% if topic_tests %}
+  <div class="learning-tests-heading" id="topicTests"><h2>Topic tests</h2><p>Our own tests, one topic of the official curriculum at a time. First: the car and its equipment, the topic learners get wrong most often.</p></div>
+  <div class="tests-grid dw-tests dw-topic-tests">
+    {% for t in topic_tests %}
+    {% set is_locked = not has_access %}
+    <div class="test-card dw-test{% if is_locked %} test-card-locked{% endif %}"
+         data-test-card
+         data-locked="{{ 'true' if is_locked else 'false' }}"
+         data-test-url="/test/{{ t.id }}"
+         role="link" tabindex="0" aria-label="{{ t.title }}{% if is_locked %}, full access{% endif %}">
+      <div class="dw-test-shot">
+        {% if images[t.id] %}
+        <img src="{{ test_image_url(images[t.id], thumb=True) }}" data-full-src="{{ test_image_url(images[t.id]) }}" alt="" loading="lazy" decoding="async">
+        {% endif %}
+        <span class="dw-test-num wx-led" aria-hidden="true">{{ '%02d' % topic_test_numbers[t.id] }}</span>
+        {% if is_locked %}<span class="dw-test-chip"><i class="fa-solid fa-lock" aria-hidden="true"></i> Full access</span>{% endif %}
+      </div>
+      <div class="test-card-body">
+        <div class="dw-test-title">{{ t.title }}</div>
+        <div class="dw-test-status">
+          <span class="dw-tag">{{ topic_test_topics[t.id] }} · 25 questions</span>
+          {% if t.id in latest_scores %}
+            {% if latest_scores[t.id] >= 20 %}<span class="badge-green">&#10003; {{ latest_scores[t.id] }}/25</span>{% else %}<span class="badge-red">&#10005; {{ latest_scores[t.id] }}/25</span>{% endif %}
+          {% elif not is_locked %}<span class="mode-progress-empty">Not started</span>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   {% if not has_access %}
   <section class="dw-upsell">
     <div>

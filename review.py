@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session, selectinload
 import models
 import sign_tests
 import signs as signs_catalogue
+import topic_tests
 
 DEFAULT_LIMIT = 10
 MAX_LIMIT = 25
@@ -147,6 +148,14 @@ def review_questions(db: Session, user_id: int, limit: int = DEFAULT_LIMIT) -> l
     return questions
 
 
+def test_label(test_id: int) -> str:
+    if sign_tests.is_sign_test(test_id):
+        return f"Road signs test {sign_tests.number(test_id)}"
+    if topic_tests.is_topic_test(test_id):
+        return next(test["title"] for test in topic_tests.tests() if test["id"] == test_id)
+    return f"Test {test_id}"
+
+
 def as_payload(question: models.Question, wording_mode: str = "original", misses: int = 0) -> dict:
     """One question in the shape the review page needs."""
     use_exam = wording_mode == "exam"
@@ -160,8 +169,7 @@ def as_payload(question: models.Question, wording_mode: str = "original", misses
     return {
         "id": question.id,
         "test_id": question.test_id,
-        "test_label": (f"Road signs test {sign_tests.number(question.test_id)}"
-                       if sign_tests.is_sign_test(question.test_id) else f"Test {question.test_id}"),
+        "test_label": test_label(question.test_id),
         "question_index": question.question_index,
         "misses": misses,
         "question_text": text_of(question, "question_text"),
