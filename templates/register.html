@@ -15,8 +15,9 @@
       --border: #222222;
       --text: #ffffff;
       --text-muted: #666666;
-      --btn-bg: #ffffff;
-      --btn-text: #0a0a0a;
+      --btn-bg: #5cc8ff;
+      --btn-text: #04121c;
+      --accent: #5cc8ff;
       --wrong: #ef4444;
       --correct: #22c55e;
     }
@@ -26,8 +27,9 @@
       --border: #e0e0e0;
       --text: #0a0a0a;
       --text-muted: #666666;
-      --btn-bg: #0a0a0a;
-      --btn-text: #ffffff;
+      --btn-bg: #5cc8ff;
+      --btn-text: #04121c;
+      --accent: #0a6fa8;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -186,7 +188,7 @@
       font-size: 0.82rem;
       color: var(--text-muted);
     }
-    .perk-icon { color: var(--correct); font-weight: 700; }
+    .perk-icon { color: var(--accent); font-weight: 700; }
     .theme-toggle {
       position: fixed;
       top: 16px;
@@ -234,7 +236,7 @@
       <div class="card-sub">Create a free account. Full test access is purchased separately.</div>
       <div class="perks">
         <div class="perk"><span class="perk-icon">&#10003;</span> 13 structured practice tests</div>
-        <div class="perk"><span class="perk-icon">&#10003;</span> 325 real photo questions</div>
+        <div class="perk"><span class="perk-icon">&#10003;</span> 325 practice questions</div>
         <div class="perk"><span class="perk-icon">&#10003;</span> Unlimited attempts</div>
       </div>
       {% set _ref_q = invite_code if invite_code is defined else '' %}

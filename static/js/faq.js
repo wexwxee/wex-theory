@@ -3,7 +3,7 @@
     {
       group: 'Access',
       q: 'What is included in full access?',
-      a: 'Full access includes all 13 structured practice tests, 325 photo questions, explanations after each test, saved questions, progress history, support messages, Test 14 Exam Mode, and the Exam Words 2026 vocabulary helper.'
+      a: 'Full access includes all 13 structured practice tests, 325 questions, explanations after each test, saved questions, progress history, support messages, Test 14 Exam Mode, and the Exam Words 2026 vocabulary helper.'
     },
     {
       group: 'Demo',
