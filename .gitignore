@@ -11,3 +11,6 @@ tests/browser/*.png
 
 # Design working files (scene backgrounds, briefs); the site does not use them.
 .impeccable/
+
+# Claude Code local settings
+.claude/settings.local.json
